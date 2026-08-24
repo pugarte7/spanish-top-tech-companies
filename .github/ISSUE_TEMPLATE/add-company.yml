@@ -1,0 +1,114 @@
+name: Add a company
+description: An employer paying 60k+ gross to someone working from Spain that isn't listed yet.
+title: "Add: "
+labels: ["new company"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Anything you write here is public and attached to your GitHub account.
+        If you're sharing your own salary, think about that first.
+        Never include names, teams, or anything that identifies a person.
+
+  - type: input
+    id: name
+    attributes:
+      label: Company name
+      placeholder: Acme Data
+    validations: { required: true }
+
+  - type: input
+    id: website
+    attributes:
+      label: Website
+      placeholder: https://acme.example
+    validations: { required: true }
+
+  - type: input
+    id: linkedin
+    attributes:
+      label: LinkedIn company ID or URL
+      description: Optional, but it makes the entry much easier to verify.
+
+  - type: dropdown
+    id: presence
+    attributes:
+      label: How do they operate in Spain?
+      options:
+        - Headquartered in Spain
+        - Has an office or legal entity in Spain
+        - Fully remote, hires people living in Spain
+        - Only hires here through an employer of record
+    validations: { required: true }
+
+  - type: dropdown
+    id: contract
+    attributes:
+      label: How do they pay you?
+      multiple: true
+      options:
+        - Spanish payroll (nómina)
+        - Employer of record (Deel, Remote, Oyster…)
+        - Contractor
+        - Freelance / autónomo
+    validations: { required: true }
+
+  - type: dropdown
+    id: work_model
+    attributes:
+      label: Work model
+      options: [remote, hybrid, onsite]
+    validations: { required: true }
+
+  - type: input
+    id: role
+    attributes:
+      label: Role
+      description: "Use a slug from METHODOLOGY.md if you can, e.g. data-engineer"
+      placeholder: data-engineer
+    validations: { required: true }
+
+  - type: dropdown
+    id: level
+    attributes:
+      label: Level
+      options: [intern, junior, mid, senior, staff, principal, lead, manager, director]
+    validations: { required: true }
+
+  - type: input
+    id: band
+    attributes:
+      label: Base salary, gross annual, EUR
+      description: A median if you know it, otherwise a range. Base only — bonus and equity below.
+      placeholder: "55000-75000, median around 65000"
+    validations: { required: true }
+
+  - type: input
+    id: extras
+    attributes:
+      label: Bonus and equity
+      placeholder: "10% target bonus, RSUs 4y/1y cliff"
+
+  - type: textarea
+    id: source
+    attributes:
+      label: Where does this come from?
+      description: A link, or say "my own offer" / "an offer I received". No source, no merge.
+    validations: { required: true }
+
+  - type: input
+    id: verified
+    attributes:
+      label: When was this true?
+      placeholder: "2026-08"
+    validations: { required: true }
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Before submitting
+      options:
+        - label: This is base salary, gross, before IRPF, in euros.
+          required: true
+        - label: Nothing here identifies a specific person.
+          required: true

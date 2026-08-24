@@ -1,0 +1,20 @@
+# Dataset license
+
+Everything under `data/` and `exports/` is licensed
+**Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**.
+
+Full text: https://creativecommons.org/licenses/by-sa/4.0/legalcode
+Summary:   https://creativecommons.org/licenses/by-sa/4.0/
+
+You may share and adapt it, including commercially, as long as you credit this
+repository and license anything you build from it under the same terms.
+
+The scripts, schema and workflows are MIT — see LICENSE.
+
+## Third-party data
+
+Some bands cite external aggregators such as levels.fyi. This repository stores
+its own aggregate figures and a link back to the source page; it does not
+redistribute those services' datasets, and their terms still apply to them. If
+you believe something here goes beyond that, open an issue and it will be
+removed.

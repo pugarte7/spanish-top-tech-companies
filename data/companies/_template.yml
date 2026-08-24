@@ -1,0 +1,60 @@
+# Copy this file to data/companies/<slug>.yml and fill it in.
+# Files starting with "_" are ignored by the build.
+# Every number below is a PLACEHOLDER - replace it or delete the field.
+# Only include compensation you can point a source at. No source, no row.
+
+slug: example-company              # must match the filename
+name: Example Company
+aliases: []                        # other names people search for
+linkedin_id: 1234567               # from LinkedIn's f_C filter, or null
+website: https://example.com
+careers_url: https://example.com/careers
+
+hq:
+  city: Madrid
+  country: ES                      # ISO 3166-1 alpha-2
+founded_country: ES
+
+# hq = headquartered in Spain | hub = real office/entity here
+# remote-only = hires people living in Spain, no office | eor = only via an employer of record
+spain_presence: hub
+offices_es: [Madrid, Barcelona]
+employees: "201-500"
+sector: [fintech]
+
+work_model: hybrid                 # onsite | hybrid | remote
+remote_within_spain: true          # anywhere in Spain, or tied to a city?
+contract: [spanish-payroll]        # spanish-payroll | eor | contractor | freelance
+working_language: en               # es | en | both
+
+compensation:
+  currency: EUR
+  basis: gross_annual              # before IRPF and SS, 12 payments
+  notes: ""
+  roles:
+    - role: data-engineer          # kebab-case, see METHODOLOGY.md for canonical names
+      levels:
+        - level: senior            # intern|junior|mid|senior|staff|principal|lead|manager|director
+          base:
+            min: 55000
+            p50: 65000
+            max: 75000
+          bonus_pct: 10
+          equity: rsu
+          equity_notes: "4y vest, 1y cliff"
+          sample_size: 8
+          sources:
+            - name: levels.fyi
+              url: https://www.levels.fyi/companies/example-company
+              date: 2026-08-01
+          last_verified: 2026-08-01
+          notes: ""
+
+perks:
+  ticket_restaurant: true
+  health_insurance: true
+  remote_stipend_eur: 500
+  learning_budget_eur: 1000
+
+notes: ""
+last_verified: 2026-08-01

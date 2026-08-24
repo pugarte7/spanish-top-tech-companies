@@ -1,0 +1,69 @@
+name: Add or update a salary band
+description: New numbers for a company that's already listed, or re-verifying an old band.
+title: "Update: "
+labels: ["salary data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Re-verifying a stale band counts just as much as adding a new one.
+        Never include names, teams, or anything that identifies a person.
+
+  - type: input
+    id: company
+    attributes:
+      label: Company
+      description: The slug if you know it, otherwise the name.
+      placeholder: cabify
+    validations: { required: true }
+
+  - type: input
+    id: role
+    attributes:
+      label: Role
+      placeholder: data-engineer
+    validations: { required: true }
+
+  - type: dropdown
+    id: level
+    attributes:
+      label: Level
+      options: [intern, junior, mid, senior, staff, principal, lead, manager, director]
+    validations: { required: true }
+
+  - type: input
+    id: band
+    attributes:
+      label: Base salary, gross annual, EUR
+      placeholder: "60000-80000, median 70000"
+    validations: { required: true }
+
+  - type: input
+    id: sample
+    attributes:
+      label: How many data points?
+      placeholder: "1 (my own offer)"
+
+  - type: textarea
+    id: source
+    attributes:
+      label: Source
+      description: A link, or "my own offer".
+    validations: { required: true }
+
+  - type: input
+    id: verified
+    attributes:
+      label: When was this true?
+      placeholder: "2026-08"
+    validations: { required: true }
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Is this new data or a re-check?
+      options:
+        - New band
+        - Confirming the existing band is still accurate
+        - The existing band is wrong
+    validations: { required: true }
