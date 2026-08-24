@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/OWNER/spanish-top-tech-companies/schema/company.schema.json",
+  "$id": "https://github.com/pugarte7/spanish-top-tech-companies/schema/company.schema.json",
   "title": "Company",
   "description": "One employer that pays at least 60.000 EUR gross annual to someone working from Spain.",
   "type": "object",

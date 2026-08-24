@@ -11,7 +11,7 @@ Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or 
 ## 2. Open a pull request
 
 ```bash
-git clone https://github.com/OWNER/spanish-top-tech-companies
+git clone https://github.com/pugarte7/spanish-top-tech-companies
 cd spanish-top-tech-companies
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
