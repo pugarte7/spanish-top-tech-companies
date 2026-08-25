@@ -1,20 +1,35 @@
 # Spanish Top Tech Companies
 
-Companies that pay **60.000 € gross or more, per year, to people working from Spain** — with the actual bands, the source they came from, and the date they were last checked.
-
-Not a list of Spanish companies. A list of employers who put that money into a Spanish contract, whether they're headquartered in Madrid, have a hub in Barcelona, or hire you fully remote from Valencia through an employer of record.
+A list of companies that pay 60.000 € gross per year or more to people working from Spain, with the salary bands, where they came from, and when they were last checked.
 
 <!-- BEGIN:STATS -->
-**0 companies** above 60k · **0 salary bands** · 0 stale · 243 companies still unresearched · updated 2026-08-25
+**0 companies** · **0 salary bands** · 0 data points · 243 companies not yet researched · last updated 2026-08-25
 <!-- END:STATS -->
 
-## What gets in
+## Why
 
-- Pays at least **60.000 € gross annual base** to at least one documented role and level, for someone living and working in Spain.
-- Every band has a **source** and a **`last_verified` date**. Bands older than a year are marked ⚠️ rather than quietly left to rot.
-- We use the **median**, not the top of the range — one outlier offer doesn't put a company on this list.
+Salary information in Spain is scattered and mostly anecdotal. Aggregators like levels.fyi have good data but thin coverage of the Spanish market, job ads publish ranges so wide they say nothing, and Glassdoor mixes Spanish and foreign salaries for the same company without distinguishing them.
 
-Full rules, including what "gross annual" means here and how contract type changes what actually reaches your bank account, are in [METHODOLOGY.md](METHODOLOGY.md).
+At the same time, "60k in Spain" is not one number. It depends on whether you are on a Spanish payroll, employed through an intermediary, or invoicing as a contractor. Those are different amounts of money in your account at the end of the month and they are usually quoted as if they were the same.
+
+This list tries to fix both problems: put the bands somewhere public, and record enough context that you can tell what they actually mean.
+
+It is not a job board. Links to careers pages are included because they are useful, but the point of the list is the compensation data, not the openings.
+
+## What gets listed
+
+A company is listed when at least one documented role and level reaches **60.000 € gross annual base salary** for someone living and working in Spain.
+
+Both Spanish and foreign companies qualify. What matters is that the money reaches somebody on a Spanish contract, whether that is a company headquartered in Madrid, a foreign company with an office in Barcelona, or a fully remote employer hiring through an employer of record.
+
+Every band needs a source and a date. Bands that have not been checked in over a year are marked as stale rather than quietly left to age.
+
+## How to read the numbers
+
+- All figures are **gross annual base salary in euros**, before IRPF and social security, however many payments the contract splits it into. Bonus, equity and total compensation have their own columns.
+- The **median** decides whether a company is listed, not the top of the range. One unusual offer is not enough.
+- **Data points** is how many salaries the band is built from. A band with three data points is a rumour with a decimal place. Treat single digits with suspicion.
+- **Contract** matters as much as the number. A contractor rate and a payroll salary are not the same unit. See [METHODOLOGY.md](METHODOLOGY.md).
 
 ## Companies
 
@@ -22,18 +37,29 @@ Full rules, including what "gross annual" means here and how contract type chang
 _No companies documented yet._ Copy `data/companies/_template.yml`, fill it in, and run `python3 scripts/build.py`.
 <!-- END:COMPANIES -->
 
+## Salary data
+
+<!-- BEGIN:SALARIES -->
+_No salary data yet._
+<!-- END:SALARIES -->
+
 ## By role
 
 <!-- BEGIN:BY_ROLE -->
 _Nothing to show yet._
 <!-- END:BY_ROLE -->
 
-## Using the data
+## Company details
 
-The tables above are generated. The source of truth is one YAML file per company in [`data/companies/`](data/companies/), and every build also writes:
+<!-- BEGIN:PROFILES -->
+_Nothing to show yet._
+<!-- END:PROFILES -->
 
-- [`exports/companies.csv`](exports/companies.csv) — one row per company / role / level
-- [`exports/companies.json`](exports/companies.json) — the full records
+## Adding a company
+
+Send a pull request adding or editing one file in [`data/companies/`](data/companies/), or open an [issue](../../issues/new/choose) if you would rather not write YAML. Both are fine, and you can contribute anonymously.
+
+The tables above are generated. Do not edit them by hand; edit the data and run the build:
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
@@ -41,16 +67,25 @@ pip install -r requirements.txt
 python3 scripts/validate.py && python3 scripts/build.py
 ```
 
-## Contributing
+CI runs both on every pull request and will tell you if the tables are out of sync with the data.
 
-Adding a company or a band is a pull request that touches one file, or an [issue form](../../issues/new/choose) if you'd rather not write YAML. Both are welcome, and you can contribute anonymously — see [CONTRIBUTING.md](CONTRIBUTING.md).
+Full instructions are in [CONTRIBUTING.md](CONTRIBUTING.md). The rules about sources, levels and what we will not publish are in [METHODOLOGY.md](METHODOLOGY.md).
 
-There are still **unresearched companies** sitting in [`data/backlog.csv`](data/backlog.csv). Claiming one is the easiest way to help.
+There is also a backlog of companies that have not been researched yet in [`data/backlog.csv`](data/backlog.csv). Claiming one of those is the easiest way to help.
+
+## Data
+
+Machine-readable exports are rebuilt on every change:
+
+- [`exports/companies.csv`](exports/companies.csv) — one row per company, role and level
+- [`exports/companies.json`](exports/companies.json) — the full records
+
+Bands sourced from levels.fyi are stored as our own aggregates with a link back to their page. Their dataset is not redistributed here.
+
+## Licence
+
+Code is [MIT](LICENSE). The dataset is [CC BY-SA 4.0](LICENSE-DATA): use it, credit the repository, keep it open.
 
 ## Caveats
 
-These are ranges reported by other people, not offers you are guaranteed. Sample sizes are small, sources disagree, and a band from 2024 may be meaningless today. Check the `n` and the date before you use any of this in a negotiation.
-
-## License
-
-Code is [MIT](LICENSE). The dataset is [CC BY-SA 4.0](LICENSE-DATA) — use it, but credit this repo and keep it open.
+These are ranges reported by other people, not offers anyone is guaranteed. Sample sizes are small, sources disagree, and a band from two years ago may be meaningless today. Check the data points and the date before using any of this in a negotiation.

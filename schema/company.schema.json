@@ -5,103 +5,298 @@
   "description": "One employer that pays at least 60.000 EUR gross annual to someone working from Spain.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["slug", "name", "website", "hq", "spain_presence", "contract", "compensation"],
+  "required": [
+    "slug",
+    "name",
+    "website",
+    "hq",
+    "spain_presence",
+    "contract",
+    "compensation"
+  ],
   "properties": {
     "slug": {
       "type": "string",
       "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
       "description": "Filename without .yml. Lowercase kebab-case."
     },
-    "name": { "type": "string", "minLength": 1 },
-    "aliases": { "type": "array", "items": { "type": "string" } },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "linkedin_id": {
-      "type": ["integer", "null"],
+      "type": [
+        "integer",
+        "null"
+      ],
       "description": "Numeric id from LinkedIn's f_C filter. Null if unknown."
     },
-    "website": { "type": "string", "format": "uri", "pattern": "^https?://" },
-    "careers_url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+    "website": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://"
+    },
+    "careers_url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://"
+    },
     "hq": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["country"],
+      "required": [
+        "country"
+      ],
       "properties": {
-        "city": { "type": "string" },
-        "country": { "type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2." }
+        "city": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "description": "ISO 3166-1 alpha-2."
+        }
       }
     },
-    "founded_country": { "type": "string", "pattern": "^[A-Z]{2}$" },
+    "founded_country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+    },
     "spain_presence": {
-      "enum": ["hq", "hub", "remote-only", "eor"],
+      "enum": [
+        "hq",
+        "hub",
+        "remote-only",
+        "eor"
+      ],
       "description": "hq = headquartered in Spain. hub = real office/entity in Spain. remote-only = hires people living in Spain with no office. eor = hires only through an employer of record."
     },
-    "offices_es": { "type": "array", "items": { "type": "string" }, "description": "Spanish cities with an office." },
-    "employees": { "enum": ["1-50", "51-200", "201-500", "501-1000", "1001-5000", "5001-10000", "10000+"] },
-    "sector": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" } },
-    "work_model": { "enum": ["onsite", "hybrid", "remote"] },
-    "remote_within_spain": { "type": "boolean", "description": "Can you live anywhere in Spain, or are you tied to a city?" },
+    "offices_es": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Spanish cities with an office."
+    },
+    "employees": {
+      "enum": [
+        "1-50",
+        "51-200",
+        "201-500",
+        "501-1000",
+        "1001-5000",
+        "5001-10000",
+        "10000+"
+      ]
+    },
+    "sector": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      }
+    },
+    "work_model": {
+      "enum": [
+        "onsite",
+        "hybrid",
+        "remote"
+      ]
+    },
+    "remote_within_spain": {
+      "type": "boolean",
+      "description": "Can you live anywhere in Spain, or are you tied to a city?"
+    },
     "contract": {
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "enum": ["spanish-payroll", "eor", "contractor", "freelance"] },
+      "items": {
+        "enum": [
+          "spanish-payroll",
+          "eor",
+          "contractor",
+          "freelance"
+        ]
+      },
       "description": "How they actually pay you. Materially changes net pay and benefits."
     },
-    "working_language": { "enum": ["es", "en", "both"] },
+    "working_language": {
+      "enum": [
+        "es",
+        "en",
+        "both"
+      ]
+    },
     "compensation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["roles"],
+      "required": [
+        "roles"
+      ],
       "properties": {
-        "currency": { "const": "EUR" },
-        "basis": { "const": "gross_annual" },
-        "notes": { "type": "string" },
+        "currency": {
+          "const": "EUR"
+        },
+        "basis": {
+          "const": "gross_annual"
+        },
+        "notes": {
+          "type": "string"
+        },
         "roles": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["role", "levels"],
+            "required": [
+              "role",
+              "levels"
+            ],
             "properties": {
-              "role": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+              "role": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+              },
               "levels": {
                 "type": "array",
                 "minItems": 1,
                 "items": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["level", "base", "sources", "last_verified"],
+                  "required": [
+                    "level",
+                    "base",
+                    "sources",
+                    "last_verified"
+                  ],
                   "properties": {
-                    "level": { "enum": ["intern", "junior", "mid", "senior", "staff", "principal", "lead", "manager", "director"] },
+                    "level": {
+                      "enum": [
+                        "intern",
+                        "junior",
+                        "mid",
+                        "senior",
+                        "staff",
+                        "principal",
+                        "lead",
+                        "manager",
+                        "director"
+                      ]
+                    },
                     "base": {
                       "type": "object",
                       "additionalProperties": false,
                       "minProperties": 1,
                       "properties": {
-                        "min": { "type": "integer", "minimum": 0, "maximum": 1000000 },
-                        "p50": { "type": "integer", "minimum": 0, "maximum": 1000000 },
-                        "max": { "type": "integer", "minimum": 0, "maximum": 1000000 }
+                        "min": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2000000
+                        },
+                        "p50": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2000000
+                        },
+                        "max": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2000000
+                        }
                       }
                     },
-                    "bonus_pct": { "type": "number", "minimum": 0, "maximum": 300 },
-                    "equity": { "enum": ["none", "rsu", "options", "phantom", "unknown"] },
-                    "equity_notes": { "type": "string" },
-                    "sample_size": { "type": "integer", "minimum": 1 },
+                    "total_comp": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "minProperties": 1,
+                      "properties": {
+                        "min": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2000000
+                        },
+                        "p50": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2000000
+                        },
+                        "max": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2000000
+                        }
+                      },
+                      "description": "Base + bonus + equity, gross annual."
+                    },
+                    "bonus_pct": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 300
+                    },
+                    "equity": {
+                      "enum": [
+                        "none",
+                        "rsu",
+                        "options",
+                        "phantom",
+                        "unknown"
+                      ]
+                    },
+                    "equity_notes": {
+                      "type": "string"
+                    },
+                    "sample_size": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
                     "sources": {
                       "type": "array",
                       "minItems": 1,
                       "items": {
                         "type": "object",
                         "additionalProperties": false,
-                        "required": ["name"],
+                        "required": [
+                          "name"
+                        ],
                         "properties": {
-                          "name": { "enum": ["levels.fyi", "glassdoor", "job-posting", "offer-letter", "community", "company-published", "other"] },
-                          "url": { "type": "string", "pattern": "^https?://" },
-                          "date": { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+                          "name": {
+                            "enum": [
+                              "levels.fyi",
+                              "glassdoor",
+                              "job-posting",
+                              "offer-letter",
+                              "community",
+                              "company-published",
+                              "other"
+                            ]
+                          },
+                          "url": {
+                            "type": "string",
+                            "pattern": "^https?://"
+                          },
+                          "date": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          }
                         }
                       }
                     },
-                    "last_verified": { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
-                    "notes": { "type": "string" }
+                    "last_verified": {
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "notes": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -114,16 +309,39 @@
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "ticket_restaurant": { "type": "boolean" },
-        "health_insurance": { "type": "boolean" },
-        "pension": { "type": "boolean" },
-        "remote_stipend_eur": { "type": "integer", "minimum": 0 },
-        "learning_budget_eur": { "type": "integer", "minimum": 0 },
-        "extra_holidays": { "type": "integer", "minimum": 0 },
-        "four_day_week": { "type": "boolean" }
+        "ticket_restaurant": {
+          "type": "boolean"
+        },
+        "health_insurance": {
+          "type": "boolean"
+        },
+        "pension": {
+          "type": "boolean"
+        },
+        "remote_stipend_eur": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "learning_budget_eur": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "extra_holidays": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "four_day_week": {
+          "type": "boolean"
+        }
       }
     },
-    "notes": { "type": "string" },
-    "last_verified": { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+    "notes": {
+      "type": "string"
+    },
+    "last_verified": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    }
   }
 }

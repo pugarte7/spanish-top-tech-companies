@@ -8,6 +8,8 @@ A company is listed when **at least one documented role and level reaches 60.000
 
 Base salary only. Bonus and equity are recorded separately (`bonus_pct`, `equity`) because they are far less reliable and much harder to compare.
 
+`total_comp` is optional and sits alongside `base`. It exists because levels.fyi reports total compensation as its headline figure, so a band copied from there would otherwise be misread as base. Never put a total-comp number in the `base` field.
+
 ## What "gross annual" means here
 
 Total gross for the year, **before IRPF and social security**, across however many payments the contract splits it into. If a company pays 14 payments of 4.500 €, that is 63.000 € and it goes in as 63000.

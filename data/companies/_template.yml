@@ -35,10 +35,14 @@ compensation:
     - role: data-engineer          # kebab-case, see METHODOLOGY.md for canonical names
       levels:
         - level: senior            # intern|junior|mid|senior|staff|principal|lead|manager|director
-          base:
+          base:                        # gross annual BASE, before tax
             min: 55000
-            p50: 65000
+            p50: 65000                 # the median is what decides the 60k threshold
             max: 75000
+          total_comp:                  # optional: base + bonus + equity, as levels.fyi reports it
+            min: 62000
+            p50: 74000
+            max: 88000
           bonus_pct: 10
           equity: rsu
           equity_notes: "4y vest, 1y cliff"

@@ -50,7 +50,7 @@ Commit the regenerated `README.md` and `exports/` along with your data change. C
 - **A date.** `last_verified` is when you actually checked, not today's date by reflex.
 - **The median, or a real range.** "Around 70k" is a `p50`. A range you saw in a job ad is `min`/`max`.
 - **No people in it.** No names, no teams, no identifying detail. See [METHODOLOGY.md](METHODOLOGY.md#sources).
-- **Base salary, before tax, in euros.** Bonus and equity have their own fields.
+- **Base salary, before tax, in euros.** Bonus and equity have their own fields. If your source quotes total compensation (levels.fyi does), put it in `total_comp` and leave `base` for base.
 
 ## Working through the backlog
 
