@@ -1,0 +1,3 @@
+name,linkedin_id,website,careers_url,hq_city,hq_country,spain_presence,offices_es,employees,sector,work_model,remote_within_spain,contract,working_language,role,level,base_min,base_p50,base_max,tc_min,tc_p50,tc_max,bonus_pct,equity,sample_size,source,source_url,source_date
+Example Company,1234567,https://example.com,https://example.com/careers,Madrid,ES,hq,Madrid|Barcelona,201-500,fintech,hybrid,true,spanish-payroll,en,data-engineer,senior,55000,65000,75000,62000,74000,88000,10,rsu,8,levels.fyi,https://www.levels.fyi/companies/example,2026-08-01
+Example Company,1234567,,,,,,,,,,,,,data-engineer,mid,42000,48000,55000,46000,53000,62000,5,rsu,4,levels.fyi,https://www.levels.fyi/companies/example,2026-08-01
