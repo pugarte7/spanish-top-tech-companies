@@ -146,7 +146,12 @@ def render_stats(companies: list[dict], backlog: int) -> str:
         parts.append(f"{stale} stale")
     if backlog:
         parts.append(f"{backlog} companies not yet researched")
-    parts.append(f"last updated {dt.date.today()}")
+    freshest = max(
+        (d for d in (lib.parse_date(lvl.get("last_verified")) for lvl in bands) if d),
+        default=None,
+    )
+    if freshest:
+        parts.append(f"newest data {freshest}")
     return " · ".join(parts)
 
 

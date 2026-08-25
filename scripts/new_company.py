@@ -37,7 +37,7 @@ def main(argv: list[str]) -> int:
         print(f"{path.relative_to(lib.ROOT)} already exists")
         return 1
 
-    today = dt.date.today().isoformat()
+    today = lib.today_utc().isoformat()
     skeleton = {
         "slug": slug,
         "name": name,

@@ -264,7 +264,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--from-fixture", metavar="FILE", help="Run the transform against a saved payload.")
     args = parser.parse_args(argv)
 
-    today = dt.date.today().isoformat()
+    today = lib.today_utc().isoformat()
 
     if args.from_fixture:
         payload = json.loads(pathlib.Path(args.from_fixture).read_text(encoding="utf-8"))

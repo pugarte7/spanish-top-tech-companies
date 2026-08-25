@@ -122,11 +122,22 @@ def parse_date(value) -> dt.date | None:
         return None
 
 
+def today_utc() -> dt.date:
+    """Always UTC.
+
+    CI runs in UTC and compares its build byte-for-byte against the committed
+    one. A contributor in Madrid building at 00:30 local is still on the
+    previous UTC day, so a local `date.today()` would silently disagree with
+    the server and fail the build.
+    """
+    return dt.datetime.now(dt.timezone.utc).date()
+
+
 def is_stale(value, today: dt.date | None = None) -> bool:
     day = parse_date(value)
     if day is None:
         return True
-    today = today or dt.date.today()
+    today = today or today_utc()
     return (today - day).days > STALE_DAYS
 
 

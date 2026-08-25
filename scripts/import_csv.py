@@ -26,7 +26,7 @@ import lib
 import yaml
 from new_company import SKELETON_ORDER, slugify
 
-TODAY = dt.date.today().isoformat()
+TODAY = lib.today_utc().isoformat()
 
 
 def clean(value: str | None) -> str | None:

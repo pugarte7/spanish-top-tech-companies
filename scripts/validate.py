@@ -26,12 +26,12 @@ def check_bands(where: str, role: str, level: dict) -> None:
             errors.append(f"{where}: {role}/{level.get('level')} has {n1} {v1} > {n2} {v2}")
 
     verified = lib.parse_date(level.get("last_verified"))
-    if verified and verified > dt.date.today():
+    if verified and verified > lib.today_utc():
         errors.append(f"{where}: {role}/{level.get('level')} last_verified is in the future")
 
     for source in level.get("sources", []) or []:
         source_date = lib.parse_date(source.get("date"))
-        if source_date and source_date > dt.date.today():
+        if source_date and source_date > lib.today_utc():
             errors.append(f"{where}: {role}/{level.get('level')} source date is in the future")
 
     if role not in lib.CANONICAL_ROLES:
