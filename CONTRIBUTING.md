@@ -35,6 +35,16 @@ python3 scripts/import_csv.py my-export.csv
 
 Columns are documented at the top of [`scripts/import_csv.py`](scripts/import_csv.py). It merges into existing files rather than overwriting them.
 
+**From the Levels.fyi API** (needs a key, request one at [levels.fyi/api-access](https://www.levels.fyi/api-access/)):
+
+```bash
+export LEVELS_FYI_API_KEY=...
+python3 scripts/fetch_levels.py --company Cabify --role data-engineer
+python3 scripts/fetch_levels.py --dry-run --company Cabify      # see the calls, no key needed
+```
+
+It pulls per-level percentiles filtered to Spain, maps them onto our level ladder and merges them into the company file. Read [METHODOLOGY.md](METHODOLOGY.md#sources) first: the data is licensed, and a key is not permission to republish.
+
 **Before you push:**
 
 ```bash

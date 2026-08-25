@@ -39,7 +39,13 @@ Every band needs at least one source. In rough order of how much we trust them:
 4. `community` — reported directly to this repo
 5. `glassdoor`, `other` — treat with suspicion
 
-**We link to sources, we do not copy them.** levels.fyi's terms don't allow republishing their dataset, so a `levels.fyi` source stores the aggregate band and a link to their page for that company. Don't paste their per-submission rows in.
+**levels.fyi bands come through their official API, never by scraping.** [`scripts/fetch_levels.py`](scripts/fetch_levels.py) calls the documented [Compensation API](https://www.levels.fyi/api-access/) and stores aggregate percentiles only: never their individual submission rows.
+
+Bands retrieved that way use the **interquartile range**: `min` is the 25th percentile and `max` is the 75th. Using p10–p90 would make every company look like it pays anything to anyone.
+
+Levels.fyi requires attribution on derived work, and their Data License governs what may be republished. Holding an API key is not by itself permission to redistribute, so check the terms before adding bulk-fetched data.
+
+Their level names are per-company (`L4`, `IC3`, `Senior Engineer`). The fetcher maps them onto our ladder by name, falling back to seniority order when the name says nothing, and records the original in `notes` so a wrong guess is visible and fixable.
 
 Never include anything that identifies a person: no names, no team, no "the guy who joined in March". A band with `sample_size: 1` is fine; a band that points at someone is not.
 

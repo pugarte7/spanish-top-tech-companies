@@ -1,0 +1,21 @@
+{
+  "companySlug": "example-co",
+  "jobFamilySlug": "data-engineer",
+  "base": [
+    {"level": "L5", "secondaryLevelName": "Staff Engineer", "order": 3, "sampleSize": 6,
+     "p10": 78000, "p25": 85000, "p50": 98000, "p75": 112000, "p90": 125000},
+    {"level": "L3", "secondaryLevelName": "Engineer II", "order": 1, "sampleSize": 14,
+     "p10": 40000, "p25": 46000, "p50": 53000, "p75": 60000, "p90": 66000},
+    {"level": "L4", "secondaryLevelName": "Senior Engineer", "order": 2, "sampleSize": 22,
+     "p10": 56000, "p25": 62000, "p50": 72000, "p75": 84000, "p90": 95000},
+    {"level": "L2", "secondaryLevelName": "Junior Engineer", "order": 0, "sampleSize": 4,
+     "p10": 30000, "p25": 34000, "p50": 39000, "p75": 44000, "p90": 48000},
+    {"level": "Senior II", "secondaryLevelName": "", "order": 2.5, "sampleSize": 3,
+     "p10": 60000, "p25": 64000, "p50": 70000, "p75": 78000, "p90": 88000}
+  ],
+  "total_compensation": [
+    {"level": "L5", "p25": 96000, "p50": 118000, "p75": 138000},
+    {"level": "L4", "p25": 70000, "p50": 84000, "p75": 100000},
+    {"level": "L3", "p25": 50000, "p50": 58000, "p75": 67000}
+  ]
+}

@@ -3,7 +3,7 @@
 A list of companies that pay 60.000 € gross per year or more to people working from Spain, with the salary bands, where they came from, and when they were last checked.
 
 <!-- BEGIN:STATS -->
-**0 companies** · **0 salary bands** · 0 data points · 243 companies not yet researched · last updated 2026-08-25
+**0 companies** · **0 salary bands** · 0 data points · 243 companies not yet researched · last updated 2026-08-26
 <!-- END:STATS -->
 
 ## Why
@@ -80,7 +80,13 @@ Machine-readable exports are rebuilt on every change:
 - [`exports/companies.csv`](exports/companies.csv) — one row per company, role and level
 - [`exports/companies.json`](exports/companies.json) — the full records
 
-Bands sourced from levels.fyi are stored as our own aggregates with a link back to their page. Their dataset is not redistributed here.
+### Attribution
+
+Compensation bands marked `levels.fyi` are retrieved through the official [Levels.fyi Compensation API](https://www.levels.fyi/api-access/) and stored as aggregate percentiles with a link back to the source page.
+
+> Data source: Levels.fyi (https://www.levels.fyi)
+
+Their data is crowdsourced from people who submit their own compensation, and its reuse is governed by the [Levels.fyi Data License](https://www.levels.fyi/offerings/data/).
 
 ## Licence
 
