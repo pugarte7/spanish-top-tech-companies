@@ -1,5 +1,15 @@
 slug: edreams-odigeo
 name: eDreams ODIGEO
+website: https://www.edreamsodigeo.com
+hq:
+  city: Luxembourg
+  country: LU
+employees: 1,001-10,000
+sector:
+- travel-leisure
+- internet
+- technology
+- marketplace
 compensation:
   currency: EUR
   basis: gross_annual
@@ -9,14 +19,14 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 49369
+        p50: 57571
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area
+        url: https://www.levels.fyi/companies/edreams-odigeo/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 40
   - role: software-engineering-manager
     levels:
     - level: all
@@ -25,8 +35,59 @@ compensation:
         p50: 81474
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineering-manager/locations/spain
+        url: https://www.levels.fyi/companies/edreams-odigeo/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 3
+  - role: product-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 58216
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/edreams-odigeo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 2
+  - role: data-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 43201
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/edreams-odigeo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: data-scientist
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 51143
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/edreams-odigeo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: product-designer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 44153
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/edreams-odigeo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/edreamsodigeo
+year_founded: 2011

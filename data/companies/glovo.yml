@@ -1,71 +1,303 @@
 slug: glovo
 name: Glovo
+website: https://glovoapp.com
+hq:
+  city: Milano
+  country: IT
+employees: 1,001-10,000
+sector:
+- technology
+- internet
+- services
+- b2c
 compensation:
   currency: EUR
   basis: gross_annual
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: junior
       base: {}
       total_comp:
-        p50: 68900
+        p50: 38817
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/spain
+        url: https://www.levels.fyi/companies/glovo/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Levels.fyi reports this as 'L1'. Total compensation, converted from USD at 0.853.
+      sample_size: 18
+    - level: mid
+      base: {}
+      total_comp:
+        p50: 65886
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'L2'. Total compensation, converted from USD at 0.853.
+      sample_size: 18
+    - level: senior
+      base: {}
+      total_comp:
+        p50: 88610
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'L3'. Total compensation, converted from USD at 0.853.
+      sample_size: 14
+    - level: staff
+      base: {}
+      total_comp:
+        p50: 113598
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'L4'. Total compensation, converted from USD at 0.853.
+      sample_size: 5
+    - level: principal
+      base: {}
+      total_comp:
+        p50: 148016
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'L5'. Total compensation, converted from USD at 0.853.
+      sample_size: 4
   - role: software-engineering-manager
     levels:
-    - level: all
+    - level: junior
       base: {}
       total_comp:
-        p50: 109564
+        p50: 102585
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineering-manager/locations/spain
+        url: https://www.levels.fyi/companies/glovo/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Levels.fyi reports this as 'L1'. Total compensation, converted from USD at 0.853.
+      sample_size: 3
+    - level: mid
+      base: {}
+      total_comp:
+        p50: 111214
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'L2'. Total compensation, converted from USD at 0.853.
+      sample_size: 3
+    - level: senior
+      base: {}
+      total_comp:
+        p50: 99100
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'L4'. Total compensation, converted from USD at 0.853.
+      sample_size: 11
   - role: data-scientist
     levels:
-    - level: all
+    - level: junior
       base: {}
       total_comp:
-        p50: 69297
+        p50: 46531
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-scientist/locations/spain
+        url: https://www.levels.fyi/companies/glovo/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Levels.fyi reports this as 'L1'. Total compensation, converted from USD at 0.853.
+      sample_size: 6
+    - level: mid
+      base: {}
+      total_comp:
+        p50: 62982
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'L2'. Total compensation, converted from USD at 0.853.
+      sample_size: 17
+    - level: senior
+      base: {}
+      total_comp:
+        p50: 79678
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'L3'. Total compensation, converted from USD at 0.853.
+      sample_size: 22
   - role: data-analyst
     levels:
-    - level: all
+    - level: junior
       base: {}
       total_comp:
-        p50: 43044
+        p50: 29365
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-analyst/locations/spain
+        url: https://www.levels.fyi/companies/glovo/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Levels.fyi reports this as 'L1'. Total compensation, converted from USD at 0.853.
+      sample_size: 6
+    - level: mid
+      base: {}
+      total_comp:
+        p50: 47316
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'L2'. Total compensation, converted from USD at 0.853.
+      sample_size: 13
+    - level: senior
+      base: {}
+      total_comp:
+        p50: 51601
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'L3'. Total compensation, converted from USD at 0.853.
+      sample_size: 5
   - role: product-manager
+    levels:
+    - level: junior
+      base: {}
+      total_comp:
+        p50: 64683
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'L1'. Total compensation, converted from USD at 0.853.
+      sample_size: 6
+    - level: mid
+      base: {}
+      total_comp:
+        p50: 97413
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'L2'. Total compensation, converted from USD at 0.853.
+      sample_size: 15
+    - level: senior
+      base: {}
+      total_comp:
+        p50: 82251
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'L3'. Total compensation, converted from USD at 0.853.
+      sample_size: 4
+  - role: project-manager
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 67234
+        p50: 54400
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/product-manager/locations/spain
+        url: https://www.levels.fyi/companies/glovo/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 2
+  - role: business-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 37123
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 1
+  - role: data-science-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 94899
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 1
+  - role: information-technologist
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 35225
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: product-designer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 104407
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: solution-architect
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 147172
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: technical-program-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 46527
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/glovo-app
+year_founded: 2015
+notes: 'On-demand delivery service. Equity: RSU vesting 25,25,25,25.'

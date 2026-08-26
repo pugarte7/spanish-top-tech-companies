@@ -1,5 +1,14 @@
 slug: cabify
 name: Cabify
+website: https://cabify.com
+hq:
+  city: Madrid
+  country: ES
+employees: 1,001-10,000
+sector:
+- internet
+- b2c
+- mobile
 compensation:
   currency: EUR
   basis: gross_annual
@@ -12,11 +21,11 @@ compensation:
         p50: 52092
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area
+        url: https://www.levels.fyi/companies/cabify/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 22
   - role: data-scientist
     levels:
     - level: all
@@ -25,8 +34,46 @@ compensation:
         p50: 59221
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area
+        url: https://www.levels.fyi/companies/cabify/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 4
+  - role: business-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 19393
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/cabify/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: product-designer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 49356
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/cabify/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: product-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 51271
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/cabify/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/cabify
+year_founded: 2011

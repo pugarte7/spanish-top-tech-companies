@@ -1,19 +1,241 @@
 slug: ikea
 name: IKEA
+website: https://www.ikea.com
+hq:
+  city: Delft
+  country: NL
+employees: 10,001+
+sector:
+- e-commerce
+- retail
+- consumer-discretionary
+- b2c
 compensation:
   currency: EUR
   basis: gross_annual
   roles:
   - role: data-scientist
     levels:
+    - level: junior
+      base: {}
+      total_comp:
+        p50: 52599
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'Junior Data Scientist'. Total compensation, converted from USD
+        at 0.853.
+      sample_size: 7
+    - level: mid
+      base: {}
+      total_comp:
+        p50: 72957
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'Data Scientist'. Total compensation, converted from USD at 0.853.
+      sample_size: 3
+  - role: software-engineer
+    levels:
+    - level: junior
+      base: {}
+      total_comp:
+        p50: 81017
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'Software Engineer'. Total compensation, converted from USD at
+        0.853.
+      sample_size: 9
+    - level: mid
+      base: {}
+      total_comp:
+        p50: 93472
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'Senior Software Engineer'. Total compensation, converted from
+        USD at 0.853.
+      sample_size: 11
+  - role: product-designer
+    levels:
     - level: all
       base: {}
       total_comp:
-        p50: 75598
+        p50: 91346
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area
+        url: https://www.levels.fyi/companies/ikea/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 6
+  - role: product-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 144157
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 2
+  - role: solution-architect
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 65835
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 2
+  - role: software-engineering-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 126018
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 1
+  - role: business-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 49156
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: data-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 19837
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: data-science-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 119288
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: information-technologist
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 32813
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: product-design-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 107060
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: project-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 65664
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: prompt-engineer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 22783
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: security-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 26443
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: technical-program-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 92695
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: ux-researcher
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 23847
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ikea/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/ikea
+year_founded: 1943

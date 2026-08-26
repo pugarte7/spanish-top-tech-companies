@@ -1,5 +1,15 @@
 slug: ncc-group
 name: NCC Group
+website: https://www.nccgroup.com
+hq:
+  city: Manchester
+  country: GB
+employees: 1,001-10,000
+sector:
+- consulting-professional-services
+- information-technology-services
+- b2b
+- enterprise
 compensation:
   currency: EUR
   basis: gross_annual
@@ -9,11 +19,73 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 78355
+        p50: 64453
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/security-analyst/locations/spain
+        url: https://www.levels.fyi/companies/ncc-group/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 1
+  - role: data-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 45669
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ncc-group/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: product-designer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 78084
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ncc-group/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: project-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 70078
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ncc-group/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: software-engineer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 42241
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ncc-group/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: technical-program-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 63655
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ncc-group/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/ncc-group
+year_founded: 1999

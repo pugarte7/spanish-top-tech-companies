@@ -1,35 +1,71 @@
 slug: revolut
 name: Revolut
+website: https://www.revolut.com
+hq:
+  city: London
+  country: GB
+employees: 10,001+
+sector:
+- insurance
+- technology
+- information-technology-services
+- financial-services
 compensation:
   currency: EUR
   basis: gross_annual
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: junior
       base: {}
       total_comp:
-        p50: 107717
+        p50: 94210
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area
+        url: https://www.levels.fyi/companies/revolut/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+      notes: Levels.fyi reports this as 'Middle Software Engineer'. Total compensation, converted from
+        USD at 0.853.
+      sample_size: 13
+    - level: mid
+      base: {}
+      total_comp:
+        p50: 112316
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'Senior Software Engineer'. Total compensation, converted from
+        USD at 0.853.
+      sample_size: 15
   - role: data-scientist
     levels:
-    - level: all
+    - level: junior
       base: {}
       total_comp:
-        p50: 109109
+        p50: 90587
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-scientist/locations/greater-barcelona-area
+        url: https://www.levels.fyi/companies/revolut/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+      notes: Levels.fyi reports this as 'Middle Data Scientist'. Total compensation, converted from USD
+        at 0.853.
+      sample_size: 10
+    - level: mid
+      base: {}
+      total_comp:
+        p50: 107828
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'Senior Data Scientist'. Total compensation, converted from USD
+        at 0.853.
+      sample_size: 6
   - role: data-analyst
     levels:
     - level: all
@@ -38,21 +74,158 @@ compensation:
         p50: 61119
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-analyst/locations/spain
+        url: https://www.levels.fyi/companies/revolut/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 7
   - role: product-designer
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 60989
+        p50: 91704
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/product-designer/locations/spain
+        url: https://www.levels.fyi/companies/revolut/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 5
+  - role: product-manager
+    levels:
+    - level: junior
+      base: {}
+      total_comp:
+        p50: 113290
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'Junior Product Manager'. Total compensation, converted from USD
+        at 0.853.
+      sample_size: 4
+    - level: mid
+      base: {}
+      total_comp:
+        p50: 141700
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'Middle Product Manager'. Total compensation, converted from USD
+        at 0.853.
+      sample_size: 11
+    - level: senior
+      base: {}
+      total_comp:
+        p50: 191118
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'Senior Product Manager'. Total compensation, converted from USD
+        at 0.853.
+      sample_size: 8
+  - role: business-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 19865
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: information-technologist
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 74817
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: program-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 51232
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+  - role: project-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 84034
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: security-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 269878
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: software-engineering-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 275533
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: solution-architect
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 137324
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: technical-program-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 172724
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/revolut
+year_founded: 2014
+notes: 'Mobile banking and payments company. Equity: Options vesting 25/1,25/12,25/12,25/12.'

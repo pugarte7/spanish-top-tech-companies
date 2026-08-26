@@ -1,5 +1,15 @@
 slug: bbva
 name: BBVA
+website: https://www.bbva.com
+hq:
+  city: Birmingham
+  country: US
+employees: 10,001+
+sector:
+- financial-services
+- consulting-professional-services
+- banking-mortgages
+- b2c
 compensation:
   currency: EUR
   basis: gross_annual
@@ -9,14 +19,14 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 45709
+        p50: 30111
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area
+        url: https://www.levels.fyi/companies/bbva/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 7
   - role: solution-architect
     levels:
     - level: all
@@ -25,8 +35,119 @@ compensation:
         p50: 55911
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area
+        url: https://www.levels.fyi/companies/bbva/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 4
+  - role: software-engineer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 35356
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/bbva/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 14
+  - role: data-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 7624
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/bbva/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: data-science-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 46892
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/bbva/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: product-designer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 32934
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/bbva/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: product-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 19461
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/bbva/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: program-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 67542
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/bbva/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: project-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 73444
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/bbva/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: security-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 70539
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/bbva/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: software-engineering-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 83859
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/bbva/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/bbva
+year_founded: 1857

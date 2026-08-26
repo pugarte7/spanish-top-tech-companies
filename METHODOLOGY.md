@@ -59,6 +59,17 @@ The 60k threshold applies to `base` when we know it. Where a company is known on
 
 Total compensation is base plus bonus plus annualised equity. It is a bigger number than base for the same job. Do not compare the two columns to each other.
 
+## Where the Levels.fyi figures come from
+
+Two public surfaces, neither needing a key:
+
+- **Job-family pages** (`/t/<role>/locations/spain`) give Spain-wide percentiles and a top-paying-companies table. One median per company, across all levels, so those land at level `all`.
+- **Company pages** (`/companies/<slug>/salaries`) give that company's own ladder with a submission count per level, which is what most of the per-level bands here rest on.
+
+Both publish figures in **USD**; each page carries a `locationExchangeRate` that converts them to EUR, and that conversion is applied on the way in. A band that skipped it would be roughly 17% too high.
+
+Company pages are scoped by the caller's IP address, so a company with no Spanish submissions returns its home country's figures instead. Those are skipped rather than converted.
+
 ## Freshness
 
 `last_verified` is the day a human last confirmed the band, not the day it was first added. Anything older than **365 days** renders as ⚠️ in the README and shows up as a warning in `validate.py`.

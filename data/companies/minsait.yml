@@ -1,5 +1,15 @@
 slug: minsait
 name: Minsait
+website: https://www.minsait.com
+hq:
+  city: Alcobendas
+  country: ES
+employees: 10,001+
+sector:
+- computers
+- e-commerce
+- professional-services
+- crisis-management
 compensation:
   currency: EUR
   basis: gross_annual
@@ -12,11 +22,11 @@ compensation:
         p50: 26758
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/business-analyst/locations/spain
+        url: https://www.levels.fyi/companies/minsait/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 4
   - role: information-technologist
     levels:
     - level: all
@@ -25,8 +35,72 @@ compensation:
         p50: 39371
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/information-technologist/locations/spain
+        url: https://www.levels.fyi/companies/minsait/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 3
+  - role: software-engineer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 28674
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/minsait/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 36
+  - role: data-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 22653
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/minsait/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 4
+  - role: data-scientist
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 34025
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/minsait/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: security-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 13269
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/minsait/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: technical-program-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 20147
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/minsait/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/minsait
+year_founded: 2016

@@ -1,5 +1,15 @@
 slug: barcelona-supercomputing-center
 name: Barcelona Supercomputing Center
+website: http://bsc.es
+hq:
+  city: Barcelona
+  country: ES
+employees: 1,001-10,000
+sector:
+- computer-science
+- scientific-academic-research
+- information-technology-services
+- technology
 compensation:
   currency: EUR
   basis: gross_annual
@@ -12,8 +22,48 @@ compensation:
         p50: 30143
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/hardware-engineer/locations/spain
+        url: https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 5
+  - role: software-engineer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 36809
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 17
+  - role: data-scientist
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 26209
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 1
+  - role: technical-program-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 72796
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/barcelona-supercomputing-center
+year_founded: 2005

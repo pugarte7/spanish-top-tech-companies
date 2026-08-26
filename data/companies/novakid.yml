@@ -1,5 +1,15 @@
 slug: novakid
 name: NovaKid
+website: https://www.novakidschool.com
+hq:
+  city: San Francisco
+  country: US
+employees: 1,001-10,000
+sector:
+- children
+- edtech
+- education
+- language-learning
 compensation:
   currency: EUR
   basis: gross_annual
@@ -12,8 +22,22 @@ compensation:
         p50: 56298
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/product-manager/locations/spain
+        url: https://www.levels.fyi/companies/novakid/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 3
+  - role: software-engineer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 56441
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/novakid/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/novakid
+year_founded: 2017

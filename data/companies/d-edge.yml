@@ -1,5 +1,15 @@
 slug: d-edge
 name: D-EDGE
+website: https://www.d-edge.com
+hq:
+  city: Paris
+  country: FR
+employees: 201-1,000
+sector:
+- e-commerce
+- travel-leisure
+- information-technology-services
+- technology
 compensation:
   currency: EUR
   basis: gross_annual
@@ -12,8 +22,35 @@ compensation:
         p50: 63801
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineering-manager/locations/spain
+        url: https://www.levels.fyi/companies/d-edge/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 3
+  - role: software-engineer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 47847
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/d-edge/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 1
+  - role: ux-researcher
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 41887
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/d-edge/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/d-edge-hospitality-solutions
+year_founded: 2019

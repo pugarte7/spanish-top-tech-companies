@@ -1,5 +1,15 @@
 slug: celonis
 name: Celonis
+website: https://www.celonis.com
+hq:
+  city: München
+  country: DE
+employees: 1,001-10,000
+sector:
+- information-technology-services
+- cloud-services
+- technology
+- saas
 compensation:
   currency: EUR
   basis: gross_annual
@@ -12,8 +22,169 @@ compensation:
         p50: 36121
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/business-analyst/locations/spain
+        url: https://www.levels.fyi/companies/celonis/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 3
+  - role: software-engineer
+    levels:
+    - level: junior
+      base: {}
+      total_comp:
+        p50: 63960
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'IC1'. Total compensation, converted from USD at 0.853.
+      sample_size: 5
+    - level: mid
+      base: {}
+      total_comp:
+        p50: 93202
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'IC2'. Total compensation, converted from USD at 0.853.
+      sample_size: 19
+    - level: senior
+      base: {}
+      total_comp:
+        p50: 105581
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'IC3'. Total compensation, converted from USD at 0.853.
+      sample_size: 12
+    - level: staff
+      base: {}
+      total_comp:
+        p50: 148143
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Levels.fyi reports this as 'IC4'. Total compensation, converted from USD at 0.853.
+      sample_size: 7
+  - role: product-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 78615
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 4
+  - role: product-designer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 79944
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 3
+  - role: software-engineering-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 145682
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 3
+  - role: solution-architect
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 86153
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 3
+  - role: data-science-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 76342
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: data-scientist
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 57759
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: program-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 139497
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: project-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 135246
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: technical-program-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 93470
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/celonis
+year_founded: 2011
+notes: 'Execution management system provider. Equity: RSU vesting 25/1,25/12,25/12,25/12|25,25,25,25.'

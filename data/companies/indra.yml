@@ -1,5 +1,13 @@
 slug: indra
 name: Indra
+website: https://www.indracompany.com
+hq:
+  city: Alcobendas
+sector:
+- consulting
+- telecommunications
+- professional-services
+- agency
 compensation:
   currency: EUR
   basis: gross_annual
@@ -12,11 +20,11 @@ compensation:
         p50: 34941
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area
+        url: https://www.levels.fyi/companies/indra/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 35
   - role: hardware-engineer
     levels:
     - level: all
@@ -25,8 +33,120 @@ compensation:
         p50: 28386
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/hardware-engineer/locations/spain
+        url: https://www.levels.fyi/companies/indra/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 9
+  - role: business-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 61167
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/indra/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 3
+  - role: security-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 29734
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/indra/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 2
+  - role: data-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 20233
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/indra/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: data-scientist
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 38183
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/indra/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: information-technologist
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 28738
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/indra/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: product-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 38020
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/indra/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: project-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 21115
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/indra/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: solution-architect
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 60027
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/indra/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: technical-program-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 27828
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/indra/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/indra
+year_founded: 1992

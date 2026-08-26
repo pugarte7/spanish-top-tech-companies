@@ -1,5 +1,15 @@
 slug: travelperk
 name: TravelPerk
+website: https://www.travelperk.com
+hq:
+  city: Barcelona
+  country: ES
+employees: 201-1,000
+sector:
+- internet
+- technology
+- marketplace
+- b2c
 compensation:
   currency: EUR
   basis: gross_annual
@@ -12,8 +22,35 @@ compensation:
         p50: 71603
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/spain
+        url: https://www.levels.fyi/companies/travelperk/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 24
+  - role: product-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 101412
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/travelperk/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 4
+  - role: software-engineering-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 140510
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/travelperk/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/travelperk
+year_founded: 2015

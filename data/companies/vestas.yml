@@ -1,5 +1,15 @@
 slug: vestas
 name: Vestas
+website: https://www.vestas.com
+hq:
+  city: Aarhus
+  country: DK
+employees: 10,001+
+sector:
+- renewables-environment
+- energy
+- b2b
+- enterprise
 compensation:
   currency: EUR
   basis: gross_annual
@@ -12,8 +22,108 @@ compensation:
         p50: 62684
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area
+        url: https://www.levels.fyi/companies/vestas/salaries
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 4
+  - role: software-engineer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 40033
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/vestas/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 6
+  - role: product-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 87127
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/vestas/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median across all levels. Total compensation, converted from USD at 0.853.
+      sample_size: 3
+  - role: business-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 42558
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/vestas/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: program-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 111444
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/vestas/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: project-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 23334
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/vestas/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: security-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 49318
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/vestas/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: solution-architect
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 90540
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/vestas/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: technical-writer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 40159
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/vestas/salaries
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+linkedin_url: https://www.linkedin.com/company/vestas
+year_founded: 1979

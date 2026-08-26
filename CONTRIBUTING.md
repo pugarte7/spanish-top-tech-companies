@@ -46,6 +46,19 @@ This reads the markdown routes Levels.fyi publishes for agents and asks attribut
 
 Those pages are served from a 12-hour CDN cache and return nothing when cold, so any single run picks up only part of the data. Running it repeatedly over a few days accumulates coverage; it never overwrites a good band with an empty one.
 
+**Company details and per-level ladders** (no key, but must run from Spain):
+
+```bash
+python3 scripts/fetch_company.py --all          # every company already on file
+python3 scripts/fetch_company.py --company glovo
+```
+
+Each Levels.fyi company page embeds the company's own record (website, careers page, LinkedIn, headquarters, headcount, industry, vesting) and a per-level pay ladder with submission counts.
+
+Two things to know. Those pages are scoped by **your IP address** and ignore every location query parameter, so from outside Spain they return another country's figures in another currency; the script checks and skips rather than writing them. And the company details come from Levels.fyi, which gets some of them wrong (it lists Glovo in Milan and BBVA in Birmingham) — worth checking against reality before trusting.
+
+It never overwrites a field a human has already filled in.
+
 **From the Levels.fyi API** (needs a key, request one at [levels.fyi/api-access](https://www.levels.fyi/api-access/)):
 
 ```bash
