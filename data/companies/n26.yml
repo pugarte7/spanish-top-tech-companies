@@ -1,5 +1,5 @@
-slug: semrush
-name: Semrush
+slug: n26
+name: N26
 compensation:
   currency: EUR
   basis: gross_annual
@@ -9,7 +9,7 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 71712
+        p50: 70055
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/software-engineer/locations/spain
@@ -17,15 +17,15 @@ compensation:
       last_verified: '2026-08-26'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
-  - role: data-analyst
+  - role: software-engineering-manager
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 49717
+        p50: 90243
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-analyst/locations/spain
+        url: https://www.levels.fyi/t/software-engineering-manager/locations/spain
         date: '2026-08-26'
       last_verified: '2026-08-26'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break

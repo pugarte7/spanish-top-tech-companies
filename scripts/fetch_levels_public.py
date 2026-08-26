@@ -1,28 +1,27 @@
 #!/usr/bin/env python3
-"""Seed Spanish compensation data from Levels.fyi's public markdown routes.
+"""Seed Spanish compensation data from Levels.fyi's public pages. No API key.
 
-    python3 scripts/fetch_levels_public.py                 # everything it can find
-    python3 scripts/fetch_levels_public.py --dry-run       # show the URLs only
+    python3 scripts/fetch_levels_public.py                    # everything
+    python3 scripts/fetch_levels_public.py --dry-run          # list the URLs
     python3 scripts/fetch_levels_public.py --role software-engineer
 
-No API key. Levels.fyi's robots.txt invites LLM and agent access to these
-routes and asks for attribution in return, which this repository gives. This is
-the sanctioned surface, not a workaround: it reads the same pages a browser
-would, one at a time, with a delay.
+Levels.fyi's robots.txt invites agent access and asks for attribution, which
+this repository gives. This reads the same public, indexable pages a browser
+would, one at a time with a delay.
 
-What it gets, per job family and location:
+It reads each page's embedded `__NEXT_DATA__` rather than the `.md` summary,
+for three reasons: the `.md` truncates the company table to five rows where the
+page carries ten, the `.md` is served from a 12-hour CDN cache that returns an
+empty body when cold, and only the page exposes the exchange rate and the
+submission counts.
 
-  * a Spain-wide benchmark (median, p25/p75, p90) -> data/benchmarks.json
-  * the top-paying companies table -> one band per company, level "all"
-
-What it cannot get: per-level ladders, base-salary splits, or sample sizes.
-Those need the official API (see scripts/fetch_levels.py). Everything written
-here is TOTAL COMPENSATION, so it lands in `total_comp`, never in `base`.
+Everything published is TOTAL COMPENSATION across all levels, so it lands in
+`total_comp` at level `all`, never in `base`. Per-level ladders and base-salary
+splits need the official API: see scripts/fetch_levels.py.
 """
 from __future__ import annotations
 
 import argparse
-import datetime as dt
 import gzip
 import json
 import re
@@ -36,53 +35,36 @@ import yaml
 from new_company import SKELETON_ORDER, slugify
 
 BASE = "https://www.levels.fyi"
-USER_AGENT = "spanish-top-tech-companies/1.0 (+https://github.com/pugarte7/spanish-top-tech-companies)"
 ATTRIBUTION = "Data source: Levels.fyi (https://www.levels.fyi)"
+# Their edge serves an empty body to clients that look like bare scripts, so
+# present as a browser. Requests stay sequential and rate limited.
+UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/128.0 Safari/537.36")
 
-# Job families Levels.fyi actually publishes Spanish data for, mapped onto our
-# role slugs. Probed rather than guessed; the rest return an empty document.
-FAMILIES = {
-    "software-engineer": "software-engineer",
-    "data-scientist": "data-scientist",
-    "data-analyst": "data-analyst",
-    "product-manager": "product-manager",
-    "business-analyst": "business-analyst",
-    "sales-engineer": "sales-engineer",
-}
-LOCATIONS = ["spain", "madrid-esp", "barcelona-esp", "valencia-esp", "malaga-esp"]
+NEXT_DATA = re.compile(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', re.S)
 
-MONEY = r"€\s*([\d.,]+)"
-RE_CURRENCY = re.compile(r"^\*\*Currency:\*\*\s*(\w+)", re.M)
-RE_LOCATION = re.compile(r"^\*\*Location:\*\*\s*(.+?)\s*$", re.M)
-RE_UPDATED = re.compile(r"Last Updated:\s*([A-Z][a-z]+ \d{1,2}, \d{4})")
-RE_MEDIAN = re.compile(rf"Median Total Compensation[^:]*:\s*{MONEY}")
-RE_QUARTILES = re.compile(rf"25th / 75th Percentile:\s*{MONEY}\s*/\s*{MONEY}")
-RE_P90 = re.compile(rf"90th Percentile:\s*{MONEY}")
-RE_COMPANIES = re.compile(
-    r"###\s*Top Paying Companies\s*\n(.*?)(?=\n###|\n---|\Z)", re.S)
-RE_ROW = re.compile(rf"^\|\s*\d+\s*\|\s*(.+?)\s*\|\s*{MONEY}\s*\|", re.M)
+# Country slug plus the Spanish metro areas Levels.fyi models separately.
+FALLBACK_LOCATIONS = ["spain", "madrid-metropolitan-area", "greater-barcelona-area"]
 
-
-def money(text: str) -> int | None:
-    """'109,357' or '109.357' -> 109357."""
-    digits = re.sub(r"[^\d]", "", text or "")
-    return int(digits) if digits else None
+# Their taxonomy runs to 105 families including physician and lab-tech. This is
+# a list of tech companies, so take the families that belong in one. Category
+# alone is too blunt: "Design" holds fashion-designer, "Engineering" holds
+# petroleum-engineer.
+TECH_FAMILIES = [
+    "software-engineer", "software-engineering-manager", "data-scientist",
+    "data-science-manager", "data-analyst", "business-analyst",
+    "product-manager", "product-designer", "product-design-manager",
+    "ux-researcher", "technical-program-manager", "program-manager",
+    "project-manager", "solution-architect", "technical-writer",
+    "information-technologist", "security-analyst", "hardware-engineer",
+    "prompt-engineer",
+]
 
 
-def fetch(url: str, delay: float) -> str | None:
-    """Fetch one markdown page.
-
-    Accept-Encoding is not optional here: without it the CDN answers 200 with
-    an empty body and `Cache-Control: no-store`. Python's urllib sends no
-    Accept-Encoding by default, so it has to be set explicitly.
-    """
+def get(url: str, delay: float) -> str | None:
     request = urllib.request.Request(
-        url,
-        headers={
-            "User-Agent": USER_AGENT,
-            "Accept": "text/markdown, text/plain, */*",
-            "Accept-Encoding": "gzip",
-        },
+        url, headers={"User-Agent": UA, "Accept-Encoding": "gzip",
+                      "Accept": "text/html,application/xhtml+xml"}
     )
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
@@ -91,58 +73,56 @@ def fetch(url: str, delay: float) -> str | None:
                 raw = gzip.decompress(raw)
             body = raw.decode("utf-8", "replace")
     except urllib.error.HTTPError as exc:
-        print(f"  HTTP {exc.code} for {url}", file=sys.stderr)
+        if exc.code != 404:
+            print(f"  HTTP {exc.code} for {url}", file=sys.stderr)
         return None
     except urllib.error.URLError as exc:
         print(f"  {exc.reason} for {url}", file=sys.stderr)
         return None
-    time.sleep(delay)
-    return body if body.strip() else None
+    finally:
+        time.sleep(delay)
+    return body
 
 
-def parse(text: str, url: str) -> dict | None:
-    currency = (RE_CURRENCY.search(text) or [None, ""])[1] if RE_CURRENCY.search(text) else ""
-    if currency.upper() != "EUR":
-        # A page that came back in USD is the wrong scope; never mix currencies.
-        print(f"  skipping {url}: currency is {currency or 'unknown'}, not EUR", file=sys.stderr)
+def page_props(html: str | None) -> dict | None:
+    if not html:
+        return None
+    match = NEXT_DATA.search(html)
+    if not match:
+        return None
+    try:
+        return json.loads(match.group(1))["props"]["pageProps"]
+    except (KeyError, json.JSONDecodeError):
         return None
 
-    updated = None
-    match = RE_UPDATED.search(text)
-    if match:
-        try:
-            updated = dt.datetime.strptime(match.group(1), "%B %d, %Y").date().isoformat()
-        except ValueError:
-            updated = None
-    updated = updated or lib.today_utc().isoformat()
 
-    median = RE_MEDIAN.search(text)
-    quartiles = RE_QUARTILES.search(text)
-    p90 = RE_P90.search(text)
+def discover(delay: float) -> tuple[list[str], list[str]]:
+    """Read the job-family taxonomy and Spanish locations off /locations."""
+    props = page_props(get(f"{BASE}/locations", delay))
+    if not props:
+        print("  could not read /locations; falling back to defaults", file=sys.stderr)
+        return TECH_FAMILIES, FALLBACK_LOCATIONS
 
-    benchmark = {"url": url, "currency": "EUR", "last_updated": updated}
-    if median:
-        benchmark["p50"] = money(median.group(1))
-    if quartiles:
-        benchmark["p25"] = money(quartiles.group(1))
-        benchmark["p75"] = money(quartiles.group(2))
-    if p90:
-        benchmark["p90"] = money(p90.group(1))
-    location = RE_LOCATION.search(text)
-    benchmark["location"] = location.group(1) if location else ""
-
-    companies = []
-    block = RE_COMPANIES.search(text)
-    if block:
-        for name, amount in RE_ROW.findall(block.group(1)):
-            value = money(amount)
-            if name and value:
-                companies.append({"name": name.strip(), "p50": value})
-    return {"benchmark": benchmark, "companies": companies}
+    known = {f["slug"] for f in props.get("initialJobFamiliesArr") or [] if f.get("slug")}
+    families = [f for f in TECH_FAMILIES if f in known] or TECH_FAMILIES
+    locations = ["spain"]
+    for group in (props.get("locations") or {}).values():
+        for entry in group if isinstance(group, list) else []:
+            name, slug = entry.get("name", ""), entry.get("slug")
+            if slug and re.search(r"madrid|barcelona", f"{name} {slug}", re.I):
+                locations.append(slug)
+    return families, locations
 
 
-def merge_company(name: str, role: str, p50: int, url: str, date: str, location: str) -> str:
-    slug = slugify(name)
+def to_eur(value, rate) -> int | None:
+    """Page figures are USD; locationExchangeRate converts them."""
+    if not isinstance(value, (int, float)) or not isinstance(rate, (int, float)):
+        return None
+    return int(round(value * rate))
+
+
+def merge_company(name: str, slug: str, role: str, p50: int, url: str,
+                  date: str, location: str) -> None:
     path = lib.COMPANIES_DIR / f"{slug}.yml"
     if path.exists():
         company = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
@@ -160,8 +140,8 @@ def merge_company(name: str, role: str, p50: int, url: str, date: str, location:
         "sources": [{"name": "levels.fyi", "url": url, "date": date}],
         "last_verified": date,
         "notes": (
-            f"Median total compensation across all levels for {location}. "
-            "Levels.fyi's public summary does not break this out by level or "
+            f"Median total compensation across all levels, {location}. "
+            "Levels.fyi's public pages do not break this out by level or "
             "separate base salary."
         ),
     }
@@ -171,9 +151,14 @@ def merge_company(name: str, role: str, p50: int, url: str, date: str, location:
     if bucket is None:
         bucket = {"role": role, "levels": []}
         roles.append(bucket)
-    levels = [entry for entry in bucket["levels"] if entry.get("level") != "all"]
-    levels.append(band)
-    bucket["levels"] = sorted(levels, key=lambda e: lib.level_rank(e["level"]))
+    existing = next((e for e in bucket["levels"] if e.get("level") == "all"), None)
+    # Several locations cover the same company; keep the highest observed median
+    # so a thin metro slice doesn't overwrite the national figure.
+    if existing is None:
+        bucket["levels"].append(band)
+    elif p50 > (existing.get("total_comp") or {}).get("p50", 0):
+        bucket["levels"][bucket["levels"].index(existing)] = band
+    bucket["levels"].sort(key=lambda e: lib.level_rank(e["level"]))
 
     rest = {k: v for k, v in company.items() if k not in SKELETON_ORDER}
     ordered = {k: company[k] for k in SKELETON_ORDER if k in company}
@@ -181,44 +166,66 @@ def merge_company(name: str, role: str, p50: int, url: str, date: str, location:
     path.write_text(
         yaml.safe_dump(ordered, sort_keys=False, allow_unicode=True, width=100), encoding="utf-8"
     )
-    return slug
 
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--role", action="append", default=[], help="Limit to these job families.")
-    parser.add_argument("--delay", type=float, default=1.5, help="Seconds between requests.")
+    parser.add_argument("--delay", type=float, default=0.7, help="Seconds between requests.")
     parser.add_argument("--dry-run", action="store_true", help="List the URLs and stop.")
     args = parser.parse_args(argv)
 
-    families = {k: v for k, v in FAMILIES.items() if not args.role or k in args.role}
-    if not families:
-        parser.error(f"unknown role; choose from {', '.join(FAMILIES)}")
+    today = lib.today_utc().isoformat()
+    families, locations = discover(0 if args.dry_run else args.delay)
+    if args.role:
+        families = [f for f in families if f in args.role]
+        if not families:
+            parser.error("none of those roles exist in the Levels.fyi taxonomy")
 
-    benchmarks, seen_companies, pages = [], set(), 0
-    for family, role in families.items():
-        for location in LOCATIONS:
-            url = f"{BASE}/t/{family}/locations/{location}.md"
+    print(f"{len(families)} job families x {len(locations)} locations")
+    benchmarks, touched, pages = [], set(), 0
+
+    for family in families:
+        for location in locations:
+            url = f"{BASE}/t/{family}/locations/{location}"
             if args.dry_run:
                 print(f"GET {url}")
                 continue
-            text = fetch(url, args.delay)
-            if not text:
+            props = page_props(get(url, args.delay))
+            if not props:
                 continue
-            parsed = parse(text, url.removesuffix(".md"))
-            if not parsed:
+            currency, rate = props.get("locationCurrency"), props.get("locationExchangeRate")
+            if currency != "EUR":
+                print(f"  skipping {family}/{location}: currency {currency}", file=sys.stderr)
+                continue
+
+            companies = props.get("topPayingCompanies") or []
+            percentiles = props.get("jobFamilyLocationPercentiles") or {}
+            if not companies and not percentiles:
                 continue
             pages += 1
-            record = dict(parsed["benchmark"], role=role, family=family, location_slug=location)
-            benchmarks.append(record)
-            print(f"  {family} / {location}: median €{record.get('p50'):,}"
-                  f" · {len(parsed['companies'])} companies")
-            for entry in parsed["companies"]:
-                slug = merge_company(
-                    entry["name"], role, entry["p50"],
-                    record["url"], record["last_updated"], record.get("location") or location,
-                )
-                seen_companies.add(slug)
+            place = props.get("location") or props.get("compTableFilterLocationName") or location
+
+            if percentiles.get("p50"):
+                benchmarks.append({
+                    "role": family, "location": place, "location_slug": location,
+                    "currency": "EUR", "url": url, "last_updated": today,
+                    "data_points": percentiles.get("count") or props.get("totalJobFamilySubmissionCount"),
+                    **{p: to_eur(percentiles.get(p), rate) for p in ("p25", "p50", "p75", "p90")},
+                })
+
+            written = 0
+            for entry in companies:
+                value = to_eur(entry.get("totalCompensation"), rate)
+                slug = entry.get("slug") or slugify(entry.get("name", ""))
+                if not value or not slug:
+                    continue
+                merge_company(entry.get("name") or slug, slug, family, value, url, today, place)
+                touched.add(slug)
+                written += 1
+            if written or percentiles.get("p50"):
+                print(f"  {family} / {location}: {written} companies"
+                      f"{', benchmark ' + str(to_eur(percentiles.get('p50'), rate)) if percentiles.get('p50') else ''}")
 
     if args.dry_run:
         return 0
@@ -226,18 +233,15 @@ def main(argv: list[str]) -> int:
     if benchmarks:
         benchmarks.sort(key=lambda b: (b["role"], b["location_slug"]))
         (lib.ROOT / "data" / "benchmarks.json").write_text(
-            json.dumps(
-                {"attribution": ATTRIBUTION, "generated": lib.today_utc().isoformat(),
-                 "benchmarks": benchmarks},
-                indent=2, ensure_ascii=False) + "\n",
+            json.dumps({"attribution": ATTRIBUTION, "generated": today,
+                        "benchmarks": benchmarks}, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
 
-    print(f"\n{pages} pages read · {len(benchmarks)} benchmarks · {len(seen_companies)} companies touched")
-    if seen_companies:
+    print(f"\n{pages} pages with data · {len(benchmarks)} benchmarks · {len(touched)} companies")
+    if touched:
         print(f"\n{ATTRIBUTION}")
-        print("These are TOTAL COMPENSATION medians across all levels, not base salary.")
-        print("Company metadata (website, offices, contract type) still needs filling in.")
+        print("TOTAL COMPENSATION across all levels, converted to EUR. Not base salary.")
         print("Next: python3 scripts/validate.py && python3 scripts/build.py")
     return 0
 

@@ -1,5 +1,216 @@
 [
   {
+    "slug": "accenture",
+    "name": "Accenture",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "data-scientist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 39370
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-scientist/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "business-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 24781
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/business-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "security-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 24865
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/security-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 39370,
+      "top_band_role": "data-scientist",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "adevinta",
+    "name": "Adevinta",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 63398
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "software-engineering-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 94781
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineering-manager/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 94781,
+      "top_band_role": "software-engineering-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "aily-labs",
+    "name": "Aily Labs",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "data-scientist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 41240
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 41240,
+      "top_band_role": "data-scientist",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "amadeus",
+    "name": "Amadeus",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "product-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 47688
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/product-manager/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 47688,
+      "top_band_role": "product-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "amazon",
     "name": "Amazon",
     "compensation": {
@@ -13,17 +224,80 @@
               "level": "all",
               "base": {},
               "total_comp": {
-                "p50": 82722
+                "p50": 84296
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/t/software-engineer/locations/spain",
+                  "url": "https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area",
                   "date": "2026-08-26"
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "software-engineering-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 142286
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineering-manager/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "data-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 51337
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "business-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 46327
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/business-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         },
@@ -34,17 +308,38 @@
               "level": "all",
               "base": {},
               "total_comp": {
-                "p50": 73495
+                "p50": 112691
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/t/product-manager/locations/spain",
+                  "url": "https://www.levels.fyi/t/product-manager/locations/greater-barcelona-area",
                   "date": "2026-08-26"
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "solution-architect",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 114279
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/solution-architect/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         }
@@ -52,8 +347,177 @@
     },
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 82722,
-      "top_band_role": "software-engineer",
+      "top_band_eur": 142286,
+      "top_band_role": "software-engineering-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "analog-devices",
+    "name": "Analog Devices",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "hardware-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 52679
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/hardware-engineer/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 52679,
+      "top_band_role": "hardware-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "barcelona-supercomputing-center",
+    "name": "Barcelona Supercomputing Center",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "hardware-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 30143
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/hardware-engineer/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 30143,
+      "top_band_role": "hardware-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "basf",
+    "name": "BASF",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "data-scientist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 57385
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 57385,
+      "top_band_role": "data-scientist",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "bbva",
+    "name": "BBVA",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "data-scientist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 45709
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "solution-architect",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 55911
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 55911,
+      "top_band_role": "solution-architect",
       "top_band_level": "all"
     }
   },
@@ -81,7 +545,7 @@
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         }
@@ -91,6 +555,175 @@
       "qualifies": true,
       "top_band_eur": 89275,
       "top_band_role": "data-scientist",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "cabify",
+    "name": "Cabify",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 52092
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "data-scientist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 59221
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 59221,
+      "top_band_role": "data-scientist",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "capgemini",
+    "name": "Capgemini",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "product-designer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 24273
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/product-designer/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 24273,
+      "top_band_role": "product-designer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "celonis",
+    "name": "Celonis",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "business-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 36121
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/business-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 36121,
+      "top_band_role": "business-analyst",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "d-edge",
+    "name": "D-EDGE",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineering-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 63801
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineering-manager/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 63801,
+      "top_band_role": "software-engineering-manager",
       "top_band_level": "all"
     }
   },
@@ -108,7 +741,7 @@
               "level": "all",
               "base": {},
               "total_comp": {
-                "p50": 109357
+                "p50": 109486
               },
               "sources": [
                 {
@@ -118,7 +751,7 @@
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         }
@@ -126,8 +759,314 @@
     },
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 109357,
+      "top_band_eur": 109486,
       "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "deloitte",
+    "name": "Deloitte",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "business-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 31584
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/business-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "security-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 33141
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/security-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 33141,
+      "top_band_role": "security-analyst",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "edreams-odigeo",
+    "name": "eDreams ODIGEO",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 49369
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "software-engineering-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 81474
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineering-manager/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 81474,
+      "top_band_role": "software-engineering-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "epam-systems",
+    "name": "EPAM Systems",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "business-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 48908
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/business-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "solution-architect",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 66210
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/solution-architect/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 66210,
+      "top_band_role": "solution-architect",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "ericsson",
+    "name": "Ericsson",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "data-scientist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 48777
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-scientist/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "solution-architect",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 69217
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 69217,
+      "top_band_role": "solution-architect",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "ernst-and-young",
+    "name": "Ernst and Young",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "security-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 24790
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/security-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 24790,
+      "top_band_role": "security-analyst",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "factorial",
+    "name": "Factorial",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "product-designer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 120085
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/product-designer/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 120085,
+      "top_band_role": "product-designer",
       "top_band_level": "all"
     }
   },
@@ -145,7 +1084,7 @@
               "level": "all",
               "base": {},
               "total_comp": {
-                "p50": 66657
+                "p50": 66735
               },
               "sources": [
                 {
@@ -155,7 +1094,7 @@
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         }
@@ -163,7 +1102,7 @@
     },
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 66657,
+      "top_band_eur": 66735,
       "top_band_role": "product-manager",
       "top_band_level": "all"
     }
@@ -175,6 +1114,48 @@
       "currency": "EUR",
       "basis": "gross_annual",
       "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 68900
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineer/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "software-engineering-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 109564
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineering-manager/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
         {
           "role": "data-scientist",
           "levels": [
@@ -192,7 +1173,28 @@
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "data-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 43044
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         },
@@ -203,7 +1205,7 @@
               "level": "all",
               "base": {},
               "total_comp": {
-                "p50": 67155
+                "p50": 67234
               },
               "sources": [
                 {
@@ -213,7 +1215,7 @@
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         }
@@ -221,8 +1223,8 @@
     },
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 69297,
-      "top_band_role": "data-scientist",
+      "top_band_eur": 109564,
+      "top_band_role": "software-engineering-manager",
       "top_band_level": "all"
     }
   },
@@ -250,7 +1252,28 @@
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "product-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 54601
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/product-manager/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         }
@@ -259,6 +1282,138 @@
     "_computed": {
       "qualifies": true,
       "top_band_eur": 65968,
+      "top_band_role": "data-scientist",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "ikea",
+    "name": "IKEA",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "data-scientist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 75598
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 75598,
+      "top_band_role": "data-scientist",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "indra",
+    "name": "Indra",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 34941
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "hardware-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 28386
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/hardware-engineer/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 34941,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "mckinsey",
+    "name": "McKinsey",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "data-scientist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 43840
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 43840,
       "top_band_role": "data-scientist",
       "top_band_level": "all"
     }
@@ -277,7 +1432,7 @@
               "level": "all",
               "base": {},
               "total_comp": {
-                "p50": 88392
+                "p50": 88495
               },
               "sources": [
                 {
@@ -287,7 +1442,7 @@
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         }
@@ -295,8 +1450,161 @@
     },
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 88392,
+      "top_band_eur": 88495,
       "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "minsait",
+    "name": "Minsait",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "business-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 26758
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/business-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "information-technologist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 39371
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/information-technologist/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 39371,
+      "top_band_role": "information-technologist",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "n26",
+    "name": "N26",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 70055
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineer/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "software-engineering-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 90243
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineering-manager/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 90243,
+      "top_band_role": "software-engineering-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "ncc-group",
+    "name": "NCC Group",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "security-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 78355
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/security-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 78355,
+      "top_band_role": "security-analyst",
       "top_band_level": "all"
     }
   },
@@ -314,7 +1622,7 @@
               "level": "all",
               "base": {},
               "total_comp": {
-                "p50": 56232
+                "p50": 56298
               },
               "sources": [
                 {
@@ -324,7 +1632,7 @@
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         }
@@ -332,8 +1640,124 @@
     },
     "_computed": {
       "qualifies": false,
-      "top_band_eur": 56232,
+      "top_band_eur": 56298,
       "top_band_role": "product-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "ntt-data",
+    "name": "NTT DATA",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "solution-architect",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 45817
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/solution-architect/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "information-technologist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 22097
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/information-technologist/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "security-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 44721
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/security-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 45817,
+      "top_band_role": "solution-architect",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "oracle",
+    "name": "Oracle",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "product-designer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 41056
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/product-designer/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 41056,
+      "top_band_role": "product-designer",
       "top_band_level": "all"
     }
   },
@@ -361,7 +1785,7 @@
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         }
@@ -388,17 +1812,17 @@
               "level": "all",
               "base": {},
               "total_comp": {
-                "p50": 102054
+                "p50": 107717
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/t/software-engineer/locations/spain",
+                  "url": "https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area",
                   "date": "2026-08-26"
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         },
@@ -409,17 +1833,59 @@
               "level": "all",
               "base": {},
               "total_comp": {
-                "p50": 103181
+                "p50": 109109
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/t/data-scientist/locations/spain",
+                  "url": "https://www.levels.fyi/t/data-scientist/locations/greater-barcelona-area",
                   "date": "2026-08-26"
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "data-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 61119
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "product-designer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 60989
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/product-designer/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         }
@@ -427,8 +1893,45 @@
     },
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 103181,
+      "top_band_eur": 109109,
       "top_band_role": "data-scientist",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "rovercom",
+    "name": "Rover.com",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineering-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 115983
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineering-manager/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 115983,
+      "top_band_role": "software-engineering-manager",
       "top_band_level": "all"
     }
   },
@@ -446,7 +1949,7 @@
               "level": "all",
               "base": {},
               "total_comp": {
-                "p50": 74956
+                "p50": 75044
               },
               "sources": [
                 {
@@ -456,7 +1959,7 @@
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         }
@@ -464,8 +1967,82 @@
     },
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 74956,
+      "top_band_eur": 75044,
       "top_band_role": "product-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "sdg-group",
+    "name": "SDG Group",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "data-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 26019
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 26019,
+      "top_band_role": "data-analyst",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "semidynamics",
+    "name": "Semidynamics",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "hardware-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 44053
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/hardware-engineer/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 44053,
+      "top_band_role": "hardware-engineer",
       "top_band_level": "all"
     }
   },
@@ -483,7 +2060,7 @@
               "level": "all",
               "base": {},
               "total_comp": {
-                "p50": 71628
+                "p50": 71712
               },
               "sources": [
                 {
@@ -493,7 +2070,28 @@
                 }
               ],
               "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels for Spain. Levels.fyi's public summary does not break this out by level or separate base salary."
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "data-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 49717
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-analyst/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
         }
@@ -501,8 +2099,230 @@
     },
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 71628,
+      "top_band_eur": 71712,
       "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "stenn",
+    "name": "Stenn",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineering-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 133502
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineering-manager/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 133502,
+      "top_band_role": "software-engineering-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "t-systems",
+    "name": "T-Systems",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 58209
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineer/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 58209,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "tomtom",
+    "name": "TomTom",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "data-scientist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 52289
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-scientist/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 52289,
+      "top_band_role": "data-scientist",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "transperfect",
+    "name": "TransPerfect",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "product-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 35388
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/product-manager/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 35388,
+      "top_band_role": "product-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "travelperk",
+    "name": "TravelPerk",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 71603
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/software-engineer/locations/spain",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 71603,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "vestas",
+    "name": "Vestas",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "data-scientist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 62684
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area",
+                  "date": "2026-08-26"
+                }
+              ],
+              "last_verified": "2026-08-26",
+              "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 62684,
+      "top_band_role": "data-scientist",
       "top_band_level": "all"
     }
   }

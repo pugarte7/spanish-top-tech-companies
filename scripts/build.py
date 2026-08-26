@@ -173,14 +173,15 @@ def render_benchmarks() -> str:
 
     rows.sort(key=lambda r: -(r.get("p50") or 0))
     out = [
-        "| Role | Where | 25th pct | Median | 75th pct | 90th pct | Updated |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
+        "| Role | Where | 25th pct | Median | 75th pct | 90th pct | Data points | Updated |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for row in rows:
         out.append(
             f"| [{row['role']}]({row['url']}) | {row.get('location') or '—'} | "
             f"{k(row.get('p25'))} | **{k(row.get('p50'))}** | {k(row.get('p75'))} | "
-            f"{k(row.get('p90'))} | {row.get('last_updated', '—')} |"
+            f"{k(row.get('p90'))} | {row.get('data_points') or '—'} | "
+            f"{row.get('last_updated', '—')} |"
         )
     out += [
         "",

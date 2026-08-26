@@ -1,16 +1,76 @@
 slug,name,linkedin_id,website,careers_url,hq_city,hq_country,spain_presence,offices_es,employees,sector,work_model,remote_within_spain,contract,working_language,role,level,base_min,base_p50,base_max,tc_min,tc_p50,tc_max,bonus_pct,equity,data_points,sources,last_verified
-amazon,Amazon,,,,,,,,,,,,,,software-engineer,all,,,,,82722,,,,,levels.fyi,2026-08-26
-amazon,Amazon,,,,,,,,,,,,,,product-manager,all,,,,,73495,,,,,levels.fyi,2026-08-26
+accenture,Accenture,,,,,,,,,,,,,,data-scientist,all,,,,,39370,,,,,levels.fyi,2026-08-26
+accenture,Accenture,,,,,,,,,,,,,,business-analyst,all,,,,,24781,,,,,levels.fyi,2026-08-26
+accenture,Accenture,,,,,,,,,,,,,,security-analyst,all,,,,,24865,,,,,levels.fyi,2026-08-26
+adevinta,Adevinta,,,,,,,,,,,,,,software-engineer,all,,,,,63398,,,,,levels.fyi,2026-08-26
+adevinta,Adevinta,,,,,,,,,,,,,,software-engineering-manager,all,,,,,94781,,,,,levels.fyi,2026-08-26
+aily-labs,Aily Labs,,,,,,,,,,,,,,data-scientist,all,,,,,41240,,,,,levels.fyi,2026-08-26
+amadeus,Amadeus,,,,,,,,,,,,,,product-manager,all,,,,,47688,,,,,levels.fyi,2026-08-26
+amazon,Amazon,,,,,,,,,,,,,,software-engineer,all,,,,,84296,,,,,levels.fyi,2026-08-26
+amazon,Amazon,,,,,,,,,,,,,,software-engineering-manager,all,,,,,142286,,,,,levels.fyi,2026-08-26
+amazon,Amazon,,,,,,,,,,,,,,data-analyst,all,,,,,51337,,,,,levels.fyi,2026-08-26
+amazon,Amazon,,,,,,,,,,,,,,business-analyst,all,,,,,46327,,,,,levels.fyi,2026-08-26
+amazon,Amazon,,,,,,,,,,,,,,product-manager,all,,,,,112691,,,,,levels.fyi,2026-08-26
+amazon,Amazon,,,,,,,,,,,,,,solution-architect,all,,,,,114279,,,,,levels.fyi,2026-08-26
+analog-devices,Analog Devices,,,,,,,,,,,,,,hardware-engineer,all,,,,,52679,,,,,levels.fyi,2026-08-26
+barcelona-supercomputing-center,Barcelona Supercomputing Center,,,,,,,,,,,,,,hardware-engineer,all,,,,,30143,,,,,levels.fyi,2026-08-26
+basf,BASF,,,,,,,,,,,,,,data-scientist,all,,,,,57385,,,,,levels.fyi,2026-08-26
+bbva,BBVA,,,,,,,,,,,,,,data-scientist,all,,,,,45709,,,,,levels.fyi,2026-08-26
+bbva,BBVA,,,,,,,,,,,,,,solution-architect,all,,,,,55911,,,,,levels.fyi,2026-08-26
 bcg,BCG,,,,,,,,,,,,,,data-scientist,all,,,,,89275,,,,,levels.fyi,2026-08-26
-datadog,Datadog,,,,,,,,,,,,,,software-engineer,all,,,,,109357,,,,,levels.fyi,2026-08-26
-free-now,FREE NOW,,,,,,,,,,,,,,product-manager,all,,,,,66657,,,,,levels.fyi,2026-08-26
+cabify,Cabify,,,,,,,,,,,,,,software-engineer,all,,,,,52092,,,,,levels.fyi,2026-08-26
+cabify,Cabify,,,,,,,,,,,,,,data-scientist,all,,,,,59221,,,,,levels.fyi,2026-08-26
+capgemini,Capgemini,,,,,,,,,,,,,,product-designer,all,,,,,24273,,,,,levels.fyi,2026-08-26
+celonis,Celonis,,,,,,,,,,,,,,business-analyst,all,,,,,36121,,,,,levels.fyi,2026-08-26
+d-edge,D-EDGE,,,,,,,,,,,,,,software-engineering-manager,all,,,,,63801,,,,,levels.fyi,2026-08-26
+datadog,Datadog,,,,,,,,,,,,,,software-engineer,all,,,,,109486,,,,,levels.fyi,2026-08-26
+deloitte,Deloitte,,,,,,,,,,,,,,business-analyst,all,,,,,31584,,,,,levels.fyi,2026-08-26
+deloitte,Deloitte,,,,,,,,,,,,,,security-analyst,all,,,,,33141,,,,,levels.fyi,2026-08-26
+edreams-odigeo,eDreams ODIGEO,,,,,,,,,,,,,,software-engineer,all,,,,,49369,,,,,levels.fyi,2026-08-26
+edreams-odigeo,eDreams ODIGEO,,,,,,,,,,,,,,software-engineering-manager,all,,,,,81474,,,,,levels.fyi,2026-08-26
+epam-systems,EPAM Systems,,,,,,,,,,,,,,business-analyst,all,,,,,48908,,,,,levels.fyi,2026-08-26
+epam-systems,EPAM Systems,,,,,,,,,,,,,,solution-architect,all,,,,,66210,,,,,levels.fyi,2026-08-26
+ericsson,Ericsson,,,,,,,,,,,,,,data-scientist,all,,,,,48777,,,,,levels.fyi,2026-08-26
+ericsson,Ericsson,,,,,,,,,,,,,,solution-architect,all,,,,,69217,,,,,levels.fyi,2026-08-26
+ernst-and-young,Ernst and Young,,,,,,,,,,,,,,security-analyst,all,,,,,24790,,,,,levels.fyi,2026-08-26
+factorial,Factorial,,,,,,,,,,,,,,product-designer,all,,,,,120085,,,,,levels.fyi,2026-08-26
+free-now,FREE NOW,,,,,,,,,,,,,,product-manager,all,,,,,66735,,,,,levels.fyi,2026-08-26
+glovo,Glovo,,,,,,,,,,,,,,software-engineer,all,,,,,68900,,,,,levels.fyi,2026-08-26
+glovo,Glovo,,,,,,,,,,,,,,software-engineering-manager,all,,,,,109564,,,,,levels.fyi,2026-08-26
 glovo,Glovo,,,,,,,,,,,,,,data-scientist,all,,,,,69297,,,,,levels.fyi,2026-08-26
-glovo,Glovo,,,,,,,,,,,,,,product-manager,all,,,,,67155,,,,,levels.fyi,2026-08-26
+glovo,Glovo,,,,,,,,,,,,,,data-analyst,all,,,,,43044,,,,,levels.fyi,2026-08-26
+glovo,Glovo,,,,,,,,,,,,,,product-manager,all,,,,,67234,,,,,levels.fyi,2026-08-26
 hpe,HPE,,,,,,,,,,,,,,data-scientist,all,,,,,65968,,,,,levels.fyi,2026-08-26
-microsoft,Microsoft,,,,,,,,,,,,,,software-engineer,all,,,,,88392,,,,,levels.fyi,2026-08-26
-novakid,NovaKid,,,,,,,,,,,,,,product-manager,all,,,,,56232,,,,,levels.fyi,2026-08-26
+hpe,HPE,,,,,,,,,,,,,,product-manager,all,,,,,54601,,,,,levels.fyi,2026-08-26
+ikea,IKEA,,,,,,,,,,,,,,data-scientist,all,,,,,75598,,,,,levels.fyi,2026-08-26
+indra,Indra,,,,,,,,,,,,,,software-engineer,all,,,,,34941,,,,,levels.fyi,2026-08-26
+indra,Indra,,,,,,,,,,,,,,hardware-engineer,all,,,,,28386,,,,,levels.fyi,2026-08-26
+mckinsey,McKinsey,,,,,,,,,,,,,,data-scientist,all,,,,,43840,,,,,levels.fyi,2026-08-26
+microsoft,Microsoft,,,,,,,,,,,,,,software-engineer,all,,,,,88495,,,,,levels.fyi,2026-08-26
+minsait,Minsait,,,,,,,,,,,,,,business-analyst,all,,,,,26758,,,,,levels.fyi,2026-08-26
+minsait,Minsait,,,,,,,,,,,,,,information-technologist,all,,,,,39371,,,,,levels.fyi,2026-08-26
+n26,N26,,,,,,,,,,,,,,software-engineer,all,,,,,70055,,,,,levels.fyi,2026-08-26
+n26,N26,,,,,,,,,,,,,,software-engineering-manager,all,,,,,90243,,,,,levels.fyi,2026-08-26
+ncc-group,NCC Group,,,,,,,,,,,,,,security-analyst,all,,,,,78355,,,,,levels.fyi,2026-08-26
+novakid,NovaKid,,,,,,,,,,,,,,product-manager,all,,,,,56298,,,,,levels.fyi,2026-08-26
+ntt-data,NTT DATA,,,,,,,,,,,,,,solution-architect,all,,,,,45817,,,,,levels.fyi,2026-08-26
+ntt-data,NTT DATA,,,,,,,,,,,,,,information-technologist,all,,,,,22097,,,,,levels.fyi,2026-08-26
+ntt-data,NTT DATA,,,,,,,,,,,,,,security-analyst,all,,,,,44721,,,,,levels.fyi,2026-08-26
+oracle,Oracle,,,,,,,,,,,,,,product-designer,all,,,,,41056,,,,,levels.fyi,2026-08-26
 pepsico,PepsiCo,,,,,,,,,,,,,,data-scientist,all,,,,,75652,,,,,levels.fyi,2026-08-26
-revolut,Revolut,,,,,,,,,,,,,,software-engineer,all,,,,,102054,,,,,levels.fyi,2026-08-26
-revolut,Revolut,,,,,,,,,,,,,,data-scientist,all,,,,,103181,,,,,levels.fyi,2026-08-26
-sage,Sage,,,,,,,,,,,,,,product-manager,all,,,,,74956,,,,,levels.fyi,2026-08-26
-semrush,Semrush,,,,,,,,,,,,,,software-engineer,all,,,,,71628,,,,,levels.fyi,2026-08-26
+revolut,Revolut,,,,,,,,,,,,,,software-engineer,all,,,,,107717,,,,,levels.fyi,2026-08-26
+revolut,Revolut,,,,,,,,,,,,,,data-scientist,all,,,,,109109,,,,,levels.fyi,2026-08-26
+revolut,Revolut,,,,,,,,,,,,,,data-analyst,all,,,,,61119,,,,,levels.fyi,2026-08-26
+revolut,Revolut,,,,,,,,,,,,,,product-designer,all,,,,,60989,,,,,levels.fyi,2026-08-26
+rovercom,Rover.com,,,,,,,,,,,,,,software-engineering-manager,all,,,,,115983,,,,,levels.fyi,2026-08-26
+sage,Sage,,,,,,,,,,,,,,product-manager,all,,,,,75044,,,,,levels.fyi,2026-08-26
+sdg-group,SDG Group,,,,,,,,,,,,,,data-analyst,all,,,,,26019,,,,,levels.fyi,2026-08-26
+semidynamics,Semidynamics,,,,,,,,,,,,,,hardware-engineer,all,,,,,44053,,,,,levels.fyi,2026-08-26
+semrush,Semrush,,,,,,,,,,,,,,software-engineer,all,,,,,71712,,,,,levels.fyi,2026-08-26
+semrush,Semrush,,,,,,,,,,,,,,data-analyst,all,,,,,49717,,,,,levels.fyi,2026-08-26
+stenn,Stenn,,,,,,,,,,,,,,software-engineering-manager,all,,,,,133502,,,,,levels.fyi,2026-08-26
+t-systems,T-Systems,,,,,,,,,,,,,,software-engineer,all,,,,,58209,,,,,levels.fyi,2026-08-26
+tomtom,TomTom,,,,,,,,,,,,,,data-scientist,all,,,,,52289,,,,,levels.fyi,2026-08-26
+transperfect,TransPerfect,,,,,,,,,,,,,,product-manager,all,,,,,35388,,,,,levels.fyi,2026-08-26
+travelperk,TravelPerk,,,,,,,,,,,,,,software-engineer,all,,,,,71603,,,,,levels.fyi,2026-08-26
+vestas,Vestas,,,,,,,,,,,,,,data-scientist,all,,,,,62684,,,,,levels.fyi,2026-08-26

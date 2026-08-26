@@ -1,0 +1,32 @@
+slug: cabify
+name: Cabify
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 52092
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
+        pages do not break this out by level or separate base salary.
+  - role: data-scientist
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 59221
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
+        pages do not break this out by level or separate base salary.

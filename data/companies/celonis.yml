@@ -1,18 +1,18 @@
-slug: free-now
-name: FREE NOW
+slug: celonis
+name: Celonis
 compensation:
   currency: EUR
   basis: gross_annual
   roles:
-  - role: product-manager
+  - role: business-analyst
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 66735
+        p50: 36121
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/product-manager/locations/spain
+        url: https://www.levels.fyi/t/business-analyst/locations/spain
         date: '2026-08-26'
       last_verified: '2026-08-26'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break

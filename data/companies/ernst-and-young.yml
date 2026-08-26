@@ -1,18 +1,18 @@
-slug: free-now
-name: FREE NOW
+slug: ernst-and-young
+name: Ernst and Young
 compensation:
   currency: EUR
   basis: gross_annual
   roles:
-  - role: product-manager
+  - role: security-analyst
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 66735
+        p50: 24790
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/product-manager/locations/spain
+        url: https://www.levels.fyi/t/security-analyst/locations/spain
         date: '2026-08-26'
       last_verified: '2026-08-26'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break

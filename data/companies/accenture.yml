@@ -1,31 +1,44 @@
-slug: semrush
-name: Semrush
+slug: accenture
+name: Accenture
 compensation:
   currency: EUR
   basis: gross_annual
   roles:
-  - role: software-engineer
+  - role: data-scientist
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 71712
+        p50: 39370
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/spain
+        url: https://www.levels.fyi/t/data-scientist/locations/spain
         date: '2026-08-26'
       last_verified: '2026-08-26'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
-  - role: data-analyst
+  - role: business-analyst
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 49717
+        p50: 24781
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-analyst/locations/spain
+        url: https://www.levels.fyi/t/business-analyst/locations/spain
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
+  - role: security-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 24865
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/t/security-analyst/locations/spain
         date: '2026-08-26'
       last_verified: '2026-08-26'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break

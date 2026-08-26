@@ -9,24 +9,50 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 102054
+        p50: 107717
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/spain
+        url: https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels for Spain. Levels.fyi's public summary does not
-        break this out by level or separate base salary.
+      notes: Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public
+        pages do not break this out by level or separate base salary.
   - role: data-scientist
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 103181
+        p50: 109109
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-scientist/locations/spain
+        url: https://www.levels.fyi/t/data-scientist/locations/greater-barcelona-area
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels for Spain. Levels.fyi's public summary does not
-        break this out by level or separate base salary.
+      notes: Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public
+        pages do not break this out by level or separate base salary.
+  - role: data-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 61119
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/t/data-analyst/locations/spain
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
+  - role: product-designer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 60989
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/t/product-designer/locations/spain
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.

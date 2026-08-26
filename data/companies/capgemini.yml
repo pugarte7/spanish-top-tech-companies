@@ -1,18 +1,18 @@
-slug: free-now
-name: FREE NOW
+slug: capgemini
+name: Capgemini
 compensation:
   currency: EUR
   basis: gross_annual
   roles:
-  - role: product-manager
+  - role: product-designer
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 66735
+        p50: 24273
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/product-manager/locations/spain
+        url: https://www.levels.fyi/t/product-designer/locations/spain
         date: '2026-08-26'
       last_verified: '2026-08-26'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break

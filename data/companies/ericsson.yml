@@ -1,32 +1,32 @@
-slug: semrush
-name: Semrush
+slug: ericsson
+name: Ericsson
 compensation:
   currency: EUR
   basis: gross_annual
   roles:
-  - role: software-engineer
+  - role: data-scientist
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 71712
+        p50: 48777
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/spain
+        url: https://www.levels.fyi/t/data-scientist/locations/spain
         date: '2026-08-26'
       last_verified: '2026-08-26'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
-  - role: data-analyst
+  - role: solution-architect
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 49717
+        p50: 69217
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-analyst/locations/spain
+        url: https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
+        pages do not break this out by level or separate base salary.

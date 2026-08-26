@@ -1,31 +1,31 @@
-slug: semrush
-name: Semrush
+slug: minsait
+name: Minsait
 compensation:
   currency: EUR
   basis: gross_annual
   roles:
-  - role: software-engineer
+  - role: business-analyst
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 71712
+        p50: 26758
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/spain
+        url: https://www.levels.fyi/t/business-analyst/locations/spain
         date: '2026-08-26'
       last_verified: '2026-08-26'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
-  - role: data-analyst
+  - role: information-technologist
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 49717
+        p50: 39371
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-analyst/locations/spain
+        url: https://www.levels.fyi/t/information-technologist/locations/spain
         date: '2026-08-26'
       last_verified: '2026-08-26'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break

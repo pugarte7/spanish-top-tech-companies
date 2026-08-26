@@ -1,5 +1,5 @@
-slug: semrush
-name: Semrush
+slug: adevinta
+name: Adevinta
 compensation:
   currency: EUR
   basis: gross_annual
@@ -9,23 +9,23 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 71712
+        p50: 63398
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/spain
+        url: https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area
         date: '2026-08-26'
       last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
-  - role: data-analyst
+      notes: Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public
+        pages do not break this out by level or separate base salary.
+  - role: software-engineering-manager
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 49717
+        p50: 94781
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-analyst/locations/spain
+        url: https://www.levels.fyi/t/software-engineering-manager/locations/spain
         date: '2026-08-26'
       last_verified: '2026-08-26'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break

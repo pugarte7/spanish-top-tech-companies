@@ -1,0 +1,45 @@
+slug: ntt-data
+name: NTT DATA
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: solution-architect
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 45817
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/t/solution-architect/locations/spain
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
+  - role: information-technologist
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 22097
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/t/information-technologist/locations/spain
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
+  - role: security-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 44721
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/t/security-analyst/locations/spain
+        date: '2026-08-26'
+      last_verified: '2026-08-26'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
