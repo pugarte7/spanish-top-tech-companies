@@ -108,6 +108,11 @@ def anchor(company: dict) -> str:
     return f"[{company['name']}](#{company['slug']})"
 
 
+def website_cell(company: dict) -> str:
+    url = company.get("website")
+    return f"[{company['name']}]({url})" if url else company["name"]
+
+
 def work_model_cell(company: dict) -> str:
     model = (company.get("work_model") or "—").capitalize()
     if company.get("work_model") == "remote" and company.get("remote_within_spain"):
@@ -140,8 +145,10 @@ def render_stats(companies: list[dict], backlog: int) -> str:
     parts = [
         f"**{len(listed)} companies**",
         f"**{len(bands)} salary bands**",
-        f"{points} data points",
     ]
+    # The public route publishes no sample sizes, so don't advertise "0 data points".
+    if points:
+        parts.append(f"{points} data points")
     if stale:
         parts.append(f"{stale} stale")
     if backlog:
@@ -153,6 +160,35 @@ def render_stats(companies: list[dict], backlog: int) -> str:
     if freshest:
         parts.append(f"newest data {freshest}")
     return " · ".join(parts)
+
+
+def render_benchmarks() -> str:
+    path = lib.ROOT / "data" / "benchmarks.json"
+    if not path.exists():
+        return "_No benchmarks yet._ Run `python3 scripts/fetch_levels_public.py`."
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    rows = payload.get("benchmarks") or []
+    if not rows:
+        return "_No benchmarks yet._"
+
+    rows.sort(key=lambda r: -(r.get("p50") or 0))
+    out = [
+        "| Role | Where | 25th pct | Median | 75th pct | 90th pct | Updated |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for row in rows:
+        out.append(
+            f"| [{row['role']}]({row['url']}) | {row.get('location') or '—'} | "
+            f"{k(row.get('p25'))} | **{k(row.get('p50'))}** | {k(row.get('p75'))} | "
+            f"{k(row.get('p90'))} | {row.get('last_updated', '—')} |"
+        )
+    out += [
+        "",
+        "<sub>**Total compensation** (base + bonus + annualised equity), gross annual, euros. "
+        "Not directly comparable with the base-salary figures in the tables below. "
+        "Data source: Levels.fyi (https://www.levels.fyi).</sub>",
+    ]
+    return "\n".join(out)
 
 
 def render_companies(companies: list[dict]) -> str:
@@ -170,16 +206,24 @@ def render_companies(companies: list[dict]) -> str:
         "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for c in listed:
-        hq = c.get("hq", {})
+        hq = c.get("hq") or {}
         location = ", ".join(x for x in (hq.get("city"), hq.get("country")) if x) or "—"
-        presence = PRESENCE_LABELS.get(c.get("spain_presence"), "")
+        contract = ", ".join(CONTRACT_LABELS.get(x, x) for x in (c.get("contract") or [])) or "—"
         rows.append(
             f"| **{anchor(c)}** | {', '.join(c.get('sector') or []) or '—'} | {location} | "
-            f"{offices_cell(c)} | {work_model_cell(c)} | "
-            f"{', '.join(CONTRACT_LABELS.get(x, x) for x in c.get('contract', []))} | "
-            f"{c.get('employees', '—')} | {careers_cell(c)} |"
+            f"{offices_cell(c)} | {work_model_cell(c)} | {contract} | "
+            f"{c.get('employees') or '—'} | {careers_cell(c)} |"
         )
+    incomplete = sum(1 for c in listed if not c.get("website") or not c.get("hq"))
     rows.append("")
+    if incomplete:
+        rows.append(
+            f"<sub>**{incomplete} of {len(listed)} companies were seeded from salary data "
+            "and still need their details filled in** (website, offices, contract type). "
+            "That is the easiest way to contribute — see "
+            "[CONTRIBUTING.md](CONTRIBUTING.md).</sub>"
+        )
+        rows.append("")
     rows.append(
         "<sub>_Offices in Spain_ is `None` when the company hires here without a local "
         "office, either directly or through an employer of record. _Work model_ says "
@@ -193,7 +237,7 @@ def render_salaries(companies: list[dict]) -> str:
     rows_data = []
     for c in companies:
         for role, level in lib.iter_levels(c):
-            rows_data.append((c, role, level, lib.reference_base(level.get("base", {})) or 0))
+            rows_data.append((c, role, level, lib.level_value(level) or 0))
     if not rows_data:
         return "_No salary data yet._"
     rows_data.sort(key=lambda r: -r[3])
@@ -230,11 +274,10 @@ def render_by_role(companies: list[dict]) -> str:
     for role in sorted(by_role, key=lambda r: (-len(by_role[r]), r)):
         entries = sorted(
             by_role[role],
-            key=lambda e: (lib.level_rank(e[1]["level"]), -(lib.reference_base(e[1]["base"]) or 0)),
+            key=lambda e: (lib.level_rank(e[1]["level"]), -(lib.level_value(e[1]) or 0)),
         )
         medians = sorted(
-            lib.reference_base(lvl["base"]) for _, lvl in entries
-            if lib.reference_base(lvl["base"]) is not None
+            v for v in (lib.level_value(lvl) for _, lvl in entries) if v is not None
         )
         headline = k(medians[len(medians) // 2]) if medians else "—"
         companies_count = len({c["slug"] for c, _ in entries})
@@ -251,7 +294,8 @@ def render_by_role(companies: list[dict]) -> str:
         for c, level in entries:
             lines.append(
                 f"| {anchor(c)} | {level['level']} | {money_cell(level.get('base'))} | "
-                f"{bar_cell(level.get('base'))} | {money_cell(level.get('total_comp'))} | "
+                f"{bar_cell(level.get('base') or level.get('total_comp'))} | "
+                f"{money_cell(level.get('total_comp'))} | "
                 f"{level.get('sample_size', '—')} | {updated_cell(level.get('last_verified'))} |"
             )
         lines += [
@@ -274,7 +318,7 @@ def render_profiles(companies: list[dict]) -> str:
     for c in listed:
         best = lib.top_band(c)
         summary_tail = f"{best[0]} {best[1]['level']} {k(best[2])}" if best else "no bands yet"
-        hq = c.get("hq", {})
+        hq = c.get("hq") or {}
         hq_text = ", ".join(x for x in (hq.get("city"), hq.get("country")) if x) or "unknown"
         offices = ", ".join(c.get("offices_es") or [])
         presence = c.get("spain_presence")
@@ -284,13 +328,16 @@ def render_profiles(companies: list[dict]) -> str:
             where = f"**Office in {offices or 'Spain'}** · HQ {hq_text}"
         elif presence == "eor":
             where = f"**Hires in Spain through an employer of record** · HQ {hq_text}"
-        else:
+        elif presence:
             where = f"**No office in Spain** · HQ {hq_text}"
+        else:
+            where = "**Location and contract not yet recorded**"
         facts = [
             where,
-            work_model_cell(c),
-            ", ".join(CONTRACT_LABELS.get(x, x) for x in c.get("contract", [])),
+            work_model_cell(c) if c.get("work_model") else None,
+            ", ".join(CONTRACT_LABELS.get(x, x) for x in (c.get("contract") or [])) or None,
         ]
+        facts = [f for f in facts if f]
         if c.get("employees"):
             facts.append(f"{c['employees']} employees")
         if c.get("working_language"):
@@ -331,7 +378,7 @@ def render_profiles(companies: list[dict]) -> str:
         if c.get("notes"):
             lines += [c["notes"], ""]
 
-        links = [f"[Website]({c['website']})"]
+        links = [f"[Website]({c['website']})"] if c.get("website") else []
         if c.get("careers_url"):
             links.append(f"[Open positions]({c['careers_url']})")
         if c.get("linkedin_id"):
@@ -418,6 +465,7 @@ def main() -> int:
     companies = lib.load_companies()
     text = README.read_text(encoding="utf-8")
     text = replace_block(text, "STATS", render_stats(companies, count_backlog()))
+    text = replace_block(text, "BENCHMARKS", render_benchmarks())
     text = replace_block(text, "COMPANIES", render_companies(companies))
     text = replace_block(text, "SALARIES", render_salaries(companies))
     text = replace_block(text, "BY_ROLE", render_by_role(companies))

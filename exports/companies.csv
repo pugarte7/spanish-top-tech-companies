@@ -1,1 +1,16 @@
 slug,name,linkedin_id,website,careers_url,hq_city,hq_country,spain_presence,offices_es,employees,sector,work_model,remote_within_spain,contract,working_language,role,level,base_min,base_p50,base_max,tc_min,tc_p50,tc_max,bonus_pct,equity,data_points,sources,last_verified
+amazon,Amazon,,,,,,,,,,,,,,software-engineer,all,,,,,82722,,,,,levels.fyi,2026-08-26
+amazon,Amazon,,,,,,,,,,,,,,product-manager,all,,,,,73495,,,,,levels.fyi,2026-08-26
+bcg,BCG,,,,,,,,,,,,,,data-scientist,all,,,,,89275,,,,,levels.fyi,2026-08-26
+datadog,Datadog,,,,,,,,,,,,,,software-engineer,all,,,,,109357,,,,,levels.fyi,2026-08-26
+free-now,FREE NOW,,,,,,,,,,,,,,product-manager,all,,,,,66657,,,,,levels.fyi,2026-08-26
+glovo,Glovo,,,,,,,,,,,,,,data-scientist,all,,,,,69297,,,,,levels.fyi,2026-08-26
+glovo,Glovo,,,,,,,,,,,,,,product-manager,all,,,,,67155,,,,,levels.fyi,2026-08-26
+hpe,HPE,,,,,,,,,,,,,,data-scientist,all,,,,,65968,,,,,levels.fyi,2026-08-26
+microsoft,Microsoft,,,,,,,,,,,,,,software-engineer,all,,,,,88392,,,,,levels.fyi,2026-08-26
+novakid,NovaKid,,,,,,,,,,,,,,product-manager,all,,,,,56232,,,,,levels.fyi,2026-08-26
+pepsico,PepsiCo,,,,,,,,,,,,,,data-scientist,all,,,,,75652,,,,,levels.fyi,2026-08-26
+revolut,Revolut,,,,,,,,,,,,,,software-engineer,all,,,,,102054,,,,,levels.fyi,2026-08-26
+revolut,Revolut,,,,,,,,,,,,,,data-scientist,all,,,,,103181,,,,,levels.fyi,2026-08-26
+sage,Sage,,,,,,,,,,,,,,product-manager,all,,,,,74956,,,,,levels.fyi,2026-08-26
+semrush,Semrush,,,,,,,,,,,,,,software-engineer,all,,,,,71628,,,,,levels.fyi,2026-08-26

@@ -24,6 +24,7 @@ STALE_DAYS = 365
 LEVEL_ORDER = [
     "intern", "junior", "mid", "senior", "staff",
     "principal", "lead", "manager", "director",
+    "all",  # aggregate across every level; sorts last
 ]
 
 # Canonical role slugs. Anything else validates but gets a warning, so the
@@ -94,11 +95,25 @@ def iter_levels(company: dict):
             yield role["role"], level
 
 
+def level_value(level: dict) -> int | None:
+    """The number a band is judged on.
+
+    Base salary when we have it. Country-level aggregates only publish total
+    compensation, and a company we only know through one of those is still
+    worth listing, so fall back to it. The tables print base and total comp in
+    separate columns, so which one a row rests on stays visible.
+    """
+    value = reference_base(level.get("base") or {})
+    if value is not None:
+        return value
+    return reference_base(level.get("total_comp") or {})
+
+
 def top_band(company: dict):
-    """Highest documented band, as (role, level, reference_base)."""
+    """Highest documented band, as (role, level, value)."""
     best = None
     for role, level in iter_levels(company):
-        ref = reference_base(level.get("base", {}))
+        ref = level_value(level)
         if ref is None:
             continue
         if best is None or ref > best[2]:

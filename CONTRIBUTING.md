@@ -35,6 +35,17 @@ python3 scripts/import_csv.py my-export.csv
 
 Columns are documented at the top of [`scripts/import_csv.py`](scripts/import_csv.py). It merges into existing files rather than overwriting them.
 
+**From Levels.fyi's public pages** (no key needed):
+
+```bash
+python3 scripts/fetch_levels_public.py            # all job families
+python3 scripts/fetch_levels_public.py --dry-run  # just show the URLs
+```
+
+This reads the markdown routes Levels.fyi publishes for agents and asks attribution for. It gives Spain-wide benchmarks and top-paying-company medians, at level `all`, as total compensation. It cannot give per-level ladders, base-salary splits or sample sizes.
+
+Those pages are served from a 12-hour CDN cache and return nothing when cold, so any single run picks up only part of the data. Running it repeatedly over a few days accumulates coverage; it never overwrites a good band with an empty one.
+
 **From the Levels.fyi API** (needs a key, request one at [levels.fyi/api-access](https://www.levels.fyi/api-access/)):
 
 ```bash

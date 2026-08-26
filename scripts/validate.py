@@ -78,6 +78,10 @@ def main() -> int:
         else:
             warnings.append(f"{where}: no linkedin_id")
 
+        for field in ("website", "hq", "spain_presence", "contract", "work_model"):
+            if not payload.get(field):
+                warnings.append(f"{where}: {field} not filled in yet")
+
         for role, level in lib.iter_levels(payload):
             check_bands(where, role, level)
 

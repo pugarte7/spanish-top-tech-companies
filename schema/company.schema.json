@@ -8,10 +8,6 @@
   "required": [
     "slug",
     "name",
-    "website",
-    "hq",
-    "spain_presence",
-    "contract",
     "compensation"
   ],
   "properties": {
@@ -173,8 +169,7 @@
                   "required": [
                     "level",
                     "base",
-                    "sources",
-                    "last_verified"
+                    "sources"
                   ],
                   "properties": {
                     "level": {
@@ -187,13 +182,15 @@
                         "principal",
                         "lead",
                         "manager",
-                        "director"
-                      ]
+                        "director",
+                        "all"
+                      ],
+                      "description": "'all' means the figure spans every level, as country-level aggregates do."
                     },
                     "base": {
                       "type": "object",
                       "additionalProperties": false,
-                      "minProperties": 1,
+                      "minProperties": 0,
                       "properties": {
                         "min": {
                           "type": "integer",

@@ -49,6 +49,16 @@ Their level names are per-company (`L4`, `IC3`, `Senior Engineer`). The fetcher 
 
 Never include anything that identifies a person: no names, no team, no "the guy who joined in March". A band with `sample_size: 1` is fine; a band that points at someone is not.
 
+## Levels and the `all` aggregate
+
+A band at level `all` is a median across every seniority, which is what Levels.fyi's public country pages publish. It is a weaker signal than a per-level band: a company with a high `all` figure may simply employ more senior people. Treat it as a starting point and replace it with per-level data when someone has it.
+
+## Base salary versus total compensation
+
+The 60k threshold applies to `base` when we know it. Where a company is known only through an aggregate that publishes total compensation, the threshold falls back to `total_comp`, because leaving the company out entirely would be less useful than listing it with the caveat visible. The tables print base and total compensation in separate columns, so which figure a row rests on is always visible: a row with `—` under *Base salary* rests on total comp.
+
+Total compensation is base plus bonus plus annualised equity. It is a bigger number than base for the same job. Do not compare the two columns to each other.
+
 ## Freshness
 
 `last_verified` is the day a human last confirmed the band, not the day it was first added. Anything older than **365 days** renders as ⚠️ in the README and shows up as a warning in `validate.py`.

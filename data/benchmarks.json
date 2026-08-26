@@ -1,0 +1,45 @@
+{
+  "attribution": "Data source: Levels.fyi (https://www.levels.fyi)",
+  "generated": "2026-08-26",
+  "benchmarks": [
+    {
+      "url": "https://www.levels.fyi/t/data-scientist/locations/spain",
+      "currency": "EUR",
+      "last_updated": "2026-08-26",
+      "p50": 54583,
+      "p25": 38353,
+      "p75": 75652,
+      "p90": 89565,
+      "location": "Spain",
+      "role": "data-scientist",
+      "family": "data-scientist",
+      "location_slug": "spain"
+    },
+    {
+      "url": "https://www.levels.fyi/t/product-manager/locations/spain",
+      "currency": "EUR",
+      "last_updated": "2026-08-26",
+      "p50": 73495,
+      "p25": 56232,
+      "p75": 99830,
+      "p90": 118517,
+      "location": "Spain",
+      "role": "product-manager",
+      "family": "product-manager",
+      "location_slug": "spain"
+    },
+    {
+      "url": "https://www.levels.fyi/t/software-engineer/locations/spain",
+      "currency": "EUR",
+      "last_updated": "2026-08-26",
+      "p50": 54872,
+      "p25": 38111,
+      "p75": 76454,
+      "p90": 97457,
+      "location": "Spain",
+      "role": "software-engineer",
+      "family": "software-engineer",
+      "location_slug": "spain"
+    }
+  ]
+}
