@@ -16,7 +16,7 @@ linkedin_id,name,levels_slug,status,notes
 1028,Oracle,oracle,resolved,
 10280968,Cleo,cleo,resolved,
 1035,Microsoft,microsoft,resolved,
-103531,Just Eat Takeaway.com,just-eat,review,loose match to 'Just Eat' (22 rows) - confirm before trusting
+103531,Just Eat Takeaway.com,just-eat,resolved,"matched as Just Eat, confirmed by maintainer"
 10424439,Alan,alan,resolved,
 1043,Siemens,siemens,resolved,
 10442437,sennder,sennder,resolved,
@@ -43,9 +43,9 @@ linkedin_id,name,levels_slug,status,notes
 11348,Booking.com,bookingcom,resolved,
 11520354,DeepL,deepl,resolved,
 1173,ABN AMRO Bank N.V.,abn-amro,resolved,matched as ABN AMRO
-11826960,Disney Streaming,disney,review,loose match to 'Disney' (38 rows) - confirm before trusting
+11826960,Disney Streaming,disney,resolved,"matched as Disney, confirmed by maintainer"
 1207,Johnson & Johnson,johnson-and-johnson,resolved,
-1214453,Lucid Software,lucid,review,loose match to 'Lucid' (15 rows) - confirm before trusting
+1214453,Lucid Software,lucid,resolved,"matched as Lucid, confirmed by maintainer"
 123380,Skyscanner,skyscanner,resolved,
 12515,JetBrains,jetbrains,resolved,
 12596773,MoonPay,moonpay,resolved,
@@ -73,11 +73,11 @@ linkedin_id,name,levels_slug,status,notes
 150573,"Reddit, Inc.",reddit,resolved,
 15156062,dLocal,dlocal,resolved,
 15191764,Snap Inc.,snap,resolved,
-15211263,Da Vinci,da-vinci-derivatives,review,loose match to 'Da Vinci Derivatives' (2 rows) - confirm before trusting
+15211263,Da Vinci,da-vinci-derivatives,resolved,"matched as Da Vinci Derivatives, confirmed by maintainer"
 15415277,Activision Blizzard,activision-blizzard,resolved,
 1545609,Toptal,toptal,resolved,
 157356,Thoughtworks,thoughtworks,resolved,
-1594050,Google DeepMind,google,review,loose match to 'Google' (64 rows) - confirm before trusting
+1594050,Google DeepMind,google,resolved,"matched as Google, confirmed by maintainer"
 1603,AstraZeneca,astrazeneca,resolved,
 1612748,Slack,slack,resolved,
 16181286,Vercel,vercel,resolved,
@@ -108,7 +108,7 @@ linkedin_id,name,levels_slug,status,notes
 1893,Bayer,bayer,resolved,
 19029173,Miro,miro,resolved,
 1970,Rabobank,rabobank,resolved,
-200030,IMC Trading,imc,review,loose match to 'IMC' (13 rows) - confirm before trusting
+200030,IMC Trading,imc,resolved,"matched as IMC, confirmed by maintainer"
 2057437,Scopely,scopely,resolved,
 20708,Palantir Technologies,palantir,resolved,
 207470,Spotify,spotify,resolved,
@@ -123,7 +123,7 @@ linkedin_id,name,levels_slug,status,notes
 230546,King,king,resolved,
 2329,Schneider Electric,schneider-electric,resolved,
 2346695,Fever,fever,resolved,
-2382910,Amazon Web Services (AWS),amazon,review,loose match to 'Amazon' (75 rows) - confirm before trusting
+2382910,Amazon Web Services (AWS),amazon,resolved,"matched as Amazon, confirmed by maintainer"
 2387,BMW Group,bmw-group,resolved,
 2394728,Cabify,cabify,resolved,
 2400901,Smile.io,smileio,resolved,
@@ -194,7 +194,7 @@ linkedin_id,name,levels_slug,status,notes
 426253,New Relic,new-relic,resolved,
 434598,Flywire,flywire,resolved,
 4793443,Back Market,back-market,resolved,
-4856,EF,ef-education-first,review,loose match to 'EF Education First' (11 rows) - confirm before trusting
+4856,EF,ef-education-first,resolved,"matched as EF Education First, confirmed by maintainer"
 49445,Intellias,intellias,resolved,
 49697,Medallia,medallia,resolved,
 5043989,SeQura,,unmatched,
@@ -222,7 +222,7 @@ linkedin_id,name,levels_slug,status,notes
 78383639,Compound,compound,resolved,
 78395355,Collate,collate,resolved,
 784322,Vorwerk Group,,unmatched,
-78833680,Meta Facebook,facebook,review,loose match to 'Meta' (58 rows) - confirm before trusting
+78833680,Meta Facebook,facebook,resolved,"matched as Meta, confirmed by maintainer"
 80114151,ClickHouse,clickhouse,resolved,
 8095,VistaPrint,vistaprint,resolved,
 869560,Feedzai,feedzai,resolved,
@@ -236,9 +236,9 @@ linkedin_id,name,levels_slug,status,notes
 93621491,Teya,teya,resolved,
 9408755,Bumble Inc.,bumble,resolved,
 94273421,Mistral,mistral-ai,resolved,matched as Mistral AI
-94799807,Volkswagen Digital:Hub,volkswagen,review,loose match to 'Volkswagen' (27 rows) - confirm before trusting
+94799807,Volkswagen Digital:Hub,volkswagen,resolved,"matched as Volkswagen, confirmed by maintainer"
 9480749,Clarity AI,clarity-ai,resolved,
-9486856,"SparkPost, a MessageBird company",bird,review,loose match to 'Bird' (13 rows) - confirm before trusting
+9486856,"SparkPost, a MessageBird company",bird,resolved,"matched as Bird, confirmed by maintainer"
 95972483,Xoople,,unmatched,
 99465223,Compound,compound,resolved,
 999183,T-Systems Iberia,t-systems,resolved,matched as T-Systems
