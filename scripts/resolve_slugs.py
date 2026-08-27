@@ -12,6 +12,9 @@ from __future__ import annotations
 
 import argparse
 import csv
+import difflib
+import gzip
+import json
 import re
 import sys
 import time
@@ -26,10 +29,16 @@ class Blocked(RuntimeError):
     """Levels.fyi's WAF returned a bot challenge."""
 
 
+# A throttled probe must never be mistaken for "this company is not on
+# Levels.fyi": that verdict gets written to backlog.csv and the row is then
+# skipped by every later run. 404 means absent; these mean "ask again later".
+THROTTLE_CODES = frozenset({403, 405, 429, 503})
+
+
 def check_blocked(status: int, body: str | None) -> None:
-    if status == 405 or (body and "Human Verification" in body[:2000]):
+    if status in THROTTLE_CODES or (body and "Human Verification" in body[:2000]):
         raise Blocked(
-            "Levels.fyi served a bot challenge (HTTP 405, 'Human Verification').\n"
+            f"Levels.fyi served a bot challenge (HTTP {status}).\n"
             "You are being rate limited. Do not retry in a loop and do not try to\n"
             "work around it: wait for it to clear, then re-run with a much larger\n"
             "--delay. For bulk access, use the official API: "
@@ -44,6 +53,44 @@ SUFFIXES = r"(inc|llc|ltd|limited|plc|gmbh|ag|se|nv|n\.?v|sa|s\.?a|sl|s\.?l|ab|a
            r"corp|corporation|company|group|holdings|technologies|technology|labs|" \
            r"international|worldwide|global)"
 
+# Names where the LinkedIn page and the Levels.fyi page simply disagree, and no
+# amount of string surgery bridges them: rebrands (SparkPost -> Bird), local
+# subsidiaries billed under the parent (T-Systems Iberia -> T-Systems), and
+# compounds Levels.fyi splits but LinkedIn does not (Freenow -> free-now).
+# Keyed by normalise(); values are tried before the derived guesses, in order.
+# Still verified like any other candidate, so a stale entry fails loudly.
+ALIASES: dict[str, list[str]] = {
+    "meta facebook": ["facebook", "meta"],
+    "amazon web services aws": ["amazon"],
+    "google deepmind": ["google"],
+    # Levels.fyi still files the merged group under the pre-merger brand, and
+    # the derived guesses land on "just", an unrelated company called JUST.
+    "just eat takeaway com": ["just-eat"],
+    "abn amro bank": ["abn-amro"],
+    "ef": ["ef-education-first", "education-first"],
+    "perplexity": ["perplexity-ai"],
+    "mistral": ["mistral-ai"],
+    "disney streaming": ["disney", "walt-disney-company", "disney-streaming"],
+    "vistaprint": ["cimpress", "vista-print"],
+    "bosch": ["robert-bosch", "bosch-global"],
+    "vorwerk": ["vorwerk-group"],
+    "volkswagen digital hub": ["volkswagen", "volkswagen-group"],
+    "sparkpost a messagebird": ["bird", "messagebird", "sparkpost"],
+    "the trade desk": ["the-trade-desk"],
+    "imc trading": ["imc", "imc-financial-markets"],
+    "olx": ["olx-group", "olx-autos"],
+    "freenow": ["free-now", "freenow"],
+    "t systems iberia": ["t-systems"],
+    "adevinta spain": ["adevinta"],
+    "the workshop": ["workshop"],
+    "da vinci": ["da-vinci-derivatives", "davinci"],
+    "compound": ["compound-finance", "compound-labs"],
+    "radix": ["radix-dlt"],
+    "auro": ["auro-travel"],
+    "perk": ["perkbox"],
+    "collate": ["collate-io", "open-metadata"],
+}
+
 
 def slugify(text: str, joiner: str = "-") -> str:
     text = text.lower().replace("&", " and ")
@@ -52,43 +99,158 @@ def slugify(text: str, joiner: str = "-") -> str:
 
 
 def candidates(name: str) -> list[str]:
+    """Slug guesses, most specific first.
+
+    Verification happens afterwards, so loose guesses are safe to include:
+    a wrong one gets rejected by the name check rather than silently accepted.
+    """
     out: list[str] = []
 
     def add(value: str) -> None:
+        value = (value or "").strip(" .,:-")
+        if not value:
+            return
         for joiner in ("-", ""):
             slug = slugify(value, joiner)
             if slug and slug not in out:
                 out.append(slug)
 
+    def add_slug(slug: str) -> None:
+        if slug and slug not in out:
+            out.append(slug)
+
+    # Curated aliases win: they are the ones a human already confirmed.
+    for alias in ALIASES.get(normalise(name), []):
+        add_slug(alias)
+
     add(name)
 
-    # "Electronic Arts (EA)" -> the acronym is usually the slug
+    # "Electronic Arts (EA)", "Amazon Web Services (AWS)"
     inner = re.findall(r"\(([^)]+)\)", name)
     outer = re.sub(r"\s*\([^)]*\)", "", name).strip()
     if outer and outer != name:
         add(outer)
+
+    # "Confluent, an IBM Company" | "Ryanair - Europe's..." | "Volkswagen Digital:Hub"
+    head = re.split(r"\s*[,|:]\s*| - ", outer or name)[0].strip()
+    add(head)
+
+    # Leading article: "The Trade Desk" -> "trade-desk"
+    if head.lower().startswith("the "):
+        add(head[4:])
+
+    # Legal and descriptive tails, stripped repeatedly: "Bumble Inc." -> "bumble"
+    trimmed = head
+    for _ in range(3):
+        stepped = re.sub(rf"\b{SUFFIXES}\b\.?$", "", trimmed, flags=re.I).strip(" .,")
+        if stepped == trimmed:
+            break
+        trimmed = stepped
+        add(trimmed)
+
+    # Trailing product/segment words: "DeepSeek AI", "Clarity AI", "Adevinta Spain"
+    tail = re.sub(r"\s+(ai|spain|iberia|streaming|official|digital|hub|bank|"
+                  r"trading|systems|studios)$", "", trimmed, flags=re.I).strip()
+    if tail and tail != trimmed:
+        add(tail)
+
+    # "Crunch.io", "Just Eat Takeaway.com"
+    dotted = re.sub(r"\.(com|io|ai|co|org|net|es)\b", "", name, flags=re.I).strip()
+    if dotted != name:
+        add(dotted)
+
+    # Levels.fyi hyphenates compounds that LinkedIn runs together:
+    # "ClickHouse" -> click-house, "SpliceBio" -> splice-bio, "MyInvestor" -> my-investor.
+    split = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", head)
+    if split != head:
+        add(split)
+
+    # "Perplexity" -> perplexity-ai, "Mistral" -> mistral-ai. The bare form is
+    # already queued above, so this only ever adds a fallback.
+    if not re.search(r"\bai$", trimmed, flags=re.I):
+        add_slug(f"{slugify(trimmed)}-ai")
+
     for value in inner:
         if len(value) <= 30:
             add(value)
 
-    # "Confluent, an IBM Company" / "Ryanair - Europe's Favourite Airline"
-    head = re.split(r"\s*[,|]\s*| - ", name)[0].strip()
-    if head and head != name:
-        add(head)
+    # Last resort: the first word, only for multi-word names. Cheap to test and
+    # the verification step throws it out if it lands somewhere unrelated.
+    first = head.split()[0] if head.split() else ""
+    if len(head.split()) > 1 and len(first) > 3:
+        add(first)
 
-    # Drop legal tails, one at a time
-    stripped = re.sub(rf"\b{SUFFIXES}\b\.?$", "", head or name, flags=re.I).strip(" .,")
-    if stripped and stripped != (head or name):
-        add(stripped)
-
-    # "Booking.com" -> booking
-    dotted = re.sub(r"\.(com|io|ai|co|org|net)\b", "", name, flags=re.I).strip()
-    if dotted != name:
-        add(dotted)
-
-    return out[:6]
+    return out[:12]
 
 
+def normalise(text: str) -> str:
+    text = text.lower().replace("&", " and ")
+    text = re.sub(rf"\b{SUFFIXES}\b", " ", text, flags=re.I)
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", text).split())
+
+
+def verify(slug: str, name: str, delay: float) -> tuple[str, str, int]:
+    """Fetch the page and decide whether it is really this company.
+
+    Returns (verdict, their_name, data_rows) where verdict is "strong",
+    "review" or "no". A slug only counts when the name on the page resembles
+    the one we asked for AND the page carries salary data - entries are the
+    strong signal that it is the right company. Loose substring matches go to
+    "review" rather than being accepted silently.
+    """
+    request = urllib.request.Request(
+        f"{BASE}/{slug}/salaries",
+        headers={"User-Agent": UA, "Accept-Encoding": "gzip",
+                 "Accept": "text/html,application/xhtml+xml"})
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            raw = response.read()
+            if response.headers.get("Content-Encoding") == "gzip":
+                raw = gzip.decompress(raw)
+            body = raw.decode("utf-8", "replace")
+        check_blocked(200, body)
+    except urllib.error.HTTPError as exc:
+        check_blocked(exc.code, None)
+        return "no", "", 0
+    except urllib.error.URLError:
+        return "no", "", 0
+    finally:
+        time.sleep(delay)
+
+    match = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', body, re.S)
+    if not match:
+        return "no", "", 0
+    try:
+        props = json.loads(match.group(1))["props"]["pageProps"]
+    except (KeyError, json.JSONDecodeError):
+        return "no", "", 0
+
+    record = props.get("company") or {}
+    theirs = record.get("name") or ""
+    rows = len(props.get("overview") or [])
+
+    ours_n, theirs_n = normalise(name), normalise(theirs)
+    aliases = [normalise(a) for a in (record.get("aliases") or []) if isinstance(a, str)]
+    ratio = difflib.SequenceMatcher(None, ours_n, theirs_n).ratio()
+
+    if not theirs_n or rows == 0:
+        return "no", theirs, rows
+    if ours_n == theirs_n or ours_n in aliases or ratio >= 0.85:
+        return "strong", theirs, rows
+
+    # Containment only counts when the shorter name covers most of the longer.
+    # Without this, "Just Eat Takeaway.com" matches a company called "JUST".
+    short, long = sorted((ours_n, theirs_n), key=len)
+    coverage = len(short) / len(long) if long else 0
+    if short in long and coverage >= 0.6:
+        return "strong", theirs, rows
+    if ratio >= 0.72:
+        return "strong", theirs, rows
+    if short in long:
+        # Right shape for a parent company (AWS -> Amazon), and the right shape
+        # for a coincidence. A human decides.
+        return "review", theirs, rows
+    return "no", theirs, rows
 def exists(slug: str, delay: float) -> bool:
     request = urllib.request.Request(
         f"{BASE}/{slug}/salaries", method="HEAD",
@@ -113,6 +275,10 @@ def main(argv: list[str]) -> int:
                         help="Seconds between probes. Below ~1.5 trips their WAF.")
     parser.add_argument("--retry-missing", action="store_true",
                         help="Re-probe rows already marked unmatched.")
+    parser.add_argument("--only", metavar="STATUS", action="append", default=[],
+                        help="Restrict the run to rows with this status. Repeatable. "
+                             "Pair with --retry-missing to re-probe just the "
+                             "unmatched rows instead of all 240-odd.")
     args = parser.parse_args(argv)
 
     path = lib.ROOT / "data" / "backlog.csv"
@@ -120,32 +286,58 @@ def main(argv: list[str]) -> int:
         rows = list(csv.DictReader(fh))
 
     fields = ["linkedin_id", "name", "levels_slug", "status", "notes"]
-    hits = misses = skipped = 0
+    hits = misses = skipped = review = 0
 
     try:
       for row in rows:
         name = (row.get("name") or "").strip()
         if not name:
             continue
+        if args.only and row.get("status") not in args.only:
+            skipped += 1
+            continue
         if row.get("levels_slug") and not args.retry_missing:
             skipped += 1
             continue
-        if row.get("status") == "unmatched" and not args.retry_missing:
+        if row.get("status") in ("unmatched", "review") and not args.retry_missing:
             skipped += 1
             continue
 
+        pending = None
         for slug in candidates(name):
-            if exists(slug, args.delay):
+            if not exists(slug, args.delay):
+                continue
+            verdict, theirs, found = verify(slug, name, args.delay)
+            if verdict == "strong":
                 row["levels_slug"] = slug
                 row["status"] = "resolved"
+                row["notes"] = "" if normalise(theirs) == normalise(name) else f"matched as {theirs}"
                 hits += 1
-                print(f"  {name}  ->  {slug}")
+                print(f"  {name}  ->  {slug}  ({theirs}, {found} rows)")
                 break
+            if verdict == "review":
+                if pending is None:
+                    pending = (slug, theirs, found)
+                else:
+                    # Also plausible, but an earlier candidate got there first.
+                    # Worth printing: whoever confirms the review needs to know
+                    # the runner-up existed.
+                    print(f"    also possible {slug}: page is '{theirs}' ({found} rows)")
+            elif theirs:
+                print(f"    rejected {slug}: page is '{theirs}' ({found} rows)")
         else:
-            row["levels_slug"] = ""
-            row["status"] = "unmatched"
-            misses += 1
-            print(f"  {name}  ->  not on Levels.fyi")
+            if pending:
+                slug, theirs, found = pending
+                row["levels_slug"] = slug
+                row["status"] = "review"
+                row["notes"] = f"loose match to '{theirs}' ({found} rows) - confirm before trusting"
+                review += 1
+                print(f"  {name}  ->  {slug}?  needs review (page says '{theirs}', {found} rows)")
+            else:
+                row["levels_slug"] = ""
+                row["status"] = "unmatched"
+                misses += 1
+                print(f"  {name}  ->  not on Levels.fyi")
 
     except Blocked as exc:
         print(f"\n{exc}", file=sys.stderr)
@@ -157,7 +349,7 @@ def main(argv: list[str]) -> int:
         for row in rows:
             writer.writerow({k: row.get(k, "") for k in fields})
 
-    print(f"\n{hits} matched, {misses} unmatched, {skipped} already done")
+    print(f"\n{hits} matched, {review} need review, {misses} unmatched, {skipped} already done")
     return 0
 
 
