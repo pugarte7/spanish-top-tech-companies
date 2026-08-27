@@ -3,7 +3,7 @@
 A list of companies that pay 60.000 € gross per year or more to people working from Spain, with the salary bands, where they came from, and when they were last checked.
 
 <!-- BEGIN:STATS -->
-**33 companies** · **288 salary bands** · 946 data points · 243 companies not yet researched · newest data 2026-08-26
+**33 companies** · **288 salary bands** · 946 data points · newest data 2026-08-26
 <!-- END:STATS -->
 
 ## Why

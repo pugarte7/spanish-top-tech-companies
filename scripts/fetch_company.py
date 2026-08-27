@@ -41,6 +41,21 @@ UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/128.0 Safari/537.36")
 NEXT_DATA = re.compile(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', re.S)
 
+class Blocked(RuntimeError):
+    """Levels.fyi's WAF returned a bot challenge."""
+
+
+def check_blocked(status: int, body: str | None) -> None:
+    if status == 405 or (body and "Human Verification" in body[:2000]):
+        raise Blocked(
+            "Levels.fyi served a bot challenge (HTTP 405, 'Human Verification').\n"
+            "You are being rate limited. Do not retry in a loop and do not try to\n"
+            "work around it: wait for it to clear, then re-run with a much larger\n"
+            "--delay. For bulk access, use the official API: "
+            "https://www.levels.fyi/api-access/"
+        )
+
+
 # Their ladders are generic (L1..L5). Map by position and keep the original in
 # notes so a wrong guess stays visible.
 LADDER = ["junior", "mid", "senior", "staff", "principal"]
@@ -58,6 +73,7 @@ def get(url: str, delay: float) -> str | None:
                 raw = gzip.decompress(raw)
             return raw.decode("utf-8", "replace")
     except urllib.error.HTTPError as exc:
+        check_blocked(exc.code, None)
         if exc.code != 404:
             print(f"  HTTP {exc.code} for {url}", file=sys.stderr)
         return None
@@ -196,7 +212,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--company", action="append", default=[], help="Levels.fyi slug. Repeatable.")
     parser.add_argument("--all", action="store_true", help="Every company already in data/companies/.")
     parser.add_argument("--from-backlog", action="store_true", help="Resolved names in data/backlog.csv.")
-    parser.add_argument("--delay", type=float, default=1.0)
+    parser.add_argument("--delay", type=float, default=3.0,
+                        help="Seconds between pages. These are 400KB each; be generous.")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
 
@@ -208,8 +225,8 @@ def main(argv: list[str]) -> int:
         path = lib.ROOT / "data" / "backlog.csv"
         if path.exists():
             with path.open(encoding="utf-8") as fh:
-                slugs += [row.get("slug") or slugify(row.get("name", ""))
-                          for row in csv.DictReader(fh) if row.get("name")]
+                slugs += [row["levels_slug"] for row in csv.DictReader(fh)
+                          if row.get("levels_slug")]
     slugs = [s for s in dict.fromkeys(slugs) if s]
     if not slugs:
         parser.error("give --company SLUG, --all, or --from-backlog")
@@ -221,13 +238,21 @@ def main(argv: list[str]) -> int:
 
     today = lib.today_utc().isoformat()
     ok = missing = wrong_currency = 0
+    consecutive_missing = 0
     total_filled = total_bands = 0
     for slug in slugs:
         props = props_for(slug, args.delay)
         if not props or not props.get("company"):
             print(f"  {slug}: no page")
             missing += 1
+            consecutive_missing += 1
+            if consecutive_missing >= 8:
+                print("\nStopping: 8 pages in a row returned nothing, which usually\n"
+                      "means the WAF is challenging us. Wait, then retry with a\n"
+                      "larger --delay.", file=sys.stderr)
+                break
             continue
+        consecutive_missing = 0
         currency = props.get("locationCurrency")
         if currency != "EUR":
             # A company with no Spanish submissions falls back to its own
