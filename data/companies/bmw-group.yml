@@ -1,0 +1,16 @@
+slug: bmw-group
+name: BMW Group
+website: https://www.bmwgroup.com
+hq:
+  city: München
+  country: DE
+employees: 10,001+
+sector:
+- automotive
+- b2c
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/bmw-group
+year_founded: 1916

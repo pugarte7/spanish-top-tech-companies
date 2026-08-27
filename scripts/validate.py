@@ -34,6 +34,17 @@ def check_bands(where: str, role: str, level: dict) -> None:
         if source_date and source_date > lib.today_utc():
             errors.append(f"{where}: {role}/{level.get('level')} source date is in the future")
 
+        # A Levels.fyi company page is NOT filtered to Spain: it shows the
+        # company's global figures in the reader's currency. Bands sourced from
+        # one are somebody else's country's pay. Only URLs that name a location
+        # are trustworthy here.
+        url = source.get("url") or ""
+        if "levels.fyi" in url and "/locations/" not in url:
+            errors.append(
+                f"{where}: {role}/{level.get('level')} cites a Levels.fyi URL with no "
+                f"location in it ({url}) - that data is not Spain-scoped"
+            )
+
     if role not in lib.CANONICAL_ROLES:
         warnings.append(f"{where}: '{role}' is not a canonical role slug (see METHODOLOGY.md)")
     if lib.is_stale(level.get("last_verified")):

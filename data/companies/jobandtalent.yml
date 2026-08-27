@@ -1,0 +1,18 @@
+slug: jobandtalent
+name: Jobandtalent
+website: https://www.jobandtalent.com
+hq:
+  city: Madrid
+  country: ES
+employees: 1,001-10,000
+sector:
+- human-resources
+- consulting
+- agency
+- technology
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/jobandtalent
+year_founded: 2009

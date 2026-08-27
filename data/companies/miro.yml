@@ -1,0 +1,16 @@
+slug: miro
+name: Miro
+website: https://miro.com
+hq:
+  city: San Francisco
+  country: US
+employees: 1,001-10,000
+sector:
+- information-technology-services
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/mirohq
+year_founded: 2011
+notes: 'Online collaboration software for teams. Equity: Options vesting 25,25,25,25|25/1,25/12,25/12,25/12.'

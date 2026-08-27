@@ -1,0 +1,18 @@
+slug: ing
+name: ING
+website: https://www.ing.com
+hq:
+  city: Amsterdam
+  country: NL
+employees: 10,001+
+sector:
+- financial-services
+- consulting-professional-services
+- banking-mortgages
+- b2b
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/ing
+year_founded: 1991

@@ -18,37 +18,13 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 38637
+        p50: 41192
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/aily-labs/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 5
-  - role: software-engineer
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 105283
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/aily-labs/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: software-engineering-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 120685
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/aily-labs/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+        url: https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
+        pages do not break this out by level or separate base salary.
 linkedin_url: https://www.linkedin.com/company/ailylabs
 year_founded: 2019

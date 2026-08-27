@@ -19,74 +19,13 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 120085
+        p50: 119944
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/factorial/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 3
-  - role: software-engineer
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 54127
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/factorial/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 8
-  - role: business-analyst
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 29064
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/factorial/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: data-scientist
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 57641
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/factorial/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: product-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 67753
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/factorial/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: software-engineering-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 72950
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/factorial/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+        url: https://www.levels.fyi/t/product-designer/locations/spain
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
 linkedin_url: https://www.linkedin.com/company/factorialhr
 year_founded: 2016

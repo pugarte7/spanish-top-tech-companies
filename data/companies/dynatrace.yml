@@ -1,0 +1,19 @@
+slug: dynatrace
+name: Dynatrace
+website: https://www.dynatrace.com
+hq:
+  city: Waltham
+  country: US
+employees: 1,001-10,000
+sector:
+- information-technology-services
+- technology
+- saas
+- b2b
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/dynatrace
+year_founded: 2005
+notes: 'Data automation and insights provider. Equity: RSU vesting 25,25,25,25.'

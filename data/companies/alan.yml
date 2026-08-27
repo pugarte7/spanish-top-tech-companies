@@ -1,0 +1,15 @@
+slug: alan
+name: Alan
+website: https://alan.com
+hq:
+  city: Paris
+employees: 1,001-10,000
+sector:
+- insurance
+- b2c
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/avec-alan
+year_founded: 2016

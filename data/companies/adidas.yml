@@ -1,0 +1,19 @@
+slug: adidas
+name: Adidas
+website: https://www.adidas.com
+hq:
+  city: Herzogenaurach
+  country: DE
+employees: 10,001+
+sector:
+- e-commerce
+- sporting-goods
+- textiles
+- apparel-footwear
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/adidas
+year_founded: 1924
+notes: 'Global sports brand, apparel, footwear. Equity: RSU vesting 33.3,33.3,33.3.'

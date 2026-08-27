@@ -16,98 +16,13 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 66735
+        p50: 66657
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/free-now/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 4
-  - role: software-engineer
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 71149
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/free-now/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 8
-  - role: business-analyst
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 40125
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/free-now/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: data-analyst
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 51307
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/free-now/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: data-scientist
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 65449
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/free-now/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-  - role: product-designer
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 62120
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/free-now/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: project-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 54029
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/free-now/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: software-engineering-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 110174
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/free-now/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+        url: https://www.levels.fyi/t/product-manager/locations/spain
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
 linkedin_url: https://www.linkedin.com/company/freenow
 year_founded: 2009

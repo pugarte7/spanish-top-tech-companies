@@ -64,11 +64,17 @@ Total compensation is base plus bonus plus annualised equity. It is a bigger num
 Two public surfaces, neither needing a key:
 
 - **Job-family pages** (`/t/<role>/locations/spain`) give Spain-wide percentiles and a top-paying-companies table. One median per company, across all levels, so those land at level `all`.
-- **Company pages** (`/companies/<slug>/salaries`) give that company's own ladder with a submission count per level, which is what most of the per-level bands here rest on.
+- **Company pages** (`/companies/<slug>/salaries`) give company details only here: website, careers page, LinkedIn, headquarters, headcount, industry, vesting.
 
-Both publish figures in **USD**; each page carries a `locationExchangeRate` that converts them to EUR, and that conversion is applied on the way in. A band that skipped it would be roughly 17% too high.
+Figures are published in **USD**; each page carries a `locationExchangeRate` that converts them to EUR, and that conversion is applied on the way in. A band that skipped it would be roughly 17% too high.
 
-Company pages are scoped by the caller's IP address, so a company with no Spanish submissions returns its home country's figures instead. Those are skipped rather than converted.
+### Why no salary data comes from company pages
+
+A company page is **not filtered to Spain**. It shows that company's global figures, converted to whichever currency the reader's own location implies. `locationCurrency: EUR` therefore means nothing about where the money was earned — the Netherlands, Germany and Ireland are all euro countries too.
+
+Reading it as Spanish data put 682 foreign bands into this repository before it was caught: Booking.com's page reads EUR over Dutch figures, Adidas over United States figures, Revolut over British ones. A €367.000 product manager was the giveaway.
+
+So the rule is: **a Levels.fyi source URL must name a location**, as `/t/<role>/locations/spain` does. `validate.py` enforces it and fails the build otherwise. Per-level Spanish ladders need the official API, which does take a location filter.
 
 ## Freshness
 

@@ -1,0 +1,15 @@
+slug: qonto
+name: Qonto
+website: https://qonto.com
+hq:
+  city: Paris
+  country: FR
+employees: 1,001-10,000
+sector:
+- financial-services
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/qonto
+year_founded: 2016

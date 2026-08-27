@@ -1,0 +1,18 @@
+slug: criteo
+name: Criteo
+website: https://www.criteo.com
+hq:
+  city: Paris
+  country: FR
+employees: 1,001-10,000
+sector:
+- marketing-advertising
+- technology
+- information-technology-services
+- saas
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/criteo
+year_founded: 2005

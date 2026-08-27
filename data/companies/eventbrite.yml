@@ -1,0 +1,19 @@
+slug: eventbrite
+name: Eventbrite
+website: https://www.eventbrite.com
+careers_url: https://www.eventbrite.com/careers/
+hq:
+  city: San Francisco
+  country: US
+employees: 201-1,000
+sector:
+- internet
+- technology
+- marketplace
+- b2c
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/eventbrite
+year_founded: 2006

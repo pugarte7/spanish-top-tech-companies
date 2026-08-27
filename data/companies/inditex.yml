@@ -1,0 +1,18 @@
+slug: inditex
+name: Inditex
+website: https://www.inditex.com
+hq:
+  city: Arteijo
+  country: ES
+employees: 10,001+
+sector:
+- e-commerce
+- retail
+- consumer-staples
+- b2c
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/inditex
+year_founded: 1985

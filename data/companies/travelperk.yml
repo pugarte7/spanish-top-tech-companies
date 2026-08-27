@@ -19,38 +19,13 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 71603
+        p50: 71519
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/travelperk/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 24
-  - role: product-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 101412
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/travelperk/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 4
-  - role: software-engineering-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 140510
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/travelperk/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+        url: https://www.levels.fyi/t/software-engineer/locations/spain
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
 linkedin_url: https://www.linkedin.com/company/travelperk
 year_founded: 2015

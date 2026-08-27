@@ -13,159 +13,29 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: junior
+    - level: all
       base: {}
       total_comp:
-        p50: 33294
+        p50: 63324
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/adevinta/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Levels.fyi reports this as '10'. Total compensation, converted from USD at 0.853.
-      sample_size: 4
-    - level: mid
-      base: {}
-      total_comp:
-        p50: 50173
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/adevinta/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Levels.fyi reports this as '11'. Total compensation, converted from USD at 0.853.
-      sample_size: 14
-    - level: senior
-      base: {}
-      total_comp:
-        p50: 64774
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/adevinta/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Levels.fyi reports this as '12'. Total compensation, converted from USD at 0.853.
-      sample_size: 10
-    - level: staff
-      base: {}
-      total_comp:
-        p50: 80410
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/adevinta/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Levels.fyi reports this as '13'. Total compensation, converted from USD at 0.853.
-      sample_size: 4
+        url: https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public
+        pages do not break this out by level or separate base salary.
   - role: software-engineering-manager
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 154493
+        p50: 94670
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/adevinta/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 2
-  - role: product-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 99191
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/adevinta/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 2
-  - role: business-analyst
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 88471
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/adevinta/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: data-analyst
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 81471
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/adevinta/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: data-scientist
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 95452
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/adevinta/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: information-technologist
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 164983
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/adevinta/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: product-designer
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 43510
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/adevinta/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-  - role: technical-program-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 63655
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/adevinta/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: ux-researcher
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 46739
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/adevinta/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+        url: https://www.levels.fyi/t/software-engineering-manager/locations/spain
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
 linkedin_url: https://www.linkedin.com/company/adevinta
 year_founded: 2019

@@ -1,0 +1,16 @@
+slug: tiger-data
+name: Tiger Data
+website: http://www.tigerdata.com
+hq:
+  city: New York
+  country: US
+employees: 51-200
+sector:
+- information-technology-services
+- computer-software
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/tigerdata
+year_founded: 2015

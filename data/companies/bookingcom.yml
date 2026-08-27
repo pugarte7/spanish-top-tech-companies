@@ -1,0 +1,19 @@
+slug: bookingcom
+name: Booking.com
+website: https://www.booking.com
+hq:
+  city: Amsterdam
+  country: NL
+employees: 10,001+
+sector:
+- internet
+- technology
+- b2c
+- marketplace
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/booking.com
+year_founded: 1996
+notes: 'Digital travel company, global reach. Equity: RSU vesting 34/1,33/1,33/1|25/1,25/12,25/12,25/12.'

@@ -19,99 +19,26 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 71712
+        p50: 71628
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/semrush/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 20
+        url: https://www.levels.fyi/t/software-engineer/locations/spain
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
   - role: data-analyst
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 49717
+        p50: 49659
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/semrush/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 6
-  - role: product-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 89194
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/semrush/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 3
-  - role: data-scientist
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 61880
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/semrush/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: information-technologist
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 35184
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/semrush/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: product-designer
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 57151
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/semrush/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: project-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 21388
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/semrush/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
-  - role: software-engineering-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 123578
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/semrush/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+        url: https://www.levels.fyi/t/data-analyst/locations/spain
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
 linkedin_url: https://www.linkedin.com/company/semrush
 year_founded: 2008

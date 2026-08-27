@@ -1,0 +1,19 @@
+slug: personio
+name: Personio
+website: https://www.personio.com
+hq:
+  city: München
+  country: DE
+employees: 1,001-10,000
+sector:
+- information-technology-services
+- technology
+- saas
+- b2b
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/personio
+year_founded: 2015
+notes: 'HR management platform for SMEs. Equity: Options vesting 25/1,25/12,25/12,25/12.'

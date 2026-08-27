@@ -1,0 +1,18 @@
+slug: strapi
+name: Strapi
+website: https://strapi.io
+hq:
+  city: Paris
+  country: FR
+employees: 51-200
+sector:
+- information-technology-services
+- computer-programming
+- software
+- professional-services
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/strapi
+year_founded: 2016

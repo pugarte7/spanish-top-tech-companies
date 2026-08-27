@@ -1,0 +1,18 @@
+slug: rabobank
+name: Rabobank
+website: https://www.rabobank.com
+hq:
+  city: Utrecht
+  country: NL
+employees: 10,001+
+sector:
+- financial-services
+- consulting-professional-services
+- banking-mortgages
+- b2c
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/rabobank
+year_founded: 1895

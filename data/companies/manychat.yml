@@ -1,0 +1,18 @@
+slug: manychat
+name: ManyChat
+website: https://manychat.com
+hq:
+  city: San Francisco
+  country: US
+employees: 201-1,000
+sector:
+- internet
+- technology
+- web-services-apps
+- saas
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/manychat
+year_founded: 2015

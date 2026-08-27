@@ -1,0 +1,18 @@
+slug: perk
+name: Perk
+website: https://www.perk.com
+hq:
+  city: Austin
+  country: US
+employees: 1,001-10,000
+sector:
+- media
+- mobile
+- consumer-web
+- ecommerce
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/perk
+year_founded: 2012

@@ -1,0 +1,17 @@
+slug: santander
+name: Santander
+website: https://www.santander.com
+hq:
+  country: ES
+employees: 10,001+
+sector:
+- finance
+- finance-financial-planning-and-management-in-spain
+- banking
+- financial-services
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/banco-santander
+year_founded: 1857

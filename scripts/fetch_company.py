@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
-"""Fill in company details and per-level pay from Levels.fyi company pages.
+"""Fill in company details from Levels.fyi company pages. METADATA ONLY.
 
     python3 scripts/fetch_company.py --all            # every company on file
     python3 scripts/fetch_company.py --company glovo
     python3 scripts/fetch_company.py --from-backlog   # resolved names in backlog.csv
 
-Each /companies/<slug>/salaries page embeds the company's own record (website,
-careers page, LinkedIn, headquarters, headcount, industry, vesting) plus a
-per-level pay ladder with submission counts. No API key.
+Each /companies/<slug>/salaries page embeds the company's own record: website,
+careers page, LinkedIn, headquarters, headcount, industry, founding year and
+vesting terms. That is what this script writes. No API key needed, and the
+result does not depend on where you run it.
 
-MUST BE RUN FROM SPAIN. These pages are scoped by the caller's IP address and
-ignore every location query parameter, so from anywhere else they return that
-country's figures in that country's currency. The script checks the page's
-declared currency and refuses to write anything that is not EUR, which also
-means it cannot run in CI.
+IT DOES NOT WRITE SALARY DATA, deliberately. Those pages carry a pay ladder,
+but it is NOT filtered to Spain: it is the company's global data, merely
+displayed in the reader's currency. `locationCurrency: EUR` only means the
+reader is in the eurozone. Booking.com's page reads EUR while its figures are
+Dutch; Adidas reads EUR over United States figures; Revolut over British ones.
+Trusting that once put 682 foreign salary bands into this repository.
 
-Figures on the page are USD; `locationExchangeRate` converts them. Everything
-written is TOTAL COMPENSATION, so it lands in `total_comp`, never `base`.
+Spain-scoped compensation comes from the job-family pages instead, which name
+the country in the URL - see scripts/fetch_levels_public.py. Per-level Spanish
+ladders need the official API: scripts/fetch_levels.py.
 """
 from __future__ import annotations
 
@@ -122,40 +125,8 @@ def metadata(record: dict) -> dict:
     return out
 
 
-def bands(entry: dict, rate: float, url: str, today: str) -> list[dict]:
-    breakdown = entry.get("breakdown") or []
-    ladder = [b for b in breakdown if (b.get("level_slug") or "").lower() not in AGGREGATE_LEVELS]
-    aggregate = [b for b in breakdown if (b.get("level_slug") or "").lower() in AGGREGATE_LEVELS]
-    rows = ladder or aggregate
-
-    out = []
-    for index, row in enumerate(rows):
-        value = row.get("total")
-        if not isinstance(value, (int, float)) or value <= 0:
-            continue
-        if row in aggregate:
-            level = "all"
-            note = f"{row.get('level')} across all levels."
-        else:
-            level = LADDER[min(index, len(LADDER) - 1)]
-            note = f"Levels.fyi reports this as '{row.get('level')}'."
-        band = {
-            "level": level,
-            "base": {},
-            "total_comp": {"p50": int(round(value * rate))},
-            "sources": [{"name": "levels.fyi", "url": url, "date": today}],
-            "last_verified": today,
-            "notes": f"{note} Total compensation, converted from USD at {rate}.",
-        }
-        if row.get("count"):
-            band["sample_size"] = int(row["count"])
-        out.append(band)
-    return out
-
-
-def merge(slug: str, props: dict, today: str) -> tuple[int, int]:
+def merge(slug: str, props: dict, today: str) -> int:
     record = props.get("company") or {}
-    rate = props.get("locationExchangeRate")
     url = f"{BASE}/companies/{slug}/salaries"
     path = lib.COMPANIES_DIR / f"{slug}.yml"
     company = yaml.safe_load(path.read_text(encoding="utf-8")) if path.exists() else {}
@@ -176,35 +147,12 @@ def merge(slug: str, props: dict, today: str) -> tuple[int, int]:
             f"{f' vesting {detail}' if detail else ''}."
         ).strip()
 
-    roles = company.setdefault("compensation", {}).setdefault("roles", [])
-    company["compensation"].setdefault("currency", "EUR")
-    company["compensation"].setdefault("basis", "gross_annual")
-    added = 0
-    for entry in props.get("overview") or []:
-        role = entry.get("slug")
-        if role not in TECH_FAMILIES:
-            continue
-        new = bands(entry, rate, url, today)
-        if not new:
-            continue
-        bucket = next((r for r in roles if r["role"] == role), None)
-        if bucket is None:
-            bucket = {"role": role, "levels": []}
-            roles.append(bucket)
-        # A real ladder supersedes the single "all" row from the job-family pages.
-        keep = [] if any(b["level"] != "all" for b in new) else \
-               [e for e in bucket["levels"] if e.get("level") != "all"]
-        merged = {e["level"]: e for e in keep}
-        merged.update({b["level"]: b for b in new})
-        bucket["levels"] = sorted(merged.values(), key=lambda e: lib.level_rank(e["level"]))
-        added += len(new)
-
     rest = {k: v for k, v in company.items() if k not in SKELETON_ORDER}
     ordered = {k: company[k] for k in SKELETON_ORDER if k in company}
     ordered.update(rest)
     path.write_text(
         yaml.safe_dump(ordered, sort_keys=False, allow_unicode=True, width=100), encoding="utf-8")
-    return filled, added
+    return filled
 
 
 def main(argv: list[str]) -> int:
@@ -240,9 +188,9 @@ def main(argv: list[str]) -> int:
         return 0
 
     today = lib.today_utc().isoformat()
-    ok = missing = wrong_currency = 0
+    ok = missing = 0
     consecutive_missing = 0
-    total_filled = total_bands = 0
+    total_filled = 0
     for slug in slugs:
         props = props_for(slug, args.delay)
         if not props or not props.get("company"):
@@ -256,22 +204,14 @@ def main(argv: list[str]) -> int:
                 break
             continue
         consecutive_missing = 0
-        currency = props.get("locationCurrency")
-        if currency != "EUR":
-            # A company with no Spanish submissions falls back to its own
-            # country's figures. Skip it rather than write another currency.
-            print(f"  {slug}: skipped, page is in {currency} not EUR")
-            wrong_currency += 1
-            continue
-        filled, added = merge(slug, props, today)
-        total_filled += filled
-        total_bands += added
-        ok += 1
-        print(f"  {slug}: {filled} fields, {added} bands")
 
-    print(f"\n{ok} companies updated, {missing} not found, "
-          f"{wrong_currency} skipped for non-EUR scope")
-    print(f"{total_filled} metadata fields filled, {total_bands} bands written")
+        filled = merge(slug, props, today)
+        total_filled += filled
+        ok += 1
+        print(f"  {slug}: {filled} fields")
+
+    print(f"\n{ok} companies updated, {missing} not found")
+    print(f"{total_filled} metadata fields filled (no salary data: see the module docstring)")
     if ok:
         print(f"\n{ATTRIBUTION}")
         print("Next: python3 scripts/validate.py && python3 scripts/build.py")

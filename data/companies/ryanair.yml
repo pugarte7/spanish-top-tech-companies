@@ -1,0 +1,17 @@
+slug: ryanair
+name: Ryanair
+website: https://www.ryanair.com
+hq:
+  city: Swords
+  country: IE
+employees: 10,001+
+sector:
+- airlines
+- b2c
+- b2b
+compensation:
+  roles: []
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/ryanair-airline
+year_founded: 1984
