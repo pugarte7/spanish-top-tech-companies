@@ -212,6 +212,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--company", action="append", default=[], help="Levels.fyi slug. Repeatable.")
     parser.add_argument("--all", action="store_true", help="Every company already in data/companies/.")
     parser.add_argument("--from-backlog", action="store_true", help="Resolved names in data/backlog.csv.")
+    parser.add_argument("--include-review", action="store_true",
+                        help="Also fetch backlog rows whose slug match is unconfirmed.")
     parser.add_argument("--delay", type=float, default=3.0,
                         help="Seconds between pages. These are 400KB each; be generous.")
     parser.add_argument("--dry-run", action="store_true")
@@ -225,8 +227,9 @@ def main(argv: list[str]) -> int:
         path = lib.ROOT / "data" / "backlog.csv"
         if path.exists():
             with path.open(encoding="utf-8") as fh:
+                wanted = {"resolved"} | ({"review"} if args.include_review else set())
                 slugs += [row["levels_slug"] for row in csv.DictReader(fh)
-                          if row.get("levels_slug")]
+                          if row.get("levels_slug") and row.get("status") in wanted]
     slugs = [s for s in dict.fromkeys(slugs) if s]
     if not slugs:
         parser.error("give --company SLUG, --all, or --from-backlog")
