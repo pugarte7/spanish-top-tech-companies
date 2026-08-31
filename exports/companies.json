@@ -68,6 +68,30 @@
               "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 36355
+              },
+              "total_comp": {
+                "p50": 36355
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/accenture/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Malaga, AN, Spain, reported level Software Engineer Analyst, 2 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
@@ -75,6 +99,46 @@
       "qualifies": false,
       "top_band_eur": 39416,
       "top_band_role": "data-scientist",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "activision-blizzard",
+    "name": "Activision Blizzard",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 73706
+              },
+              "total_comp": {
+                "p50": 84707
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/activision-blizzard/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L5, 6 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 73706,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -181,11 +245,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/adevinta/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -404,24 +468,21 @@
             {
               "level": "all",
               "base": {
-                "min": 47303,
-                "p50": 49336,
-                "max": 59237
+                "p50": 47303
               },
               "total_comp": {
-                "min": 47303,
-                "p50": 49336,
-                "max": 64479
+                "p50": 50851
               },
+              "sample_size": 1,
               "sources": [
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/adidas/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Zaragoza, AR, Spain, reported level P1, 5 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
             }
           ]
         }
@@ -429,7 +490,7 @@
     },
     "_computed": {
       "qualifies": false,
-      "top_band_eur": 49336,
+      "top_band_eur": 47303,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -705,6 +766,30 @@
               "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.852."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 80085
+              },
+              "total_comp": {
+                "p50": 80085
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adyen/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Senior Software Engineer, 15 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ],
       "currency": "EUR",
@@ -717,6 +802,86 @@
       "qualifies": true,
       "top_band_eur": 216391,
       "top_band_role": "product-designer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "aetion",
+    "name": "Aetion, a Datavant Company",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 99306
+              },
+              "total_comp": {
+                "p50": 109237
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/aetion/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level unspecified, 11+ years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 99306,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "affirm",
+    "name": "Affirm",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 88857
+              },
+              "total_comp": {
+                "p50": 123932
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/affirm/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level L5, 5 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 88857,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -778,11 +943,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/aily-labs/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -819,6 +984,126 @@
     }
   },
   {
+    "slug": "akamai",
+    "name": "Akamai Technologies",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 81060
+              },
+              "total_comp": {
+                "p50": 92640
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/akamai/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Senior Software Engineer 1, 5 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 81060,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "align-technology",
+    "name": "Align Technology",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 71831
+              },
+              "total_comp": {
+                "p50": 81831
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/align-technology/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level L5, 6 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 71831,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "allianz",
+    "name": "Allianz",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 58549
+              },
+              "total_comp": {
+                "p50": 64404
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/allianz/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Senior, 5 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 58549,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "amadeus",
     "name": "Amadeus",
     "compensation": {
@@ -845,6 +1130,30 @@
               "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 46639
+              },
+              "total_comp": {
+                "p50": 46639
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/amadeus/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level G8, 2 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
@@ -867,19 +1176,22 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
-              "total_comp": {
-                "p50": 84296
+              "base": {
+                "p50": 67969
               },
+              "total_comp": {
+                "p50": 91234
+              },
+              "sample_size": 1,
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/amazon/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level SDE II, 3 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
             }
           ]
         },
@@ -1035,6 +1347,86 @@
     }
   },
   {
+    "slug": "astrazeneca",
+    "name": "AstraZeneca",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 81386
+              },
+              "total_comp": {
+                "p50": 97663
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/astrazeneca/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Associate Principal Software Engineer, 5 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 81386,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "auth0",
+    "name": "Auth0",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 120797
+              },
+              "total_comp": {
+                "p50": 140930
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/auth0/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L3, 12 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 120797,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "barcelona-supercomputing-center",
     "name": "Barcelona Supercomputing Center",
     "website": "http://bsc.es",
@@ -1093,11 +1485,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -1424,6 +1816,30 @@
               "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.853."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 64607
+              },
+              "total_comp": {
+                "p50": 64607
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/basf/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Senior, 8 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
@@ -1433,6 +1849,46 @@
       "qualifies": true,
       "top_band_eur": 133733,
       "top_band_role": "product-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "bayer",
+    "name": "Bayer",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 75520
+              },
+              "total_comp": {
+                "p50": 88466
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/bayer/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Senior, 12 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 75520,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -1516,11 +1972,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/bbva/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -1741,6 +2197,166 @@
     }
   },
   {
+    "slug": "bitpanda",
+    "name": "Bitpanda",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 80951
+              },
+              "total_comp": {
+                "p50": 80951
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/bitpanda/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L3, 9 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 80951,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "brainly",
+    "name": "Brainly",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 88838
+              },
+              "total_comp": {
+                "p50": 88838
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/brainly/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Senior Data Engineer, 5-10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 88838,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "broadcom",
+    "name": "Broadcom",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 67221
+              },
+              "total_comp": {
+                "p50": 156415
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/broadcom/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level ICB 3, 10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 67221,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "bumble",
+    "name": "Bumble Inc.",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 75996
+              },
+              "total_comp": {
+                "p50": 75996
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/bumble/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L3, 13 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 75996,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "cabify",
     "name": "Cabify",
     "website": "https://cabify.com",
@@ -1777,11 +2393,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/cabify/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -1907,13 +2523,37 @@
               "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 36892
+              },
+              "total_comp": {
+                "p50": 36892
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/capgemini/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level B2, 1 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
     "_computed": {
       "qualifies": false,
-      "top_band_eur": 24301,
-      "top_band_role": "product-designer",
+      "top_band_eur": 36892,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -2149,6 +2789,30 @@
               "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.853."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 58829
+              },
+              "total_comp": {
+                "p50": 72836
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/celonis/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level IC2, 5 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
@@ -2188,11 +2852,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/clarity-ai/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -2201,6 +2865,46 @@
     "_computed": {
       "qualifies": false,
       "top_band_eur": 43858,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "clarivate",
+    "name": "Clarivate",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 58883
+              },
+              "total_comp": {
+                "p50": 62388
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/clarivate/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Senior, 4 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 58883,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -2231,11 +2935,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/collate/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -2244,6 +2948,46 @@
     "_computed": {
       "qualifies": true,
       "top_band_eur": 87796,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "criteo",
+    "name": "Criteo",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 52548
+              },
+              "total_comp": {
+                "p50": 57803
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/criteo/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L3, 2 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 52548,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -2354,19 +3098,22 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
-              "total_comp": {
-                "p50": 109614
+              "base": {
+                "p50": 82100
               },
+              "total_comp": {
+                "p50": 128354
+              },
+              "sample_size": 1,
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/t/software-engineer/locations/spain",
+                  "url": "https://www.levels.fyi/companies/datadog/salaries/software-engineer/locations/spain",
                   "date": "2026-08-31"
                 }
               ],
               "last_verified": "2026-08-31",
-              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Software Engineer II, 3 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
             }
           ]
         }
@@ -2374,7 +3121,7 @@
     },
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 109614,
+      "top_band_eur": 82100,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -2427,13 +3174,37 @@
               "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 46230
+              },
+              "total_comp": {
+                "p50": 46230
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/deloitte/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: 1A Coruna, GA, Spain, reported level L3, 4 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
     "_computed": {
       "qualifies": false,
-      "top_band_eur": 33180,
-      "top_band_role": "security-analyst",
+      "top_band_eur": 46230,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -2463,11 +3234,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/dlocal/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -2476,6 +3247,86 @@
     "_computed": {
       "qualifies": true,
       "top_band_eur": 80174,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "docplanner",
+    "name": "Docplanner",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 63998
+              },
+              "total_comp": {
+                "p50": 63998
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/docplanner/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level L3, 5 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 63998,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "dynatrace",
+    "name": "Dynatrace",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 68242
+              },
+              "total_comp": {
+                "p50": 85302
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/dynatrace/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level P3, 9 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 68242,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -2518,11 +3369,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/edreams-odigeo/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -2644,6 +3495,126 @@
     }
   },
   {
+    "slug": "ef-education-first",
+    "name": "EF",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 48789
+              },
+              "total_comp": {
+                "p50": 48789
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/ef-education-first/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L2, 4 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 48789,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "elastic",
+    "name": "Elastic",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 103903
+              },
+              "total_comp": {
+                "p50": 138537
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/elastic/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level C6, 8 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 103903,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "electronic-arts",
+    "name": "Electronic Arts (EA)",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 65658
+              },
+              "total_comp": {
+                "p50": 91468
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/electronic-arts/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level SE 2, 10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 65658,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "epam-systems",
     "name": "EPAM Systems",
     "compensation": {
@@ -2689,6 +3660,30 @@
               ],
               "last_verified": "2026-08-31",
               "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 63792
+              },
+              "total_comp": {
+                "p50": 67336
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/epam-systems/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L4, 10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
             }
           ]
         }
@@ -2749,6 +3744,30 @@
               "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 47272
+              },
+              "total_comp": {
+                "p50": 54363
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/ericsson/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level JS4, 3 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
@@ -2786,13 +3805,37 @@
               "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 29200
+              },
+              "total_comp": {
+                "p50": 29200
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/ernst-and-young/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Software Engineer, 0 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
     "_computed": {
       "qualifies": false,
-      "top_band_eur": 24819,
-      "top_band_role": "security-analyst",
+      "top_band_eur": 29200,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -2822,11 +3865,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/eventbrite/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -2865,11 +3908,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/exoticca/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -2878,6 +3921,86 @@
     "_computed": {
       "qualifies": false,
       "top_band_eur": 50234,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "expedia-group",
+    "name": "Expedia Group",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 74332
+              },
+              "total_comp": {
+                "p50": 79798
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/expedia-group/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level M, 6 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 74332,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "facebook",
+    "name": "Meta Facebook",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 112714
+              },
+              "total_comp": {
+                "p50": 183295
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/facebook/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level E5, 10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 112714,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -2941,11 +4064,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/factorial/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -3070,11 +4193,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/fever/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -3083,6 +4206,46 @@
     "_computed": {
       "qualifies": false,
       "top_band_eur": 59270,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "flywire",
+    "name": "Flywire",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 71515
+              },
+              "total_comp": {
+                "p50": 92446
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/flywire/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Valencia, VC, Spain, reported level unspecified, 5-10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 71515,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -3129,20 +4292,22 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
-              "total_comp": {
-                "p50": 71149
+              "base": {
+                "p50": 67188
               },
+              "total_comp": {
+                "p50": 67188
+              },
+              "sample_size": 1,
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/free-now/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/free-now/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
-              "sample_size": 8
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Senior, 7 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
             }
           ]
         },
@@ -3284,6 +4449,86 @@
     }
   },
   {
+    "slug": "gartner",
+    "name": "Gartner",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 93216
+              },
+              "total_comp": {
+                "p50": 102642
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/gartner/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Senior Software Engineer, 15 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 93216,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "github",
+    "name": "GitHub",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 95764
+              },
+              "total_comp": {
+                "p50": 195542
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/github/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level E5, 17 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 95764,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "glovo",
     "name": "Glovo",
     "website": "https://glovoapp.com",
@@ -3393,24 +4638,24 @@
             {
               "level": "all",
               "base": {
-                "min": 64069,
-                "p50": 74397,
+                "min": 62796,
+                "p50": 73431,
                 "max": 84228
               },
               "total_comp": {
-                "min": 64069,
-                "p50": 81667,
+                "min": 62796,
+                "p50": 79711,
                 "max": 91668
               },
               "sources": [
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/glovo/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -3865,6 +5110,126 @@
     }
   },
   {
+    "slug": "google",
+    "name": "Google",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 70342
+              },
+              "total_comp": {
+                "p50": 93789
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/google/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L2, 4 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 70342,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "grafana",
+    "name": "Grafana Labs",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 117172
+              },
+              "total_comp": {
+                "p50": 117172
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/grafana/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Senior Software Engineer 1, 7 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 117172,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "hopin",
+    "name": "Hopin",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 127966
+              },
+              "total_comp": {
+                "p50": 127966
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/hopin/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Staff, 10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 127966,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "hpe",
     "name": "HPE",
     "compensation": {
@@ -3912,13 +5277,77 @@
               "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 71832
+              },
+              "total_comp": {
+                "p50": 71832
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/hpe/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L3, 7 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 66046,
-      "top_band_role": "data-scientist",
+      "top_band_eur": 71832,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "ibm",
+    "name": "IBM",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 32933
+              },
+              "total_comp": {
+                "p50": 53732
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/ibm/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Associate Engineer, 2 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 32933,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -4259,6 +5688,30 @@
               "notes": "Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 50951
+              },
+              "total_comp": {
+                "p50": 50951
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/ikea/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Software Engineer, 14 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
@@ -4297,11 +5750,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/inditex/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -4350,11 +5803,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/indra/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -4582,6 +6035,86 @@
     }
   },
   {
+    "slug": "ing",
+    "name": "ING",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 62000
+              },
+              "total_comp": {
+                "p50": 66000
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/ing/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level 8, 7 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 62000,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "intellias",
+    "name": "Intellias",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 91474
+              },
+              "total_comp": {
+                "p50": 91474
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/intellias/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Malaga, AN, Spain, reported level Senior, 8 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 91474,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "jobandtalent",
     "name": "Job&Talent",
     "compensation": {
@@ -4607,11 +6140,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/jobandtalent/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -4620,6 +6153,126 @@
     "_computed": {
       "qualifies": true,
       "top_band_eur": 81055,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "keysight",
+    "name": "Keysight Technologies",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 61871
+              },
+              "total_comp": {
+                "p50": 63108
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/keysight/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L4, 5 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 61871,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "king",
+    "name": "King",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 68892
+              },
+              "total_comp": {
+                "p50": 76000
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/king/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Senior, 11 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 68892,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "klarna",
+    "name": "Klarna",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 62281
+              },
+              "total_comp": {
+                "p50": 67650
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/klarna/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L3, 10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 62281,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -4637,24 +6290,21 @@
             {
               "level": "all",
               "base": {
-                "min": 77960,
-                "p50": 85004,
-                "max": 98122
+                "p50": 85004
               },
               "total_comp": {
-                "min": 77960,
-                "p50": 85004,
-                "max": 98122
+                "p50": 85004
               },
+              "sample_size": 1,
               "sources": [
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/manychat/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Senior, 4 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
             }
           ]
         }
@@ -4705,6 +6355,126 @@
     }
   },
   {
+    "slug": "medallia",
+    "name": "Medallia",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 95701
+              },
+              "total_comp": {
+                "p50": 95701
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/medallia/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Staff Engineer, 10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 95701,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "mercedes-benz",
+    "name": "Mercedes-Benz AG",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 47753
+              },
+              "total_comp": {
+                "p50": 52195
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/mercedes-benz/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level T6, 15 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 47753,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "meta",
+    "name": "Meta",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 112714
+              },
+              "total_comp": {
+                "p50": 183295
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/meta/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level E5, 10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 112714,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "mews",
     "name": "Mews",
     "compensation": {
@@ -4730,11 +6500,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/mews/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -4759,19 +6529,22 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
-              "total_comp": {
-                "p50": 106784
+              "base": {
+                "p50": 94175
               },
+              "total_comp": {
+                "p50": 125040
+              },
+              "sample_size": 1,
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/t/software-engineer/locations/spain",
+                  "url": "https://www.levels.fyi/companies/microsoft/salaries/software-engineer/locations/spain",
                   "date": "2026-08-31"
                 }
               ],
               "last_verified": "2026-08-31",
-              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level 62, 8 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
             }
           ]
         }
@@ -4779,7 +6552,7 @@
     },
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 106784,
+      "top_band_eur": 94175,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -4851,24 +6624,24 @@
             {
               "level": "all",
               "base": {
-                "min": 27865,
-                "p50": 33615,
-                "max": 42278
+                "min": 32092,
+                "p50": 35212,
+                "max": 42281
               },
               "total_comp": {
-                "min": 27865,
-                "p50": 33615,
-                "max": 42278
+                "min": 32092,
+                "p50": 35212,
+                "max": 42281
               },
               "sources": [
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/minsait/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -4969,6 +6742,46 @@
     }
   },
   {
+    "slug": "mirantis",
+    "name": "Mirantis",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 87226
+              },
+              "total_comp": {
+                "p50": 87226
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/mirantis/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Senior, 10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 87226,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "mitek-systems",
     "name": "Mitek Systems",
     "compensation": {
@@ -4994,11 +6807,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/mitek-systems/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -5007,6 +6820,46 @@
     "_computed": {
       "qualifies": true,
       "top_band_eur": 74464,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "moonpay",
+    "name": "MoonPay",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 91100
+              },
+              "total_comp": {
+                "p50": 91100
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/moonpay/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level L3, 4 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 91100,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -5037,11 +6890,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/multiverse-computing/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -5291,19 +7144,22 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
-              "total_comp": {
-                "p50": 70137
+              "base": {
+                "p50": 82128
               },
+              "total_comp": {
+                "p50": 82128
+              },
+              "sample_size": 1,
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/t/software-engineer/locations/spain",
+                  "url": "https://www.levels.fyi/companies/n26/salaries/software-engineer/locations/spain",
                   "date": "2026-08-31"
                 }
               ],
               "last_verified": "2026-08-31",
-              "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L3, 6 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
             }
           ]
         }
@@ -5472,6 +7328,86 @@
       "qualifies": true,
       "top_band_eur": 78447,
       "top_band_role": "security-analyst",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "new-relic",
+    "name": "New Relic",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 83403
+              },
+              "total_comp": {
+                "p50": 108097
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/new-relic/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level P2, 10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 83403,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "nexthink",
+    "name": "Nexthink",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 66979
+              },
+              "total_comp": {
+                "p50": 71100
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/nexthink/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Senior, 15 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 66979,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -5703,23 +7639,23 @@
               "level": "all",
               "base": {
                 "min": 23073,
-                "p50": 35523,
+                "p50": 33137,
                 "max": 48217
               },
               "total_comp": {
                 "min": 23073,
-                "p50": 35523,
-                "max": 49317
+                "p50": 33137,
+                "max": 48217
               },
               "sources": [
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/ntt-data/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -5952,6 +7888,46 @@
     }
   },
   {
+    "slug": "ocado-group",
+    "name": "Ocado Group",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 75725
+              },
+              "total_comp": {
+                "p50": 75725
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/ocado-group/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level E2, 8 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 75725,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "oracle",
     "name": "Oracle",
     "compensation": {
@@ -5978,13 +7954,77 @@
               "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 54371
+              },
+              "total_comp": {
+                "p50": 66871
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/oracle/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level IC-2, 5 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
     "_computed": {
       "qualifies": false,
-      "top_band_eur": 41104,
-      "top_band_role": "product-designer",
+      "top_band_eur": 54371,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "palo-alto-networks",
+    "name": "Palo Alto Networks",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 87027
+              },
+              "total_comp": {
+                "p50": 126480
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/palo-alto-networks/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Sr Staff Engineer, 9 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 87027,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -6014,11 +8054,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/payfit/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -6027,6 +8067,46 @@
     "_computed": {
       "qualifies": true,
       "top_band_eur": 78268,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "pearson",
+    "name": "Pearson",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 81948
+              },
+              "total_comp": {
+                "p50": 81948
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/pearson/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Senior Software Engineer, 7 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 81948,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -6094,11 +8174,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/perk/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -6107,6 +8187,126 @@
     "_computed": {
       "qualifies": true,
       "top_band_eur": 75945,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "personio",
+    "name": "Personio",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 85805
+              },
+              "total_comp": {
+                "p50": 101085
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/personio/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level L5, 6 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 85805,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "picsart",
+    "name": "Picsart",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 93850
+              },
+              "total_comp": {
+                "p50": 93850
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/picsart/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L2, 16 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 93850,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "pleo",
+    "name": "Pleo",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 98899
+              },
+              "total_comp": {
+                "p50": 98899
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/pleo/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L8, 5-10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 98899,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -6137,11 +8337,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/preply/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -6150,6 +8350,86 @@
     "_computed": {
       "qualifies": true,
       "top_band_eur": 96309,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "qonto",
+    "name": "Qonto",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 69863
+              },
+              "total_comp": {
+                "p50": 69863
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/qonto/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L3, 9 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 69863,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "red-hat",
+    "name": "Red Hat",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 86482
+              },
+              "total_comp": {
+                "p50": 100137
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/red-hat/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level L3, 11 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 86482,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -6180,11 +8460,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/remote/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -6255,19 +8535,25 @@
             },
             {
               "level": "all",
-              "base": {},
+              "base": {
+                "min": 95861,
+                "p50": 99122,
+                "max": 120049
+              },
               "total_comp": {
-                "p50": 107843
+                "min": 95861,
+                "p50": 104668,
+                "max": 145145
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area",
+                  "url": "https://www.levels.fyi/companies/revolut/salaries/software-engineer/locations/spain",
                   "date": "2026-08-31"
                 }
               ],
               "last_verified": "2026-08-31",
-              "notes": "Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public pages do not break this out by level or separate base salary."
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -6606,6 +8892,46 @@
     }
   },
   {
+    "slug": "ringcentral",
+    "name": "RingCentral",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 96025
+              },
+              "total_comp": {
+                "p50": 105626
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/ringcentral/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Valencia, VC, Spain, reported level L5, 10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 96025,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "rovercom",
     "name": "Rover.com",
     "compensation": {
@@ -6630,6 +8956,30 @@
               ],
               "last_verified": "2026-08-31",
               "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
+            }
+          ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 83980
+              },
+              "total_comp": {
+                "p50": 83980
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/rovercom/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level unspecified, 5-10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
             }
           ]
         }
@@ -6668,11 +9018,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/ryanair/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -6712,6 +9062,30 @@
               "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 63231
+              },
+              "total_comp": {
+                "p50": 63231
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/sage/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L2, 10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
@@ -6748,11 +9122,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/sanofi/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -6761,6 +9135,126 @@
     "_computed": {
       "qualifies": true,
       "top_band_eur": 76279,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "santander",
+    "name": "Santander",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 63318
+              },
+              "total_comp": {
+                "p50": 68008
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/santander/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Senior, 5 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 63318,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "schneider-electric",
+    "name": "Schneider Electric",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 45144
+              },
+              "total_comp": {
+                "p50": 50932
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/schneider-electric/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Sevilla , AN, Spain, reported level Software Engineer II, 3 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 45144,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "scopely",
+    "name": "Scopely",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 65534
+              },
+              "total_comp": {
+                "p50": 72088
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/scopely/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L4, 6 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 65534,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -6824,11 +9318,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/sdg-group/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -6953,11 +9447,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/seat-code/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -7027,11 +9521,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/semidynamics/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -7084,11 +9578,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/semrush/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -7252,6 +9746,206 @@
     }
   },
   {
+    "slug": "sennder",
+    "name": "sennder",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 91466
+              },
+              "total_comp": {
+                "p50": 100820
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/sennder/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L5, 15 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 91466,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "siemens",
+    "name": "Siemens",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 38819
+              },
+              "total_comp": {
+                "p50": 38819
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/siemens/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Valencia, VC, Spain, reported level T7, 3 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 38819,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "skyscanner",
+    "name": "Skyscanner",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 77280
+              },
+              "total_comp": {
+                "p50": 85008
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/skyscanner/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Software Engineer II, 9 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 77280,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "smileio",
+    "name": "Smile.io",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 105000
+              },
+              "total_comp": {
+                "p50": 105000
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/smileio/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Senior, 8 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 105000,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "spotify",
+    "name": "Spotify",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 115955
+              },
+              "total_comp": {
+                "p50": 115955
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/spotify/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Senior Engineer, 15 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 115955,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "stenn",
     "name": "Stenn",
     "compensation": {
@@ -7278,6 +9972,30 @@
               "notes": "Median total compensation across all levels, Spain. Levels.fyi's public pages do not break this out by level or separate base salary."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 89554
+              },
+              "total_comp": {
+                "p50": 89554
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/stenn/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Senior, 5-10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
@@ -7285,6 +10003,126 @@
       "qualifies": true,
       "top_band_eur": 133659,
       "top_band_role": "software-engineering-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "stripe",
+    "name": "Stripe",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 97734
+              },
+              "total_comp": {
+                "p50": 200612
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/stripe/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L3, 10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 97734,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "suse",
+    "name": "SUSE",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 84165
+              },
+              "total_comp": {
+                "p50": 92581
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/suse/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Sevilla , AN, Spain, reported level L4, 11 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 84165,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "swiss-re",
+    "name": "Swiss Re",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 58981
+              },
+              "total_comp": {
+                "p50": 66627
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/swiss-re/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level L2, 3 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 58981,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -7312,20 +10150,22 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
-              "total_comp": {
-                "p50": 64110
+              "base": {
+                "p50": 68240
               },
+              "total_comp": {
+                "p50": 68240
+              },
+              "sample_size": 1,
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/t-systems/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/t-systems/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
-              "sample_size": 8
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Senior, 12 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
             }
           ]
         },
@@ -7490,6 +10330,166 @@
     }
   },
   {
+    "slug": "tabby",
+    "name": "Tabby",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 75586
+              },
+              "total_comp": {
+                "p50": 75586
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/tabby/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Senior 1, 4 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 75586,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "teya",
+    "name": "Teya",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 111756
+              },
+              "total_comp": {
+                "p50": 111756
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/teya/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level IC3, 12 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 111756,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "the-trade-desk",
+    "name": "The Trade Desk",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 83390
+              },
+              "total_comp": {
+                "p50": 133390
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/the-trade-desk/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Software Engineer II, 7 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 83390,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "thoughtworks",
+    "name": "Thoughtworks",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 67589
+              },
+              "total_comp": {
+                "p50": 67589
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/thoughtworks/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Senior Consultant, 8 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 67589,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "tiger-data",
     "name": "Tiger Data (creators of TimescaleDB)",
     "compensation": {
@@ -7515,11 +10515,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/tiger-data/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -7558,11 +10558,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/timescale/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -7601,11 +10601,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/tinybird/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -7785,6 +10785,30 @@
               "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.853."
             }
           ]
+        },
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 60025
+              },
+              "total_comp": {
+                "p50": 60025
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/tomtom/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Software Engineer II, 5 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
         }
       ]
     },
@@ -7794,6 +10818,86 @@
       "qualifies": true,
       "top_band_eur": 112878,
       "top_band_role": "software-engineering-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "toptal",
+    "name": "Toptal",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 116000
+              },
+              "total_comp": {
+                "p50": 116000
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/toptal/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level Principal Software Engineer, 14 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 116000,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "tradingview",
+    "name": "TradingView",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 73547
+              },
+              "total_comp": {
+                "p50": 73547
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/tradingview/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Malaga, AN, Spain, reported level unspecified, 5-10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 73547,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -7872,11 +10976,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/travelperk/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -7935,6 +11039,46 @@
     }
   },
   {
+    "slug": "twilio",
+    "name": "Twilio",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 70179
+              },
+              "total_comp": {
+                "p50": 81188
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/twilio/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level IC2, 4 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 70179,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "typeform",
     "name": "Typeform",
     "compensation": {
@@ -7960,11 +11104,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/typeform/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -7973,6 +11117,126 @@
     "_computed": {
       "qualifies": true,
       "top_band_eur": 79791,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "unity",
+    "name": "Unity",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 108909
+              },
+              "total_comp": {
+                "p50": 154765
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/unity/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Tech IC8, 20 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 108909,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "usertesting",
+    "name": "UserTesting",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 65600
+              },
+              "total_comp": {
+                "p50": 65600
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/usertesting/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level L6, 5-10 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 65600,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "veeva-systems",
+    "name": "Veeva Systems",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 58502
+              },
+              "total_comp": {
+                "p50": 75836
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/veeva-systems/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Software Engineer, 6 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 58502,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -8199,6 +11463,86 @@
     }
   },
   {
+    "slug": "vistaprint",
+    "name": "VistaPrint",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 85273
+              },
+              "total_comp": {
+                "p50": 85273
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/vistaprint/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Barcelona, CT, Spain, reported level PR3, 5 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 85273,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "vmware",
+    "name": "VMware",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 63506
+              },
+              "total_comp": {
+                "p50": 85997
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/vmware/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Bilbao, PV, Spain, reported level Senior MTS, 13 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 63506,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "wallapop",
     "name": "Wallapop",
     "compensation": {
@@ -8224,11 +11568,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/wallapop/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -8237,6 +11581,46 @@
     "_computed": {
       "qualifies": true,
       "top_band_eur": 69283,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "workato",
+    "name": "Workato",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 138185
+              },
+              "total_comp": {
+                "p50": 138185
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/workato/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Senior, 30 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 138185,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -8267,11 +11651,11 @@
                 {
                   "name": "levels.fyi",
                   "url": "https://www.levels.fyi/companies/workshop/salaries/software-engineer/locations/spain",
-                  "date": "2026-08-28"
+                  "date": "2026-08-31"
                 }
               ],
-              "last_verified": "2026-08-28",
-              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+              "last_verified": "2026-08-31",
+              "notes": "Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -8323,6 +11707,46 @@
     "_computed": {
       "qualifies": true,
       "top_band_eur": 134268,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "zendesk",
+    "name": "Zendesk",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "p50": 93315
+              },
+              "total_comp": {
+                "p50": 104166
+              },
+              "sample_size": 1,
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/zendesk/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-31"
+                }
+              ],
+              "last_verified": "2026-08-31",
+              "notes": "Single Spanish submission: Madrid, MD, Spain, reported level Senior Software Engineer, 7 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than a band."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 93315,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }

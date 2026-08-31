@@ -1,0 +1,21 @@
+slug: red-hat
+name: Red Hat
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 86482
+      total_comp:
+        p50: 100137
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/red-hat/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level L3, 11 years experience. Levels.fyi
+        published no Spanish aggregate for this company, so this is one data point rather than a band.'

@@ -28,10 +28,10 @@ compensation:
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/edreams-odigeo/salaries/software-engineer/locations/spain
-        date: '2026-08-28'
-      last_verified: '2026-08-28'
-      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
-        compensation, interquartile range.'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'
   - role: software-engineering-manager
     levels:
     - level: all

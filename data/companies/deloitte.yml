@@ -30,3 +30,19 @@ compensation:
       last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 46230
+      total_comp:
+        p50: 46230
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/deloitte/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: 1A Coruna, GA, Spain, reported level L3, 4 years experience.
+        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
+        a band.'

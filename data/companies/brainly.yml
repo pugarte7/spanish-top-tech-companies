@@ -1,0 +1,22 @@
+slug: brainly
+name: Brainly
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 88838
+      total_comp:
+        p50: 88838
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/brainly/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level Senior Data Engineer, 5-10
+        years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data
+        point rather than a band.'

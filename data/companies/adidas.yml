@@ -8,17 +8,14 @@ compensation:
     levels:
     - level: all
       base:
-        min: 47303
-        p50: 49336
-        max: 59237
+        p50: 47303
       total_comp:
-        min: 47303
-        p50: 49336
-        max: 64479
+        p50: 50851
+      sample_size: 1
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/adidas/salaries/software-engineer/locations/spain
-        date: '2026-08-28'
-      last_verified: '2026-08-28'
-      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
-        compensation, interquartile range.'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Zaragoza, AR, Spain, reported level P1, 5 years experience. Levels.fyi
+        published no Spanish aggregate for this company, so this is one data point rather than a band.'

@@ -88,50 +88,105 @@ def get(url: str, delay: float, attempts: int = 3) -> str | None:
     return None
 
 
-def spain_percentiles(slug: str, delay: float):
-    """(served_country, percentiles) for this company's Spanish engineers."""
+def spain_data(slug: str, delay: float):
+    """(label, percentiles, median) — whichever of the two is Spanish.
+
+    The page answers in two independent voices and they disagree constantly.
+    `percentiles` is an aggregate that falls back to another country when the
+    Spanish sample is too small to publish; `median` is one real submission for
+    the location asked about, and it stays Spanish even when the aggregate has
+    given up. Stripe, Spotify, Scopely and Amadeus all serve a US or Indian
+    aggregate next to a Barcelona or Madrid submission, so trusting only the
+    aggregate throws away the very data this repository wants.
+
+    Either returns None when it is not Spain. `label` is for the run report.
+    """
     url = f"{BASE}/companies/{slug}/salaries/{ROLE}/locations/spain"
     body = get(url, delay)
     if not body:
-        return None, None
+        return None, None, None
     found = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', body, re.S)
     if not found:
-        return None, None
+        return None, None, None
     try:
         props = json.loads(found.group(1))["props"]["pageProps"]
     except (KeyError, json.JSONDecodeError):
-        return None, None
+        return None, None, None
+
     percentiles = props.get("percentiles") or {}
-    return percentiles.get("locationName"), percentiles
+    aggregate = percentiles if percentiles.get("locationName") == "Spain" else None
+
+    median = props.get("median") or {}
+    where = str(median.get("location") or "")
+    submission = median if where.strip().endswith("Spain") else None
+
+    if aggregate:
+        label = "Spain (aggregate)"
+    elif submission:
+        label = "Spain (submission)"
+    else:
+        label = percentiles.get("locationName") or "no data"
+    return label, aggregate, submission
 
 
-def band(percentiles: dict, slug: str, today: str) -> dict | None:
-    """One band at level `all`, using the interquartile range as METHODOLOGY asks."""
-    def money(block):
-        block = block or {}
-        out = {}
-        for ours, theirs in (("min", "p25"), ("p50", "p50"), ("max", "p75")):
-            value = block.get(theirs)
-            if value is not None:
-                out[ours] = round(value)
-        return out
+def band(aggregate: dict | None, submission: dict | None, slug: str,
+         today: str) -> dict | None:
+    """One band at level `all`, from whichever Spanish source we have.
 
-    base = money(percentiles.get("base_salary"))
-    total = money(percentiles.get("tc"))
-    if not base and not total:
+    An aggregate gives a real interquartile range. A lone submission gives one
+    number, recorded with sample_size 1 so nobody mistakes it for a
+    distribution: a band that says 1 is a data point, not a salary band.
+    """
+    source = {
+        "name": "levels.fyi",
+        "url": f"{BASE}/companies/{slug}/salaries/{ROLE}/locations/spain",
+        "date": today,
+    }
+
+    if aggregate:
+        def money(block):
+            out = {}
+            for ours, theirs in (("min", "p25"), ("p50", "p50"), ("max", "p75")):
+                value = (block or {}).get(theirs)
+                if value is not None:
+                    out[ours] = round(value)
+            return out
+
+        base = money(aggregate.get("base_salary"))
+        total = money(aggregate.get("tc"))
+        if not base and not total:
+            return None
+        return {
+            "level": "all",
+            "base": base,
+            "total_comp": total,
+            "sources": [source],
+            "last_verified": today,
+            "notes": ("Spain only: Levels.fyi reports this location as Spain. "
+                      "Base and total compensation, interquartile range."),
+        }
+
+    if not submission:
         return None
+    base = submission.get("baseSalary")
+    total = submission.get("totalCompensation")
+    if base is None and total is None:
+        return None
+    reported = submission.get("level") or "unspecified"
+    years = submission.get("yearsOfExperience")
+    where = submission.get("location") or "Spain"
     return {
         "level": "all",
-        "base": base,
-        "total_comp": total,
-        "sources": [{
-            "name": "levels.fyi",
-            "url": f"{BASE}/companies/{slug}/salaries/{ROLE}/locations/spain",
-            "date": today,
-        }],
+        "base": {"p50": round(base)} if base is not None else {},
+        "total_comp": {"p50": round(total)} if total is not None else {},
+        "sample_size": 1,
+        "sources": [source],
         "last_verified": today,
-        "notes": ("Spain only: Levels.fyi confirmed this location serves Spanish "
-                  "submissions. Base and total compensation, interquartile range."),
+        "notes": (f"Single Spanish submission: {where}, reported level "
+                  f"{reported}"
+                  f"{f', {years} years experience' if years is not None else ''}. "
+                  "Levels.fyi published no Spanish aggregate for this company, "
+                  "so this is one data point rather than a band."),
     }
 
 
@@ -217,18 +272,20 @@ def main(argv: list[str]) -> int:
 
     try:
         for slug, name in pending:
-            country, percentiles = spain_percentiles(slug, args.delay)
-            label = country or "no page"
+            label, aggregate, submission = spain_data(slug, args.delay)
+            label = label or "no data"
             served[label] = served.get(label, 0) + 1
-            if country != "Spain":
-                print(f"  {slug}: serves {label}, not Spain")
+            new_band = band(aggregate, submission, slug, today)
+            if new_band is None:
+                print(f"  {slug}: {label}, nothing Spanish to record")
                 if not args.audit:
                     outcome = write(slug, None, name, today)
                     tally[outcome] = tally.get(outcome, 0) + 1
                 continue
-            new_band = band(percentiles, slug, today)
-            base = (new_band or {}).get("base", {}).get("p50")
-            print(f"  {slug}: Spain, base p50 {base}")
+            base = (new_band.get("base") or {}).get("p50")
+            total = (new_band.get("total_comp") or {}).get("p50")
+            kind = "aggregate" if aggregate else "1 submission"
+            print(f"  {slug}: Spain ({kind}), base {base} tc {total}")
             if not args.audit:
                 outcome = write(slug, new_band, name, today)
                 tally[outcome] = tally.get(outcome, 0) + 1

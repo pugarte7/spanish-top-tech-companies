@@ -79,12 +79,14 @@ def upper_quartile(level: dict):
 
 
 def headline(company: dict):
-    """The number the front page shows, as (euros, is_measured_senior).
+    """The number the front page shows, as (euros, kind).
 
-    A real senior rung when the company has a ladder. Otherwise the upper
-    quartile of the all-seniority band, which is an estimate of senior pay
-    rather than a measurement of it, so it comes back flagged for the table
-    to mark.
+    kind is how much the number is worth:
+      "senior"   a measured senior rung from a real ladder
+      "quartile" the upper quartile of the Spanish aggregate, an estimate
+      "single"   one person's reported salary, not a band at all
+
+    The three are not interchangeable and the table marks which is which.
     """
     bands = {}
     for role, level in lib.iter_levels(company):
@@ -95,12 +97,15 @@ def headline(company: dict):
         if rung in bands:
             value = lib.level_value(bands[rung])
             if value is not None:
-                return value, True
+                return value, "senior"
     if "all" in bands:
+        level = bands["all"]
+        if level.get("sample_size") == 1:
+            return lib.level_value(level), "single"
         # Prefer the upper quartile; fall back to the median when a band
         # carries only a single figure.
-        return upper_quartile(bands["all"]) or lib.level_value(bands["all"]), False
-    return None, False
+        return upper_quartile(level) or lib.level_value(level), "quartile"
+    return None, None
 
 
 def linkedin_url(linkedin_id) -> str | None:
@@ -157,19 +162,32 @@ def catalogue(companies: list[dict]) -> list[dict]:
                 keys.append(token.casefold())
         return keys
 
-    def index(entry: dict, name: str | None = None) -> None:
-        for key in name_keys(name or entry["name"]):
+    def index(entry: dict, name: str | None = None, alias: str | None = None) -> None:
+        keys = name_keys(name or entry["name"])
+        if alias:
+            keys += name_keys(alias)
+        for key in keys:
             by_name.setdefault(key, entry)
         if entry["levels_slug"]:
             by_slug.setdefault(entry["levels_slug"], entry)
 
-    def absorb(entry: dict, name: str, slug: str | None, linkedin_id) -> None:
+    def absorb(entry: dict, name: str, slug: str | None, linkedin_id,
+               alias: str | None = None, value=None, kind=None) -> None:
         entry["linkedin_id"] = entry.get("linkedin_id") or linkedin_id
         if slug and not entry["levels_slug"]:
             entry["levels_slug"] = slug
-        # A name we have now seen for this company, so the next row carrying
-        # it merges here instead of opening a second entry.
-        index(entry, name)
+        if entry["value"] is None and value is not None:
+            entry["value"] = value
+            entry["kind"] = kind
+        # Levels.fyi files some employers under two slugs, so the same company
+        # arrives twice under a plain name and a padded one: Meta and "Meta
+        # Facebook", BCG and "Boston Consulting Group (BCG)". The shorter is
+        # the one worth showing.
+        if len(name) < len(entry["name"]):
+            entry["name"] = name
+        # Names we have now seen for this company, so the next row carrying one
+        # merges here instead of opening a second entry.
+        index(entry, name, alias)
 
     def lookup(name: str, slug: str | None, alias: str | None):
         if slug and slug in by_slug:
@@ -179,47 +197,62 @@ def catalogue(companies: list[dict]) -> list[dict]:
                 return by_name[key]
         return None
 
-    for c in companies:
-        value, is_senior = headline(c)
-        entry = {
-            "name": c["name"],
-            "levels_slug": company_levels_slug(c),
-            "linkedin_id": c.get("linkedin_id"),
-            "value": value,
-            "is_senior": is_senior,
-        }
-        entries.append(entry)
-        index(entry)
-
+    # The resolver records the name Levels.fyi answered with, which is how
+    # "Meta Facebook" is known to be Meta. Both now have their own company
+    # file, so the aliases have to be known before those files are read or the
+    # two are appended as separate companies before anything can pair them.
+    backlog_rows = []
+    aliases: dict[str, str] = {}
     path = lib.ROOT / "data" / "backlog.csv"
     if path.exists():
         with path.open(encoding="utf-8") as fh:
             for row in csv.DictReader(fh):
-                name = (row.get("name") or "").strip()
-                if not name:
+                if not (row.get("name") or "").strip():
                     continue
-                slug = row.get("levels_slug") or None
-                # The resolver records the name Levels.fyi answered with, which
-                # is how "Meta Facebook" is known to be Meta: the two are one
-                # company under two slugs, so no slug comparison would catch it.
                 found = re.search(r"matched as ([^,]+)", row.get("notes") or "")
-                alias = found.group(1).strip() if found else None
-                # Slug first: it is the identity two differently-named rows
-                # share (Amazon and "Amazon Web Services (AWS)" both resolve
-                # to amazon). Then our name, then the name they answered with.
-                existing = lookup(name, slug, alias)
-                if existing:
-                    absorb(existing, name, slug, row.get("linkedin_id"))
-                    continue
-                entry = {
-                    "name": name,
-                    "levels_slug": slug,
-                    "linkedin_id": row.get("linkedin_id"),
-                    "value": None,
-                    "is_senior": False,
-                }
-                entries.append(entry)
-                index(entry)
+                if found and row.get("levels_slug"):
+                    aliases[row["levels_slug"]] = found.group(1).strip()
+                backlog_rows.append(row)
+
+    for c in companies:
+        value, kind = headline(c)
+        slug = company_levels_slug(c) or c.get("slug")
+        alias = aliases.get(slug or "")
+        existing = lookup(c["name"], slug, alias)
+        if existing:
+            absorb(existing, c["name"], slug, c.get("linkedin_id"), alias,
+                   value, kind)
+            continue
+        entry = {
+            "name": c["name"],
+            "levels_slug": slug,
+            "linkedin_id": c.get("linkedin_id"),
+            "value": value,
+            "kind": kind,
+        }
+        entries.append(entry)
+        index(entry, alias=alias)
+
+    for row in backlog_rows:
+        name = (row.get("name") or "").strip()
+        slug = row.get("levels_slug") or None
+        alias = aliases.get(slug or "")
+        # Slug first: it is the identity two differently-named rows share
+        # (Amazon and "Amazon Web Services (AWS)" both resolve to amazon).
+        # Then our name, then the name Levels.fyi answered with.
+        existing = lookup(name, slug, alias)
+        if existing:
+            absorb(existing, name, slug, row.get("linkedin_id"), alias)
+            continue
+        entry = {
+            "name": name,
+            "levels_slug": slug,
+            "linkedin_id": row.get("linkedin_id"),
+            "value": None,
+            "kind": None,
+        }
+        entries.append(entry)
+        index(entry, alias=alias)
 
     return entries
 
@@ -236,17 +269,18 @@ def render_companies(companies: list[dict]) -> str:
     # the bottom in alphabetical order so it reads as a directory, not a gap.
     entries.sort(key=lambda e: (e["value"] is None, -(e["value"] or 0), e["name"].lower()))
 
+    marks = {"senior": "", "quartile": "*", "single": "\u2020"}
     rows = ["| Company | Senior+ |", "| --- | --- |"]
-    approx = 0
+    counts = {"senior": 0, "quartile": 0, "single": 0}
     for e in entries:
         li = linkedin_url(e["linkedin_id"])
         name = f"[{e['name']}]({li})" if li else e["name"]
         if e["value"] is None:
             rows.append(f"| {name} | \u2014 |")
             continue
-        if not e["is_senior"]:
-            approx += 1
-        figure = k(e["value"]) + ("" if e["is_senior"] else "*")
+        kind = e.get("kind") or "quartile"
+        counts[kind] = counts.get(kind, 0) + 1
+        figure = k(e["value"]) + marks.get(kind, "*")
         page = levels_page(e["levels_slug"])
         rows.append(f"| {name} | " + (f"[{figure}]({page})" if page else figure) + " |")
 
@@ -255,9 +289,11 @@ def render_companies(companies: list[dict]) -> str:
     rows.append(
         f"<sub>{documented} of {len(entries)} companies have pay on file; the rest are "
         "on the list but nobody has checked them yet. Company names link to LinkedIn, "
-        f"figures to Levels.fyi. `*` on {approx} of them marks an estimate: the upper "
-        "quartile of every engineer at that company in Spain, standing in for a senior "
-        "figure because Levels.fyi publishes no level breakdown there.</sub>"
+        "figures to Levels.fyi. An unmarked figure is a measured senior salary. "
+        f"`*` ({counts['quartile']}) is the upper quartile of every engineer at that "
+        f"company in Spain, standing in for a senior figure. `\u2020` ({counts['single']}) "
+        "is a single person's reported salary, not a band: treat it as one data "
+        "point.</sub>"
     )
     return chr(10).join(rows)
 

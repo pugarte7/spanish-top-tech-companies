@@ -17,16 +17,19 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        p50: 68240
       total_comp:
-        p50: 64110
+        p50: 68240
+      sample_size: 1
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/t-systems/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 8
+        url: https://www.levels.fyi/companies/t-systems/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level Senior, 12 years experience.
+        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
+        a band.'
   - role: solution-architect
     levels:
     - level: all

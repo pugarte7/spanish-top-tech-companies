@@ -7,16 +7,19 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        p50: 67969
       total_comp:
-        p50: 84296
+        p50: 91234
+      sample_size: 1
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+        url: https://www.levels.fyi/companies/amazon/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level SDE II, 3 years experience.
+        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
+        a band.'
   - role: software-engineering-manager
     levels:
     - level: all

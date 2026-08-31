@@ -44,20 +44,20 @@ compensation:
     levels:
     - level: all
       base:
-        min: 27865
-        p50: 33615
-        max: 42278
+        min: 32092
+        p50: 35212
+        max: 42281
       total_comp:
-        min: 27865
-        p50: 33615
-        max: 42278
+        min: 32092
+        p50: 35212
+        max: 42281
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/minsait/salaries/software-engineer/locations/spain
-        date: '2026-08-28'
-      last_verified: '2026-08-28'
-      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
-        compensation, interquartile range.'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'
   - role: data-analyst
     levels:
     - level: all

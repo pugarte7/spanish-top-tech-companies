@@ -41,16 +41,21 @@ compensation:
         USD at 0.853.
       sample_size: 15
     - level: all
-      base: {}
+      base:
+        min: 95861
+        p50: 99122
+        max: 120049
       total_comp:
-        p50: 107843
+        min: 95861
+        p50: 104668
+        max: 145145
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area
+        url: https://www.levels.fyi/companies/revolut/salaries/software-engineer/locations/spain
         date: '2026-08-31'
       last_verified: '2026-08-31'
-      notes: Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'
   - role: data-scientist
     levels:
     - level: junior

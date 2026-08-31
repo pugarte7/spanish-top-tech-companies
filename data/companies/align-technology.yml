@@ -1,0 +1,21 @@
+slug: align-technology
+name: Align Technology
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 71831
+      total_comp:
+        p50: 81831
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/align-technology/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level L5, 6 years experience. Levels.fyi
+        published no Spanish aggregate for this company, so this is one data point rather than a band.'
