@@ -95,6 +95,7 @@
         }
       ]
     },
+    "linkedin_url": "https://www.linkedin.com/company/accenture",
     "_computed": {
       "qualifies": false,
       "top_band_eur": 39416,
@@ -1157,6 +1158,7 @@
         }
       ]
     },
+    "linkedin_url": "https://www.linkedin.com/company/amadeus",
     "_computed": {
       "qualifies": false,
       "top_band_eur": 47744,
@@ -1339,6 +1341,7 @@
         }
       ]
     },
+    "linkedin_url": "https://www.linkedin.com/company/analog-devices",
     "_computed": {
       "qualifies": false,
       "top_band_eur": 52740,
@@ -2550,6 +2553,7 @@
         }
       ]
     },
+    "linkedin_url": "https://www.linkedin.com/company/capgemini",
     "_computed": {
       "qualifies": false,
       "top_band_eur": 36892,
@@ -3832,6 +3836,7 @@
         }
       ]
     },
+    "linkedin_url": "https://www.linkedin.com/company/ernstandyoung",
     "_computed": {
       "qualifies": false,
       "top_band_eur": 29200,
@@ -5304,6 +5309,7 @@
         }
       ]
     },
+    "linkedin_url": "https://www.linkedin.com/company/hewlett-packard-enterprise",
     "_computed": {
       "qualifies": true,
       "top_band_eur": 71832,
@@ -6347,6 +6353,7 @@
         }
       ]
     },
+    "linkedin_url": "https://www.linkedin.com/company/mckinsey",
     "_computed": {
       "qualifies": false,
       "top_band_eur": 43891,
@@ -8184,6 +8191,7 @@
         }
       ]
     },
+    "linkedin_url": "https://www.linkedin.com/company/perk",
     "_computed": {
       "qualifies": true,
       "top_band_eur": 75945,
@@ -9999,6 +10007,7 @@
         }
       ]
     },
+    "linkedin_url": "https://www.linkedin.com/company/stenn-financial-services",
     "_computed": {
       "qualifies": true,
       "top_band_eur": 133659,
@@ -10931,6 +10940,7 @@
         }
       ]
     },
+    "linkedin_url": "https://www.linkedin.com/company/transperfect",
     "_computed": {
       "qualifies": false,
       "top_band_eur": 35429,

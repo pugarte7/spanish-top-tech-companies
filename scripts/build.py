@@ -133,8 +133,18 @@ def evidence(level: dict | None) -> tuple[str, str]:
     return (str(points) if points else "—"), label
 
 
-def linkedin_url(linkedin_id) -> str | None:
-    return f"https://www.linkedin.com/company/{linkedin_id}" if linkedin_id else None
+def linkedin_url(entry: dict) -> str | None:
+    """Where the company name points.
+
+    A vanity URL is what a person would recognise and what Levels.fyi records,
+    so it wins over the numeric id from the LinkedIn job-search filter. The id
+    still resolves, and is all the backlog rows have.
+    """
+    if entry.get("linkedin_url"):
+        return entry["linkedin_url"]
+    if entry.get("linkedin_id"):
+        return f"https://www.linkedin.com/company/{entry['linkedin_id']}"
+    return None
 
 
 def levels_page(slug: str | None) -> str | None:
@@ -197,8 +207,10 @@ def catalogue(companies: list[dict]) -> list[dict]:
             by_slug.setdefault(entry["levels_slug"], entry)
 
     def absorb(entry: dict, name: str, slug: str | None, linkedin_id,
-               alias: str | None = None, value=None, kind=None, level=None) -> None:
+               alias: str | None = None, value=None, kind=None, level=None,
+               linkedin_url_=None) -> None:
         entry["linkedin_id"] = entry.get("linkedin_id") or linkedin_id
+        entry["linkedin_url"] = entry.get("linkedin_url") or linkedin_url_
         if slug and not entry["levels_slug"]:
             entry["levels_slug"] = slug
         if entry["value"] is None and value is not None:
@@ -247,12 +259,13 @@ def catalogue(companies: list[dict]) -> list[dict]:
         existing = lookup(c["name"], slug, alias)
         if existing:
             absorb(existing, c["name"], slug, c.get("linkedin_id"), alias,
-                   value, kind, level)
+                   value, kind, level, c.get("linkedin_url"))
             continue
         entry = {
             "name": c["name"],
             "levels_slug": slug,
             "linkedin_id": c.get("linkedin_id"),
+            "linkedin_url": c.get("linkedin_url"),
             "value": value,
             "kind": kind,
             "level": level,
@@ -275,6 +288,7 @@ def catalogue(companies: list[dict]) -> list[dict]:
             "name": name,
             "levels_slug": slug,
             "linkedin_id": row.get("linkedin_id"),
+            "linkedin_url": None,
             "value": None,
             "kind": None,
             "level": None,
@@ -312,7 +326,7 @@ def render_companies(companies: list[dict]) -> str:
     counts = {"senior": 0, "quartile": 0, "single": 0}
     vouched = 0
     for e in entries:
-        li = linkedin_url(e["linkedin_id"])
+        li = linkedin_url(e)
         name = f"[{e['name']}]({li})" if li else e["name"]
         if e["value"] is None:
             rows.append(f"| {name} | \u2014 | \u2014 | \u2014 |")

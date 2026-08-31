@@ -104,14 +104,14 @@ def spain_data(slug: str, delay: float):
     url = f"{BASE}/companies/{slug}/salaries/{ROLE}/locations/spain"
     body = get(url, delay)
     if not body:
-        return None, None, None
+        return None, None, None, {}
     found = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', body, re.S)
     if not found:
-        return None, None, None
+        return None, None, None, {}
     try:
         props = json.loads(found.group(1))["props"]["pageProps"]
     except (KeyError, json.JSONDecodeError):
-        return None, None, None
+        return None, None, None, {}
 
     percentiles = props.get("percentiles") or {}
     aggregate = percentiles if percentiles.get("locationName") == "Spain" else None
@@ -126,7 +126,9 @@ def spain_data(slug: str, delay: float):
         label = "Spain (submission)"
     else:
         label = percentiles.get("locationName") or "no data"
-    return label, aggregate, submission
+    # The company record is about the employer, not the location, so it is
+    # worth keeping even when there is no Spanish pay to record.
+    return label, aggregate, submission, props.get("company") or {}
 
 
 def band(aggregate: dict | None, submission: dict | None, slug: str,
@@ -190,7 +192,8 @@ def band(aggregate: dict | None, submission: dict | None, slug: str,
     }
 
 
-def write(slug: str, new_band: dict | None, name_hint: str, today: str) -> str:
+def write(slug: str, new_band: dict | None, name_hint: str, today: str,
+          record: dict | None = None) -> str:
     """Update one company file. Returns what happened, for the run report."""
     path = lib.COMPANIES_DIR / f"{slug}.yml"
     company = yaml.safe_load(path.read_text(encoding="utf-8")) if path.exists() else None
@@ -198,6 +201,14 @@ def write(slug: str, new_band: dict | None, name_hint: str, today: str) -> str:
     company = company or {"slug": slug, "name": name_hint or slug}
     company.setdefault("slug", slug)
     company.setdefault("name", name_hint or slug)
+
+    # The employer's own LinkedIn page, which the front page links company
+    # names to. Never overwrite one already on file: a hand-entered URL was
+    # put there deliberately and is better than anything guessed here.
+    handle = (record or {}).get("linkedin")
+    linked = bool(handle) and not company.get("linkedin_url")
+    if linked:
+        company["linkedin_url"] = f"https://www.linkedin.com/{handle.strip('/')}"
 
     compensation = company.setdefault("compensation", {})
     compensation.setdefault("currency", "EUR")
@@ -218,7 +229,10 @@ def write(slug: str, new_band: dict | None, name_hint: str, today: str) -> str:
             role["levels"] = kept
             if not kept:
                 roles.remove(role)
-        if not dropped:
+        # Nothing to correct and no pay to record. Worth a write only to keep
+        # a LinkedIn page on a company we already have a file for; a company
+        # with neither is not worth a stub file holding one field.
+        if not dropped and not (linked and not created):
             return "skipped"
     else:
         if bucket is None:
@@ -272,14 +286,14 @@ def main(argv: list[str]) -> int:
 
     try:
         for slug, name in pending:
-            label, aggregate, submission = spain_data(slug, args.delay)
+            label, aggregate, submission, record = spain_data(slug, args.delay)
             label = label or "no data"
             served[label] = served.get(label, 0) + 1
             new_band = band(aggregate, submission, slug, today)
             if new_band is None:
                 print(f"  {slug}: {label}, nothing Spanish to record")
                 if not args.audit:
-                    outcome = write(slug, None, name, today)
+                    outcome = write(slug, None, name, today, record)
                     tally[outcome] = tally.get(outcome, 0) + 1
                 continue
             base = (new_band.get("base") or {}).get("p50")
@@ -287,7 +301,7 @@ def main(argv: list[str]) -> int:
             kind = "aggregate" if aggregate else "1 submission"
             print(f"  {slug}: Spain ({kind}), base {base} tc {total}")
             if not args.audit:
-                outcome = write(slug, new_band, name, today)
+                outcome = write(slug, new_band, name, today, record)
                 tally[outcome] = tally.get(outcome, 0) + 1
     except Blocked as exc:
         print(f"\n{exc}", file=sys.stderr)
