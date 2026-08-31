@@ -1,0 +1,24 @@
+slug: ryanair
+name: Ryanair - Europe's Favourite Airline
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 41737
+        p50: 58749
+        max: 64083
+      total_comp:
+        min: 41737
+        p50: 58749
+        max: 64083
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ryanair/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'

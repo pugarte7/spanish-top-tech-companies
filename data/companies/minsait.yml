@@ -43,16 +43,21 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        min: 27865
+        p50: 33615
+        max: 42278
       total_comp:
-        p50: 28674
+        min: 27865
+        p50: 33615
+        max: 42278
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/minsait/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 36
+        url: https://www.levels.fyi/companies/minsait/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'
   - role: data-analyst
     levels:
     - level: all

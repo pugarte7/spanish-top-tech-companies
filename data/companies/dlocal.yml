@@ -1,0 +1,24 @@
+slug: dlocal
+name: dLocal
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 70151
+        p50: 80174
+        max: 82299
+      total_comp:
+        min: 70151
+        p50: 80174
+        max: 82299
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/dlocal/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'

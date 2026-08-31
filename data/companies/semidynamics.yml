@@ -28,14 +28,20 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        min: 54022
+        p50: 54022
+        max: 54022
       total_comp:
-        p50: 46311
+        min: 54022
+        p50: 54022
+        max: 54022
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/semidynamics/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+        url: https://www.levels.fyi/companies/semidynamics/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'
 linkedin_url: https://www.linkedin.com/company/semidynamics
 year_founded: 2016

@@ -1,0 +1,166 @@
+slug: adyen
+name: Adyen
+website: https://www.adyen.com
+hq:
+  city: Amsterdam
+  country: NL
+employees: 1,001-10,000
+sector:
+- technology
+- e-commerce-marketplaces
+- information-technology-services
+- financial-services
+compensation:
+  roles:
+  - role: data-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 74814
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adyen/salaries
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Median across all levels. Total compensation, converted from USD at 0.852.
+      sample_size: 10
+  - role: software-engineering-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 118510
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adyen/salaries
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Median across all levels. Total compensation, converted from USD at 0.852.
+      sample_size: 8
+  - role: information-technologist
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 87256
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adyen/salaries
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Median across all levels. Total compensation, converted from USD at 0.852.
+      sample_size: 2
+  - role: business-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 52783
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adyen/salaries
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Median across all levels. Total compensation, converted from USD at 0.852.
+  - role: data-scientist
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 110581
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adyen/salaries
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.852.
+  - role: product-designer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 216391
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adyen/salaries
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.852.
+  - role: product-design-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 155894
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adyen/salaries
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.852.
+  - role: project-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 100400
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adyen/salaries
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.852.
+  - role: security-analyst
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 115048
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adyen/salaries
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.852.
+  - role: solution-architect
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 135310
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adyen/salaries
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.852.
+  - role: technical-program-manager
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 30950
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adyen/salaries
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.852.
+  - role: technical-writer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 88534
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adyen/salaries
+        date: '2026-08-27'
+      last_verified: '2026-08-27'
+      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.852.
+  currency: EUR
+  basis: gross_annual
+linkedin_url: https://www.linkedin.com/company/adyen
+year_founded: 2006
+notes: 'Payment processing platform. Equity: Phantom Stock Plan vesting 25,25,25,25|25/1,25/12,25/12,25/12.'

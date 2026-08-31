@@ -1,0 +1,24 @@
+slug: eventbrite
+name: Eventbrite
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 71128
+        p50: 90781
+        max: 99849
+      total_comp:
+        min: 71128
+        p50: 101667
+        max: 128360
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/eventbrite/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'

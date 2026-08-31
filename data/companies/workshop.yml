@@ -1,0 +1,24 @@
+slug: workshop
+name: The Workshop
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 49000
+        p50: 49000
+        max: 54290
+      total_comp:
+        min: 49000
+        p50: 49000
+        max: 54290
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/workshop/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'

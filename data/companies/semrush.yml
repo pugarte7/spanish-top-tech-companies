@@ -17,16 +17,21 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        min: 77219
+        p50: 84070
+        max: 98060
       total_comp:
-        p50: 71712
+        min: 77219
+        p50: 84070
+        max: 98060
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/semrush/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 20
+        url: https://www.levels.fyi/companies/semrush/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'
   - role: data-analyst
     levels:
     - level: all

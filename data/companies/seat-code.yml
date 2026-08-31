@@ -1,0 +1,24 @@
+slug: seat-code
+name: SEAT CODE
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 54658
+        p50: 61430
+        max: 70955
+      total_comp:
+        min: 61658
+        p50: 69165
+        max: 79038
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/seat-code/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'

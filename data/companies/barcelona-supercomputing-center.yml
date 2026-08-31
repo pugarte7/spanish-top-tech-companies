@@ -30,16 +30,21 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        min: 33240
+        p50: 35421
+        max: 43829
       total_comp:
-        p50: 36809
+        min: 33240
+        p50: 35421
+        max: 43829
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 17
+        url: https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'
   - role: data-scientist
     levels:
     - level: all

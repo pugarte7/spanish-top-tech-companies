@@ -1,0 +1,24 @@
+slug: fever
+name: Fever
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 31337
+        p50: 59270
+        max: 79179
+      total_comp:
+        min: 31337
+        p50: 59270
+        max: 85903
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/fever/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'

@@ -71,6 +71,22 @@ compensation:
       last_verified: '2026-08-26'
       notes: Levels.fyi reports this as 'L5'. Total compensation, converted from USD at 0.853.
       sample_size: 4
+    - level: all
+      base:
+        min: 64069
+        p50: 74397
+        max: 84228
+      total_comp:
+        min: 64069
+        p50: 81667
+        max: 91668
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/glovo/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'
   - role: software-engineering-manager
     levels:
     - level: junior

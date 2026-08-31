@@ -57,6 +57,22 @@ compensation:
       last_verified: '2026-08-26'
       notes: Levels.fyi reports this as '13'. Total compensation, converted from USD at 0.853.
       sample_size: 4
+    - level: all
+      base:
+        min: 54669
+        p50: 65010
+        max: 75725
+      total_comp:
+        min: 54677
+        p50: 72044
+        max: 86267
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adevinta/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'
   - role: software-engineering-manager
     levels:
     - level: all

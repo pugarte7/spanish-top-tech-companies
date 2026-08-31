@@ -29,15 +29,21 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        min: 68422
+        p50: 68422
+        max: 108454
       total_comp:
-        p50: 105283
+        min: 68422
+        p50: 68422
+        max: 125946
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/aily-labs/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+        url: https://www.levels.fyi/companies/aily-labs/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'
   - role: software-engineering-manager
     levels:
     - level: all

@@ -26,30 +26,6 @@ compensation:
       last_verified: '2026-08-26'
       notes: Median across all levels. Total compensation, converted from USD at 0.853.
       sample_size: 3
-  - role: software-engineer
-    levels:
-    - level: junior
-      base: {}
-      total_comp:
-        p50: 67375
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/basf/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Levels.fyi reports this as 'L1'. Total compensation, converted from USD at 0.853.
-      sample_size: 3
-    - level: mid
-      base: {}
-      total_comp:
-        p50: 74616
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/companies/basf/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Levels.fyi reports this as 'L3'. Total compensation, converted from USD at 0.853.
-      sample_size: 7
   - role: business-analyst
     levels:
     - level: all

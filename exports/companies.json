@@ -164,6 +164,28 @@
               "last_verified": "2026-08-26",
               "notes": "Levels.fyi reports this as '13'. Total compensation, converted from USD at 0.853.",
               "sample_size": 4
+            },
+            {
+              "level": "all",
+              "base": {
+                "min": 54669,
+                "p50": 65010,
+                "max": 75725
+              },
+              "total_comp": {
+                "min": 54677,
+                "p50": 72044,
+                "max": 86267
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adevinta/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -370,6 +392,335 @@
     }
   },
   {
+    "slug": "adidas",
+    "name": "adidas",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 47303,
+                "p50": 49336,
+                "max": 59237
+              },
+              "total_comp": {
+                "min": 47303,
+                "p50": 49336,
+                "max": 64479
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adidas/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 49336,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "adyen",
+    "name": "Adyen",
+    "website": "https://www.adyen.com",
+    "hq": {
+      "city": "Amsterdam",
+      "country": "NL"
+    },
+    "employees": "1,001-10,000",
+    "sector": [
+      "technology",
+      "e-commerce-marketplaces",
+      "information-technology-services",
+      "financial-services"
+    ],
+    "compensation": {
+      "roles": [
+        {
+          "role": "data-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 74814
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adyen/salaries",
+                  "date": "2026-08-27"
+                }
+              ],
+              "last_verified": "2026-08-27",
+              "notes": "Median across all levels. Total compensation, converted from USD at 0.852.",
+              "sample_size": 10
+            }
+          ]
+        },
+        {
+          "role": "software-engineering-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 118510
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adyen/salaries",
+                  "date": "2026-08-27"
+                }
+              ],
+              "last_verified": "2026-08-27",
+              "notes": "Median across all levels. Total compensation, converted from USD at 0.852.",
+              "sample_size": 8
+            }
+          ]
+        },
+        {
+          "role": "information-technologist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 87256
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adyen/salaries",
+                  "date": "2026-08-27"
+                }
+              ],
+              "last_verified": "2026-08-27",
+              "notes": "Median across all levels. Total compensation, converted from USD at 0.852.",
+              "sample_size": 2
+            }
+          ]
+        },
+        {
+          "role": "business-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 52783
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adyen/salaries",
+                  "date": "2026-08-27"
+                }
+              ],
+              "last_verified": "2026-08-27",
+              "notes": "Median across all levels. Total compensation, converted from USD at 0.852."
+            }
+          ]
+        },
+        {
+          "role": "data-scientist",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 110581
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adyen/salaries",
+                  "date": "2026-08-27"
+                }
+              ],
+              "last_verified": "2026-08-27",
+              "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.852."
+            }
+          ]
+        },
+        {
+          "role": "product-designer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 216391
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adyen/salaries",
+                  "date": "2026-08-27"
+                }
+              ],
+              "last_verified": "2026-08-27",
+              "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.852."
+            }
+          ]
+        },
+        {
+          "role": "product-design-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 155894
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adyen/salaries",
+                  "date": "2026-08-27"
+                }
+              ],
+              "last_verified": "2026-08-27",
+              "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.852."
+            }
+          ]
+        },
+        {
+          "role": "project-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 100400
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adyen/salaries",
+                  "date": "2026-08-27"
+                }
+              ],
+              "last_verified": "2026-08-27",
+              "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.852."
+            }
+          ]
+        },
+        {
+          "role": "security-analyst",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 115048
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adyen/salaries",
+                  "date": "2026-08-27"
+                }
+              ],
+              "last_verified": "2026-08-27",
+              "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.852."
+            }
+          ]
+        },
+        {
+          "role": "solution-architect",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 135310
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adyen/salaries",
+                  "date": "2026-08-27"
+                }
+              ],
+              "last_verified": "2026-08-27",
+              "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.852."
+            }
+          ]
+        },
+        {
+          "role": "technical-program-manager",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 30950
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adyen/salaries",
+                  "date": "2026-08-27"
+                }
+              ],
+              "last_verified": "2026-08-27",
+              "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.852."
+            }
+          ]
+        },
+        {
+          "role": "technical-writer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {},
+              "total_comp": {
+                "p50": 88534
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/adyen/salaries",
+                  "date": "2026-08-27"
+                }
+              ],
+              "last_verified": "2026-08-27",
+              "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.852."
+            }
+          ]
+        }
+      ],
+      "currency": "EUR",
+      "basis": "gross_annual"
+    },
+    "linkedin_url": "https://www.linkedin.com/company/adyen",
+    "year_founded": 2006,
+    "notes": "Payment processing platform. Equity: Phantom Stock Plan vesting 25,25,25,25|25/1,25/12,25/12,25/12.",
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 216391,
+      "top_band_role": "product-designer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "aily-labs",
     "name": "Aily Labs",
     "website": "https://ailylabs.com",
@@ -414,19 +765,25 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
+              "base": {
+                "min": 68422,
+                "p50": 68422,
+                "max": 108454
+              },
               "total_comp": {
-                "p50": 105283
+                "min": 68422,
+                "p50": 68422,
+                "max": 125946
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/aily-labs/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/aily-labs/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.853."
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -724,20 +1081,25 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
+              "base": {
+                "min": 33240,
+                "p50": 35421,
+                "max": 43829
+              },
               "total_comp": {
-                "p50": 36809
+                "min": 33240,
+                "p50": 35421,
+                "max": 43829
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
-              "sample_size": 17
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -832,45 +1194,6 @@
               "last_verified": "2026-08-26",
               "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
               "sample_size": 3
-            }
-          ]
-        },
-        {
-          "role": "software-engineer",
-          "levels": [
-            {
-              "level": "junior",
-              "base": {},
-              "total_comp": {
-                "p50": 67375
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/basf/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'L1'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 3
-            },
-            {
-              "level": "mid",
-              "base": {},
-              "total_comp": {
-                "p50": 74616
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/basf/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'L3'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 7
             }
           ]
         },
@@ -1184,20 +1507,25 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
+              "base": {
+                "min": 34928,
+                "p50": 41449,
+                "max": 54401
+              },
               "total_comp": {
-                "p50": 35356
+                "min": 34928,
+                "p50": 41449,
+                "max": 55743
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/bbva/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/bbva/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
-              "sample_size": 14
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -1440,20 +1768,25 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
+              "base": {
+                "min": 46147,
+                "p50": 55297,
+                "max": 69226
+              },
               "total_comp": {
-                "p50": 52092
+                "min": 46147,
+                "p50": 55297,
+                "max": 69226
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/cabify/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/cabify/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
-              "sample_size": 22
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -1628,79 +1961,6 @@
               "last_verified": "2026-08-26",
               "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
               "sample_size": 3
-            }
-          ]
-        },
-        {
-          "role": "software-engineer",
-          "levels": [
-            {
-              "level": "junior",
-              "base": {},
-              "total_comp": {
-                "p50": 63960
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/celonis/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'IC1'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 5
-            },
-            {
-              "level": "mid",
-              "base": {},
-              "total_comp": {
-                "p50": 93202
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/celonis/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'IC2'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 19
-            },
-            {
-              "level": "senior",
-              "base": {},
-              "total_comp": {
-                "p50": 105581
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/celonis/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'IC3'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 12
-            },
-            {
-              "level": "staff",
-              "base": {},
-              "total_comp": {
-                "p50": 148143
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/celonis/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'IC4'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 7
             }
           ]
         },
@@ -1904,9 +2164,95 @@
     "notes": "Execution management system provider. Equity: RSU vesting 25/1,25/12,25/12,25/12|25,25,25,25.",
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 148143,
+      "top_band_eur": 145682,
+      "top_band_role": "software-engineering-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "clarity-ai",
+    "name": "Clarity AI",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 43858,
+                "p50": 43858,
+                "max": 74337
+              },
+              "total_comp": {
+                "min": 43858,
+                "p50": 43858,
+                "max": 74337
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/clarity-ai/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 43858,
       "top_band_role": "software-engineer",
-      "top_band_level": "staff"
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "collate",
+    "name": "Collate",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 87796,
+                "p50": 87796,
+                "max": 92888
+              },
+              "total_comp": {
+                "min": 87796,
+                "p50": 87796,
+                "max": 100888
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/collate/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 87796,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
     }
   },
   {
@@ -2100,6 +2446,49 @@
     }
   },
   {
+    "slug": "dlocal",
+    "name": "dLocal",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 70151,
+                "p50": 80174,
+                "max": 82299
+              },
+              "total_comp": {
+                "min": 70151,
+                "p50": 80174,
+                "max": 82299
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/dlocal/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 80174,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "edreams-odigeo",
     "name": "eDreams ODIGEO",
     "website": "https://www.edreamsodigeo.com",
@@ -2123,20 +2512,25 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
+              "base": {
+                "min": 50484,
+                "p50": 61356,
+                "max": 66896
+              },
               "total_comp": {
-                "p50": 57571
+                "min": 55133,
+                "p50": 66721,
+                "max": 73430
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/edreams-odigeo/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/edreams-odigeo/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
-              "sample_size": 40
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -2412,6 +2806,92 @@
     }
   },
   {
+    "slug": "eventbrite",
+    "name": "Eventbrite",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 71128,
+                "p50": 90781,
+                "max": 99849
+              },
+              "total_comp": {
+                "min": 71128,
+                "p50": 101667,
+                "max": 128360
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/eventbrite/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 90781,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "exoticca",
+    "name": "Exoticca",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 46023,
+                "p50": 50234,
+                "max": 70092
+              },
+              "total_comp": {
+                "min": 46023,
+                "p50": 54803,
+                "max": 75673
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/exoticca/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 50234,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "factorial",
     "name": "Factorial",
     "website": "https://factorialhr.es",
@@ -2457,20 +2937,25 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
+              "base": {
+                "min": 57687,
+                "p50": 63363,
+                "max": 77382
+              },
               "total_comp": {
-                "p50": 54127
+                "min": 57687,
+                "p50": 63363,
+                "max": 77382
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/factorial/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/factorial/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
-              "sample_size": 8
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -2566,6 +3051,49 @@
       "qualifies": true,
       "top_band_eur": 120085,
       "top_band_role": "product-designer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "fever",
+    "name": "Fever",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 31337,
+                "p50": 59270,
+                "max": 79179
+              },
+              "total_comp": {
+                "min": 31337,
+                "p50": 59270,
+                "max": 85903
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/fever/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 59270,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -2872,6 +3400,28 @@
               "last_verified": "2026-08-26",
               "notes": "Levels.fyi reports this as 'L5'. Total compensation, converted from USD at 0.853.",
               "sample_size": 4
+            },
+            {
+              "level": "all",
+              "base": {
+                "min": 64069,
+                "p50": 74397,
+                "max": 84228
+              },
+              "total_comp": {
+                "min": 64069,
+                "p50": 81667,
+                "max": 91668
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/glovo/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -3339,84 +3889,6 @@
       "basis": "gross_annual",
       "roles": [
         {
-          "role": "data-scientist",
-          "levels": [
-            {
-              "level": "junior",
-              "base": {},
-              "total_comp": {
-                "p50": 52599
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/ikea/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'Junior Data Scientist'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 7
-            },
-            {
-              "level": "mid",
-              "base": {},
-              "total_comp": {
-                "p50": 72957
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/ikea/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'Data Scientist'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 3
-            }
-          ]
-        },
-        {
-          "role": "software-engineer",
-          "levels": [
-            {
-              "level": "junior",
-              "base": {},
-              "total_comp": {
-                "p50": 81017
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/ikea/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'Software Engineer'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 9
-            },
-            {
-              "level": "mid",
-              "base": {},
-              "total_comp": {
-                "p50": 93472
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/ikea/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'Senior Software Engineer'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 11
-            }
-          ]
-        },
-        {
           "role": "product-designer",
           "levels": [
             {
@@ -3726,6 +4198,49 @@
     }
   },
   {
+    "slug": "inditex",
+    "name": "Inditex",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 43199,
+                "p50": 45489,
+                "max": 64530
+              },
+              "total_comp": {
+                "min": 43199,
+                "p50": 45489,
+                "max": 69240
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/inditex/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 45489,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "indra",
     "name": "Indra",
     "website": "https://www.indracompany.com",
@@ -3747,20 +4262,25 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
+              "base": {
+                "min": 34925,
+                "p50": 39792,
+                "max": 43468
+              },
               "total_comp": {
-                "p50": 34941
+                "min": 34925,
+                "p50": 39792,
+                "max": 43468
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/indra/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/indra/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
-              "sample_size": 35
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -3989,6 +4509,92 @@
     }
   },
   {
+    "slug": "jobandtalent",
+    "name": "Job&Talent",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 75290,
+                "p50": 81055,
+                "max": 93028
+              },
+              "total_comp": {
+                "min": 75290,
+                "p50": 81055,
+                "max": 93028
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/jobandtalent/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 81055,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "manychat",
+    "name": "Manychat",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 77960,
+                "p50": 85004,
+                "max": 98122
+              },
+              "total_comp": {
+                "min": 77960,
+                "p50": 85004,
+                "max": 98122
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/manychat/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 85004,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "mckinsey",
     "name": "McKinsey",
     "compensation": {
@@ -4022,6 +4628,49 @@
       "qualifies": false,
       "top_band_eur": 43840,
       "top_band_role": "data-scientist",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "mews",
+    "name": "Mews",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 69911,
+                "p50": 76449,
+                "max": 76589
+              },
+              "total_comp": {
+                "min": 69911,
+                "p50": 76449,
+                "max": 78875
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/mews/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 76449,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -4130,20 +4779,25 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
+              "base": {
+                "min": 27865,
+                "p50": 33615,
+                "max": 42278
+              },
               "total_comp": {
-                "p50": 28674
+                "min": 27865,
+                "p50": 33615,
+                "max": 42278
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/minsait/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/minsait/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
-              "sample_size": 36
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -4244,6 +4898,92 @@
     }
   },
   {
+    "slug": "mitek-systems",
+    "name": "Mitek Systems",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 58328,
+                "p50": 74464,
+                "max": 81251
+              },
+              "total_comp": {
+                "min": 58328,
+                "p50": 80304,
+                "max": 98132
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/mitek-systems/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 74464,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "multiverse-computing",
+    "name": "Multiverse Computing",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 57392,
+                "p50": 63521,
+                "max": 65196
+              },
+              "total_comp": {
+                "min": 57392,
+                "p50": 70369,
+                "max": 74044
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/multiverse-computing/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 63521,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "n26",
     "name": "N26",
     "website": "https://n26.com",
@@ -4263,79 +5003,6 @@
       "basis": "gross_annual",
       "roles": [
         {
-          "role": "software-engineer",
-          "levels": [
-            {
-              "level": "junior",
-              "base": {},
-              "total_comp": {
-                "p50": 64648
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/n26/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'L2'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 4
-            },
-            {
-              "level": "mid",
-              "base": {},
-              "total_comp": {
-                "p50": 72161
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/n26/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'L3'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 13
-            },
-            {
-              "level": "senior",
-              "base": {},
-              "total_comp": {
-                "p50": 91817
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/n26/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'L4'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 11
-            },
-            {
-              "level": "staff",
-              "base": {},
-              "total_comp": {
-                "p50": 112063
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/n26/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'L5'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 4
-            }
-          ]
-        },
-        {
           "role": "software-engineering-manager",
           "levels": [
             {
@@ -4354,118 +5021,6 @@
               "last_verified": "2026-08-26",
               "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
               "sample_size": 3
-            }
-          ]
-        },
-        {
-          "role": "product-manager",
-          "levels": [
-            {
-              "level": "junior",
-              "base": {},
-              "total_comp": {
-                "p50": 74207
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/n26/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'L3'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 4
-            },
-            {
-              "level": "mid",
-              "base": {},
-              "total_comp": {
-                "p50": 76099
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/n26/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'L4'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 6
-            },
-            {
-              "level": "senior",
-              "base": {},
-              "total_comp": {
-                "p50": 121510
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/n26/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'L5'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 6
-            }
-          ]
-        },
-        {
-          "role": "data-scientist",
-          "levels": [
-            {
-              "level": "junior",
-              "base": {},
-              "total_comp": {
-                "p50": 55499
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/n26/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'L2'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 3
-            },
-            {
-              "level": "mid",
-              "base": {},
-              "total_comp": {
-                "p50": 60039
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/n26/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'L3'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 3
-            },
-            {
-              "level": "senior",
-              "base": {},
-              "total_comp": {
-                "p50": 77706
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/n26/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'L4'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 5
             }
           ]
         },
@@ -4667,9 +5222,9 @@
     "notes": "Mobile bank with real-time tracking. Equity: RSU vesting 25,25,25,25|25/1,25/12,25/12,25/12.",
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 121510,
-      "top_band_role": "product-manager",
-      "top_band_level": "senior"
+      "top_band_eur": 104806,
+      "top_band_role": "software-engineering-manager",
+      "top_band_level": "all"
     }
   },
   {
@@ -5055,6 +5610,28 @@
               "last_verified": "2026-08-26",
               "notes": "Levels.fyi reports this as 'Lead Software Engineer'. Total compensation, converted from USD at 0.853.",
               "sample_size": 3
+            },
+            {
+              "level": "all",
+              "base": {
+                "min": 23073,
+                "p50": 35523,
+                "max": 48217
+              },
+              "total_comp": {
+                "min": 23073,
+                "p50": 35523,
+                "max": 49317
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/ntt-data/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -5324,6 +5901,49 @@
     }
   },
   {
+    "slug": "payfit",
+    "name": "PayFit",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 43772,
+                "p50": 78268,
+                "max": 91235
+              },
+              "total_comp": {
+                "min": 43772,
+                "p50": 78268,
+                "max": 91235
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/payfit/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 78268,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "pepsico",
     "name": "PepsiCo",
     "compensation": {
@@ -5357,6 +5977,135 @@
       "qualifies": true,
       "top_band_eur": 75652,
       "top_band_role": "data-scientist",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "perk",
+    "name": "Perk",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 70337,
+                "p50": 75945,
+                "max": 90507
+              },
+              "total_comp": {
+                "min": 70337,
+                "p50": 75945,
+                "max": 90507
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/perk/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 75945,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "preply",
+    "name": "Preply",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 84571,
+                "p50": 96309,
+                "max": 101538
+              },
+              "total_comp": {
+                "min": 84571,
+                "p50": 96309,
+                "max": 101538
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/preply/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 96309,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "remote",
+    "name": "Remote",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 80778,
+                "p50": 99895,
+                "max": 113167
+              },
+              "total_comp": {
+                "min": 80778,
+                "p50": 99895,
+                "max": 125652
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/remote/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 99895,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -5415,6 +6164,28 @@
               "last_verified": "2026-08-26",
               "notes": "Levels.fyi reports this as 'Senior Software Engineer'. Total compensation, converted from USD at 0.853.",
               "sample_size": 15
+            },
+            {
+              "level": "all",
+              "base": {
+                "min": 95861,
+                "p50": 99122,
+                "max": 120049
+              },
+              "total_comp": {
+                "min": 95861,
+                "p50": 104668,
+                "max": 145145
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/revolut/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -5775,6 +6546,49 @@
     }
   },
   {
+    "slug": "ryanair",
+    "name": "Ryanair - Europe's Favourite Airline",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 41737,
+                "p50": 58749,
+                "max": 64083
+              },
+              "total_comp": {
+                "min": 41737,
+                "p50": 58749,
+                "max": 64083
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/ryanair/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 58749,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "sage",
     "name": "Sage",
     "compensation": {
@@ -5808,6 +6622,49 @@
       "qualifies": true,
       "top_band_eur": 75044,
       "top_band_role": "product-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "sanofi",
+    "name": "Sanofi",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 74153,
+                "p50": 76279,
+                "max": 77050
+              },
+              "total_comp": {
+                "min": 81249,
+                "p50": 83758,
+                "max": 84689
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/sanofi/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 76279,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -5857,20 +6714,25 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
+              "base": {
+                "min": 29326,
+                "p50": 32832,
+                "max": 38116
+              },
               "total_comp": {
-                "p50": 31771
+                "min": 29326,
+                "p50": 32832,
+                "max": 39237
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/sdg-group/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/sdg-group/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
-              "sample_size": 8
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -5970,6 +6832,49 @@
     }
   },
   {
+    "slug": "seat-code",
+    "name": "SEAT CODE",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 54658,
+                "p50": 61430,
+                "max": 70955
+              },
+              "total_comp": {
+                "min": 61658,
+                "p50": 69165,
+                "max": 79038
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/seat-code/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 61430,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "semidynamics",
     "name": "Semidynamics",
     "website": "http://www.semidynamics.com",
@@ -6013,19 +6918,25 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
+              "base": {
+                "min": 54022,
+                "p50": 54022,
+                "max": 54022
+              },
               "total_comp": {
-                "p50": 46311
+                "min": 54022,
+                "p50": 54022,
+                "max": 54022
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/semidynamics/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/semidynamics/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Common Range Average across all levels. Total compensation, converted from USD at 0.853."
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         }
@@ -6035,7 +6946,7 @@
     "year_founded": 2016,
     "_computed": {
       "qualifies": false,
-      "top_band_eur": 46311,
+      "top_band_eur": 54022,
       "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
@@ -6064,20 +6975,25 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
+              "base": {
+                "min": 77219,
+                "p50": 84070,
+                "max": 98060
+              },
               "total_comp": {
-                "p50": 71712
+                "min": 77219,
+                "p50": 84070,
+                "max": 98060
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/semrush/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/semrush/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
-              "sample_size": 20
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -6480,6 +7396,135 @@
     }
   },
   {
+    "slug": "tiger-data",
+    "name": "Tiger Data (creators of TimescaleDB)",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 173776,
+                "p50": 173776,
+                "max": 173776
+              },
+              "total_comp": {
+                "min": 199842,
+                "p50": 199842,
+                "max": 199842
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/tiger-data/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 173776,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "timescale",
+    "name": "Timescale",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 106073,
+                "p50": 113167,
+                "max": 153257
+              },
+              "total_comp": {
+                "min": 106073,
+                "p50": 113167,
+                "max": 165046
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/timescale/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 113167,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "tinybird",
+    "name": "Tinybird",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 81372,
+                "p50": 88578,
+                "max": 100449
+              },
+              "total_comp": {
+                "min": 81372,
+                "p50": 121961,
+                "max": 137356
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/tinybird/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 88578,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
     "slug": "tomtom",
     "name": "TomTom",
     "website": "https://www.tomtom.com",
@@ -6517,96 +7562,6 @@
               "last_verified": "2026-08-26",
               "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
               "sample_size": 6
-            }
-          ]
-        },
-        {
-          "role": "software-engineer",
-          "levels": [
-            {
-              "level": "junior",
-              "base": {},
-              "total_comp": {
-                "p50": 60636
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/tomtom/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'Software Engineer I'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 13
-            },
-            {
-              "level": "mid",
-              "base": {},
-              "total_comp": {
-                "p50": 73973
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/tomtom/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'Software Engineer II'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 10
-            },
-            {
-              "level": "senior",
-              "base": {},
-              "total_comp": {
-                "p50": 85806
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/tomtom/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'Software Engineer III'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 11
-            },
-            {
-              "level": "staff",
-              "base": {},
-              "total_comp": {
-                "p50": 104433
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/tomtom/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'Software Engineer IV'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 10
-            },
-            {
-              "level": "principal",
-              "base": {},
-              "total_comp": {
-                "p50": 114409
-              },
-              "sources": [
-                {
-                  "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/tomtom/salaries",
-                  "date": "2026-08-26"
-                }
-              ],
-              "last_verified": "2026-08-26",
-              "notes": "Levels.fyi reports this as 'Staff Software Engineer I'. Total compensation, converted from USD at 0.853.",
-              "sample_size": 3
             }
           ]
         },
@@ -6744,9 +7699,9 @@
     "year_founded": 1991,
     "_computed": {
       "qualifies": true,
-      "top_band_eur": 114409,
-      "top_band_role": "software-engineer",
-      "top_band_level": "principal"
+      "top_band_eur": 112878,
+      "top_band_role": "software-engineering-manager",
+      "top_band_level": "all"
     }
   },
   {
@@ -6810,20 +7765,25 @@
           "levels": [
             {
               "level": "all",
-              "base": {},
+              "base": {
+                "min": 69597,
+                "p50": 82217,
+                "max": 86016
+              },
               "total_comp": {
-                "p50": 71603
+                "min": 69597,
+                "p50": 82217,
+                "max": 88337
               },
               "sources": [
                 {
                   "name": "levels.fyi",
-                  "url": "https://www.levels.fyi/companies/travelperk/salaries",
-                  "date": "2026-08-26"
+                  "url": "https://www.levels.fyi/companies/travelperk/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
                 }
               ],
-              "last_verified": "2026-08-26",
-              "notes": "Median across all levels. Total compensation, converted from USD at 0.853.",
-              "sample_size": 24
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
             }
           ]
         },
@@ -6878,6 +7838,49 @@
       "qualifies": true,
       "top_band_eur": 140510,
       "top_band_role": "software-engineering-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "typeform",
+    "name": "Typeform",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 70000,
+                "p50": 79791,
+                "max": 88000
+              },
+              "total_comp": {
+                "min": 70000,
+                "p50": 79791,
+                "max": 88000
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/typeform/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 79791,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   },
@@ -7100,6 +8103,135 @@
       "qualifies": true,
       "top_band_eur": 111444,
       "top_band_role": "program-manager",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "wallapop",
+    "name": "Wallapop",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 59000,
+                "p50": 69283,
+                "max": 77329
+              },
+              "total_comp": {
+                "min": 59000,
+                "p50": 69283,
+                "max": 77329
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/wallapop/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 69283,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "workshop",
+    "name": "The Workshop",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 49000,
+                "p50": 49000,
+                "max": 54290
+              },
+              "total_comp": {
+                "min": 49000,
+                "p50": 49000,
+                "max": 54290
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/workshop/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": false,
+      "top_band_eur": 49000,
+      "top_band_role": "software-engineer",
+      "top_band_level": "all"
+    }
+  },
+  {
+    "slug": "xata",
+    "name": "Xata.io",
+    "compensation": {
+      "currency": "EUR",
+      "basis": "gross_annual",
+      "roles": [
+        {
+          "role": "software-engineer",
+          "levels": [
+            {
+              "level": "all",
+              "base": {
+                "min": 133675,
+                "p50": 134268,
+                "max": 140040
+              },
+              "total_comp": {
+                "min": 133675,
+                "p50": 134268,
+                "max": 140040
+              },
+              "sources": [
+                {
+                  "name": "levels.fyi",
+                  "url": "https://www.levels.fyi/companies/xata/salaries/software-engineer/locations/spain",
+                  "date": "2026-08-28"
+                }
+              ],
+              "last_verified": "2026-08-28",
+              "notes": "Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total compensation, interquartile range."
+            }
+          ]
+        }
+      ]
+    },
+    "_computed": {
+      "qualifies": true,
+      "top_band_eur": 134268,
+      "top_band_role": "software-engineer",
       "top_band_level": "all"
     }
   }

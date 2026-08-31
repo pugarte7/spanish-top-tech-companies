@@ -65,26 +65,41 @@ def render_stats(companies: list[dict]) -> str:
 SENIOR_PLUS = ("senior", "staff", "principal", "lead")
 
 
-def headline(company: dict):
-    """The number the front page shows, as (euros, is_senior_plus).
+def upper_quartile(level: dict):
+    """The 75th percentile of a band, base before total comp.
 
-    Senior or above where the data has it. Most companies are known only
-    through a country aggregate, which Levels.fyi publishes as one
-    all-seniority median; that is not a senior figure, so it is returned
-    flagged and the table marks it.
+    An all-seniority band spans juniors to principals, so its median answers
+    the wrong question. The upper quartile is where the senior half of the
+    company sits, which is the closest this data gets to a senior figure.
+    """
+    for block in (level.get("base") or {}, level.get("total_comp") or {}):
+        if block.get("max") is not None:
+            return block["max"]
+    return None
+
+
+def headline(company: dict):
+    """The number the front page shows, as (euros, is_measured_senior).
+
+    A real senior rung when the company has a ladder. Otherwise the upper
+    quartile of the all-seniority band, which is an estimate of senior pay
+    rather than a measurement of it, so it comes back flagged for the table
+    to mark.
     """
     bands = {}
     for role, level in lib.iter_levels(company):
         if role != "software-engineer":
             continue
-        value = lib.level_value(level)
-        if value is not None:
-            bands[level.get("level")] = value
+        bands[level.get("level")] = level
     for rung in SENIOR_PLUS:
         if rung in bands:
-            return bands[rung], True
+            value = lib.level_value(bands[rung])
+            if value is not None:
+                return value, True
     if "all" in bands:
-        return bands["all"], False
+        # Prefer the upper quartile; fall back to the median when a band
+        # carries only a single figure.
+        return upper_quartile(bands["all"]) or lib.level_value(bands["all"]), False
     return None, False
 
 
@@ -239,9 +254,10 @@ def render_companies(companies: list[dict]) -> str:
     rows.append("")
     rows.append(
         f"<sub>{documented} of {len(entries)} companies have pay on file; the rest are "
-        "on the list but not researched yet. Company names link to LinkedIn, figures to "
-        f"Levels.fyi. `*` on {approx} of them means the figure is an all-seniority "
-        "median rather than a senior one.</sub>"
+        "on the list but nobody has checked them yet. Company names link to LinkedIn, "
+        f"figures to Levels.fyi. `*` on {approx} of them marks an estimate: the upper "
+        "quartile of every engineer at that company in Spain, standing in for a senior "
+        "figure because Levels.fyi publishes no level breakdown there.</sub>"
     )
     return chr(10).join(rows)
 

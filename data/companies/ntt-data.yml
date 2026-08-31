@@ -101,6 +101,22 @@ compensation:
       notes: Levels.fyi reports this as 'Lead Software Engineer'. Total compensation, converted from USD
         at 0.853.
       sample_size: 3
+    - level: all
+      base:
+        min: 23073
+        p50: 35523
+        max: 48217
+      total_comp:
+        min: 23073
+        p50: 35523
+        max: 49317
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ntt-data/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'
   - role: data-scientist
     levels:
     - level: all

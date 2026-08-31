@@ -1,0 +1,24 @@
+slug: multiverse-computing
+name: Multiverse Computing
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 57392
+        p50: 63521
+        max: 65196
+      total_comp:
+        min: 57392
+        p50: 70369
+        max: 74044
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/multiverse-computing/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'

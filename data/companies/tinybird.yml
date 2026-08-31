@@ -1,0 +1,24 @@
+slug: tinybird
+name: Tinybird
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 81372
+        p50: 88578
+        max: 100449
+      total_comp:
+        min: 81372
+        p50: 121961
+        max: 137356
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/tinybird/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'

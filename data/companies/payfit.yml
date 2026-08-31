@@ -1,0 +1,24 @@
+slug: payfit
+name: PayFit
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 43772
+        p50: 78268
+        max: 91235
+      total_comp:
+        min: 43772
+        p50: 78268
+        max: 91235
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/payfit/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'

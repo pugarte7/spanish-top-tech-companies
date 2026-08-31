@@ -1,0 +1,24 @@
+slug: jobandtalent
+name: Job&Talent
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 75290
+        p50: 81055
+        max: 93028
+      total_comp:
+        min: 75290
+        p50: 81055
+        max: 93028
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/jobandtalent/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'

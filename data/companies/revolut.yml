@@ -40,6 +40,22 @@ compensation:
       notes: Levels.fyi reports this as 'Senior Software Engineer'. Total compensation, converted from
         USD at 0.853.
       sample_size: 15
+    - level: all
+      base:
+        min: 95861
+        p50: 99122
+        max: 120049
+      total_comp:
+        min: 95861
+        p50: 104668
+        max: 145145
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/revolut/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'
   - role: data-scientist
     levels:
     - level: junior
