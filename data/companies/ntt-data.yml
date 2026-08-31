@@ -18,39 +18,40 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 18279
+        p50: 45871
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/ntt-data/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 4
+        url: https://www.levels.fyi/t/solution-architect/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
   - role: information-technologist
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 5478
+        p50: 22123
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/ntt-data/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+        url: https://www.levels.fyi/t/information-technologist/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
   - role: security-analyst
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 44721
+        p50: 44773
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/ntt-data/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 3
+        url: https://www.levels.fyi/t/security-analyst/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
   - role: software-engineer
     levels:
     - level: junior

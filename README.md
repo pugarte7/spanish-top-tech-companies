@@ -3,7 +3,7 @@
 Which tech companies in Spain pay senior software engineers 60.000 € a year or more, and which ones nobody has checked yet.
 
 <!-- BEGIN:STATS -->
-**262 companies** · **39 paying 60k+** · 52 with pay on file · 553 data points · newest data 2026-08-28
+**262 companies** · **40 paying 60k+** · 53 with pay on file · 444 data points · newest data 2026-08-31
 <!-- END:STATS -->
 
 <!-- BEGIN:COMPANIES -->
@@ -12,10 +12,11 @@ Which tech companies in Spain pay senior software engineers 60.000 € a year or
 | [Tiger Data (creators of TimescaleDB)](https://www.linkedin.com/company/107383551) | [173.8k*](https://www.levels.fyi/companies/tiger-data/salaries) |
 | [Timescale](https://www.linkedin.com/company/11065434) | [153.3k*](https://www.levels.fyi/companies/timescale/salaries) |
 | [Xata.io](https://www.linkedin.com/company/69560619) | [140k*](https://www.levels.fyi/companies/xata/salaries) |
-| [Revolut](https://www.linkedin.com/company/5356541) | [120k*](https://www.levels.fyi/companies/revolut/salaries) |
 | [Remote](https://www.linkedin.com/company/17955831) | [113.2k*](https://www.levels.fyi/companies/remote/salaries) |
-| [Datadog](https://www.linkedin.com/company/1066442) | [109.5k*](https://www.levels.fyi/companies/datadog/salaries) |
+| [Datadog](https://www.linkedin.com/company/1066442) | [109.6k*](https://www.levels.fyi/companies/datadog/salaries) |
 | Aily Labs | [108.5k*](https://www.levels.fyi/companies/aily-labs/salaries) |
+| [Revolut](https://www.linkedin.com/company/5356541) | [107.8k*](https://www.levels.fyi/companies/revolut/salaries) |
+| [Microsoft](https://www.linkedin.com/company/1035) | [106.8k*](https://www.levels.fyi/companies/microsoft/salaries) |
 | [Preply](https://www.linkedin.com/company/2762432) | [101.5k*](https://www.levels.fyi/companies/preply/salaries) |
 | [Tinybird](https://www.linkedin.com/company/35704741) | [100.4k*](https://www.levels.fyi/companies/tinybird/salaries) |
 | [Eventbrite](https://www.linkedin.com/company/167280) | [99.8k*](https://www.levels.fyi/companies/eventbrite/salaries) |
@@ -26,7 +27,6 @@ Which tech companies in Spain pay senior software engineers 60.000 € a year or
 | [PayFit](https://www.linkedin.com/company/6436622) | [91.2k*](https://www.levels.fyi/companies/payfit/salaries) |
 | [Perk](https://www.linkedin.com/company/9310632) | [90.5k*](https://www.levels.fyi/companies/perk/salaries) |
 | [Glovo](https://www.linkedin.com/company/9262901) | [88.6k](https://www.levels.fyi/companies/glovo/salaries) |
-| [Microsoft](https://www.linkedin.com/company/1035) | [88.5k*](https://www.levels.fyi/companies/microsoft/salaries) |
 | [Typeform](https://www.linkedin.com/company/3226972) | [88k*](https://www.levels.fyi/companies/typeform/salaries) |
 | TravelPerk | [86k*](https://www.levels.fyi/companies/travelperk/salaries) |
 | [Amazon](https://www.linkedin.com/company/1586) | [84.3k*](https://www.levels.fyi/companies/amazon/salaries) |
@@ -40,6 +40,7 @@ Which tech companies in Spain pay senior software engineers 60.000 € a year or
 | [Clarity AI](https://www.linkedin.com/company/9480749) | [74.3k*](https://www.levels.fyi/companies/clarity-ai/salaries) |
 | [FREE NOW](https://www.linkedin.com/company/14815756) | [71.1k*](https://www.levels.fyi/companies/free-now/salaries) |
 | [SEAT CODE](https://www.linkedin.com/company/22296997) | [71k*](https://www.levels.fyi/companies/seat-code/salaries) |
+| [N26](https://www.linkedin.com/company/3116425) | [70.1k*](https://www.levels.fyi/companies/n26/salaries) |
 | [Exoticca](https://www.linkedin.com/company/3317134) | [70.1k*](https://www.levels.fyi/companies/exoticca/salaries) |
 | [Cabify](https://www.linkedin.com/company/2394728) | [69.2k*](https://www.levels.fyi/companies/cabify/salaries) |
 | eDreams ODIGEO | [66.9k*](https://www.levels.fyi/companies/edreams-odigeo/salaries) |
@@ -184,7 +185,6 @@ Which tech companies in Spain pay senior software engineers 60.000 € a year or
 | [MoonPay](https://www.linkedin.com/company/12596773) | — |
 | [Mozilla](https://www.linkedin.com/company/13948) | — |
 | [MyInvestor](https://www.linkedin.com/company/11064675) | — |
-| [N26](https://www.linkedin.com/company/3116425) | — |
 | [NDA](https://www.linkedin.com/company/77173985) | — |
 | [Netflix](https://www.linkedin.com/company/165158) | — |
 | [Netlight](https://www.linkedin.com/company/36435) | — |
@@ -272,7 +272,7 @@ Which tech companies in Spain pay senior software engineers 60.000 € a year or
 | [Zartis](https://www.linkedin.com/company/2274396) | — |
 | [Zendesk](https://www.linkedin.com/company/418095) | — |
 
-<sub>52 of 262 companies have pay on file; the rest are on the list but nobody has checked them yet. Company names link to LinkedIn, figures to Levels.fyi. `*` on 49 of them marks an estimate: the upper quartile of every engineer at that company in Spain, standing in for a senior figure because Levels.fyi publishes no level breakdown there.</sub>
+<sub>53 of 262 companies have pay on file; the rest are on the list but nobody has checked them yet. Company names link to LinkedIn, figures to Levels.fyi. `*` on 50 of them marks an estimate: the upper quartile of every engineer at that company in Spain, standing in for a senior figure because Levels.fyi publishes no level breakdown there.</sub>
 <!-- END:COMPANIES -->
 
 ## How to read this

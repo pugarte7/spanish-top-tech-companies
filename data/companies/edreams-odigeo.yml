@@ -37,14 +37,14 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 81474
+        p50: 81569
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/edreams-odigeo/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 3
+        url: https://www.levels.fyi/t/software-engineering-manager/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
   - role: product-manager
     levels:
     - level: all

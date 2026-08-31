@@ -9,12 +9,12 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 48908
+        p50: 48965
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/business-analyst/locations/spain
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
   - role: solution-architect
@@ -22,11 +22,11 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 66210
+        p50: 66287
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/solution-architect/locations/spain
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.

@@ -1,6 +1,6 @@
 {
   "attribution": "Data source: Levels.fyi (https://www.levels.fyi)",
-  "generated": "2026-08-26",
+  "generated": "2026-08-31",
   "benchmarks": [
     {
       "role": "business-analyst",
@@ -8,12 +8,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/business-analyst/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
-      "data_points": 10,
-      "p25": 32077,
-      "p50": 56989,
-      "p75": 83684,
-      "p90": 86207
+      "last_updated": "2026-08-31",
+      "data_points": 21,
+      "p25": 32115,
+      "p50": 55094,
+      "p75": 63279,
+      "p90": 80867
     },
     {
       "role": "business-analyst",
@@ -21,12 +21,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/business-analyst/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
-      "data_points": 13,
-      "p25": 32743,
-      "p50": 44595,
-      "p75": 54484,
-      "p90": 64992
+      "last_updated": "2026-08-31",
+      "data_points": 12,
+      "p25": 28412,
+      "p50": 44647,
+      "p75": 54548,
+      "p90": 65068
     },
     {
       "role": "business-analyst",
@@ -34,12 +34,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/business-analyst/locations/spain",
-      "last_updated": "2026-08-26",
-      "data_points": 26,
-      "p25": 32743,
-      "p50": 45215,
-      "p75": 59874,
-      "p90": 76610
+      "last_updated": "2026-08-31",
+      "data_points": 24,
+      "p25": 32115,
+      "p50": 45268,
+      "p75": 59482,
+      "p90": 76700
     },
     {
       "role": "data-analyst",
@@ -47,12 +47,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/data-analyst/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 45,
-      "p25": 31033,
-      "p50": 49717,
-      "p75": 59141,
-      "p90": 71790
+      "p25": 31069,
+      "p50": 49776,
+      "p75": 59210,
+      "p90": 71875
     },
     {
       "role": "data-analyst",
@@ -60,12 +60,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/data-analyst/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 23,
-      "p25": 24602,
-      "p50": 32712,
-      "p75": 44813,
-      "p90": 70392
+      "p25": 24631,
+      "p50": 32750,
+      "p75": 44865,
+      "p90": 70475
     },
     {
       "role": "data-analyst",
@@ -73,12 +73,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/data-analyst/locations/spain",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 82,
-      "p25": 27921,
-      "p50": 37520,
-      "p75": 58112,
-      "p90": 70012
+      "p25": 27954,
+      "p50": 37564,
+      "p75": 58180,
+      "p90": 70094
     },
     {
       "role": "data-science-manager",
@@ -86,12 +86,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/data-science-manager/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 22,
-      "p25": 78678,
-      "p50": 92211,
-      "p75": 104943,
-      "p90": 119918
+      "p25": 78771,
+      "p50": 92319,
+      "p75": 105066,
+      "p90": 120058
     },
     {
       "role": "data-science-manager",
@@ -99,12 +99,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/data-science-manager/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 9,
-      "p25": 62681,
-      "p50": 67790,
-      "p75": 77352,
-      "p90": 102293
+      "p25": 62754,
+      "p50": 67870,
+      "p75": 77443,
+      "p90": 102412
     },
     {
       "role": "data-science-manager",
@@ -112,12 +112,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/data-science-manager/locations/spain",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 15,
-      "p25": 62681,
-      "p50": 88185,
-      "p75": 103620,
-      "p90": 123360
+      "p25": 62754,
+      "p50": 88288,
+      "p75": 103741,
+      "p90": 123505
     },
     {
       "role": "data-scientist",
@@ -125,12 +125,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/data-scientist/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
-      "data_points": 72,
-      "p25": 44531,
-      "p50": 64914,
-      "p75": 81977,
-      "p90": 105047
+      "last_updated": "2026-08-31",
+      "data_points": 71,
+      "p25": 44853,
+      "p50": 66015,
+      "p75": 84703,
+      "p90": 105170
     },
     {
       "role": "data-scientist",
@@ -138,12 +138,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 65,
-      "p25": 35002,
-      "p50": 46913,
-      "p75": 59436,
-      "p90": 75617
+      "p25": 35043,
+      "p50": 45762,
+      "p75": 59506,
+      "p90": 75705
     },
     {
       "role": "data-scientist",
@@ -151,12 +151,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/data-scientist/locations/spain",
-      "last_updated": "2026-08-26",
-      "data_points": 149,
-      "p25": 38353,
-      "p50": 54583,
-      "p75": 75652,
-      "p90": 89565
+      "last_updated": "2026-08-31",
+      "data_points": 148,
+      "p25": 38056,
+      "p50": 54610,
+      "p75": 75741,
+      "p90": 89670
     },
     {
       "role": "hardware-engineer",
@@ -164,12 +164,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/hardware-engineer/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
-      "data_points": 11,
-      "p25": 29902,
-      "p50": 34008,
-      "p75": 38141,
-      "p90": 39896
+      "last_updated": "2026-08-31",
+      "data_points": 10,
+      "p25": 30217,
+      "p50": 34047,
+      "p75": 38186,
+      "p90": 39943
     },
     {
       "role": "hardware-engineer",
@@ -177,12 +177,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/hardware-engineer/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 13,
-      "p25": 27003,
-      "p50": 39035,
-      "p75": 43782,
-      "p90": 44768
+      "p25": 27035,
+      "p50": 39081,
+      "p75": 43834,
+      "p90": 44821
     },
     {
       "role": "hardware-engineer",
@@ -190,12 +190,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/hardware-engineer/locations/spain",
-      "last_updated": "2026-08-26",
-      "data_points": 24,
-      "p25": 27003,
-      "p50": 34498,
-      "p75": 44768,
-      "p90": 49374
+      "last_updated": "2026-08-31",
+      "data_points": 23,
+      "p25": 27035,
+      "p50": 34769,
+      "p75": 46832,
+      "p90": 49432
     },
     {
       "role": "information-technologist",
@@ -203,12 +203,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/information-technologist/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 18,
-      "p25": 22759,
-      "p50": 26579,
-      "p75": 34896,
-      "p90": 39739
+      "p25": 22785,
+      "p50": 26610,
+      "p75": 34937,
+      "p90": 39786
     },
     {
       "role": "information-technologist",
@@ -216,12 +216,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/information-technologist/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
-      "data_points": 11,
-      "p25": 21773,
-      "p50": 30859,
-      "p75": 33448,
-      "p90": 38609
+      "last_updated": "2026-08-31",
+      "data_points": 12,
+      "p25": 21799,
+      "p50": 30895,
+      "p75": 33487,
+      "p90": 44571
     },
     {
       "role": "information-technologist",
@@ -229,12 +229,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/information-technologist/locations/spain",
-      "last_updated": "2026-08-26",
-      "data_points": 24,
-      "p25": 21773,
-      "p50": 26975,
-      "p75": 33448,
-      "p90": 39371
+      "last_updated": "2026-08-31",
+      "data_points": 25,
+      "p25": 21799,
+      "p50": 27006,
+      "p75": 33487,
+      "p90": 39917
     },
     {
       "role": "product-design-manager",
@@ -242,12 +242,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/product-design-manager/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 5,
-      "p25": 70806,
-      "p50": 77016,
-      "p75": 86288,
-      "p90": 166817
+      "p25": 70889,
+      "p50": 77106,
+      "p75": 86389,
+      "p90": 167013
     },
     {
       "role": "product-design-manager",
@@ -255,12 +255,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/product-design-manager/locations/spain",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 8,
-      "p25": 50694,
-      "p50": 77016,
-      "p75": 86288,
-      "p90": 166817
+      "p25": 50753,
+      "p50": 77106,
+      "p75": 86389,
+      "p90": 167013
     },
     {
       "role": "product-designer",
@@ -268,12 +268,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/product-designer/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 26,
-      "p25": 45296,
-      "p50": 58369,
-      "p75": 71921,
-      "p90": 117632
+      "p25": 45349,
+      "p50": 58438,
+      "p75": 72005,
+      "p90": 117769
     },
     {
       "role": "product-designer",
@@ -281,12 +281,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/product-designer/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
-      "data_points": 22,
-      "p25": 37621,
-      "p50": 55974,
-      "p75": 77238,
-      "p90": 84369
+      "last_updated": "2026-08-31",
+      "data_points": 23,
+      "p25": 34128,
+      "p50": 56040,
+      "p75": 77329,
+      "p90": 84468
     },
     {
       "role": "product-designer",
@@ -294,12 +294,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/product-designer/locations/spain",
-      "last_updated": "2026-08-26",
-      "data_points": 56,
-      "p25": 37183,
-      "p50": 55120,
-      "p75": 71921,
-      "p90": 89719
+      "last_updated": "2026-08-31",
+      "data_points": 57,
+      "p25": 37227,
+      "p50": 55185,
+      "p75": 72005,
+      "p90": 89824
     },
     {
       "role": "product-manager",
@@ -307,12 +307,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/product-manager/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
-      "data_points": 42,
-      "p25": 57482,
-      "p50": 67070,
-      "p75": 99947,
-      "p90": 112691
+      "last_updated": "2026-08-31",
+      "data_points": 44,
+      "p25": 56072,
+      "p50": 66813,
+      "p75": 99073,
+      "p90": 112823
     },
     {
       "role": "product-manager",
@@ -320,12 +320,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/product-manager/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
-      "data_points": 41,
-      "p25": 56106,
-      "p50": 78346,
-      "p75": 100877,
-      "p90": 130104
+      "last_updated": "2026-08-31",
+      "data_points": 40,
+      "p25": 56172,
+      "p50": 78438,
+      "p75": 100995,
+      "p90": 130256
     },
     {
       "role": "product-manager",
@@ -333,12 +333,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/product-manager/locations/spain",
-      "last_updated": "2026-08-26",
-      "data_points": 96,
-      "p25": 56298,
-      "p50": 73582,
-      "p75": 99947,
-      "p90": 118656
+      "last_updated": "2026-08-31",
+      "data_points": 97,
+      "p25": 57550,
+      "p50": 73668,
+      "p75": 100064,
+      "p90": 118795
     },
     {
       "role": "program-manager",
@@ -346,12 +346,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/program-manager/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 11,
-      "p25": 61956,
-      "p50": 72239,
-      "p75": 82466,
-      "p90": 83402
+      "p25": 62028,
+      "p50": 72323,
+      "p75": 82563,
+      "p90": 83500
     },
     {
       "role": "program-manager",
@@ -359,12 +359,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/program-manager/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 9,
-      "p25": 56129,
-      "p50": 62400,
-      "p75": 65957,
-      "p90": 83610
+      "p25": 56195,
+      "p50": 62473,
+      "p75": 66034,
+      "p90": 83708
     },
     {
       "role": "program-manager",
@@ -372,12 +372,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/program-manager/locations/spain",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 15,
-      "p25": 61956,
-      "p50": 66524,
-      "p75": 82466,
-      "p90": 89070
+      "p25": 62028,
+      "p50": 66602,
+      "p75": 82563,
+      "p90": 89174
     },
     {
       "role": "project-manager",
@@ -385,12 +385,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/project-manager/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
-      "data_points": 15,
-      "p25": 35998,
-      "p50": 47251,
-      "p75": 55253,
-      "p90": 63111
+      "last_updated": "2026-08-31",
+      "data_points": 14,
+      "p25": 36041,
+      "p50": 47306,
+      "p75": 55318,
+      "p90": 63185
     },
     {
       "role": "project-manager",
@@ -398,12 +398,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/project-manager/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 17,
-      "p25": 41331,
-      "p50": 56285,
-      "p75": 63847,
-      "p90": 74118
+      "p25": 41380,
+      "p50": 56351,
+      "p75": 63922,
+      "p90": 74205
     },
     {
       "role": "project-manager",
@@ -411,12 +411,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/project-manager/locations/spain",
-      "last_updated": "2026-08-26",
-      "data_points": 34,
-      "p25": 35998,
-      "p50": 49479,
-      "p75": 59588,
-      "p90": 67273
+      "last_updated": "2026-08-31",
+      "data_points": 33,
+      "p25": 36041,
+      "p50": 49802,
+      "p75": 59658,
+      "p90": 67352
     },
     {
       "role": "security-analyst",
@@ -424,12 +424,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/security-analyst/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 11,
-      "p25": 24876,
-      "p50": 39127,
-      "p75": 47538,
-      "p90": 54852
+      "p25": 24905,
+      "p50": 39173,
+      "p75": 47594,
+      "p90": 54917
     },
     {
       "role": "security-analyst",
@@ -437,12 +437,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/security-analyst/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 16,
-      "p25": 24965,
-      "p50": 34923,
-      "p75": 43682,
-      "p90": 49789
+      "p25": 24994,
+      "p50": 34964,
+      "p75": 43733,
+      "p90": 49847
     },
     {
       "role": "security-analyst",
@@ -450,12 +450,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/security-analyst/locations/spain",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 30,
-      "p25": 24685,
-      "p50": 31011,
-      "p75": 42497,
-      "p90": 47538
+      "p25": 24713,
+      "p50": 31047,
+      "p75": 42547,
+      "p90": 47594
     },
     {
       "role": "software-engineer",
@@ -463,12 +463,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
-      "data_points": 609,
-      "p25": 45169,
-      "p50": 63547,
-      "p75": 81688,
-      "p90": 101157
+      "last_updated": "2026-08-31",
+      "data_points": 606,
+      "p25": 45222,
+      "p50": 63435,
+      "p75": 81784,
+      "p90": 101596
     },
     {
       "role": "software-engineer",
@@ -476,12 +476,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
-      "data_points": 620,
-      "p25": 38649,
-      "p50": 53972,
-      "p75": 77190,
-      "p90": 98079
+      "last_updated": "2026-08-31",
+      "data_points": 623,
+      "p25": 38695,
+      "p50": 54163,
+      "p75": 77255,
+      "p90": 98001
     },
     {
       "role": "software-engineer",
@@ -489,12 +489,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/software-engineer/locations/spain",
-      "last_updated": "2026-08-26",
-      "data_points": 1622,
-      "p25": 38155,
-      "p50": 54937,
-      "p75": 76544,
-      "p90": 97571
+      "last_updated": "2026-08-31",
+      "data_points": 1624,
+      "p25": 38200,
+      "p50": 55108,
+      "p75": 76172,
+      "p90": 97604
     },
     {
       "role": "software-engineering-manager",
@@ -502,12 +502,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/software-engineering-manager/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
-      "data_points": 36,
-      "p25": 80120,
-      "p50": 98665,
-      "p75": 110882,
-      "p90": 160242
+      "last_updated": "2026-08-31",
+      "data_points": 37,
+      "p25": 81569,
+      "p50": 98800,
+      "p75": 114335,
+      "p90": 160430
     },
     {
       "role": "software-engineering-manager",
@@ -515,12 +515,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/software-engineering-manager/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 26,
-      "p25": 83442,
-      "p50": 116905,
-      "p75": 142201,
-      "p90": 231312
+      "p25": 83540,
+      "p50": 117042,
+      "p75": 142368,
+      "p90": 231583
     },
     {
       "role": "software-engineering-manager",
@@ -528,12 +528,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/software-engineering-manager/locations/spain",
-      "last_updated": "2026-08-26",
-      "data_points": 73,
-      "p25": 80120,
-      "p50": 102584,
-      "p75": 124882,
-      "p90": 179452
+      "last_updated": "2026-08-31",
+      "data_points": 74,
+      "p25": 80214,
+      "p50": 102704,
+      "p75": 125029,
+      "p90": 179663
     },
     {
       "role": "solution-architect",
@@ -541,12 +541,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/solution-architect/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
-      "data_points": 15,
-      "p25": 32733,
-      "p50": 72820,
-      "p75": 81101,
-      "p90": 87082
+      "last_updated": "2026-08-31",
+      "data_points": 13,
+      "p25": 46276,
+      "p50": 72906,
+      "p75": 81196,
+      "p90": 87184
     },
     {
       "role": "solution-architect",
@@ -554,12 +554,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 26,
-      "p25": 55353,
-      "p50": 68983,
-      "p75": 93830,
-      "p90": 129617
+      "p25": 55418,
+      "p50": 69064,
+      "p75": 93940,
+      "p90": 129769
     },
     {
       "role": "solution-architect",
@@ -567,12 +567,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/solution-architect/locations/spain",
-      "last_updated": "2026-08-26",
-      "data_points": 51,
-      "p25": 45817,
-      "p50": 68983,
-      "p75": 85609,
-      "p90": 115651
+      "last_updated": "2026-08-31",
+      "data_points": 49,
+      "p25": 46276,
+      "p50": 69064,
+      "p75": 85709,
+      "p90": 121596
     },
     {
       "role": "technical-program-manager",
@@ -580,12 +580,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/technical-program-manager/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 15,
-      "p25": 50032,
-      "p50": 71261,
-      "p75": 91769,
-      "p90": 107256
+      "p25": 50090,
+      "p50": 71345,
+      "p75": 91877,
+      "p90": 107382
     },
     {
       "role": "technical-program-manager",
@@ -593,12 +593,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/technical-program-manager/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 14,
-      "p25": 36435,
-      "p50": 54639,
-      "p75": 82381,
-      "p90": 105530
+      "p25": 36477,
+      "p50": 54703,
+      "p75": 82477,
+      "p90": 105654
     },
     {
       "role": "technical-program-manager",
@@ -606,12 +606,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/technical-program-manager/locations/spain",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 15,
-      "p25": 49973,
-      "p50": 56383,
-      "p75": 79705,
-      "p90": 107256
+      "p25": 50032,
+      "p50": 56449,
+      "p75": 79799,
+      "p90": 107382
     },
     {
       "role": "technical-writer",
@@ -619,12 +619,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/technical-writer/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 6,
-      "p25": 29733,
-      "p50": 32028,
-      "p75": 43632,
-      "p90": 108658
+      "p25": 29768,
+      "p50": 32066,
+      "p75": 43683,
+      "p90": 108786
     },
     {
       "role": "technical-writer",
@@ -632,12 +632,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/technical-writer/locations/spain",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 7,
-      "p25": 22285,
-      "p50": 32028,
-      "p75": 43632,
-      "p90": 108658
+      "p25": 22311,
+      "p50": 32066,
+      "p75": 43683,
+      "p90": 108786
     },
     {
       "role": "ux-researcher",
@@ -645,12 +645,12 @@
       "location_slug": "greater-barcelona-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/ux-researcher/locations/greater-barcelona-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 9,
-      "p25": 43622,
-      "p50": 54285,
-      "p75": 64029,
-      "p90": 72318
+      "p25": 43673,
+      "p50": 54349,
+      "p75": 64104,
+      "p90": 72403
     },
     {
       "role": "ux-researcher",
@@ -658,12 +658,12 @@
       "location_slug": "madrid-metropolitan-area",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/ux-researcher/locations/madrid-metropolitan-area",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 9,
-      "p25": 44033,
-      "p50": 49697,
-      "p75": 65075,
-      "p90": 109503
+      "p25": 44085,
+      "p50": 49755,
+      "p75": 65151,
+      "p90": 109631
     },
     {
       "role": "ux-researcher",
@@ -671,12 +671,12 @@
       "location_slug": "spain",
       "currency": "EUR",
       "url": "https://www.levels.fyi/t/ux-researcher/locations/spain",
-      "last_updated": "2026-08-26",
+      "last_updated": "2026-08-31",
       "data_points": 17,
-      "p25": 43622,
-      "p50": 49697,
-      "p75": 64029,
-      "p90": 72054
+      "p25": 43673,
+      "p50": 49755,
+      "p75": 64104,
+      "p90": 72139
     }
   ]
 }

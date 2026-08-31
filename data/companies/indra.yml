@@ -35,14 +35,14 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 28386
+        p50: 28420
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/indra/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 9
+        url: https://www.levels.fyi/t/hardware-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
   - role: business-analyst
     levels:
     - level: all

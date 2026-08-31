@@ -19,27 +19,27 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 26758
+        p50: 26789
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/minsait/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 4
+        url: https://www.levels.fyi/t/business-analyst/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
   - role: information-technologist
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 39371
+        p50: 39417
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/companies/minsait/salaries
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
-      notes: Median across all levels. Total compensation, converted from USD at 0.853.
-      sample_size: 3
+        url: https://www.levels.fyi/t/information-technologist/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
   - role: software-engineer
     levels:
     - level: all

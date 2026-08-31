@@ -22,12 +22,12 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 142286
+        p50: 142452
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/software-engineering-manager/locations/spain
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
   - role: data-analyst
@@ -35,12 +35,12 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 51337
+        p50: 51398
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/data-analyst/locations/spain
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
   - role: business-analyst
@@ -48,12 +48,12 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 46327
+        p50: 46381
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/business-analyst/locations/spain
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
   - role: product-manager
@@ -61,12 +61,12 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 112691
+        p50: 112823
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/product-manager/locations/greater-barcelona-area
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public
         pages do not break this out by level or separate base salary.
   - role: solution-architect
@@ -74,11 +74,11 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 114279
+        p50: 114413
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/solution-architect/locations/spain
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.

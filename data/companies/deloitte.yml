@@ -9,12 +9,12 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 31584
+        p50: 31621
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/business-analyst/locations/spain
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
   - role: security-analyst
@@ -22,11 +22,11 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 33141
+        p50: 33180
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/security-analyst/locations/spain
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.

@@ -137,6 +137,19 @@ compensation:
         date: '2026-08-26'
       last_verified: '2026-08-26'
       notes: Common Range Average across all levels. Total compensation, converted from USD at 0.853.
+  - role: software-engineer
+    levels:
+    - level: all
+      base: {}
+      total_comp:
+        p50: 70137
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/t/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
+        this out by level or separate base salary.
 linkedin_url: https://www.linkedin.com/company/n26
 year_founded: 2013
 notes: 'Mobile bank with real-time tracking. Equity: RSU vesting 25,25,25,25|25/1,25/12,25/12,25/12.'
