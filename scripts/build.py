@@ -97,15 +97,40 @@ def headline(company: dict):
         if rung in bands:
             value = lib.level_value(bands[rung])
             if value is not None:
-                return value, "senior"
+                return value, "senior", bands[rung]
     if "all" in bands:
         level = bands["all"]
         if level.get("sample_size") == 1:
-            return lib.level_value(level), "single"
+            return lib.level_value(level), "single", level
         # Prefer the upper quartile; fall back to the median when a band
         # carries only a single figure.
-        return upper_quartile(level) or lib.level_value(level), "quartile"
-    return None, None
+        return upper_quartile(level) or lib.level_value(level), "quartile", level
+    return None, None, None
+
+
+# How much a row is worth turning up for. A salary someone in Spain told the
+# maintainer directly outranks anything crowdsourced, so it is named plainly.
+SOURCE_LABELS = {
+    "offer-letter": "offer received",
+    "community": "known personally",
+    "job-posting": "job ad",
+    "company-published": "company",
+    "levels.fyi": "levels.fyi",
+    "glassdoor": "glassdoor",
+}
+VOUCHED = ("offer-letter", "community")
+
+
+def evidence(level: dict | None) -> tuple[str, str]:
+    """(data points, where it came from) for one band, ready to print."""
+    if not level:
+        return "—", "—"
+    points = level.get("sample_size")
+    names = [s.get("name") for s in (level.get("sources") or []) if s.get("name")]
+    # A band the maintainer can vouch for is the one worth naming first.
+    names.sort(key=lambda n: (n not in VOUCHED, n))
+    label = SOURCE_LABELS.get(names[0], names[0]) if names else "—"
+    return (str(points) if points else "—"), label
 
 
 def linkedin_url(linkedin_id) -> str | None:
@@ -172,13 +197,14 @@ def catalogue(companies: list[dict]) -> list[dict]:
             by_slug.setdefault(entry["levels_slug"], entry)
 
     def absorb(entry: dict, name: str, slug: str | None, linkedin_id,
-               alias: str | None = None, value=None, kind=None) -> None:
+               alias: str | None = None, value=None, kind=None, level=None) -> None:
         entry["linkedin_id"] = entry.get("linkedin_id") or linkedin_id
         if slug and not entry["levels_slug"]:
             entry["levels_slug"] = slug
         if entry["value"] is None and value is not None:
             entry["value"] = value
             entry["kind"] = kind
+            entry["level"] = level
         # Levels.fyi files some employers under two slugs, so the same company
         # arrives twice under a plain name and a padded one: Meta and "Meta
         # Facebook", BCG and "Boston Consulting Group (BCG)". The shorter is
@@ -215,13 +241,13 @@ def catalogue(companies: list[dict]) -> list[dict]:
                 backlog_rows.append(row)
 
     for c in companies:
-        value, kind = headline(c)
+        value, kind, level = headline(c)
         slug = company_levels_slug(c) or c.get("slug")
         alias = aliases.get(slug or "")
         existing = lookup(c["name"], slug, alias)
         if existing:
             absorb(existing, c["name"], slug, c.get("linkedin_id"), alias,
-                   value, kind)
+                   value, kind, level)
             continue
         entry = {
             "name": c["name"],
@@ -229,6 +255,7 @@ def catalogue(companies: list[dict]) -> list[dict]:
             "linkedin_id": c.get("linkedin_id"),
             "value": value,
             "kind": kind,
+            "level": level,
         }
         entries.append(entry)
         index(entry, alias=alias)
@@ -250,6 +277,7 @@ def catalogue(companies: list[dict]) -> list[dict]:
             "linkedin_id": row.get("linkedin_id"),
             "value": None,
             "kind": None,
+            "level": None,
         }
         entries.append(entry)
         index(entry, alias=alias)
@@ -265,35 +293,53 @@ def render_companies(companies: list[dict]) -> str:
             "fill it in, and run `python3 scripts/build.py`."
         )
 
-    # Paid first and best-paying at the top; everything undocumented falls to
-    # the bottom in alphabetical order so it reads as a directory, not a gap.
-    entries.sort(key=lambda e: (e["value"] is None, -(e["value"] or 0), e["name"].lower()))
+    # First-hand before crowdsourced, then best-paying, then everything
+    # undocumented alphabetically at the bottom so it reads as a directory
+    # rather than a gap. A salary someone in Spain reported directly is worth
+    # more than any number scraped from a submission site, so it sorts above
+    # one however large that number is.
+    def rank(entry: dict):
+        level = entry.get("level") or {}
+        names = {s.get("name") for s in (level.get("sources") or [])}
+        first_hand = bool(names & set(VOUCHED))
+        return (not first_hand, entry["value"] is None,
+                -(entry["value"] or 0), entry["name"].lower())
+
+    entries.sort(key=rank)
 
     marks = {"senior": "", "quartile": "*", "single": "\u2020"}
-    rows = ["| Company | Senior+ |", "| --- | --- |"]
+    rows = ["| Company | Senior+ | Data points | Source |", "| --- | --- | --- | --- |"]
     counts = {"senior": 0, "quartile": 0, "single": 0}
+    vouched = 0
     for e in entries:
         li = linkedin_url(e["linkedin_id"])
         name = f"[{e['name']}]({li})" if li else e["name"]
         if e["value"] is None:
-            rows.append(f"| {name} | \u2014 |")
+            rows.append(f"| {name} | \u2014 | \u2014 | \u2014 |")
             continue
         kind = e.get("kind") or "quartile"
         counts[kind] = counts.get(kind, 0) + 1
+        points, source = evidence(e.get("level"))
+        if source in ("offer received", "known personally"):
+            vouched += 1
+            source = f"**{source}**"
         figure = k(e["value"]) + marks.get(kind, "*")
         page = levels_page(e["levels_slug"])
-        rows.append(f"| {name} | " + (f"[{figure}]({page})" if page else figure) + " |")
+        cell = f"[{figure}]({page})" if page else figure
+        rows.append(f"| {name} | {cell} | {points} | {source} |")
 
     documented = sum(1 for e in entries if e["value"] is not None)
     rows.append("")
     rows.append(
-        f"<sub>{documented} of {len(entries)} companies have pay on file; the rest are "
-        "on the list but nobody has checked them yet. Company names link to LinkedIn, "
-        "figures to Levels.fyi. An unmarked figure is a measured senior salary. "
+        f"<sub>{documented} of {len(entries)} companies have pay on file, "
+        f"{vouched} of them first-hand. **Source** says where the number came from: "
+        "**known personally** is someone in Spain who told the maintainer what they "
+        "earn, **offer received** is an offer the maintainer was made, and anything "
+        "else is crowdsourced and worth less. **Data points** is how many salaries "
+        "the figure rests on. An unmarked figure is a measured senior salary; "
         f"`*` ({counts['quartile']}) is the upper quartile of every engineer at that "
-        f"company in Spain, standing in for a senior figure. `\u2020` ({counts['single']}) "
-        "is a single person's reported salary, not a band: treat it as one data "
-        "point.</sub>"
+        f"company in Spain; `\u2020` ({counts['single']}) is one person's number. Company "
+        "names link to LinkedIn, figures to Levels.fyi.</sub>"
     )
     return chr(10).join(rows)
 
