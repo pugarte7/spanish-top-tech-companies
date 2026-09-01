@@ -42,10 +42,23 @@ ATTRIBUTION = "Data source: Levels.fyi (https://www.levels.fyi)"
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/128.0 Safari/537.36")
 
-# Written by fetch_company.py from the unscoped company page. Those bands carry
-# no location guarantee, so they are dropped for any company Levels.fyi does
-# not actually hold Spanish data for.
-UNSCOPED_NOTE = re.compile(r"reports this as", re.I)
+def unscoped(level: dict) -> bool:
+    """Was this band read off a page that never named a location?
+
+    A /companies/<slug>/salaries URL is the company's global ladder, served in
+    whatever currency the caller's IP implies. Only a URL naming a location
+    says where the money was earned.
+
+    The test is the source URL, not the wording of `notes`. An earlier version
+    matched on "reports this as" and so caught the per-level rows while missing
+    "Median across all levels" and "Common Range Average across all levels" -
+    173 of the 205 stale bands, which then shipped in exports/.
+    """
+    for source in level.get("sources") or []:
+        url = source.get("url") or ""
+        if "levels.fyi" in url and "/locations/" not in url:
+            return True
+    return False
 
 
 class Blocked(RuntimeError):
@@ -214,27 +227,30 @@ def write(slug: str, new_band: dict | None, name_hint: str, today: str,
     compensation.setdefault("currency", "EUR")
     compensation.setdefault("basis", "gross_annual")
     roles = compensation.setdefault("roles", [])
-    bucket = next((r for r in roles if r.get("role") == ROLE), None)
+
+    # Anything read off the unscoped company page is another country's pay,
+    # whatever role it sits under. Drop it whether or not this company also
+    # turns out to have a Spanish figure: a Spanish software-engineer band says
+    # nothing about the Dutch product-designer band filed beside it, and the
+    # earlier version only ran this when the company had no Spanish data at
+    # all, so 27 companies kept theirs.
+    dropped = 0
+    for role in list(roles):
+        kept = [lvl for lvl in role.get("levels") or [] if not unscoped(lvl)]
+        dropped += len(role.get("levels") or []) - len(kept)
+        role["levels"] = kept
+        if not kept:
+            roles.remove(role)
 
     if new_band is None:
-        # No Spanish data. Everything the unscoped fetcher wrote for this
-        # company is another country's pay, whatever the role, so it all goes
-        # rather than sitting here mislabelled as Spanish. Bands from the Spain
-        # country pages say so in their notes and are left alone.
-        dropped = 0
-        for role in list(roles):
-            kept = [lvl for lvl in role.get("levels") or []
-                    if not UNSCOPED_NOTE.search(lvl.get("notes") or "")]
-            dropped += len(role.get("levels") or []) - len(kept)
-            role["levels"] = kept
-            if not kept:
-                roles.remove(role)
         # Nothing to correct and no pay to record. Worth a write only to keep
         # a LinkedIn page on a company we already have a file for; a company
         # with neither is not worth a stub file holding one field.
         if not dropped and not (linked and not created):
             return "skipped"
     else:
+        # Re-read the bucket: the purge above may have just removed it.
+        bucket = next((r for r in roles if r.get("role") == ROLE), None)
         if bucket is None:
             bucket = {"role": ROLE, "levels": []}
             roles.append(bucket)
