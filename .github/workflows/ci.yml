@@ -11,6 +11,16 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+
+    # GitHub's default shell is `bash -e`, with no pipefail. That made the
+    # validate step below report success whatever it found, because its exit
+    # code was tee's rather than its own - so the guard that keeps another
+    # country's salaries out of this dataset could fail and the build stayed
+    # green. `shell: bash` is the one that sets -o pipefail.
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - uses: actions/checkout@v4
 
@@ -20,6 +30,9 @@ jobs:
           cache: pip
 
       - run: pip install -r requirements.txt
+
+      - name: Pipeline regression tests
+        run: python3 tests/test_pipeline.py
 
       - name: Validate every company file
         run: python3 scripts/validate.py | tee validate.log

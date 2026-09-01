@@ -83,6 +83,13 @@ that matters is in `validate.py`**, because that is the one every branch and
 every pull request has to pass. A guard that lives only in the fetcher protects
 only the data that fetcher happens to write.
 
+A guard also only bites if the build actually fails on it, and this one did not.
+CI ran `python3 scripts/validate.py | tee validate.log`, and GitHub's default
+shell is `bash -e` with no `pipefail`, so the step reported `tee`'s exit code
+rather than validate's and stayed green no matter what validate found. The
+workflow now sets `shell: bash`, which turns `pipefail` on. Worth remembering
+before piping anything else in that file.
+
 **2. The per-location page answers in two voices, and they disagree.**
 On `/companies/<slug>/salaries/software-engineer/locations/spain`:
 
@@ -152,8 +159,13 @@ pip install -r requirements.txt
 
 python3 scripts/fetch_spain.py --delay 3.0        # ~14 min, 242 companies
 python3 scripts/fetch_spain.py --audit            # report, write nothing
+python3 tests/test_pipeline.py
 python3 scripts/validate.py && python3 scripts/build.py
 ```
+
+`tests/test_pipeline.py` is dependency-free and runs first in CI. Every case in
+it is a bug this repository actually shipped, so a failure there means one of
+them is back rather than that the test needs updating.
 
 `build.py` is idempotent; CI rebuilds and fails if the result differs from
 what is committed, so always commit the regenerated `README.md` and `exports/`.

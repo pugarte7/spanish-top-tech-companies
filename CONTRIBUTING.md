@@ -82,8 +82,9 @@ It pulls per-level percentiles filtered to Spain, maps them onto our level ladde
 **Before you push:**
 
 ```bash
-python3 scripts/validate.py   # must pass
-python3 scripts/build.py      # regenerates README tables + exports/
+python3 tests/test_pipeline.py   # regressions we have actually shipped
+python3 scripts/validate.py      # must pass
+python3 scripts/build.py         # regenerates README tables + exports/
 ```
 
 Commit the regenerated `README.md` and `exports/` along with your data change. CI runs both and will tell you if they're out of sync.
