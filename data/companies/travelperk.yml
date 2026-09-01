@@ -17,15 +17,20 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        min: 69597
+        p50: 82217
+        max: 86016
       total_comp:
-        p50: 71519
+        min: 69597
+        p50: 82217
+        max: 88337
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/spain
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+        url: https://www.levels.fyi/companies/travelperk/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'
 linkedin_url: https://www.linkedin.com/company/travelperk
 year_founded: 2015

@@ -19,14 +19,29 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 36079
+        p50: 36164
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/business-analyst/locations/spain
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 58829
+      total_comp:
+        p50: 72836
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/celonis/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level IC2, 5 years experience. Levels.fyi
+        published no Spanish aggregate for this company, so this is one data point rather than a band.'
 linkedin_url: https://www.linkedin.com/company/celonis
 year_founded: 2011
 notes: 'Execution management system provider. Equity: RSU vesting 25/1,25/12,25/12,25/12|25,25,25,25.'

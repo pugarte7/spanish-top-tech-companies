@@ -17,29 +17,19 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        p50: 82128
       total_comp:
-        p50: 69973
+        p50: 82128
+      sample_size: 1
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/spain
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
-  - role: software-engineering-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 90137
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineering-manager/locations/spain
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+        url: https://www.levels.fyi/companies/n26/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level L3, 6 years experience.
+        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
+        a band.'
 linkedin_url: https://www.linkedin.com/company/n26
 year_founded: 2013
 notes: 'Mobile bank with real-time tracking. Equity: RSU vesting 25,25,25,25|25/1,25/12,25/12,25/12.'

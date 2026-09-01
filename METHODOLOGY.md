@@ -43,6 +43,14 @@ Every band needs at least one source. In rough order of how much we trust them:
 
 Bands retrieved that way use the **interquartile range**: `min` is the 25th percentile and `max` is the 75th. Using p10–p90 would make every company look like it pays anything to anyone.
 
+### A band must prove it is Spanish
+
+Levels.fyi does not refuse a location it has no data for. Ask a company page for Spain and, if nobody in Spain has submitted for that employer, it quietly answers with another country: Germany for Celonis and N26, the Netherlands for Adyen and TomTom, the United States for a great many more. The page currency is no defence, because every euro-zone country returns EUR.
+
+The per-location page carries `percentiles.locationName`, which names the country actually served rather than the one requested. [`scripts/fetch_spain.py`](scripts/fetch_spain.py) writes a band only when that field says Spain, and deletes bands written before this rule existed for any company that fails it. `locationMeta` is not a substitute: it only echoes the URL back.
+
+A company with no Spanish figure is listed with no figure. That is the honest answer, and it is the one thing this repository exists to get right.
+
 Levels.fyi requires attribution on derived work, and their Data License governs what may be republished. Holding an API key is not by itself permission to redistribute, so check the terms before adding bulk-fetched data.
 
 Their level names are per-company (`L4`, `IC3`, `Senior Engineer`). The fetcher maps them onto our ladder by name, falling back to seniority order when the name says nothing, and records the original in `notes` so a wrong guess is visible and fixable.

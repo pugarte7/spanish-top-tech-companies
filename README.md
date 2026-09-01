@@ -1,1813 +1,330 @@
 # Spanish Top Tech Companies
 
-A list of companies that pay 60.000 € gross per year or more to people working from Spain, with the salary bands, where they came from, and when they were last checked.
+Which tech companies in Spain pay senior software engineers 60.000 € a year or more, and which ones nobody has checked yet.
 
 <!-- BEGIN:STATS -->
-**24 companies** · **75 salary bands** · newest data 2026-08-27
+**262 companies** · **112 paying 60k+** · 140 with pay on file · 100 data points · newest data 2026-08-31
 <!-- END:STATS -->
 
-## Why
-
-Salary information in Spain is scattered and mostly anecdotal. Aggregators like levels.fyi have good data but thin coverage of the Spanish market, job ads publish ranges so wide they say nothing, and Glassdoor mixes Spanish and foreign salaries for the same company without distinguishing them.
-
-At the same time, "60k in Spain" is not one number. It depends on whether you are on a Spanish payroll, employed through an intermediary, or invoicing as a contractor. Those are different amounts of money in your account at the end of the month and they are usually quoted as if they were the same.
-
-This list tries to fix both problems: put the bands somewhere public, and record enough context that you can tell what they actually mean.
-
-It is not a job board. Links to careers pages are included because they are useful, but the point of the list is the compensation data, not the openings.
-
-## What gets listed
-
-A company is listed when at least one documented role and level reaches **60.000 € gross annual base salary** for someone living and working in Spain.
-
-Both Spanish and foreign companies qualify. What matters is that the money reaches somebody on a Spanish contract, whether that is a company headquartered in Madrid, a foreign company with an office in Barcelona, or a fully remote employer hiring through an employer of record.
-
-Every band needs a source and a date. Bands that have not been checked in over a year are marked as stale rather than quietly left to age.
-
-## How to read the numbers
-
-- All figures are **gross annual base salary in euros**, before IRPF and social security, however many payments the contract splits it into. Bonus, equity and total compensation have their own columns.
-- The **median** decides whether a company is listed, not the top of the range. One unusual offer is not enough.
-- **Data points** is how many salaries the band is built from. A band with three data points is a rumour with a decimal place. Treat single digits with suspicion.
-- **Contract** matters as much as the number. A contractor rate and a payroll salary are not the same unit. See [METHODOLOGY.md](METHODOLOGY.md).
-
-## Spain market benchmarks
-
-What the whole Spanish market pays for a role, regardless of employer. Useful for telling a good offer from an average one.
-
-<!-- BEGIN:BENCHMARKS -->
-| Role | Where | 25th pct | Median | 75th pct | 90th pct | Data points | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| [software-engineering-manager](https://www.levels.fyi/t/software-engineering-manager/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 83.3k | **116.8k** | 142k | 231k | 26 | 2026-08-27 |
-| [software-engineering-manager](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | Spain | 80k | **102.5k** | 124.7k | 179.2k | 73 | 2026-08-27 |
-| [software-engineering-manager](https://www.levels.fyi/t/software-engineering-manager/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 80k | **98.5k** | 110.8k | 160.1k | 36 | 2026-08-27 |
-| [data-science-manager](https://www.levels.fyi/t/data-science-manager/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 78.6k | **92.1k** | 104.8k | 119.8k | 22 | 2026-08-27 |
-| [data-science-manager](https://www.levels.fyi/t/data-science-manager/locations/spain) | Spain | 62.6k | **88.1k** | 103.5k | 123.2k | 15 | 2026-08-27 |
-| [product-manager](https://www.levels.fyi/t/product-manager/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 56k | **78.3k** | 100.8k | 130k | 41 | 2026-08-27 |
-| [product-design-manager](https://www.levels.fyi/t/product-design-manager/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 70.7k | **76.9k** | 86.2k | 166.6k | 5 | 2026-08-27 |
-| [product-design-manager](https://www.levels.fyi/t/product-design-manager/locations/spain) | Spain | 50.6k | **76.9k** | 86.2k | 166.6k | 8 | 2026-08-27 |
-| [product-manager](https://www.levels.fyi/t/product-manager/locations/spain) | Spain | 56.2k | **73.5k** | 99.8k | 118.5k | 96 | 2026-08-27 |
-| [solution-architect](https://www.levels.fyi/t/solution-architect/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 46.2k | **72.7k** | 81k | 87k | 14 | 2026-08-27 |
-| [program-manager](https://www.levels.fyi/t/program-manager/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 61.9k | **72.2k** | 82.4k | 83.3k | 11 | 2026-08-27 |
-| [technical-program-manager](https://www.levels.fyi/t/technical-program-manager/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 50k | **71.2k** | 91.7k | 107.1k | 15 | 2026-08-27 |
-| [solution-architect](https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 55.3k | **68.9k** | 93.7k | 129.5k | 26 | 2026-08-27 |
-| [solution-architect](https://www.levels.fyi/t/solution-architect/locations/spain) | Spain | 46.2k | **68.9k** | 85.5k | 115.5k | 50 | 2026-08-27 |
-| [data-science-manager](https://www.levels.fyi/t/data-science-manager/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 62.6k | **67.7k** | 77.3k | 102.2k | 9 | 2026-08-27 |
-| [product-manager](https://www.levels.fyi/t/product-manager/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 57.4k | **67k** | 99.8k | 112.6k | 42 | 2026-08-27 |
-| [program-manager](https://www.levels.fyi/t/program-manager/locations/spain) | Spain | 61.9k | **66.4k** | 82.4k | 89k | 15 | 2026-08-27 |
-| [data-scientist](https://www.levels.fyi/t/data-scientist/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 44.5k | **64.8k** | 81.9k | 104.9k | 72 | 2026-08-27 |
-| [software-engineer](https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 45.1k | **63.4k** | 81.6k | 101k | 608 | 2026-08-27 |
-| [program-manager](https://www.levels.fyi/t/program-manager/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 56.1k | **62.3k** | 65.9k | 83.5k | 9 | 2026-08-27 |
-| [product-designer](https://www.levels.fyi/t/product-designer/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 45.2k | **58.3k** | 71.8k | 117.5k | 26 | 2026-08-27 |
-| [business-analyst](https://www.levels.fyi/t/business-analyst/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 32k | **56.9k** | 83.6k | 86.1k | 10 | 2026-08-27 |
-| [technical-program-manager](https://www.levels.fyi/t/technical-program-manager/locations/spain) | Spain | 49.9k | **56.3k** | 79.6k | 107.1k | 15 | 2026-08-27 |
-| [project-manager](https://www.levels.fyi/t/project-manager/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 41.3k | **56.2k** | 63.8k | 74k | 17 | 2026-08-27 |
-| [product-designer](https://www.levels.fyi/t/product-designer/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 37.6k | **55.9k** | 77.1k | 84.3k | 22 | 2026-08-27 |
-| [product-designer](https://www.levels.fyi/t/product-designer/locations/spain) | Spain | 37.1k | **55.1k** | 71.8k | 89.6k | 56 | 2026-08-27 |
-| [software-engineer](https://www.levels.fyi/t/software-engineer/locations/spain) | Spain | 38.1k | **54.9k** | 76k | 97.4k | 1624 | 2026-08-27 |
-| [technical-program-manager](https://www.levels.fyi/t/technical-program-manager/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 36.4k | **54.6k** | 82.3k | 105.4k | 14 | 2026-08-27 |
-| [data-scientist](https://www.levels.fyi/t/data-scientist/locations/spain) | Spain | 38.3k | **54.5k** | 75.6k | 89.5k | 149 | 2026-08-27 |
-| [ux-researcher](https://www.levels.fyi/t/ux-researcher/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 43.6k | **54.2k** | 64k | 72.2k | 9 | 2026-08-27 |
-| [software-engineer](https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 38.6k | **53.9k** | 77.1k | 98k | 623 | 2026-08-27 |
-| [data-analyst](https://www.levels.fyi/t/data-analyst/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 31k | **49.7k** | 59.1k | 71.7k | 45 | 2026-08-27 |
-| [ux-researcher](https://www.levels.fyi/t/ux-researcher/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 44k | **49.6k** | 65k | 109.4k | 9 | 2026-08-27 |
-| [ux-researcher](https://www.levels.fyi/t/ux-researcher/locations/spain) | Spain | 43.6k | **49.6k** | 64k | 72k | 17 | 2026-08-27 |
-| [project-manager](https://www.levels.fyi/t/project-manager/locations/spain) | Spain | 36k | **49.4k** | 59.5k | 67.2k | 34 | 2026-08-27 |
-| [project-manager](https://www.levels.fyi/t/project-manager/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 36k | **47.2k** | 55.2k | 63k | 15 | 2026-08-27 |
-| [data-scientist](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 35k | **46.9k** | 59.4k | 75.5k | 65 | 2026-08-27 |
-| [business-analyst](https://www.levels.fyi/t/business-analyst/locations/spain) | Spain | 33.1k | **45.4k** | 59.8k | 76.5k | 25 | 2026-08-27 |
-| [business-analyst](https://www.levels.fyi/t/business-analyst/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 28.3k | **44.5k** | 54.4k | 64.9k | 12 | 2026-08-27 |
-| [security-analyst](https://www.levels.fyi/t/security-analyst/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 24.8k | **39.1k** | 47.5k | 54.8k | 11 | 2026-08-27 |
-| [hardware-engineer](https://www.levels.fyi/t/hardware-engineer/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 27k | **39k** | 43.7k | 44.7k | 13 | 2026-08-27 |
-| [data-analyst](https://www.levels.fyi/t/data-analyst/locations/spain) | Spain | 27.9k | **37.5k** | 58k | 69.9k | 82 | 2026-08-27 |
-| [security-analyst](https://www.levels.fyi/t/security-analyst/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 24.9k | **34.9k** | 43.6k | 49.7k | 16 | 2026-08-27 |
-| [hardware-engineer](https://www.levels.fyi/t/hardware-engineer/locations/spain) | Spain | 27k | **34.5k** | 44.7k | 49.3k | 24 | 2026-08-27 |
-| [hardware-engineer](https://www.levels.fyi/t/hardware-engineer/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 29.9k | **34k** | 38.1k | 39.8k | 11 | 2026-08-27 |
-| [data-analyst](https://www.levels.fyi/t/data-analyst/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 24.6k | **32.7k** | 44.8k | 70.3k | 23 | 2026-08-27 |
-| [technical-writer](https://www.levels.fyi/t/technical-writer/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 29.7k | **32k** | 43.6k | 108.5k | 6 | 2026-08-27 |
-| [technical-writer](https://www.levels.fyi/t/technical-writer/locations/spain) | Spain | 22.3k | **32k** | 43.6k | 108.5k | 7 | 2026-08-27 |
-| [security-analyst](https://www.levels.fyi/t/security-analyst/locations/spain) | Spain | 24.7k | **31k** | 42.4k | 47.5k | 30 | 2026-08-27 |
-| [information-technologist](https://www.levels.fyi/t/information-technologist/locations/madrid-metropolitan-area) | Madrid Metropolitan Area, ES | 21.7k | **30.8k** | 33.4k | 38.6k | 11 | 2026-08-27 |
-| [information-technologist](https://www.levels.fyi/t/information-technologist/locations/spain) | Spain | 21.7k | **26.9k** | 33.4k | 39.3k | 24 | 2026-08-27 |
-| [information-technologist](https://www.levels.fyi/t/information-technologist/locations/greater-barcelona-area) | Greater Barcelona Area, ES | 22.7k | **26.5k** | 34.9k | 39.7k | 18 | 2026-08-27 |
-
-<sub>**Total compensation** (base + bonus + annualised equity), gross annual, euros. Not directly comparable with the base-salary figures in the tables below. Data source: Levels.fyi (https://www.levels.fyi).</sub>
-<!-- END:BENCHMARKS -->
-
-## Companies
-
 <!-- BEGIN:COMPANIES -->
-| Company | Sector | Headquarters | Offices in Spain | Work model | Contract | Size | Careers |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| **[Adevinta](#adevinta)** | internet | Barcelona, ES | — | — | — | 1,001-10,000 | — |
-| **[Amazon](#amazon)** | — | — | — | — | — | — | — |
-| **[BCG](#bcg)** | — | — | — | — | — | — | — |
-| **[D-EDGE](#d-edge)** | e-commerce, travel-leisure, information-technology-services, technology | Paris, FR | — | — | — | 201-1,000 | — |
-| **[Datadog](#datadog)** | — | — | — | — | — | — | — |
-| **[eDreams ODIGEO](#edreams-odigeo)** | travel-leisure, internet, technology, marketplace | Luxembourg, LU | — | — | — | 1,001-10,000 | — |
-| **[EPAM Systems](#epam-systems)** | — | — | — | — | — | — | — |
-| **[Ericsson](#ericsson)** | — | — | — | — | — | — | — |
-| **[Factorial](#factorial)** | information-technology-services, technology, human-resources, billing-management | Barcelona, ES | — | — | — | 1,001-10,000 | — |
-| **[FREE NOW](#free-now)** | information-technology-services | Hamburg, DE | — | — | — | 201-1,000 | — |
-| **[Glovo](#glovo)** | technology, internet, services, b2c | Milano, IT | — | — | — | 1,001-10,000 | — |
-| **[HPE](#hpe)** | — | — | — | — | — | — | — |
-| **[IKEA](#ikea)** | e-commerce, retail, consumer-discretionary, b2c | Delft, NL | — | — | — | 10,001+ | — |
-| **[Microsoft](#microsoft)** | — | — | — | — | — | — | — |
-| **[N26](#n26)** | financial-services, consulting-professional-services, mobile, b2b | Berlin, DE | — | — | — | 1,001-10,000 | — |
-| **[NCC Group](#ncc-group)** | consulting-professional-services, information-technology-services, b2b, enterprise | Manchester, GB | — | — | — | 1,001-10,000 | — |
-| **[PepsiCo](#pepsico)** | — | — | — | — | — | — | — |
-| **[Revolut](#revolut)** | insurance, technology, information-technology-services, financial-services | London, GB | — | — | — | 10,001+ | — |
-| **[Rover.com](#rovercom)** | — | — | — | — | — | — | — |
-| **[Sage](#sage)** | — | — | — | — | — | — | — |
-| **[Semrush](#semrush)** | technology, information-technology-services, internet, saas | Boston, US | — | — | — | 1,001-10,000 | — |
-| **[Stenn](#stenn)** | — | — | — | — | — | — | — |
-| **[TravelPerk](#travelperk)** | internet, technology, marketplace, b2c | Barcelona, ES | — | — | — | 201-1,000 | — |
-| **[Vestas](#vestas)** | renewables-environment, energy, b2b, enterprise | Aarhus, DK | — | — | — | 10,001+ | — |
+| Company | Senior+ | Data points | Source |
+| --- | --- | --- | --- |
+| [Tiger Data (creators of TimescaleDB)](https://www.linkedin.com/company/107383551) | [173.8k*](https://www.levels.fyi/companies/tiger-data/salaries) | — | levels.fyi |
+| [Timescale](https://www.linkedin.com/company/11065434) | [153.3k*](https://www.levels.fyi/companies/timescale/salaries) | — | levels.fyi |
+| [Xata.io](https://www.linkedin.com/company/69560619) | [140k*](https://www.levels.fyi/companies/xata/salaries) | — | levels.fyi |
+| [Workato](https://www.linkedin.com/company/3675685) | [138.2k†](https://www.levels.fyi/companies/workato/salaries) | 1 | levels.fyi |
+| [Hopin](https://www.linkedin.com/company/105238356) | [128k†](https://www.levels.fyi/companies/hopin/salaries) | 1 | levels.fyi |
+| [Auth0](https://www.linkedin.com/company/3089380) | [120.8k†](https://www.levels.fyi/companies/auth0/salaries) | 1 | levels.fyi |
+| [Revolut](https://www.linkedin.com/company/revolut) | [120k*](https://www.levels.fyi/companies/revolut/salaries) | — | levels.fyi |
+| [Grafana Labs](https://www.linkedin.com/company/11062162) | [117.2k†](https://www.levels.fyi/companies/grafana/salaries) | 1 | levels.fyi |
+| [Toptal](https://www.linkedin.com/company/1545609) | [116k†](https://www.levels.fyi/companies/toptal/salaries) | 1 | levels.fyi |
+| [Spotify](https://www.linkedin.com/company/207470) | [116k†](https://www.levels.fyi/companies/spotify/salaries) | 1 | levels.fyi |
+| [Remote](https://www.linkedin.com/company/17955831) | [113.2k*](https://www.levels.fyi/companies/remote/salaries) | — | levels.fyi |
+| [Meta](https://www.linkedin.com/company/10667) | [112.7k†](https://www.levels.fyi/companies/facebook/salaries) | 1 | levels.fyi |
+| [Teya](https://www.linkedin.com/company/93621491) | [111.8k†](https://www.levels.fyi/companies/teya/salaries) | 1 | levels.fyi |
+| [Unity](https://www.linkedin.com/company/212669) | [108.9k†](https://www.levels.fyi/companies/unity/salaries) | 1 | levels.fyi |
+| [Aily Labs](https://www.linkedin.com/company/ailylabs) | [108.5k*](https://www.levels.fyi/companies/aily-labs/salaries) | — | levels.fyi |
+| [Smile.io](https://www.linkedin.com/company/2400901) | [105k†](https://www.levels.fyi/companies/smileio/salaries) | 1 | levels.fyi |
+| [Elastic](https://www.linkedin.com/company/814025) | [103.9k†](https://www.levels.fyi/companies/elastic/salaries) | 1 | levels.fyi |
+| [Preply](https://www.linkedin.com/company/2762432) | [101.5k*](https://www.levels.fyi/companies/preply/salaries) | — | levels.fyi |
+| [Tinybird](https://www.linkedin.com/company/35704741) | [100.4k*](https://www.levels.fyi/companies/tinybird/salaries) | — | levels.fyi |
+| [Eventbrite](https://www.linkedin.com/company/167280) | [99.8k*](https://www.levels.fyi/companies/eventbrite/salaries) | — | levels.fyi |
+| [Aetion, a Datavant Company](https://www.linkedin.com/company/6576393) | [99.3k†](https://www.levels.fyi/companies/aetion/salaries) | 1 | levels.fyi |
+| [Pleo](https://www.linkedin.com/company/10275909) | [98.9k†](https://www.levels.fyi/companies/pleo/salaries) | 1 | levels.fyi |
+| [Semrush](https://www.linkedin.com/company/semrush) | [98.1k*](https://www.levels.fyi/companies/semrush/salaries) | — | levels.fyi |
+| [Stripe](https://www.linkedin.com/company/2135371) | [97.7k†](https://www.levels.fyi/companies/stripe/salaries) | 1 | levels.fyi |
+| [RingCentral](https://www.linkedin.com/company/60868) | [96k†](https://www.levels.fyi/companies/ringcentral/salaries) | 1 | levels.fyi |
+| [GitHub](https://www.linkedin.com/company/1418841) | [95.8k†](https://www.levels.fyi/companies/github/salaries) | 1 | levels.fyi |
+| [Medallia](https://www.linkedin.com/company/49697) | [95.7k†](https://www.levels.fyi/companies/medallia/salaries) | 1 | levels.fyi |
+| [Microsoft](https://www.linkedin.com/company/1035) | [94.2k†](https://www.levels.fyi/companies/microsoft/salaries) | 1 | levels.fyi |
+| [Picsart](https://www.linkedin.com/company/3007630) | [93.8k†](https://www.levels.fyi/companies/picsart/salaries) | 1 | levels.fyi |
+| [Zendesk](https://www.linkedin.com/company/418095) | [93.3k†](https://www.levels.fyi/companies/zendesk/salaries) | 1 | levels.fyi |
+| [Gartner](https://www.linkedin.com/company/2078) | [93.2k†](https://www.levels.fyi/companies/gartner/salaries) | 1 | levels.fyi |
+| [Job&Talent](https://www.linkedin.com/company/296493) | [93k*](https://www.levels.fyi/companies/jobandtalent/salaries) | — | levels.fyi |
+| [Collate](https://www.linkedin.com/company/78395355) | [92.9k*](https://www.levels.fyi/companies/collate/salaries) | — | levels.fyi |
+| [Intellias](https://www.linkedin.com/company/49445) | [91.5k†](https://www.levels.fyi/companies/intellias/salaries) | 1 | levels.fyi |
+| [sennder](https://www.linkedin.com/company/10442437) | [91.5k†](https://www.levels.fyi/companies/sennder/salaries) | 1 | levels.fyi |
+| [PayFit](https://www.linkedin.com/company/6436622) | [91.2k*](https://www.levels.fyi/companies/payfit/salaries) | — | levels.fyi |
+| [MoonPay](https://www.linkedin.com/company/12596773) | [91.1k†](https://www.levels.fyi/companies/moonpay/salaries) | 1 | levels.fyi |
+| [Perk](https://www.linkedin.com/company/perk) | [90.5k*](https://www.levels.fyi/companies/perk/salaries) | — | levels.fyi |
+| [Stenn](https://www.linkedin.com/company/stenn-financial-services) | [89.6k†](https://www.levels.fyi/companies/stenn/salaries) | 1 | levels.fyi |
+| [Affirm](https://www.linkedin.com/company/2963249) | [88.9k†](https://www.levels.fyi/companies/affirm/salaries) | 1 | levels.fyi |
+| [Brainly](https://www.linkedin.com/company/2745890) | [88.8k†](https://www.levels.fyi/companies/brainly/salaries) | 1 | levels.fyi |
+| [Typeform](https://www.linkedin.com/company/3226972) | [88k*](https://www.levels.fyi/companies/typeform/salaries) | — | levels.fyi |
+| [Mirantis](https://www.linkedin.com/company/7793) | [87.2k†](https://www.levels.fyi/companies/mirantis/salaries) | 1 | levels.fyi |
+| [Palo Alto Networks](https://www.linkedin.com/company/30086) | [87k†](https://www.levels.fyi/companies/palo-alto-networks/salaries) | 1 | levels.fyi |
+| [Red Hat](https://www.linkedin.com/company/3545) | [86.5k†](https://www.levels.fyi/companies/red-hat/salaries) | 1 | levels.fyi |
+| [TravelPerk](https://www.linkedin.com/company/travelperk) | [86k*](https://www.levels.fyi/companies/travelperk/salaries) | — | levels.fyi |
+| [Personio](https://www.linkedin.com/company/10180448) | [85.8k†](https://www.levels.fyi/companies/personio/salaries) | 1 | levels.fyi |
+| [VistaPrint](https://www.linkedin.com/company/8095) | [85.3k†](https://www.levels.fyi/companies/vistaprint/salaries) | 1 | levels.fyi |
+| [Manychat](https://www.linkedin.com/company/11058494) | [85k†](https://www.levels.fyi/companies/manychat/salaries) | 1 | levels.fyi |
+| [Glovo](https://www.linkedin.com/company/glovo-app) | [84.2k*](https://www.levels.fyi/companies/glovo/salaries) | — | levels.fyi |
+| [SUSE](https://www.linkedin.com/company/1455) | [84.2k†](https://www.levels.fyi/companies/suse/salaries) | 1 | levels.fyi |
+| [Rover.com](https://www.linkedin.com/company/2686335) | [84k†](https://www.levels.fyi/companies/rovercom/salaries) | 1 | levels.fyi |
+| [New Relic](https://www.linkedin.com/company/426253) | [83.4k†](https://www.levels.fyi/companies/new-relic/salaries) | 1 | levels.fyi |
+| [The Trade Desk](https://www.linkedin.com/company/892001) | [83.4k†](https://www.levels.fyi/companies/the-trade-desk/salaries) | 1 | levels.fyi |
+| [dLocal](https://www.linkedin.com/company/15156062) | [82.3k*](https://www.levels.fyi/companies/dlocal/salaries) | — | levels.fyi |
+| [N26](https://www.linkedin.com/company/n26) | [82.1k†](https://www.levels.fyi/companies/n26/salaries) | 1 | levels.fyi |
+| [Datadog](https://www.linkedin.com/company/1066442) | [82.1k†](https://www.levels.fyi/companies/datadog/salaries) | 1 | levels.fyi |
+| [Pearson](https://www.linkedin.com/company/2137) | [81.9k†](https://www.levels.fyi/companies/pearson/salaries) | 1 | levels.fyi |
+| [AstraZeneca](https://www.linkedin.com/company/1603) | [81.4k†](https://www.levels.fyi/companies/astrazeneca/salaries) | 1 | levels.fyi |
+| [Mitek Systems](https://www.linkedin.com/company/395288) | [81.3k*](https://www.levels.fyi/companies/mitek-systems/salaries) | — | levels.fyi |
+| [Akamai Technologies](https://www.linkedin.com/company/3925) | [81.1k†](https://www.levels.fyi/companies/akamai/salaries) | 1 | levels.fyi |
+| [Bitpanda](https://www.linkedin.com/company/18164565) | [81k†](https://www.levels.fyi/companies/bitpanda/salaries) | 1 | levels.fyi |
+| [Adyen](https://www.linkedin.com/company/adyen) | [80.1k†](https://www.levels.fyi/companies/adyen/salaries) | 1 | levels.fyi |
+| [Fever](https://www.linkedin.com/company/2346695) | [79.2k*](https://www.levels.fyi/companies/fever/salaries) | — | levels.fyi |
+| [Factorial](https://www.linkedin.com/company/factorialhr) | [77.4k*](https://www.levels.fyi/companies/factorial/salaries) | — | levels.fyi |
+| [Wallapop](https://www.linkedin.com/company/3302579) | [77.3k*](https://www.levels.fyi/companies/wallapop/salaries) | — | levels.fyi |
+| [Skyscanner](https://www.linkedin.com/company/123380) | [77.3k†](https://www.levels.fyi/companies/skyscanner/salaries) | 1 | levels.fyi |
+| [Sanofi](https://www.linkedin.com/company/1642) | [77k*](https://www.levels.fyi/companies/sanofi/salaries) | — | levels.fyi |
+| [Mews](https://www.linkedin.com/company/2574959) | [76.6k*](https://www.levels.fyi/companies/mews/salaries) | — | levels.fyi |
+| [Bumble Inc.](https://www.linkedin.com/company/9408755) | [76k†](https://www.levels.fyi/companies/bumble/salaries) | 1 | levels.fyi |
+| [Adevinta](https://www.linkedin.com/company/adevinta) | [75.7k*](https://www.levels.fyi/companies/adevinta/salaries) | — | levels.fyi |
+| [Ocado Group](https://www.linkedin.com/company/165276) | [75.7k†](https://www.levels.fyi/companies/ocado-group/salaries) | 1 | levels.fyi |
+| [Tabby](https://www.linkedin.com/company/26615638) | [75.6k†](https://www.levels.fyi/companies/tabby/salaries) | 1 | levels.fyi |
+| [Bayer](https://www.linkedin.com/company/1893) | [75.5k†](https://www.levels.fyi/companies/bayer/salaries) | 1 | levels.fyi |
+| [Clarity AI](https://www.linkedin.com/company/9480749) | [74.3k*](https://www.levels.fyi/companies/clarity-ai/salaries) | — | levels.fyi |
+| [Expedia Group](https://www.linkedin.com/company/2751) | [74.3k†](https://www.levels.fyi/companies/expedia-group/salaries) | 1 | levels.fyi |
+| [Activision Blizzard](https://www.linkedin.com/company/15415277) | [73.7k†](https://www.levels.fyi/companies/activision-blizzard/salaries) | 1 | levels.fyi |
+| [TradingView](https://www.linkedin.com/company/3179069) | [73.5k†](https://www.levels.fyi/companies/tradingview/salaries) | 1 | levels.fyi |
+| [HPE](https://www.linkedin.com/company/hewlett-packard-enterprise) | [71.8k†](https://www.levels.fyi/companies/hpe/salaries) | 1 | levels.fyi |
+| [Align Technology](https://www.linkedin.com/company/6867) | [71.8k†](https://www.levels.fyi/companies/align-technology/salaries) | 1 | levels.fyi |
+| [Flywire](https://www.linkedin.com/company/434598) | [71.5k†](https://www.levels.fyi/companies/flywire/salaries) | 1 | levels.fyi |
+| [SEAT CODE](https://www.linkedin.com/company/22296997) | [71k*](https://www.levels.fyi/companies/seat-code/salaries) | — | levels.fyi |
+| [Google](https://www.linkedin.com/company/1441) | [70.3k†](https://www.levels.fyi/companies/google/salaries) | 1 | levels.fyi |
+| [Twilio](https://www.linkedin.com/company/400528) | [70.2k†](https://www.levels.fyi/companies/twilio/salaries) | 1 | levels.fyi |
+| [Exoticca](https://www.linkedin.com/company/3317134) | [70.1k*](https://www.levels.fyi/companies/exoticca/salaries) | — | levels.fyi |
+| [Qonto](https://www.linkedin.com/company/13205888) | [69.9k†](https://www.levels.fyi/companies/qonto/salaries) | 1 | levels.fyi |
+| [Cabify](https://www.linkedin.com/company/cabify) | [69.2k*](https://www.levels.fyi/companies/cabify/salaries) | — | levels.fyi |
+| [King](https://www.linkedin.com/company/230546) | [68.9k†](https://www.levels.fyi/companies/king/salaries) | 1 | levels.fyi |
+| [Dynatrace](https://www.linkedin.com/company/125999) | [68.2k†](https://www.levels.fyi/companies/dynatrace/salaries) | 1 | levels.fyi |
+| [T-Systems](https://www.linkedin.com/company/tsystems-brasil) | [68.2k†](https://www.levels.fyi/companies/t-systems/salaries) | 1 | levels.fyi |
+| [Amazon](https://www.linkedin.com/company/1586) | [68k†](https://www.levels.fyi/companies/amazon/salaries) | 1 | levels.fyi |
+| [Thoughtworks](https://www.linkedin.com/company/157356) | [67.6k†](https://www.levels.fyi/companies/thoughtworks/salaries) | 1 | levels.fyi |
+| [Broadcom](https://www.linkedin.com/company/3072) | [67.2k†](https://www.levels.fyi/companies/broadcom/salaries) | 1 | levels.fyi |
+| [Freenow](https://www.linkedin.com/company/freenow) | [67.2k†](https://www.levels.fyi/companies/free-now/salaries) | 1 | levels.fyi |
+| [Nexthink](https://www.linkedin.com/company/92771) | [67k†](https://www.levels.fyi/companies/nexthink/salaries) | 1 | levels.fyi |
+| [eDreams ODIGEO](https://www.linkedin.com/company/edreamsodigeo) | [66.9k*](https://www.levels.fyi/companies/edreams-odigeo/salaries) | — | levels.fyi |
+| [Electronic Arts (EA)](https://www.linkedin.com/company/1449) | [65.7k†](https://www.levels.fyi/companies/electronic-arts/salaries) | 1 | levels.fyi |
+| [UserTesting](https://www.linkedin.com/company/564709) | [65.6k†](https://www.levels.fyi/companies/usertesting/salaries) | 1 | levels.fyi |
+| [Scopely](https://www.linkedin.com/company/2057437) | [65.5k†](https://www.levels.fyi/companies/scopely/salaries) | 1 | levels.fyi |
+| [Multiverse Computing](https://www.linkedin.com/company/18863453) | [65.2k*](https://www.levels.fyi/companies/multiverse-computing/salaries) | — | levels.fyi |
+| [BASF](https://www.linkedin.com/company/basf) | [64.6k†](https://www.levels.fyi/companies/basf/salaries) | 1 | levels.fyi |
+| [Inditex](https://www.linkedin.com/company/14853) | [64.5k*](https://www.levels.fyi/companies/inditex/salaries) | — | levels.fyi |
+| [Ryanair - Europe's Favourite Airline](https://www.linkedin.com/company/16584) | [64.1k*](https://www.levels.fyi/companies/ryanair/salaries) | — | levels.fyi |
+| [Docplanner](https://www.linkedin.com/company/2254852) | [64k†](https://www.levels.fyi/companies/docplanner/salaries) | 1 | levels.fyi |
+| [EPAM Systems](https://www.linkedin.com/company/4972) | [63.8k†](https://www.levels.fyi/companies/epam-systems/salaries) | 1 | levels.fyi |
+| [VMware](https://www.linkedin.com/company/2988) | [63.5k†](https://www.levels.fyi/companies/vmware/salaries) | 1 | levels.fyi |
+| [Santander](https://www.linkedin.com/company/2873) | [63.3k†](https://www.levels.fyi/companies/santander/salaries) | 1 | levels.fyi |
+| [Sage](https://www.linkedin.com/company/2802) | [63.2k†](https://www.levels.fyi/companies/sage/salaries) | 1 | levels.fyi |
+| [Klarna](https://www.linkedin.com/company/748731) | [62.3k†](https://www.levels.fyi/companies/klarna/salaries) | 1 | levels.fyi |
+| [ING](https://www.linkedin.com/company/2594164) | [62k†](https://www.levels.fyi/companies/ing/salaries) | 1 | levels.fyi |
+| [Keysight Technologies](https://www.linkedin.com/company/3812750) | [61.9k†](https://www.levels.fyi/companies/keysight/salaries) | 1 | levels.fyi |
+| [TomTom](https://www.linkedin.com/company/tomtom) | [60k†](https://www.levels.fyi/companies/tomtom/salaries) | 1 | levels.fyi |
+| [Swiss Re](https://www.linkedin.com/company/3845) | [59k†](https://www.levels.fyi/companies/swiss-re/salaries) | 1 | levels.fyi |
+| [Clarivate](https://www.linkedin.com/company/10950962) | [58.9k†](https://www.levels.fyi/companies/clarivate/salaries) | 1 | levels.fyi |
+| [Celonis](https://www.linkedin.com/company/celonis) | [58.8k†](https://www.levels.fyi/companies/celonis/salaries) | 1 | levels.fyi |
+| [Allianz](https://www.linkedin.com/company/2979) | [58.5k†](https://www.levels.fyi/companies/allianz/salaries) | 1 | levels.fyi |
+| [Veeva Systems](https://www.linkedin.com/company/402048) | [58.5k†](https://www.levels.fyi/companies/veeva-systems/salaries) | 1 | levels.fyi |
+| [BBVA](https://www.linkedin.com/company/bbva) | [54.4k*](https://www.levels.fyi/companies/bbva/salaries) | — | levels.fyi |
+| [Oracle](https://www.linkedin.com/company/1028) | [54.4k†](https://www.levels.fyi/companies/oracle/salaries) | 1 | levels.fyi |
+| [The Workshop](https://www.linkedin.com/company/10258548) | [54.3k*](https://www.levels.fyi/companies/workshop/salaries) | — | levels.fyi |
+| [Semidynamics](https://www.linkedin.com/company/semidynamics) | [54k*](https://www.levels.fyi/companies/semidynamics/salaries) | — | levels.fyi |
+| [Criteo](https://www.linkedin.com/company/37209) | [52.5k†](https://www.levels.fyi/companies/criteo/salaries) | 1 | levels.fyi |
+| [IKEA](https://www.linkedin.com/company/ikea) | [51k†](https://www.levels.fyi/companies/ikea/salaries) | 1 | levels.fyi |
+| [EF](https://www.linkedin.com/company/4856) | [48.8k†](https://www.levels.fyi/companies/ef-education-first/salaries) | 1 | levels.fyi |
+| [NTT DATA](https://www.linkedin.com/company/nttdata) | [48.2k*](https://www.levels.fyi/companies/ntt-data/salaries) | — | levels.fyi |
+| [Mercedes-Benz AG](https://www.linkedin.com/company/5383634) | [47.8k†](https://www.levels.fyi/companies/mercedes-benz/salaries) | 1 | levels.fyi |
+| [adidas](https://www.linkedin.com/company/3748) | [47.3k†](https://www.levels.fyi/companies/adidas/salaries) | 1 | levels.fyi |
+| [Ericsson](https://www.linkedin.com/company/1060) | [47.3k†](https://www.levels.fyi/companies/ericsson/salaries) | 1 | levels.fyi |
+| [Amadeus](https://www.linkedin.com/company/amadeus) | [46.6k†](https://www.levels.fyi/companies/amadeus/salaries) | 1 | levels.fyi |
+| [Deloitte](https://www.linkedin.com/company/1038) | [46.2k†](https://www.levels.fyi/companies/deloitte/salaries) | 1 | levels.fyi |
+| [Schneider Electric](https://www.linkedin.com/company/2329) | [45.1k†](https://www.levels.fyi/companies/schneider-electric/salaries) | 1 | levels.fyi |
+| [Barcelona Supercomputing Center](https://www.linkedin.com/company/barcelona-supercomputing-center) | [43.8k*](https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries) | — | levels.fyi |
+| [Indra](https://www.linkedin.com/company/indra) | [43.5k*](https://www.levels.fyi/companies/indra/salaries) | — | levels.fyi |
+| [Minsait](https://www.linkedin.com/company/minsait) | [42.3k*](https://www.levels.fyi/companies/minsait/salaries) | — | levels.fyi |
+| [Siemens](https://www.linkedin.com/company/1043) | [38.8k†](https://www.levels.fyi/companies/siemens/salaries) | 1 | levels.fyi |
+| [SDG Group](https://www.linkedin.com/company/sdg-group) | [38.1k*](https://www.levels.fyi/companies/sdg-group/salaries) | — | levels.fyi |
+| [Capgemini](https://www.linkedin.com/company/capgemini) | [36.9k†](https://www.levels.fyi/companies/capgemini/salaries) | 1 | levels.fyi |
+| [Accenture](https://www.linkedin.com/company/accenture) | [36.4k†](https://www.levels.fyi/companies/accenture/salaries) | 1 | levels.fyi |
+| [IBM](https://www.linkedin.com/company/1009) | [32.9k†](https://www.levels.fyi/companies/ibm/salaries) | 1 | levels.fyi |
+| [Ernst and Young](https://www.linkedin.com/company/ernstandyoung) | [29.2k†](https://www.levels.fyi/companies/ernst-and-young/salaries) | 1 | levels.fyi |
+| [ABN AMRO Bank N.V.](https://www.linkedin.com/company/1173) | — | — | — |
+| [Adobe](https://www.linkedin.com/company/1480) | — | — | — |
+| [Airbnb](https://www.linkedin.com/company/309694) | — | — | — |
+| [Alan](https://www.linkedin.com/company/avec-alan) | — | — | — |
+| [Analog Devices](https://www.linkedin.com/company/analog-devices) | — | — | — |
+| [Anduril Industries](https://www.linkedin.com/company/18293159) | — | — | — |
+| [ASML](https://www.linkedin.com/company/3894) | — | — | — |
+| [Atlassian](https://www.linkedin.com/company/22688) | — | — | — |
+| [Auro](https://www.linkedin.com/company/107716961) | — | — | — |
+| [Autodesk](https://www.linkedin.com/company/1879) | — | — | — |
+| [Back Market](https://www.linkedin.com/company/back-market) | — | — | — |
+| [BCG](https://www.linkedin.com/company/1784) | — | — | — |
+| [Blizzard Entertainment](https://www.linkedin.com/company/5329) | — | — | — |
+| [Bloomberg](https://www.linkedin.com/company/2494) | — | — | — |
+| [BMW Group](https://www.linkedin.com/company/bmw-group) | — | — | — |
+| [Bolt](https://www.linkedin.com/company/35626123) | — | — | — |
+| [Booking.com](https://www.linkedin.com/company/booking.com) | — | — | — |
+| [Bosch](https://www.linkedin.com/company/2508619) | — | — | — |
+| [Carwow](https://www.linkedin.com/company/1722873) | — | — | — |
+| [Catawiki](https://www.linkedin.com/company/catawiki) | — | — | — |
+| [Cisco](https://www.linkedin.com/company/1063) | — | — | — |
+| [Cleo](https://www.linkedin.com/company/10280968) | — | — | — |
+| [Clickhouse](https://www.linkedin.com/company/clickhouseinc) | — | — | — |
+| [Cloudflare](https://www.linkedin.com/company/407222) | — | — | — |
+| [Cobee](https://www.linkedin.com/company/18826329) | — | — | — |
+| [Compound](https://www.linkedin.com/company/78383639) | — | — | — |
+| [Confluent, an IBM Company](https://www.linkedin.com/company/88873) | — | — | — |
+| [Creative Fabrica](https://www.linkedin.com/company/creative-fabrica) | — | — | — |
+| [CrowdStrike](https://www.linkedin.com/company/2497653) | — | — | — |
+| [Crunch.io](https://www.linkedin.com/company/1065469) | — | — | — |
+| [D-EDGE](https://www.linkedin.com/company/d-edge-hospitality-solutions) | — | — | — |
+| [Da Vinci](https://www.linkedin.com/company/15211263) | — | — | — |
+| [Databricks](https://www.linkedin.com/company/3477522) | — | — | — |
+| [Deel](https://www.linkedin.com/company/18922914) | — | — | — |
+| [DeepL](https://www.linkedin.com/company/deepl) | — | — | — |
+| [DeepSeek AI](https://www.linkedin.com/company/106112505) | — | — | — |
+| [DEGIRO](https://www.linkedin.com/company/2529574) | — | — | — |
+| [Deliveroo](https://www.linkedin.com/company/2837535) | — | — | — |
+| [Desia](https://www.linkedin.com/company/101926060) | — | — | — |
+| [Disney Streaming](https://www.linkedin.com/company/11826960) | — | — | — |
+| [Docker, Inc](https://www.linkedin.com/company/1301808) | — | — | — |
+| [Dow Jones](https://www.linkedin.com/company/2284) | — | — | — |
+| [eBay](https://www.linkedin.com/company/1481) | — | — | — |
+| [Enverus](https://www.linkedin.com/company/40801353) | — | — | — |
+| [Etsy](https://www.linkedin.com/company/67849) | — | — | — |
+| [Expleo Group](https://www.linkedin.com/company/expleo-group) | — | — | — |
+| [Feedzai](https://www.linkedin.com/company/feedzai) | — | — | — |
+| [Flexport](https://www.linkedin.com/company/3131483) | — | — | — |
+| [Flow Traders](https://www.linkedin.com/company/flow-traders) | — | — | — |
+| [GitLab](https://www.linkedin.com/company/5101804) | — | — | — |
+| [HashiCorp](https://www.linkedin.com/company/2830763) | — | — | — |
+| [Helsing](https://www.linkedin.com/company/71719093) | — | — | — |
+| [HP](https://www.linkedin.com/company/5390798) | — | — | — |
+| [HubSpot](https://www.linkedin.com/company/68529) | — | — | — |
+| [IFS](https://www.linkedin.com/company/164301) | — | — | — |
+| [IMC Trading](https://www.linkedin.com/company/200030) | — | — | — |
+| [Intel](https://www.linkedin.com/company/1053) | — | — | — |
+| [JetBrains](https://www.linkedin.com/company/jetbrains) | — | — | — |
+| [Johnson & Johnson](https://www.linkedin.com/company/1207) | — | — | — |
+| [Just Eat Takeaway.com](https://www.linkedin.com/company/103531) | — | — | — |
+| [Kinaxis](https://www.linkedin.com/company/14051) | — | — | — |
+| [Kraken](https://www.linkedin.com/company/3787845) | — | — | — |
+| [Kubernetes (Official)](https://www.linkedin.com/company/1342262) | — | — | — |
+| [Ledgy](https://www.linkedin.com/company/18347648) | — | — | — |
+| [Lodgify](https://www.linkedin.com/company/3151385) | — | — | — |
+| [Lucid Motors](https://www.linkedin.com/company/1684122) | — | — | — |
+| [Lucid Software](https://www.linkedin.com/company/1214453) | — | — | — |
+| [Mastercard](https://www.linkedin.com/company/3015) | — | — | — |
+| [McKinsey](https://www.linkedin.com/company/mckinsey) | — | — | — |
+| [Meshcapade](https://www.linkedin.com/company/18852605) | — | — | — |
+| [Miro](https://www.linkedin.com/company/mirohq) | — | — | — |
+| [Mistral](https://www.linkedin.com/company/94273421) | — | — | — |
+| [Mozilla](https://www.linkedin.com/company/13948) | — | — | — |
+| [MyInvestor](https://www.linkedin.com/company/11064675) | — | — | — |
+| [NCC Group](https://www.linkedin.com/company/ncc-group) | — | — | — |
+| [NDA](https://www.linkedin.com/company/77173985) | — | — | — |
+| [Netflix](https://www.linkedin.com/company/165158) | — | — | — |
+| [Netlight](https://www.linkedin.com/company/netlight-consulting) | — | — | — |
+| [NEW WORK SE](https://www.linkedin.com/company/new-work-se) | — | — | — |
+| [NovaKid](https://www.linkedin.com/company/novakid) | — | — | — |
+| [NVIDIA](https://www.linkedin.com/company/3608) | — | — | — |
+| [OLX](https://www.linkedin.com/company/167557) | — | — | — |
+| [OpenAI](https://www.linkedin.com/company/11130470) | — | — | — |
+| [Optiver](https://www.linkedin.com/company/13216) | — | — | — |
+| [Oxide Computer Company](https://www.linkedin.com/company/52179120) | — | — | — |
+| [Palantir Technologies](https://www.linkedin.com/company/20708) | — | — | — |
+| [PayPal](https://www.linkedin.com/company/1482) | — | — | — |
+| [PepsiCo](https://www.linkedin.com/company/1431) | — | — | — |
+| [Perplexity](https://www.linkedin.com/company/88007673) | — | — | — |
+| [Porsche AG](https://www.linkedin.com/company/3823740) | — | — | — |
+| [Rabobank](https://www.linkedin.com/company/rabobank) | — | — | — |
+| [Radix](https://www.linkedin.com/company/906658) | — | — | — |
+| [Reddit, Inc.](https://www.linkedin.com/company/150573) | — | — | — |
+| [Redslim](https://www.linkedin.com/company/3193403) | — | — | — |
+| [Rippling](https://www.linkedin.com/company/17988315) | — | — | — |
+| [Salesforce](https://www.linkedin.com/company/3185) | — | — | — |
+| [SeQura](https://www.linkedin.com/company/5043989) | — | — | — |
+| [Slack](https://www.linkedin.com/company/1612748) | — | — | — |
+| [Snap Inc.](https://www.linkedin.com/company/15191764) | — | — | — |
+| [Snowflake](https://www.linkedin.com/company/3653845) | — | — | — |
+| [SparkPost, a MessageBird company](https://www.linkedin.com/company/9486856) | — | — | — |
+| [SpliceBio](https://www.linkedin.com/company/69852936) | — | — | — |
+| [Strapi](https://www.linkedin.com/company/strapi) | — | — | — |
+| [Swish Analytics](https://www.linkedin.com/company/3886282) | — | — | — |
+| [TheFork](https://www.linkedin.com/company/the-fork) | — | — | — |
+| [Threecolts](https://www.linkedin.com/company/71701124) | — | — | — |
+| [Tower Research Capital](https://www.linkedin.com/company/36865) | — | — | — |
+| [Trading 212](https://www.linkedin.com/company/18161113) | — | — | — |
+| [TransPerfect](https://www.linkedin.com/company/transperfect) | — | — | — |
+| [TripActions](https://www.linkedin.com/company/tripactions) | — | — | — |
+| [Tripadvisor](https://www.linkedin.com/company/15027) | — | — | — |
+| [Uber](https://www.linkedin.com/company/1815218) | — | — | — |
+| [Uptail](https://www.linkedin.com/company/104609501) | — | — | — |
+| [Valve corporation](https://www.linkedin.com/company/13922) | — | — | — |
+| [Vercel](https://www.linkedin.com/company/16181286) | — | — | — |
+| [Vestas](https://www.linkedin.com/company/vestas) | — | — | — |
+| [Volkswagen Digital:Hub](https://www.linkedin.com/company/94799807) | — | — | — |
+| [Vorwerk Group](https://www.linkedin.com/company/784322) | — | — | — |
+| [Workday](https://www.linkedin.com/company/17719) | — | — | — |
+| [Worldpay](https://www.linkedin.com/company/260387) | — | — | — |
+| [Xoople](https://www.linkedin.com/company/95972483) | — | — | — |
+| [Zartis](https://www.linkedin.com/company/2274396) | — | — | — |
 
-<sub>**11 of 24 companies were seeded from salary data and still need their details filled in** (website, offices, contract type). That is the easiest way to contribute — see [CONTRIBUTING.md](CONTRIBUTING.md).</sub>
-
-<sub>_Offices in Spain_ is `None` when the company hires here without a local office, either directly or through an employer of record. _Work model_ says whether you are tied to a city. Salary bands for each company are in [Company details](#company-details).</sub>
+<sub>140 of 262 companies have pay on file, 0 of them first-hand. **Source** says where the number came from: **known personally** is someone in Spain who told the maintainer what they earn, **offer received** is an offer the maintainer was made, and anything else is crowdsourced and worth less. **Data points** is how many salaries the figure rests on. An unmarked figure is a measured senior salary; `*` (41) is the upper quartile of every engineer at that company in Spain; `†` (99) is one person's number. Company names link to LinkedIn, figures to Levels.fyi.</sub>
 <!-- END:COMPANIES -->
 
-## Salary data
+## How to read this
 
-<!-- BEGIN:SALARIES -->
-| Company | Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [Amazon](#amazon) | software-engineering-manager | all | — | 142.3k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-| [Stenn](#stenn) | software-engineering-manager | all | — | 133.5k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-| [Factorial](#factorial) | product-designer | all | — | 119.9k | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-designer/locations/spain) | 2026-08 |
-| [Rover.com](#rovercom) | software-engineering-manager | all | — | 116k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-| [Amazon](#amazon) | solution-architect | all | — | 114.3k | — | — | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/spain) | 2026-08 |
-| [Amazon](#amazon) | product-manager | all | — | 112.7k | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/greater-barcelona-area) | 2026-08 |
-| [Datadog](#datadog) | software-engineer | all | — | 109.5k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-| [Glovo](#glovo) | software-engineering-manager | all | — | 109.4k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-| [Revolut](#revolut) | data-scientist | all | — | 109k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/greater-barcelona-area) | 2026-08 |
-| [Revolut](#revolut) | software-engineer | all | — | 107.6k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area) | 2026-08 |
-| [Adevinta](#adevinta) | software-engineering-manager | all | — | 94.7k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-| [N26](#n26) | software-engineering-manager | all | — | 90.1k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-| [BCG](#bcg) | data-scientist | all | — | 89.3k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-| [Microsoft](#microsoft) | software-engineer | all | — | 88.5k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-| [Amazon](#amazon) | software-engineer | all | — | 84.4k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area) | 2026-08 |
-| [eDreams ODIGEO](#edreams-odigeo) | software-engineering-manager | all | — | 81.4k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-| [NCC Group](#ncc-group) | security-analyst | all | — | 78.3k | — | — | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) | 2026-08 |
-| [PepsiCo](#pepsico) | data-scientist | all | — | 75.7k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-| [IKEA](#ikea) | data-scientist | all | — | 75.5k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-| [Sage](#sage) | product-manager | all | — | 75k | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-| [Semrush](#semrush) | software-engineer | all | — | 71.6k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-| [TravelPerk](#travelperk) | software-engineer | all | — | 71.5k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-| [N26](#n26) | software-engineer | all | — | 70k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-| [Ericsson](#ericsson) | solution-architect | all | — | 69.2k | — | — | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area) | 2026-08 |
-| [Glovo](#glovo) | data-scientist | all | — | 69.2k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-| [Glovo](#glovo) | software-engineer | all | — | 68.8k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-| [Glovo](#glovo) | product-manager | all | — | 67.2k | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-| [FREE NOW](#free-now) | product-manager | all | — | 66.7k | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-| [EPAM Systems](#epam-systems) | solution-architect | all | — | 66.2k | — | — | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/spain) | 2026-08 |
-| [HPE](#hpe) | data-scientist | all | — | 66k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-| [D-EDGE](#d-edge) | software-engineering-manager | all | — | 63.7k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-| [Adevinta](#adevinta) | software-engineer | all | — | 63.3k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area) | 2026-08 |
-| [Vestas](#vestas) | data-scientist | all | — | 62.6k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-| [Revolut](#revolut) | data-analyst | all | — | 61k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) | 2026-08 |
-| [Revolut](#revolut) | product-designer | all | — | 60.9k | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-designer/locations/spain) | 2026-08 |
-| [Cabify](#cabify) | data-scientist | all | — | 59.2k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-| [T-Systems](#t-systems) | software-engineer | all | — | 58.1k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-| [BASF](#basf) | data-scientist | all | — | 57.3k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-| [NovaKid](#novakid) | product-manager | all | — | 56.2k | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-| [BBVA](#bbva) | solution-architect | all | — | 55.8k | — | — | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area) | 2026-08 |
-| [HPE](#hpe) | product-manager | all | — | 54.6k | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-| [Analog Devices](#analog-devices) | hardware-engineer | all | — | 52.7k | — | — | — | [levels.fyi](https://www.levels.fyi/t/hardware-engineer/locations/spain) | 2026-08 |
-| [TomTom](#tomtom) | data-scientist | all | — | 52.2k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-| [Cabify](#cabify) | software-engineer | all | — | 52k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area) | 2026-08 |
-| [Amazon](#amazon) | data-analyst | all | — | 51.3k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) | 2026-08 |
-| [Semrush](#semrush) | data-analyst | all | — | 49.7k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) | 2026-08 |
-| [eDreams ODIGEO](#edreams-odigeo) | software-engineer | all | — | 49.3k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area) | 2026-08 |
-| [EPAM Systems](#epam-systems) | business-analyst | all | — | 48.9k | — | — | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) | 2026-08 |
-| [Ericsson](#ericsson) | data-scientist | all | — | 48.8k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-| [Amadeus](#amadeus) | product-manager | all | — | 47.7k | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-| [Amazon](#amazon) | business-analyst | all | — | 46.3k | — | — | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) | 2026-08 |
-| [NTT DATA](#ntt-data) | solution-architect | all | — | 45.8k | — | — | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/spain) | 2026-08 |
-| [BBVA](#bbva) | data-scientist | all | — | 45.7k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-| [NTT DATA](#ntt-data) | security-analyst | all | — | 44.7k | — | — | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) | 2026-08 |
-| [Semidynamics](#semidynamics) | hardware-engineer | all | — | 44k | — | — | — | [levels.fyi](https://www.levels.fyi/t/hardware-engineer/locations/spain) | 2026-08 |
-| [McKinsey](#mckinsey) | data-scientist | all | — | 43.8k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-| [Glovo](#glovo) | data-analyst | all | — | 43k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) | 2026-08 |
-| [Aily Labs](#aily-labs) | data-scientist | all | — | 41.2k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-| [Oracle](#oracle) | product-designer | all | — | 41.1k | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-designer/locations/spain) | 2026-08 |
-| [Accenture](#accenture) | data-scientist | all | — | 39.4k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-| [Minsait](#minsait) | information-technologist | all | — | 39.3k | — | — | — | [levels.fyi](https://www.levels.fyi/t/information-technologist/locations/spain) | 2026-08 |
-| [Celonis](#celonis) | business-analyst | all | — | 36.1k | — | — | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) | 2026-08 |
-| [TransPerfect](#transperfect) | product-manager | all | — | 35.4k | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-| [Indra](#indra) | software-engineer | all | — | 34.9k | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area) | 2026-08 |
-| [Deloitte](#deloitte) | security-analyst | all | — | 33.1k | — | — | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) | 2026-08 |
-| [Deloitte](#deloitte) | business-analyst | all | — | 31.6k | — | — | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) | 2026-08 |
-| [Barcelona Supercomputing Center](#barcelona-supercomputing-center) | hardware-engineer | all | — | 30.1k | — | — | — | [levels.fyi](https://www.levels.fyi/t/hardware-engineer/locations/spain) | 2026-08 |
-| [Indra](#indra) | hardware-engineer | all | — | 28.4k | — | — | — | [levels.fyi](https://www.levels.fyi/t/hardware-engineer/locations/spain) | 2026-08 |
-| [Minsait](#minsait) | business-analyst | all | — | 26.7k | — | — | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) | 2026-08 |
-| [SDG Group](#sdg-group) | data-analyst | all | — | 26k | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) | 2026-08 |
-| [Accenture](#accenture) | security-analyst | all | — | 24.9k | — | — | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) | 2026-08 |
-| [Ernst and Young](#ernst-and-young) | security-analyst | all | — | 24.8k | — | — | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) | 2026-08 |
-| [Accenture](#accenture) | business-analyst | all | — | 24.8k | — | — | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) | 2026-08 |
-| [Capgemini](#capgemini) | product-designer | all | — | 24.3k | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-designer/locations/spain) | 2026-08 |
-| [NTT DATA](#ntt-data) | information-technologist | all | — | 22.1k | — | — | — | [levels.fyi](https://www.levels.fyi/t/information-technologist/locations/spain) | 2026-08 |
+Every company hiring engineers in Spain that we know of is on the list. Most do not have pay on file yet; those rows are there so the name and the LinkedIn page are, and so anyone can claim one and fill it in.
 
-<sub>Base salary shown as range with the median in brackets. Gross annual, in euros, before tax.</sub>
-<!-- END:SALARIES -->
+Figures are **gross annual base salary in euros** where Levels.fyi publishes one, and total compensation where it does not. Click a figure to see which, along with the percentiles behind it.
 
-## By role
+The figure is what a **senior** engineer earns, and how well we know it varies:
 
-<!-- BEGIN:BY_ROLE -->
-<details>
-<summary><b>data-scientist</b> — 15 companies, 15 bands, median 59.2k</summary>
+- **unmarked** — a measured senior rung from a company that publishes a level-by-level ladder for Spain. Trust these.
+- **`*`** — the upper quartile of every engineer at that company in Spain. An estimate of senior pay, not a measurement of it.
+- **`†`** — one person's reported salary. Not a band. A single submission is a data point with a decimal place, and one unusual offer will move it.
 
-| Company | Level | Base salary | Distribution | Total comp | Data points | Updated |
-| --- | --- | --- | --- | --- | --- | --- |
-| [Revolut](#revolut) | all | — | `·············|······` | 109k | — | 2026-08 |
-| [BCG](#bcg) | all | — | `·········|··········` | 89.3k | — | 2026-08 |
-| [PepsiCo](#pepsico) | all | — | `·······|············` | 75.7k | — | 2026-08 |
-| [IKEA](#ikea) | all | — | `·······|············` | 75.5k | — | 2026-08 |
-| [Glovo](#glovo) | all | — | `······|·············` | 69.2k | — | 2026-08 |
-| [HPE](#hpe) | all | — | `······|·············` | 66k | — | 2026-08 |
-| [Vestas](#vestas) | all | — | `·····|··············` | 62.6k | — | 2026-08 |
-| [Cabify](#cabify) | all | — | `·····|··············` | 59.2k | — | 2026-08 |
-| [BASF](#basf) | all | — | `····|···············` | 57.3k | — | 2026-08 |
-| [TomTom](#tomtom) | all | — | `····|···············` | 52.2k | — | 2026-08 |
-| [Ericsson](#ericsson) | all | — | `···|················` | 48.8k | — | 2026-08 |
-| [BBVA](#bbva) | all | — | `··|·················` | 45.7k | — | 2026-08 |
-| [McKinsey](#mckinsey) | all | — | `··|·················` | 43.8k | — | 2026-08 |
-| [Aily Labs](#aily-labs) | all | — | `··|·················` | 41.2k | — | 2026-08 |
-| [Accenture](#accenture) | all | — | `·|··················` | 39.4k | — | 2026-08 |
+**Every figure is Spain only.** Levels.fyi serves another country's salaries when it holds no Spanish submissions for a company, so a figure is recorded only once the page confirms it is reporting Spain. Companies whose data turned out to be German, Dutch or American are listed with no figure rather than a foreign one.
 
-<sub>Distribution scaled 30k–150k, `|` marks the median.</sub>
+Whether the money reaches you as a Spanish payroll salary, through an employer of record, or as a contractor rate changes what actually lands in your account. [METHODOLOGY.md](METHODOLOGY.md) explains why that matters.
 
-</details>
+## What a row is worth
 
-<details>
-<summary><b>software-engineer</b> — 13 companies, 13 bands, median 70k</summary>
+The **Source** column is the point of this list. Two values mean somebody stands behind the number:
 
-| Company | Level | Base salary | Distribution | Total comp | Data points | Updated |
-| --- | --- | --- | --- | --- | --- | --- |
-| [Datadog](#datadog) | all | — | `·············|······` | 109.5k | — | 2026-08 |
-| [Revolut](#revolut) | all | — | `············|·······` | 107.6k | — | 2026-08 |
-| [Microsoft](#microsoft) | all | — | `·········|··········` | 88.5k | — | 2026-08 |
-| [Amazon](#amazon) | all | — | `·········|··········` | 84.4k | — | 2026-08 |
-| [Semrush](#semrush) | all | — | `·······|············` | 71.6k | — | 2026-08 |
-| [TravelPerk](#travelperk) | all | — | `·······|············` | 71.5k | — | 2026-08 |
-| [N26](#n26) | all | — | `······|·············` | 70k | — | 2026-08 |
-| [Glovo](#glovo) | all | — | `······|·············` | 68.8k | — | 2026-08 |
-| [Adevinta](#adevinta) | all | — | `·····|··············` | 63.3k | — | 2026-08 |
-| [T-Systems](#t-systems) | all | — | `····|···············` | 58.1k | — | 2026-08 |
-| [Cabify](#cabify) | all | — | `···|················` | 52k | — | 2026-08 |
-| [eDreams ODIGEO](#edreams-odigeo) | all | — | `···|················` | 49.3k | — | 2026-08 |
-| [Indra](#indra) | all | — | `·|··················` | 34.9k | — | 2026-08 |
+- **known personally** — someone working in Spain said what they earn.
+- **offer received** — an offer actually made to a real person.
 
-<sub>Distribution scaled 30k–150k, `|` marks the median.</sub>
+Those sort to the top of the table, ahead of every crowdsourced figure however large. Everything else is aggregated from strangers on the internet and is only as good as their honesty and their memory. **Data points** is how many salaries a figure rests on; a `1` there is one person, not a market rate.
 
-</details>
+The goal is for every company on this list to have a first-hand figure. Until one does, its crowdsourced number is a placeholder that says roughly where to start looking.
 
-<details>
-<summary><b>product-manager</b> — 8 companies, 8 bands, median 66.7k</summary>
+### Recording a first-hand salary
 
-| Company | Level | Base salary | Distribution | Total comp | Data points | Updated |
-| --- | --- | --- | --- | --- | --- | --- |
-| [Amazon](#amazon) | all | — | `·············|······` | 112.7k | — | 2026-08 |
-| [Sage](#sage) | all | — | `·······|············` | 75k | — | 2026-08 |
-| [Glovo](#glovo) | all | — | `······|·············` | 67.2k | — | 2026-08 |
-| [FREE NOW](#free-now) | all | — | `······|·············` | 66.7k | — | 2026-08 |
-| [NovaKid](#novakid) | all | — | `····|···············` | 56.2k | — | 2026-08 |
-| [HPE](#hpe) | all | — | `····|···············` | 54.6k | — | 2026-08 |
-| [Amadeus](#amadeus) | all | — | `···|················` | 47.7k | — | 2026-08 |
-| [TransPerfect](#transperfect) | all | — | `·|··················` | 35.4k | — | 2026-08 |
+Add it to a CSV and import it. `source` is `community` when someone told you, `offer-letter` when it was offered to you:
 
-<sub>Distribution scaled 30k–150k, `|` marks the median.</sub>
+```csv
+name,role,level,base_p50,contract,sample_size,source,source_date
+Example Company,software-engineer,senior,78000,spanish-payroll,1,community,2026-08-31
+```
 
-</details>
+`sample_size` is how many people that figure represents, and it fills the **Data points** column. Leave it out and the row shows a dash.
 
-<details>
-<summary><b>software-engineering-manager</b> — 8 companies, 8 bands, median 109.4k</summary>
+```bash
+python3 scripts/import_csv.py my-entries.csv
+python3 scripts/validate.py && python3 scripts/build.py
+```
 
-| Company | Level | Base salary | Distribution | Total comp | Data points | Updated |
-| --- | --- | --- | --- | --- | --- | --- |
-| [Amazon](#amazon) | all | — | `··················|·` | 142.3k | — | 2026-08 |
-| [Stenn](#stenn) | all | — | `················|···` | 133.5k | — | 2026-08 |
-| [Rover.com](#rovercom) | all | — | `··············|·····` | 116k | — | 2026-08 |
-| [Glovo](#glovo) | all | — | `·············|······` | 109.4k | — | 2026-08 |
-| [Adevinta](#adevinta) | all | — | `··········|·········` | 94.7k | — | 2026-08 |
-| [N26](#n26) | all | — | `··········|·········` | 90.1k | — | 2026-08 |
-| [eDreams ODIGEO](#edreams-odigeo) | all | — | `········|···········` | 81.4k | — | 2026-08 |
-| [D-EDGE](#d-edge) | all | — | `·····|··············` | 63.7k | — | 2026-08 |
-
-<sub>Distribution scaled 30k–150k, `|` marks the median.</sub>
-
-</details>
-
-<details>
-<summary><b>business-analyst</b> — 6 companies, 6 bands, median 36.1k</summary>
-
-| Company | Level | Base salary | Distribution | Total comp | Data points | Updated |
-| --- | --- | --- | --- | --- | --- | --- |
-| [EPAM Systems](#epam-systems) | all | — | `···|················` | 48.9k | — | 2026-08 |
-| [Amazon](#amazon) | all | — | `···|················` | 46.3k | — | 2026-08 |
-| [Celonis](#celonis) | all | — | `·|··················` | 36.1k | — | 2026-08 |
-| [Deloitte](#deloitte) | all | — | `|···················` | 31.6k | — | 2026-08 |
-| [Minsait](#minsait) | all | — | `|···················` | 26.7k | — | 2026-08 |
-| [Accenture](#accenture) | all | — | `|···················` | 24.8k | — | 2026-08 |
-
-<sub>Distribution scaled 30k–150k, `|` marks the median.</sub>
-
-</details>
-
-<details>
-<summary><b>data-analyst</b> — 5 companies, 5 bands, median 49.7k</summary>
-
-| Company | Level | Base salary | Distribution | Total comp | Data points | Updated |
-| --- | --- | --- | --- | --- | --- | --- |
-| [Revolut](#revolut) | all | — | `·····|··············` | 61k | — | 2026-08 |
-| [Amazon](#amazon) | all | — | `···|················` | 51.3k | — | 2026-08 |
-| [Semrush](#semrush) | all | — | `···|················` | 49.7k | — | 2026-08 |
-| [Glovo](#glovo) | all | — | `··|·················` | 43k | — | 2026-08 |
-| [SDG Group](#sdg-group) | all | — | `|···················` | 26k | — | 2026-08 |
-
-<sub>Distribution scaled 30k–150k, `|` marks the median.</sub>
-
-</details>
-
-<details>
-<summary><b>security-analyst</b> — 5 companies, 5 bands, median 33.1k</summary>
-
-| Company | Level | Base salary | Distribution | Total comp | Data points | Updated |
-| --- | --- | --- | --- | --- | --- | --- |
-| [NCC Group](#ncc-group) | all | — | `········|···········` | 78.3k | — | 2026-08 |
-| [NTT DATA](#ntt-data) | all | — | `··|·················` | 44.7k | — | 2026-08 |
-| [Deloitte](#deloitte) | all | — | `|···················` | 33.1k | — | 2026-08 |
-| [Accenture](#accenture) | all | — | `|···················` | 24.9k | — | 2026-08 |
-| [Ernst and Young](#ernst-and-young) | all | — | `|···················` | 24.8k | — | 2026-08 |
-
-<sub>Distribution scaled 30k–150k, `|` marks the median.</sub>
-
-</details>
-
-<details>
-<summary><b>solution-architect</b> — 5 companies, 5 bands, median 66.2k</summary>
-
-| Company | Level | Base salary | Distribution | Total comp | Data points | Updated |
-| --- | --- | --- | --- | --- | --- | --- |
-| [Amazon](#amazon) | all | — | `·············|······` | 114.3k | — | 2026-08 |
-| [Ericsson](#ericsson) | all | — | `······|·············` | 69.2k | — | 2026-08 |
-| [EPAM Systems](#epam-systems) | all | — | `······|·············` | 66.2k | — | 2026-08 |
-| [BBVA](#bbva) | all | — | `····|···············` | 55.8k | — | 2026-08 |
-| [NTT DATA](#ntt-data) | all | — | `··|·················` | 45.8k | — | 2026-08 |
-
-<sub>Distribution scaled 30k–150k, `|` marks the median.</sub>
-
-</details>
-
-<details>
-<summary><b>hardware-engineer</b> — 4 companies, 4 bands, median 44k</summary>
-
-| Company | Level | Base salary | Distribution | Total comp | Data points | Updated |
-| --- | --- | --- | --- | --- | --- | --- |
-| [Analog Devices](#analog-devices) | all | — | `····|···············` | 52.7k | — | 2026-08 |
-| [Semidynamics](#semidynamics) | all | — | `··|·················` | 44k | — | 2026-08 |
-| [Barcelona Supercomputing Center](#barcelona-supercomputing-center) | all | — | `|···················` | 30.1k | — | 2026-08 |
-| [Indra](#indra) | all | — | `|···················` | 28.4k | — | 2026-08 |
-
-<sub>Distribution scaled 30k–150k, `|` marks the median.</sub>
-
-</details>
-
-<details>
-<summary><b>product-designer</b> — 4 companies, 4 bands, median 60.9k</summary>
-
-| Company | Level | Base salary | Distribution | Total comp | Data points | Updated |
-| --- | --- | --- | --- | --- | --- | --- |
-| [Factorial](#factorial) | all | — | `··············|·····` | 119.9k | — | 2026-08 |
-| [Revolut](#revolut) | all | — | `·····|··············` | 60.9k | — | 2026-08 |
-| [Oracle](#oracle) | all | — | `··|·················` | 41.1k | — | 2026-08 |
-| [Capgemini](#capgemini) | all | — | `|···················` | 24.3k | — | 2026-08 |
-
-<sub>Distribution scaled 30k–150k, `|` marks the median.</sub>
-
-</details>
-
-<details>
-<summary><b>information-technologist</b> — 2 companies, 2 bands, median 39.3k</summary>
-
-| Company | Level | Base salary | Distribution | Total comp | Data points | Updated |
-| --- | --- | --- | --- | --- | --- | --- |
-| [Minsait](#minsait) | all | — | `·|··················` | 39.3k | — | 2026-08 |
-| [NTT DATA](#ntt-data) | all | — | `|···················` | 22.1k | — | 2026-08 |
-
-<sub>Distribution scaled 30k–150k, `|` marks the median.</sub>
-
-</details>
-<!-- END:BY_ROLE -->
-
-## Company details
-
-<!-- BEGIN:PROFILES -->
-<a id="accenture"></a>
-<details>
-<summary><b>Accenture</b> — data-scientist all 39.4k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| business-analyst | all | — | 24.781 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) | 2026-08 |
-| data-scientist | all | — | 39.370 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-| security-analyst | all | — | 24.865 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/accenture.yml)
-
-</details>
-
-<a id="adevinta"></a>
-<details>
-<summary><b>Adevinta</b> — software-engineering-manager all 94.7k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| software-engineer | all | — | 63.324 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area) | 2026-08 |
-| software-engineering-manager | all | — | 94.670 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-
-[Website](https://www.adevinta.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/adevinta.yml)
-
-</details>
-
-<a id="adidas"></a>
-<details>
-<summary><b>Adidas</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-Global sports brand, apparel, footwear. Equity: RSU vesting 33.3,33.3,33.3.
-
-[Website](https://www.adidas.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/adidas.yml)
-
-</details>
-
-<a id="adyen"></a>
-<details>
-<summary><b>Adyen</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-Payment processing platform. Equity: Phantom Stock Plan vesting 25,25,25,25|25/1,25/12,25/12,25/12.
-
-[Website](https://www.adyen.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/adyen.yml)
-
-</details>
-
-<a id="aily-labs"></a>
-<details>
-<summary><b>Aily Labs</b> — data-scientist all 41.2k</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-scientist | all | — | 41.192 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-
-[Website](https://ailylabs.com) · [Open positions](https://www.ailylabs.com/careers) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/aily-labs.yml)
-
-</details>
-
-<a id="alan"></a>
-<details>
-<summary><b>Alan</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://alan.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/alan.yml)
-
-</details>
-
-<a id="allianz"></a>
-<details>
-<summary><b>Allianz</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.allianz.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/allianz.yml)
-
-</details>
-
-<a id="amadeus"></a>
-<details>
-<summary><b>Amadeus</b> — product-manager all 47.7k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| product-manager | all | — | 47.688 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/amadeus.yml)
-
-</details>
-
-<a id="amazon"></a>
-<details>
-<summary><b>Amazon</b> — software-engineering-manager all 142.3k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| business-analyst | all | — | 46.327 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) | 2026-08 |
-| data-analyst | all | — | 51.337 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) | 2026-08 |
-| product-manager | all | — | 112.691 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/greater-barcelona-area) | 2026-08 |
-| software-engineer | all | — | 84.360 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area) | 2026-08 |
-| software-engineering-manager | all | — | 142.286 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-| solution-architect | all | — | 114.279 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/amazon.yml)
-
-</details>
-
-<a id="analog-devices"></a>
-<details>
-<summary><b>Analog Devices</b> — hardware-engineer all 52.7k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| hardware-engineer | all | — | 52.679 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/hardware-engineer/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/analog-devices.yml)
-
-</details>
-
-<a id="back-market"></a>
-<details>
-<summary><b>Back Market</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.backmarket.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/back-market.yml)
-
-</details>
-
-<a id="barcelona-supercomputing-center"></a>
-<details>
-<summary><b>Barcelona Supercomputing Center</b> — hardware-engineer all 30.1k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| hardware-engineer | all | — | 30.108 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/hardware-engineer/locations/spain) | 2026-08 |
-
-[Website](http://bsc.es) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/barcelona-supercomputing-center.yml)
-
-</details>
-
-<a id="basf"></a>
-<details>
-<summary><b>BASF</b> — data-scientist all 57.3k</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-scientist | all | — | 57.318 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-
-[Website](https://www.basf.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/basf.yml)
-
-</details>
-
-<a id="bbva"></a>
-<details>
-<summary><b>BBVA</b> — solution-architect all 55.8k</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-scientist | all | — | 45.655 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-| solution-architect | all | — | 55.846 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area) | 2026-08 |
-
-[Website](https://www.bbva.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/bbva.yml)
-
-</details>
-
-<a id="bcg"></a>
-<details>
-<summary><b>BCG</b> — data-scientist all 89.3k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-scientist | all | — | 89.275 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/bcg.yml)
-
-</details>
-
-<a id="bitpanda"></a>
-<details>
-<summary><b>Bitpanda</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.bitpanda.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/bitpanda.yml)
-
-</details>
-
-<a id="bmw-group"></a>
-<details>
-<summary><b>BMW Group</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.bmwgroup.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/bmw-group.yml)
-
-</details>
-
-<a id="bookingcom"></a>
-<details>
-<summary><b>Booking.com</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-Digital travel company, global reach. Equity: RSU vesting 34/1,33/1,33/1|25/1,25/12,25/12,25/12.
-
-[Website](https://www.booking.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/bookingcom.yml)
-
-</details>
-
-<a id="cabify"></a>
-<details>
-<summary><b>Cabify</b> — data-scientist all 59.2k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-scientist | all | — | 59.151 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-| software-engineer | all | — | 52.031 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area) | 2026-08 |
-
-[Website](https://cabify.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/cabify.yml)
-
-</details>
-
-<a id="capgemini"></a>
-<details>
-<summary><b>Capgemini</b> — product-designer all 24.3k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| product-designer | all | — | 24.273 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-designer/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/capgemini.yml)
-
-</details>
-
-<a id="catawiki"></a>
-<details>
-<summary><b>Catawiki</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://catawiki.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/catawiki.yml)
-
-</details>
-
-<a id="celonis"></a>
-<details>
-<summary><b>Celonis</b> — business-analyst all 36.1k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| business-analyst | all | — | 36.079 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) | 2026-08 |
-
-Execution management system provider. Equity: RSU vesting 25/1,25/12,25/12,25/12|25,25,25,25.
-
-[Website](https://www.celonis.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/celonis.yml)
-
-</details>
-
-<a id="clarity-ai"></a>
-<details>
-<summary><b>Clarity AI</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://clarity.ai) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/clarity-ai.yml)
-
-</details>
-
-<a id="clickhouse"></a>
-<details>
-<summary><b>Clickhouse</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://clickhouse.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/clickhouse.yml)
-
-</details>
-
-<a id="creative-fabrica"></a>
-<details>
-<summary><b>Creative Fabrica</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.creativefabrica.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/creative-fabrica.yml)
-
-</details>
-
-<a id="criteo"></a>
-<details>
-<summary><b>Criteo</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.criteo.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/criteo.yml)
-
-</details>
-
-<a id="d-edge"></a>
-<details>
-<summary><b>D-EDGE</b> — software-engineering-manager all 63.7k</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| software-engineering-manager | all | — | 63.726 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-
-[Website](https://www.d-edge.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/d-edge.yml)
-
-</details>
-
-<a id="datadog"></a>
-<details>
-<summary><b>Datadog</b> — software-engineer all 109.5k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| software-engineer | all | — | 109.486 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/datadog.yml)
-
-</details>
-
-<a id="deepl"></a>
-<details>
-<summary><b>DeepL</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.deepl.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/deepl.yml)
-
-</details>
-
-<a id="deloitte"></a>
-<details>
-<summary><b>Deloitte</b> — security-analyst all 33.1k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| business-analyst | all | — | 31.584 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) | 2026-08 |
-| security-analyst | all | — | 33.141 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/deloitte.yml)
-
-</details>
-
-<a id="dlocal"></a>
-<details>
-<summary><b>dLocal</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://dlocal.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/dlocal.yml)
-
-</details>
-
-<a id="docplanner"></a>
-<details>
-<summary><b>Docplanner</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.docplanner.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/docplanner.yml)
-
-</details>
-
-<a id="dynatrace"></a>
-<details>
-<summary><b>Dynatrace</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-Data automation and insights provider. Equity: RSU vesting 25,25,25,25.
-
-[Website](https://www.dynatrace.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/dynatrace.yml)
-
-</details>
-
-<a id="edreams-odigeo"></a>
-<details>
-<summary><b>eDreams ODIGEO</b> — software-engineering-manager all 81.4k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| software-engineer | all | — | 49.311 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area) | 2026-08 |
-| software-engineering-manager | all | — | 81.378 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-
-[Website](https://www.edreamsodigeo.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/edreams-odigeo.yml)
-
-</details>
-
-<a id="epam-systems"></a>
-<details>
-<summary><b>EPAM Systems</b> — solution-architect all 66.2k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| business-analyst | all | — | 48.908 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) | 2026-08 |
-| solution-architect | all | — | 66.210 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/epam-systems.yml)
-
-</details>
-
-<a id="ericsson"></a>
-<details>
-<summary><b>Ericsson</b> — solution-architect all 69.2k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-scientist | all | — | 48.777 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-| solution-architect | all | — | 69.217 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/ericsson.yml)
-
-</details>
-
-<a id="ernst-and-young"></a>
-<details>
-<summary><b>Ernst and Young</b> — security-analyst all 24.8k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| security-analyst | all | — | 24.790 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/ernst-and-young.yml)
-
-</details>
-
-<a id="eventbrite"></a>
-<details>
-<summary><b>Eventbrite</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.eventbrite.com) · [Open positions](https://www.eventbrite.com/careers/) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/eventbrite.yml)
-
-</details>
-
-<a id="exoticca"></a>
-<details>
-<summary><b>Exoticca</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.exoticca.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/exoticca.yml)
-
-</details>
-
-<a id="expleo-group"></a>
-<details>
-<summary><b>Expleo Group</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://expleo.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/expleo-group.yml)
-
-</details>
-
-<a id="factorial"></a>
-<details>
-<summary><b>Factorial</b> — product-designer all 119.9k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| product-designer | all | — | 119.944 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-designer/locations/spain) | 2026-08 |
-
-[Website](https://factorialhr.es) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/factorial.yml)
-
-</details>
-
-<a id="feedzai"></a>
-<details>
-<summary><b>Feedzai</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.feedzai.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/feedzai.yml)
-
-</details>
-
-<a id="fever"></a>
-<details>
-<summary><b>Fever</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.feverup.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/fever.yml)
-
-</details>
-
-<a id="flow-traders"></a>
-<details>
-<summary><b>Flow Traders</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](http://www.flowtraders.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/flow-traders.yml)
-
-</details>
-
-<a id="free-now"></a>
-<details>
-<summary><b>FREE NOW</b> — product-manager all 66.7k</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| product-manager | all | — | 66.657 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-
-[Website](https://free-now.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/free-now.yml)
-
-</details>
-
-<a id="glovo"></a>
-<details>
-<summary><b>Glovo</b> — software-engineering-manager all 109.4k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-analyst | all | — | 42.993 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) | 2026-08 |
-| data-scientist | all | — | 69.216 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-| product-manager | all | — | 67.155 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-| software-engineer | all | — | 68.820 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-| software-engineering-manager | all | — | 109.436 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-
-On-demand delivery service. Equity: RSU vesting 25,25,25,25.
-
-[Website](https://glovoapp.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/glovo.yml)
-
-</details>
-
-<a id="hpe"></a>
-<details>
-<summary><b>HPE</b> — data-scientist all 66k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-scientist | all | — | 65.968 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-| product-manager | all | — | 54.601 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/hpe.yml)
-
-</details>
-
-<a id="ikea"></a>
-<details>
-<summary><b>IKEA</b> — data-scientist all 75.5k</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-scientist | all | — | 75.509 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-
-[Website](https://www.ikea.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/ikea.yml)
-
-</details>
-
-<a id="inditex"></a>
-<details>
-<summary><b>Inditex</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.inditex.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/inditex.yml)
-
-</details>
-
-<a id="indra"></a>
-<details>
-<summary><b>Indra</b> — software-engineer all 34.9k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| hardware-engineer | all | — | 28.353 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/hardware-engineer/locations/spain) | 2026-08 |
-| software-engineer | all | — | 34.900 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area) | 2026-08 |
-
-[Website](https://www.indracompany.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/indra.yml)
-
-</details>
-
-<a id="ing"></a>
-<details>
-<summary><b>ING</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.ing.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/ing.yml)
-
-</details>
-
-<a id="jetbrains"></a>
-<details>
-<summary><b>JetBrains</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.jetbrains.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/jetbrains.yml)
-
-</details>
-
-<a id="jobandtalent"></a>
-<details>
-<summary><b>Jobandtalent</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.jobandtalent.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/jobandtalent.yml)
-
-</details>
-
-<a id="klarna"></a>
-<details>
-<summary><b>Klarna</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-E-commerce payment solutions platform. Equity: RSU vesting 25,25,25,25.
-
-[Website](https://www.klarna.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/klarna.yml)
-
-</details>
-
-<a id="manychat"></a>
-<details>
-<summary><b>ManyChat</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://manychat.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/manychat.yml)
-
-</details>
-
-<a id="mckinsey"></a>
-<details>
-<summary><b>McKinsey</b> — data-scientist all 43.8k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-scientist | all | — | 43.840 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/mckinsey.yml)
-
-</details>
-
-<a id="mews"></a>
-<details>
-<summary><b>Mews</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.mews.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/mews.yml)
-
-</details>
-
-<a id="microsoft"></a>
-<details>
-<summary><b>Microsoft</b> — software-engineer all 88.5k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| software-engineer | all | — | 88.495 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/microsoft.yml)
-
-</details>
-
-<a id="minsait"></a>
-<details>
-<summary><b>Minsait</b> — information-technologist all 39.3k</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| business-analyst | all | — | 26.727 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) | 2026-08 |
-| information-technologist | all | — | 39.324 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/information-technologist/locations/spain) | 2026-08 |
-
-[Website](https://www.minsait.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/minsait.yml)
-
-</details>
-
-<a id="miro"></a>
-<details>
-<summary><b>Miro</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-Online collaboration software for teams. Equity: Options vesting 25,25,25,25|25/1,25/12,25/12,25/12.
-
-[Website](https://miro.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/miro.yml)
-
-</details>
-
-<a id="mitek-systems"></a>
-<details>
-<summary><b>Mitek Systems</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.miteksystems.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/mitek-systems.yml)
-
-</details>
-
-<a id="multiverse-computing"></a>
-<details>
-<summary><b>Multiverse Computing</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://multiversecomputing.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/multiverse-computing.yml)
-
-</details>
-
-<a id="n26"></a>
-<details>
-<summary><b>N26</b> — software-engineering-manager all 90.1k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| software-engineer | all | — | 69.973 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-| software-engineering-manager | all | — | 90.137 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-
-Mobile bank with real-time tracking. Equity: RSU vesting 25,25,25,25|25/1,25/12,25/12,25/12.
-
-[Website](https://n26.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/n26.yml)
-
-</details>
-
-<a id="ncc-group"></a>
-<details>
-<summary><b>NCC Group</b> — security-analyst all 78.3k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| security-analyst | all | — | 78.264 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) | 2026-08 |
-
-[Website](https://www.nccgroup.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/ncc-group.yml)
-
-</details>
-
-<a id="netlight"></a>
-<details>
-<summary><b>Netlight</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.netlight.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/netlight.yml)
-
-</details>
-
-<a id="new-work-se"></a>
-<details>
-<summary><b>NEW WORK SE</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](http://www.new-work.se) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/new-work-se.yml)
-
-</details>
-
-<a id="novakid"></a>
-<details>
-<summary><b>NovaKid</b> — product-manager all 56.2k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| product-manager | all | — | 56.232 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-
-[Website](https://www.novakidschool.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/novakid.yml)
-
-</details>
-
-<a id="ntt-data"></a>
-<details>
-<summary><b>NTT DATA</b> — solution-architect all 45.8k</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| information-technologist | all | — | 22.071 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/information-technologist/locations/spain) | 2026-08 |
-| security-analyst | all | — | 44.668 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) | 2026-08 |
-| solution-architect | all | — | 45.764 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/spain) | 2026-08 |
-
-[Website](https://www.nttdata.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/ntt-data.yml)
-
-</details>
-
-<a id="oracle"></a>
-<details>
-<summary><b>Oracle</b> — product-designer all 41.1k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| product-designer | all | — | 41.056 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-designer/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/oracle.yml)
-
-</details>
-
-<a id="payfit"></a>
-<details>
-<summary><b>PayFit</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://payfit.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/payfit.yml)
-
-</details>
-
-<a id="pepsico"></a>
-<details>
-<summary><b>PepsiCo</b> — data-scientist all 75.7k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-scientist | all | — | 75.652 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/pepsico.yml)
-
-</details>
-
-<a id="perk"></a>
-<details>
-<summary><b>Perk</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.perk.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/perk.yml)
-
-</details>
-
-<a id="personio"></a>
-<details>
-<summary><b>Personio</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-HR management platform for SMEs. Equity: Options vesting 25/1,25/12,25/12,25/12.
-
-[Website](https://www.personio.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/personio.yml)
-
-</details>
-
-<a id="preply"></a>
-<details>
-<summary><b>Preply</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://preply.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/preply.yml)
-
-</details>
-
-<a id="qonto"></a>
-<details>
-<summary><b>Qonto</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://qonto.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/qonto.yml)
-
-</details>
-
-<a id="rabobank"></a>
-<details>
-<summary><b>Rabobank</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.rabobank.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/rabobank.yml)
-
-</details>
-
-<a id="revolut"></a>
-<details>
-<summary><b>Revolut</b> — data-scientist all 109k</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-analyst | all | — | 61.047 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) | 2026-08 |
-| data-scientist | all | — | 108.981 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/greater-barcelona-area) | 2026-08 |
-| product-designer | all | — | 60.917 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-designer/locations/spain) | 2026-08 |
-| software-engineer | all | — | 107.591 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area) | 2026-08 |
-
-Mobile banking and payments company. Equity: Options vesting 25/1,25/12,25/12,25/12.
-
-[Website](https://www.revolut.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/revolut.yml)
-
-</details>
-
-<a id="rovercom"></a>
-<details>
-<summary><b>Rover.com</b> — software-engineering-manager all 116k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| software-engineering-manager | all | — | 115.983 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/rovercom.yml)
-
-</details>
-
-<a id="ryanair"></a>
-<details>
-<summary><b>Ryanair</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.ryanair.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/ryanair.yml)
-
-</details>
-
-<a id="sage"></a>
-<details>
-<summary><b>Sage</b> — product-manager all 75k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| product-manager | all | — | 75.044 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/sage.yml)
-
-</details>
-
-<a id="santander"></a>
-<details>
-<summary><b>Santander</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.santander.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/santander.yml)
-
-</details>
-
-<a id="sdg-group"></a>
-<details>
-<summary><b>SDG Group</b> — data-analyst all 26k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-analyst | all | — | 25.988 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) | 2026-08 |
-
-[Website](https://www.sdggroup.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/sdg-group.yml)
-
-</details>
-
-<a id="seat-code"></a>
-<details>
-<summary><b>SEAT CODE</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.code.seat) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/seat-code.yml)
-
-</details>
-
-<a id="semidynamics"></a>
-<details>
-<summary><b>Semidynamics</b> — hardware-engineer all 44k</summary>
-
-**Location and contract not yet recorded** · 51-200 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| hardware-engineer | all | — | 44.002 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/hardware-engineer/locations/spain) | 2026-08 |
-
-[Website](http://www.semidynamics.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/semidynamics.yml)
-
-</details>
-
-<a id="semrush"></a>
-<details>
-<summary><b>Semrush</b> — software-engineer all 71.6k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-analyst | all | — | 49.659 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) | 2026-08 |
-| software-engineer | all | — | 71.628 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-
-[Website](http://www.semrush.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/semrush.yml)
-
-</details>
-
-<a id="sennder"></a>
-<details>
-<summary><b>sennder</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.sennder.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/sennder.yml)
-
-</details>
-
-<a id="stenn"></a>
-<details>
-<summary><b>Stenn</b> — software-engineering-manager all 133.5k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| software-engineering-manager | all | — | 133.502 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/stenn.yml)
-
-</details>
-
-<a id="strapi"></a>
-<details>
-<summary><b>Strapi</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 51-200 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://strapi.io) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/strapi.yml)
-
-</details>
-
-<a id="t-systems"></a>
-<details>
-<summary><b>T-Systems</b> — software-engineer all 58.1k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| software-engineer | all | — | 58.141 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-
-[Website](https://www.t-systems.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/t-systems.yml)
-
-</details>
-
-<a id="thefork"></a>
-<details>
-<summary><b>TheFork</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.thefork.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/thefork.yml)
-
-</details>
-
-<a id="tiger-data"></a>
-<details>
-<summary><b>Tiger Data</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 51-200 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](http://www.tigerdata.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/tiger-data.yml)
-
-</details>
-
-<a id="tinybird"></a>
-<details>
-<summary><b>Tinybird</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 51-200 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://tinybird.co) · [Open positions](https://www.tinybird.co/careers) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/tinybird.yml)
-
-</details>
-
-<a id="tomtom"></a>
-<details>
-<summary><b>TomTom</b> — data-scientist all 52.2k</summary>
-
-**Location and contract not yet recorded** · 1,001-10,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-scientist | all | — | 52.227 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) | 2026-08 |
-
-[Website](https://www.tomtom.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/tomtom.yml)
-
-</details>
-
-<a id="transperfect"></a>
-<details>
-<summary><b>TransPerfect</b> — product-manager all 35.4k</summary>
-
-**Location and contract not yet recorded**
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| product-manager | all | — | 35.388 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) | 2026-08 |
-
-[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/transperfect.yml)
-
-</details>
-
-<a id="travelperk"></a>
-<details>
-<summary><b>TravelPerk</b> — software-engineer all 71.5k</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| software-engineer | all | — | 71.519 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/software-engineer/locations/spain) | 2026-08 |
-
-[Website](https://www.travelperk.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/travelperk.yml)
-
-</details>
-
-<a id="tripactions"></a>
-<details>
-<summary><b>TripActions</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://tripactions.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/tripactions.yml)
-
-</details>
-
-<a id="typeform"></a>
-<details>
-<summary><b>Typeform</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.typeform.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/typeform.yml)
-
-</details>
-
-<a id="vestas"></a>
-<details>
-<summary><b>Vestas</b> — data-scientist all 62.6k</summary>
-
-**Location and contract not yet recorded** · 10,001+ employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| data-scientist | all | — | 62.611 € | — | — | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) | 2026-08 |
-
-[Website](https://www.vestas.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/vestas.yml)
-
-</details>
-
-<a id="wallapop"></a>
-<details>
-<summary><b>Wallapop</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 201-1,000 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://www.wallapop.com) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/wallapop.yml)
-
-</details>
-
-<a id="xata"></a>
-<details>
-<summary><b>Xata</b> — no bands yet</summary>
-
-**Location and contract not yet recorded** · 1-50 employees
-
-| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-[Website](https://xata.io) · [Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies/edit/main/data/companies/xata.yml)
-
-</details>
-<!-- END:PROFILES -->
+Never record anything that identifies the person: no names, no team, no joining date. A band is a number, not a colleague.
 
 ## Adding a company
 
 Send a pull request adding or editing one file in [`data/companies/`](data/companies/), or open an [issue](../../issues/new/choose) if you would rather not write YAML. Both are fine, and you can contribute anonymously.
 
-The tables above are generated. Do not edit them by hand; edit the data and run the build:
+The table above is generated. Do not edit it by hand; edit the data and run the build:
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
@@ -1815,7 +332,7 @@ pip install -r requirements.txt
 python3 scripts/validate.py && python3 scripts/build.py
 ```
 
-CI runs both on every pull request and will tell you if the tables are out of sync with the data.
+CI runs both on every pull request and will tell you if the table is out of sync with the data.
 
 Full instructions are in [CONTRIBUTING.md](CONTRIBUTING.md). The rules about sources, levels and what we will not publish are in [METHODOLOGY.md](METHODOLOGY.md).
 
@@ -1823,7 +340,7 @@ There is also a backlog of companies that have not been researched yet in [`data
 
 ## Data
 
-Machine-readable exports are rebuilt on every change:
+The table is the short version. Every band, level, source and date is in the exports, rebuilt on every change:
 
 - [`exports/companies.csv`](exports/companies.csv) — one row per company, role and level
 - [`exports/companies.json`](exports/companies.json) — the full records
@@ -1842,4 +359,4 @@ Code is [MIT](LICENSE). The dataset is [CC BY-SA 4.0](LICENSE-DATA): use it, cre
 
 ## Caveats
 
-These are ranges reported by other people, not offers anyone is guaranteed. Sample sizes are small, sources disagree, and a band from two years ago may be meaningless today. Check the data points and the date before using any of this in a negotiation.
+These are ranges reported by other people, not offers anyone is guaranteed. Sample sizes are small, sources disagree, and a band from two years ago may be meaningless today. Check the date on levels.fyi before using any of this in a negotiation.

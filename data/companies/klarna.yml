@@ -1,19 +1,22 @@
 slug: klarna
 name: Klarna
-website: https://www.klarna.com
-hq:
-  city: New York
-  country: US
-employees: 1,001-10,000
-sector:
-- e-commerce
-- financial-services
-- technology
-- information-technology-services
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/klarna
-year_founded: 2005
-notes: 'E-commerce payment solutions platform. Equity: RSU vesting 25,25,25,25.'
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 62281
+      total_comp:
+        p50: 67650
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/klarna/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level L3, 10 years experience.
+        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
+        a band.'

@@ -1,16 +1,24 @@
 slug: xata
-name: Xata
-website: https://xata.io
-hq:
-  city: San Francisco
-  country: US
-employees: 1-50
-sector:
-- information-technology-services
-- technology
+name: Xata.io
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/xataio
-year_founded: 2020
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 133675
+        p50: 134268
+        max: 140040
+      total_comp:
+        min: 133675
+        p50: 134268
+        max: 140040
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/xata/salaries/software-engineer/locations/spain
+        date: '2026-08-28'
+      last_verified: '2026-08-28'
+      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
+        compensation, interquartile range.'

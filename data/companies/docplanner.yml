@@ -1,18 +1,21 @@
 slug: docplanner
 name: Docplanner
-website: https://www.docplanner.com
-hq:
-  city: Warszawa
-  country: PL
-employees: 1,001-10,000
-sector:
-- technology
-- internet
-- information-technology-services
-- b2c
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/docplannergroup
-year_founded: 2012
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 63998
+      total_comp:
+        p50: 63998
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/docplanner/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level L3, 5 years experience. Levels.fyi
+        published no Spanish aggregate for this company, so this is one data point rather than a band.'

@@ -9,12 +9,12 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 48777
+        p50: 48834
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/data-scientist/locations/spain
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
   - role: solution-architect
@@ -22,11 +22,26 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 69217
+        p50: 69298
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
         pages do not break this out by level or separate base salary.
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 47272
+      total_comp:
+        p50: 54363
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ericsson/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level JS4, 3 years experience. Levels.fyi
+        published no Spanish aggregate for this company, so this is one data point rather than a band.'

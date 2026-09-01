@@ -1,18 +1,24 @@
 slug: typeform
 name: Typeform
-website: https://www.typeform.com
-hq:
-  city: Barcelona
-  country: ES
-employees: 201-1,000
-sector:
-- technology
-- web-services-apps
-- internet
-- information-technology-services
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/typeform-
-year_founded: 2012
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 70000
+        p50: 79791
+        max: 88000
+      total_comp:
+        min: 70000
+        p50: 79791
+        max: 88000
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/typeform/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'

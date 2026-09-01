@@ -1,0 +1,24 @@
+slug: timescale
+name: Timescale
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 106073
+        p50: 113167
+        max: 153257
+      total_comp:
+        min: 106073
+        p50: 113167
+        max: 165046
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/timescale/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'

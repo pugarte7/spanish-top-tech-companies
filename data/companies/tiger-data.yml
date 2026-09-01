@@ -1,16 +1,24 @@
 slug: tiger-data
-name: Tiger Data
-website: http://www.tigerdata.com
-hq:
-  city: New York
-  country: US
-employees: 51-200
-sector:
-- information-technology-services
-- computer-software
+name: Tiger Data (creators of TimescaleDB)
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/tigerdata
-year_founded: 2015
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 173776
+        p50: 173776
+        max: 173776
+      total_comp:
+        min: 199842
+        p50: 199842
+        max: 199842
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/tiger-data/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'

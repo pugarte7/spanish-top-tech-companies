@@ -15,27 +15,32 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        min: 34925
+        p50: 39792
+        max: 43468
       total_comp:
-        p50: 34900
+        min: 34925
+        p50: 39792
+        max: 43468
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
-      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+        url: https://www.levels.fyi/companies/indra/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'
   - role: hardware-engineer
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 28353
+        p50: 28420
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/hardware-engineer/locations/spain
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
 linkedin_url: https://www.linkedin.com/company/indra

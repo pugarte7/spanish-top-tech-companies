@@ -18,12 +18,12 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 45764
+        p50: 45871
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/solution-architect/locations/spain
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
   - role: information-technologist
@@ -31,12 +31,12 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 22071
+        p50: 22123
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/information-technologist/locations/spain
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
   - role: security-analyst
@@ -44,13 +44,31 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 44668
+        p50: 44773
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/security-analyst/locations/spain
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 23073
+        p50: 33137
+        max: 48217
+      total_comp:
+        min: 23073
+        p50: 33137
+        max: 48217
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ntt-data/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'
 linkedin_url: https://www.linkedin.com/company/nttdata
 year_founded: 1978

@@ -1,18 +1,22 @@
 slug: allianz
 name: Allianz
-website: https://www.allianz.com
-hq:
-  city: München
-  country: DE
-employees: 10,001+
-sector:
-- financial-services
-- insurance
-- asset-management
-- consulting-professional-services
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/allianz
-year_founded: 1890
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 58549
+      total_comp:
+        p50: 64404
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/allianz/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level Senior, 5 years experience.
+        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
+        a band.'

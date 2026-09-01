@@ -1,17 +1,24 @@
 slug: mews
 name: Mews
-website: https://www.mews.com
-hq:
-  country: CZ
-employees: 1,001-10,000
-sector:
-- information-technology-services
-- technology
-- b2b
-- saas
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/mewssystems
-year_founded: 2012
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 69911
+        p50: 76449
+        max: 76589
+      total_comp:
+        min: 69911
+        p50: 76449
+        max: 78875
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/mews/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'

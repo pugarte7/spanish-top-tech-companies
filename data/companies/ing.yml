@@ -1,18 +1,21 @@
 slug: ing
 name: ING
-website: https://www.ing.com
-hq:
-  city: Amsterdam
-  country: NL
-employees: 10,001+
-sector:
-- financial-services
-- consulting-professional-services
-- banking-mortgages
-- b2b
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/ing
-year_founded: 1991
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 62000
+      total_comp:
+        p50: 66000
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ing/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level 8, 7 years experience. Levels.fyi
+        published no Spanish aggregate for this company, so this is one data point rather than a band.'

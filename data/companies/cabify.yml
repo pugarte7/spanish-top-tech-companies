@@ -16,27 +16,32 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        min: 46147
+        p50: 55297
+        max: 69226
       total_comp:
-        p50: 52031
+        min: 46147
+        p50: 55297
+        max: 69226
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/madrid-metropolitan-area
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
-      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+        url: https://www.levels.fyi/companies/cabify/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'
   - role: data-scientist
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 59151
+        p50: 59290
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
         pages do not break this out by level or separate base salary.
 linkedin_url: https://www.linkedin.com/company/cabify

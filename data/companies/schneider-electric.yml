@@ -1,0 +1,22 @@
+slug: schneider-electric
+name: Schneider Electric
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 45144
+      total_comp:
+        p50: 50932
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/schneider-electric/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Sevilla , AN, Spain, reported level Software Engineer II, 3 years
+        experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point
+        rather than a band.'

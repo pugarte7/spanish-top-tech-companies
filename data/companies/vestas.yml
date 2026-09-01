@@ -19,12 +19,12 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 62611
+        p50: 62758
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
         pages do not break this out by level or separate base salary.
 linkedin_url: https://www.linkedin.com/company/vestas

@@ -1,18 +1,24 @@
 slug: inditex
 name: Inditex
-website: https://www.inditex.com
-hq:
-  city: Arteijo
-  country: ES
-employees: 10,001+
-sector:
-- e-commerce
-- retail
-- consumer-staples
-- b2c
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/inditex
-year_founded: 1985
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 43199
+        p50: 45489
+        max: 64530
+      total_comp:
+        min: 43199
+        p50: 45489
+        max: 69240
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/inditex/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'

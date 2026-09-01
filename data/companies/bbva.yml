@@ -19,12 +19,12 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 45655
+        p50: 45762
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
         pages do not break this out by level or separate base salary.
   - role: solution-architect
@@ -32,13 +32,31 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 55846
+        p50: 55977
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
         pages do not break this out by level or separate base salary.
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 34928
+        p50: 41449
+        max: 54401
+      total_comp:
+        min: 34928
+        p50: 41449
+        max: 55743
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/bbva/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'
 linkedin_url: https://www.linkedin.com/company/bbva
 year_founded: 1857

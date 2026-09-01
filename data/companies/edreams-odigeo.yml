@@ -17,27 +17,32 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        min: 50484
+        p50: 61356
+        max: 66896
       total_comp:
-        p50: 49311
+        min: 55133
+        p50: 66721
+        max: 73430
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
-      notes: Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+        url: https://www.levels.fyi/companies/edreams-odigeo/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'
   - role: software-engineering-manager
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 81378
+        p50: 81569
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/software-engineering-manager/locations/spain
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
 linkedin_url: https://www.linkedin.com/company/edreamsodigeo

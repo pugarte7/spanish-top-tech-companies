@@ -1,15 +1,22 @@
 slug: sennder
 name: sennder
-website: https://www.sennder.com
-hq:
-  city: Berlin
-  country: DE
-employees: 1,001-10,000
-sector:
-- b2b
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/sennder
-year_founded: 2015
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 91466
+      total_comp:
+        p50: 100820
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/sennder/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level L5, 15 years experience.
+        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
+        a band.'

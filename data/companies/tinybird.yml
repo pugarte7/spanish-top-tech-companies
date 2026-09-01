@@ -1,18 +1,24 @@
 slug: tinybird
 name: Tinybird
-website: https://tinybird.co
-careers_url: https://www.tinybird.co/careers
-hq:
-  city: Madrid
-  country: KN
-employees: 51-200
-sector:
-- saas
-- data-analytics
-- devops-infrastructure
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/tinybird-co
-year_founded: 2019
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 81372
+        p50: 88578
+        max: 100449
+      total_comp:
+        min: 81372
+        p50: 121961
+        max: 137356
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/tinybird/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'

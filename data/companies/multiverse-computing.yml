@@ -1,18 +1,24 @@
 slug: multiverse-computing
 name: Multiverse Computing
-website: https://multiversecomputing.com
-hq:
-  city: Donostia
-  country: ES
-employees: 201-1,000
-sector:
-- e-commerce
-- information-technology-services
-- computer-programming
-- software
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/multiversecomputing
-year_founded: 2019
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 57392
+        p50: 63521
+        max: 65196
+      total_comp:
+        min: 57392
+        p50: 70369
+        max: 74044
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/multiverse-computing/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'

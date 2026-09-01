@@ -17,27 +17,32 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        min: 77219
+        p50: 84070
+        max: 98060
       total_comp:
-        p50: 71628
+        min: 77219
+        p50: 84070
+        max: 98060
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/spain
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+        url: https://www.levels.fyi/companies/semrush/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'
   - role: data-analyst
     levels:
     - level: all
       base: {}
       total_comp:
-        p50: 49659
+        p50: 49776
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/data-analyst/locations/spain
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.
 linkedin_url: https://www.linkedin.com/company/semrush

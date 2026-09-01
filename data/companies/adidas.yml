@@ -1,19 +1,21 @@
 slug: adidas
-name: Adidas
-website: https://www.adidas.com
-hq:
-  city: Herzogenaurach
-  country: DE
-employees: 10,001+
-sector:
-- e-commerce
-- sporting-goods
-- textiles
-- apparel-footwear
+name: adidas
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/adidas
-year_founded: 1924
-notes: 'Global sports brand, apparel, footwear. Equity: RSU vesting 33.3,33.3,33.3.'
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 47303
+      total_comp:
+        p50: 50851
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adidas/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Zaragoza, AR, Spain, reported level P1, 5 years experience. Levels.fyi
+        published no Spanish aggregate for this company, so this is one data point rather than a band.'

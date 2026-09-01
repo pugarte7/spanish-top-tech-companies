@@ -1,17 +1,22 @@
 slug: santander
 name: Santander
-website: https://www.santander.com
-hq:
-  country: ES
-employees: 10,001+
-sector:
-- finance
-- finance-financial-planning-and-management-in-spain
-- banking
-- financial-services
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/banco-santander
-year_founded: 1857
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 63318
+      total_comp:
+        p50: 68008
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/santander/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level Senior, 5 years experience.
+        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
+        a band.'

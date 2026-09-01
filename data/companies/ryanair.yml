@@ -1,17 +1,24 @@
 slug: ryanair
-name: Ryanair
-website: https://www.ryanair.com
-hq:
-  city: Swords
-  country: IE
-employees: 10,001+
-sector:
-- airlines
-- b2c
-- b2b
+name: Ryanair - Europe's Favourite Airline
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/ryanair-airline
-year_founded: 1984
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 41737
+        p50: 58749
+        max: 64083
+      total_comp:
+        min: 41737
+        p50: 58749
+        max: 64083
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ryanair/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'

@@ -1,17 +1,24 @@
 slug: exoticca
 name: Exoticca
-website: https://www.exoticca.com
-hq:
-  city: Miami
-  country: US
-employees: 201-1,000
-sector:
-- travel-leisure
-- b2c
-- marketplace
 compensation:
-  roles: []
   currency: EUR
   basis: gross_annual
-linkedin_url: https://www.linkedin.com/company/exoticca-travel-agency
-year_founded: 2013
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 46023
+        p50: 50234
+        max: 70092
+      total_comp:
+        min: 46023
+        p50: 54803
+        max: 75673
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/exoticca/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'

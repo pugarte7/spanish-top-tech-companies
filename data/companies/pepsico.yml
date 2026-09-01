@@ -9,11 +9,11 @@ compensation:
     - level: all
       base: {}
       total_comp:
-        p50: 75652
+        p50: 75741
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/t/data-scientist/locations/spain
-        date: '2026-08-26'
-      last_verified: '2026-08-26'
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
       notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
         this out by level or separate base salary.

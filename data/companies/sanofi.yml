@@ -1,0 +1,24 @@
+slug: sanofi
+name: Sanofi
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        min: 74153
+        p50: 76279
+        max: 77050
+      total_comp:
+        min: 81249
+        p50: 83758
+        max: 84689
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/sanofi/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'

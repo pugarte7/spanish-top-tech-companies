@@ -14,28 +14,20 @@ compensation:
   - role: software-engineer
     levels:
     - level: all
-      base: {}
+      base:
+        min: 54669
+        p50: 65010
+        max: 75725
       total_comp:
-        p50: 63324
+        min: 54677
+        p50: 72044
+        max: 86267
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineer/locations/greater-barcelona-area
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
-      notes: Median total compensation across all levels, Greater Barcelona Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
-  - role: software-engineering-manager
-    levels:
-    - level: all
-      base: {}
-      total_comp:
-        p50: 94670
-      sources:
-      - name: levels.fyi
-        url: https://www.levels.fyi/t/software-engineering-manager/locations/spain
-        date: '2026-08-27'
-      last_verified: '2026-08-27'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+        url: https://www.levels.fyi/companies/adevinta/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range.'
 linkedin_url: https://www.linkedin.com/company/adevinta
 year_founded: 2019

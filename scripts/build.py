@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import csv
-import datetime as dt
 import io
 import json
 import re
@@ -13,22 +12,6 @@ import lib
 
 README = lib.ROOT / "README.md"
 
-CONTRACT_LABELS = {
-    "spanish-payroll": "Spanish payroll",
-    "eor": "Employer of record",
-    "contractor": "Contractor",
-    "freelance": "Freelance (autónomo)",
-}
-PRESENCE_LABELS = {
-    "hq": "Headquarters",
-    "hub": "Office",
-    "remote-only": "No office",
-    "eor": "Via EOR",
-}
-LANG_LABELS = {"es": "Spanish", "en": "English", "both": "Spanish / English"}
-
-# The distribution bar is drawn on a fixed scale so every row is comparable.
-BAR_LO, BAR_HI, BAR_WIDTH = 30_000, 150_000, 20
 
 
 def replace_block(text: str, marker: str, body: str) -> str:
@@ -49,110 +32,25 @@ def k(value) -> str:
     return f"{value / 1000:.1f}k".replace(".0k", "k")
 
 
-def exact(value) -> str:
-    return "—" if value is None else f"{value:,}".replace(",", ".")
-
-
-def money_cell(band: dict | None, formatter=k, suffix: str = "") -> str:
-    """Range with the median in brackets, e.g. 62k–84k (72k)."""
-    if not band:
-        return "—"
-    lo, p50, hi = band.get("min"), band.get("p50"), band.get("max")
-    if lo is not None and hi is not None:
-        core = f"{formatter(lo)}–{formatter(hi)}{suffix}"
-        return f"{core} ({formatter(p50)})" if p50 is not None else core
-    single = p50 if p50 is not None else (hi if hi is not None else lo)
-    return f"{formatter(single)}{suffix}"
-
-
-def bar_cell(band: dict | None) -> str:
-    if not band:
-        return "`" + "·" * BAR_WIDTH + "`"
-    lo = band.get("min") or band.get("p50") or band.get("max")
-    hi = band.get("max") or band.get("p50") or band.get("min")
-    mid = band.get("p50")
-
-    def pos(v):
-        ratio = (v - BAR_LO) / (BAR_HI - BAR_LO)
-        return max(0, min(BAR_WIDTH - 1, round(ratio * (BAR_WIDTH - 1))))
-
-    start, end = pos(lo), pos(hi)
-    marker = pos(mid) if mid is not None else None
-    cells = []
-    for i in range(BAR_WIDTH):
-        if i == marker:
-            cells.append("|")
-        elif start <= i <= end:
-            cells.append("=")
-        else:
-            cells.append("·")
-    return "`" + "".join(cells) + "`"
-
-
-def updated_cell(value) -> str:
-    day = lib.parse_date(value)
-    if day is None:
-        return "—"
-    stamp = f"{day:%Y-%m}"
-    return f"{stamp} (stale)" if lib.is_stale(day) else stamp
-
-
-def sources_cell(level: dict) -> str:
-    parts = []
-    for source in level.get("sources", []) or []:
-        parts.append(f"[{source['name']}]({source['url']})" if source.get("url") else source["name"])
-    return ", ".join(parts) or "—"
-
-
-def anchor(company: dict) -> str:
-    return f"[{company['name']}](#{company['slug']})"
-
-
-def website_cell(company: dict) -> str:
-    url = company.get("website")
-    return f"[{company['name']}]({url})" if url else company["name"]
-
-
-def work_model_cell(company: dict) -> str:
-    model = (company.get("work_model") or "—").capitalize()
-    if company.get("work_model") == "remote" and company.get("remote_within_spain"):
-        return "Remote (anywhere in Spain)"
-    if company.get("remote_within_spain") and company.get("work_model") == "hybrid":
-        return "Hybrid (flexible location)"
-    return model
-
-
-def offices_cell(company: dict) -> str:
-    offices = company.get("offices_es") or []
-    if offices:
-        return ", ".join(offices)
-    return "None" if company.get("spain_presence") in {"remote-only", "eor"} else "—"
-
-
-def careers_cell(company: dict) -> str:
-    url = company.get("careers_url")
-    return f"[Open positions]({url})" if url else "—"
-
-
-# --------------------------------------------------------------------------- blocks
-
-
-def render_stats(companies: list[dict], backlog: int) -> str:
-    listed = [c for c in companies if lib.qualifies(c)]
+def render_stats(companies: list[dict]) -> str:
+    entries = catalogue(companies)
+    paid = [e for e in entries if e["value"] is not None and e["value"] >= lib.THRESHOLD_EUR]
+    documented = [e for e in entries if e["value"] is not None]
     bands = [lvl for c in companies for _, lvl in lib.iter_levels(c)]
     points = sum(lvl.get("sample_size") or 0 for lvl in bands)
     stale = sum(1 for lvl in bands if lib.is_stale(lvl.get("last_verified")))
     parts = [
-        f"**{len(listed)} companies**",
-        f"**{len(bands)} salary bands**",
+        f"**{len(entries)} companies**",
+        f"**{len(paid)} paying 60k+**",
+        # The table footnote already accounts for the undocumented rows, so
+        # count what is known rather than repeating the gap twice.
+        f"{len(documented)} with pay on file",
     ]
     # The public route publishes no sample sizes, so don't advertise "0 data points".
     if points:
         parts.append(f"{points} data points")
     if stale:
         parts.append(f"{stale} stale")
-    if backlog:
-        parts.append(f"{backlog} companies not yet researched")
     freshest = max(
         (d for d in (lib.parse_date(lvl.get("last_verified")) for lvl in bands) if d),
         default=None,
@@ -162,243 +60,302 @@ def render_stats(companies: list[dict], backlog: int) -> str:
     return " · ".join(parts)
 
 
-def render_benchmarks() -> str:
-    path = lib.ROOT / "data" / "benchmarks.json"
-    if not path.exists():
-        return "_No benchmarks yet._ Run `python3 scripts/fetch_levels_public.py`."
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    rows = payload.get("benchmarks") or []
-    if not rows:
-        return "_No benchmarks yet._"
+# Senior and above, cheapest rung first. A company's senior+ pay is best
+# represented by the rung you reach it at; staff and principal sit above.
+SENIOR_PLUS = ("senior", "staff", "principal", "lead")
 
-    rows.sort(key=lambda r: -(r.get("p50") or 0))
-    out = [
-        "| Role | Where | 25th pct | Median | 75th pct | 90th pct | Data points | Updated |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- |",
-    ]
-    for row in rows:
-        out.append(
-            f"| [{row['role']}]({row['url']}) | {row.get('location') or '—'} | "
-            f"{k(row.get('p25'))} | **{k(row.get('p50'))}** | {k(row.get('p75'))} | "
-            f"{k(row.get('p90'))} | {row.get('data_points') or '—'} | "
-            f"{row.get('last_updated', '—')} |"
-        )
-    out += [
-        "",
-        "<sub>**Total compensation** (base + bonus + annualised equity), gross annual, euros. "
-        "Not directly comparable with the base-salary figures in the tables below. "
-        "Data source: Levels.fyi (https://www.levels.fyi).</sub>",
-    ]
-    return "\n".join(out)
+
+def upper_quartile(level: dict):
+    """The 75th percentile of a band, base before total comp.
+
+    An all-seniority band spans juniors to principals, so its median answers
+    the wrong question. The upper quartile is where the senior half of the
+    company sits, which is the closest this data gets to a senior figure.
+    """
+    for block in (level.get("base") or {}, level.get("total_comp") or {}):
+        if block.get("max") is not None:
+            return block["max"]
+    return None
+
+
+def headline(company: dict):
+    """The number the front page shows, as (euros, kind).
+
+    kind is how much the number is worth:
+      "senior"   a measured senior rung from a real ladder
+      "quartile" the upper quartile of the Spanish aggregate, an estimate
+      "single"   one person's reported salary, not a band at all
+
+    The three are not interchangeable and the table marks which is which.
+    """
+    bands = {}
+    for role, level in lib.iter_levels(company):
+        if role != "software-engineer":
+            continue
+        bands[level.get("level")] = level
+    for rung in SENIOR_PLUS:
+        if rung in bands:
+            value = lib.level_value(bands[rung])
+            if value is not None:
+                return value, "senior", bands[rung]
+    if "all" in bands:
+        level = bands["all"]
+        if level.get("sample_size") == 1:
+            return lib.level_value(level), "single", level
+        # Prefer the upper quartile; fall back to the median when a band
+        # carries only a single figure.
+        return upper_quartile(level) or lib.level_value(level), "quartile", level
+    return None, None, None
+
+
+# How much a row is worth turning up for. A salary someone in Spain told the
+# maintainer directly outranks anything crowdsourced, so it is named plainly.
+SOURCE_LABELS = {
+    "offer-letter": "offer received",
+    "community": "known personally",
+    "job-posting": "job ad",
+    "company-published": "company",
+    "levels.fyi": "levels.fyi",
+    "glassdoor": "glassdoor",
+}
+VOUCHED = ("offer-letter", "community")
+
+
+def evidence(level: dict | None) -> tuple[str, str]:
+    """(data points, where it came from) for one band, ready to print."""
+    if not level:
+        return "—", "—"
+    points = level.get("sample_size")
+    names = [s.get("name") for s in (level.get("sources") or []) if s.get("name")]
+    # A band the maintainer can vouch for is the one worth naming first.
+    names.sort(key=lambda n: (n not in VOUCHED, n))
+    label = SOURCE_LABELS.get(names[0], names[0]) if names else "—"
+    return (str(points) if points else "—"), label
+
+
+def linkedin_url(entry: dict) -> str | None:
+    """Where the company name points.
+
+    A vanity URL is what a person would recognise and what Levels.fyi records,
+    so it wins over the numeric id from the LinkedIn job-search filter. The id
+    still resolves, and is all the backlog rows have.
+    """
+    if entry.get("linkedin_url"):
+        return entry["linkedin_url"]
+    if entry.get("linkedin_id"):
+        return f"https://www.linkedin.com/company/{entry['linkedin_id']}"
+    return None
+
+
+def levels_page(slug: str | None) -> str | None:
+    return f"https://www.levels.fyi/companies/{slug}/salaries" if slug else None
+
+
+def company_levels_slug(company: dict) -> str | None:
+    """The slug of the company's own Levels.fyi page, if a band cites one.
+
+    Bands taken from a country aggregate cite a role/location page like
+    /t/software-engineer/locations/spain, which is about every employer in
+    Spain rather than this one. Only /companies/ URLs identify a company.
+    """
+    for _, level in lib.iter_levels(company):
+        for source in level.get("sources", []) or []:
+            url = source.get("url") or ""
+            if source.get("name") == "levels.fyi" and "/companies/" in url:
+                return url.split("/companies/")[1].split("/")[0]
+    return None
+
+
+def catalogue(companies: list[dict]) -> list[dict]:
+    """Every company the repo knows about, documented or not.
+
+    Two sources overlap: data/companies/*.yml carries the researched ones,
+    data/backlog.csv carries the rest plus the Levels.fyi slugs the resolver
+    confirmed. Keyed on that slug where there is one so a company filed twice
+    under different names (Adevinta and Adevinta Spain, Amazon and AWS) lands
+    on one row, and on the name otherwise.
+    """
+    entries: list[dict] = []
+    by_slug: dict[str, dict] = {}
+    by_name: dict[str, dict] = {}
+
+    def name_keys(name: str) -> list[str]:
+        """Every spelling a row might use for this company.
+
+        "Boston Consulting Group (BCG)" and "BCG" are one employer filed twice.
+        Only uppercase parentheticals count as the acronym, so "(Official)" and
+        "(Europe's favourite airline)" do not become merge keys.
+        """
+        name = name.strip()
+        keys = [name.casefold()]
+        outer = re.sub(r"\s*\([^)]*\)", "", name).strip()
+        if outer and outer.casefold() != keys[0]:
+            keys.append(outer.casefold())
+        for inner in re.findall(r"\(([^)]{1,6})\)", name):
+            token = inner.strip()
+            if token.isalnum() and token.isupper():
+                keys.append(token.casefold())
+        return keys
+
+    def index(entry: dict, name: str | None = None, alias: str | None = None) -> None:
+        keys = name_keys(name or entry["name"])
+        if alias:
+            keys += name_keys(alias)
+        for key in keys:
+            by_name.setdefault(key, entry)
+        if entry["levels_slug"]:
+            by_slug.setdefault(entry["levels_slug"], entry)
+
+    def absorb(entry: dict, name: str, slug: str | None, linkedin_id,
+               alias: str | None = None, value=None, kind=None, level=None,
+               linkedin_url_=None) -> None:
+        entry["linkedin_id"] = entry.get("linkedin_id") or linkedin_id
+        entry["linkedin_url"] = entry.get("linkedin_url") or linkedin_url_
+        if slug and not entry["levels_slug"]:
+            entry["levels_slug"] = slug
+        if entry["value"] is None and value is not None:
+            entry["value"] = value
+            entry["kind"] = kind
+            entry["level"] = level
+        # Levels.fyi files some employers under two slugs, so the same company
+        # arrives twice under a plain name and a padded one: Meta and "Meta
+        # Facebook", BCG and "Boston Consulting Group (BCG)". The shorter is
+        # the one worth showing.
+        if len(name) < len(entry["name"]):
+            entry["name"] = name
+        # Names we have now seen for this company, so the next row carrying one
+        # merges here instead of opening a second entry.
+        index(entry, name, alias)
+
+    def lookup(name: str, slug: str | None, alias: str | None):
+        if slug and slug in by_slug:
+            return by_slug[slug]
+        for key in name_keys(name) + ([alias.strip().casefold()] if alias else []):
+            if key in by_name:
+                return by_name[key]
+        return None
+
+    # The resolver records the name Levels.fyi answered with, which is how
+    # "Meta Facebook" is known to be Meta. Both now have their own company
+    # file, so the aliases have to be known before those files are read or the
+    # two are appended as separate companies before anything can pair them.
+    backlog_rows = []
+    aliases: dict[str, str] = {}
+    path = lib.ROOT / "data" / "backlog.csv"
+    if path.exists():
+        with path.open(encoding="utf-8") as fh:
+            for row in csv.DictReader(fh):
+                if not (row.get("name") or "").strip():
+                    continue
+                found = re.search(r"matched as ([^,]+)", row.get("notes") or "")
+                if found and row.get("levels_slug"):
+                    aliases[row["levels_slug"]] = found.group(1).strip()
+                backlog_rows.append(row)
+
+    for c in companies:
+        value, kind, level = headline(c)
+        slug = company_levels_slug(c) or c.get("slug")
+        alias = aliases.get(slug or "")
+        existing = lookup(c["name"], slug, alias)
+        if existing:
+            absorb(existing, c["name"], slug, c.get("linkedin_id"), alias,
+                   value, kind, level, c.get("linkedin_url"))
+            continue
+        entry = {
+            "name": c["name"],
+            "levels_slug": slug,
+            "linkedin_id": c.get("linkedin_id"),
+            "linkedin_url": c.get("linkedin_url"),
+            "value": value,
+            "kind": kind,
+            "level": level,
+        }
+        entries.append(entry)
+        index(entry, alias=alias)
+
+    for row in backlog_rows:
+        name = (row.get("name") or "").strip()
+        slug = row.get("levels_slug") or None
+        alias = aliases.get(slug or "")
+        # Slug first: it is the identity two differently-named rows share
+        # (Amazon and "Amazon Web Services (AWS)" both resolve to amazon).
+        # Then our name, then the name Levels.fyi answered with.
+        existing = lookup(name, slug, alias)
+        if existing:
+            absorb(existing, name, slug, row.get("linkedin_id"), alias)
+            continue
+        entry = {
+            "name": name,
+            "levels_slug": slug,
+            "linkedin_id": row.get("linkedin_id"),
+            "linkedin_url": None,
+            "value": None,
+            "kind": None,
+            "level": None,
+        }
+        entries.append(entry)
+        index(entry, alias=alias)
+
+    return entries
 
 
 def render_companies(companies: list[dict]) -> str:
-    listed = sorted(
-        (c for c in companies if lib.qualifies(c)), key=lambda c: c["name"].lower()
-    )
-    if not listed:
+    entries = catalogue(companies)
+    if not entries:
         return (
             "_No companies documented yet._ Copy `data/companies/_template.yml`, "
             "fill it in, and run `python3 scripts/build.py`."
         )
 
-    rows = [
-        "| Company | Sector | Headquarters | Offices in Spain | Work model | Contract | Size | Careers |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- |",
-    ]
-    for c in listed:
-        hq = c.get("hq") or {}
-        location = ", ".join(x for x in (hq.get("city"), hq.get("country")) if x) or "—"
-        contract = ", ".join(CONTRACT_LABELS.get(x, x) for x in (c.get("contract") or [])) or "—"
-        rows.append(
-            f"| **{anchor(c)}** | {', '.join(c.get('sector') or []) or '—'} | {location} | "
-            f"{offices_cell(c)} | {work_model_cell(c)} | {contract} | "
-            f"{c.get('employees') or '—'} | {careers_cell(c)} |"
-        )
-    incomplete = sum(1 for c in listed if not c.get("website") or not c.get("hq"))
-    rows.append("")
-    if incomplete:
-        rows.append(
-            f"<sub>**{incomplete} of {len(listed)} companies were seeded from salary data "
-            "and still need their details filled in** (website, offices, contract type). "
-            "That is the easiest way to contribute — see "
-            "[CONTRIBUTING.md](CONTRIBUTING.md).</sub>"
-        )
-        rows.append("")
-    rows.append(
-        "<sub>_Offices in Spain_ is `None` when the company hires here without a local "
-        "office, either directly or through an employer of record. _Work model_ says "
-        "whether you are tied to a city. Salary bands for each company are in "
-        "[Company details](#company-details).</sub>"
-    )
-    return "\n".join(rows)
+    # First-hand before crowdsourced, then best-paying, then everything
+    # undocumented alphabetically at the bottom so it reads as a directory
+    # rather than a gap. A salary someone in Spain reported directly is worth
+    # more than any number scraped from a submission site, so it sorts above
+    # one however large that number is.
+    def rank(entry: dict):
+        level = entry.get("level") or {}
+        names = {s.get("name") for s in (level.get("sources") or [])}
+        first_hand = bool(names & set(VOUCHED))
+        return (not first_hand, entry["value"] is None,
+                -(entry["value"] or 0), entry["name"].lower())
 
+    entries.sort(key=rank)
 
-def render_salaries(companies: list[dict]) -> str:
-    rows_data = []
-    for c in companies:
-        for role, level in lib.iter_levels(c):
-            rows_data.append((c, role, level, lib.level_value(level) or 0))
-    if not rows_data:
-        return "_No salary data yet._"
-    rows_data.sort(key=lambda r: -r[3])
+    marks = {"senior": "", "quartile": "*", "single": "\u2020"}
+    rows = ["| Company | Senior+ | Data points | Source |", "| --- | --- | --- | --- |"]
+    counts = {"senior": 0, "quartile": 0, "single": 0}
+    vouched = 0
+    for e in entries:
+        li = linkedin_url(e)
+        name = f"[{e['name']}]({li})" if li else e["name"]
+        if e["value"] is None:
+            rows.append(f"| {name} | \u2014 | \u2014 | \u2014 |")
+            continue
+        kind = e.get("kind") or "quartile"
+        counts[kind] = counts.get(kind, 0) + 1
+        points, source = evidence(e.get("level"))
+        if source in ("offer received", "known personally"):
+            vouched += 1
+            source = f"**{source}**"
+        figure = k(e["value"]) + marks.get(kind, "*")
+        page = levels_page(e["levels_slug"])
+        cell = f"[{figure}]({page})" if page else figure
+        rows.append(f"| {name} | {cell} | {points} | {source} |")
 
-    rows = [
-        "| Company | Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
-    ]
-    for c, role, level, _ in rows_data:
-        bonus = f"{level['bonus_pct']:g}%" if level.get("bonus_pct") is not None else "—"
-        rows.append(
-            f"| {anchor(c)} | {role} | {level['level']} | "
-            f"{money_cell(level.get('base'))} | {money_cell(level.get('total_comp'))} | "
-            f"{bonus} | {level.get('equity', '—')} | {level.get('sample_size', '—')} | "
-            f"{sources_cell(level)} | {updated_cell(level.get('last_verified'))} |"
-        )
+    documented = sum(1 for e in entries if e["value"] is not None)
     rows.append("")
     rows.append(
-        "<sub>Base salary shown as range with the median in brackets. "
-        "Gross annual, in euros, before tax.</sub>"
+        f"<sub>{documented} of {len(entries)} companies have pay on file, "
+        f"{vouched} of them first-hand. **Source** says where the number came from: "
+        "**known personally** is someone in Spain who told the maintainer what they "
+        "earn, **offer received** is an offer the maintainer was made, and anything "
+        "else is crowdsourced and worth less. **Data points** is how many salaries "
+        "the figure rests on. An unmarked figure is a measured senior salary; "
+        f"`*` ({counts['quartile']}) is the upper quartile of every engineer at that "
+        f"company in Spain; `\u2020` ({counts['single']}) is one person's number. Company "
+        "names link to LinkedIn, figures to Levels.fyi.</sub>"
     )
-    return "\n".join(rows)
-
-
-def render_by_role(companies: list[dict]) -> str:
-    by_role: dict[str, list[tuple[dict, dict]]] = {}
-    for c in companies:
-        for role, level in lib.iter_levels(c):
-            by_role.setdefault(role, []).append((c, level))
-    if not by_role:
-        return "_Nothing to show yet._"
-
-    blocks = []
-    for role in sorted(by_role, key=lambda r: (-len(by_role[r]), r)):
-        entries = sorted(
-            by_role[role],
-            key=lambda e: (lib.level_rank(e[1]["level"]), -(lib.level_value(e[1]) or 0)),
-        )
-        medians = sorted(
-            v for v in (lib.level_value(lvl) for _, lvl in entries) if v is not None
-        )
-        headline = k(medians[len(medians) // 2]) if medians else "—"
-        companies_count = len({c["slug"] for c, _ in entries})
-
-        lines = [
-            "<details>",
-            f"<summary><b>{role}</b> — {companies_count} "
-            f"compan{'ies' if companies_count != 1 else 'y'}, "
-            f"{len(entries)} band{'s' if len(entries) != 1 else ''}, median {headline}</summary>",
-            "",
-            "| Company | Level | Base salary | Distribution | Total comp | Data points | Updated |",
-            "| --- | --- | --- | --- | --- | --- | --- |",
-        ]
-        for c, level in entries:
-            lines.append(
-                f"| {anchor(c)} | {level['level']} | {money_cell(level.get('base'))} | "
-                f"{bar_cell(level.get('base') or level.get('total_comp'))} | "
-                f"{money_cell(level.get('total_comp'))} | "
-                f"{level.get('sample_size', '—')} | {updated_cell(level.get('last_verified'))} |"
-            )
-        lines += [
-            "",
-            f"<sub>Distribution scaled {k(BAR_LO)}–{k(BAR_HI)}, `|` marks the median.</sub>",
-            "",
-            "</details>",
-            "",
-        ]
-        blocks.append("\n".join(lines))
-    return "\n".join(blocks).rstrip()
-
-
-def render_profiles(companies: list[dict]) -> str:
-    listed = sorted(companies, key=lambda c: c["name"].lower())
-    if not listed:
-        return "_Nothing to show yet._"
-
-    blocks = []
-    for c in listed:
-        best = lib.top_band(c)
-        summary_tail = f"{best[0]} {best[1]['level']} {k(best[2])}" if best else "no bands yet"
-        hq = c.get("hq") or {}
-        hq_text = ", ".join(x for x in (hq.get("city"), hq.get("country")) if x) or "unknown"
-        offices = ", ".join(c.get("offices_es") or [])
-        presence = c.get("spain_presence")
-        if presence == "hq":
-            where = f"**Headquartered in {hq_text}**"
-        elif presence == "hub":
-            where = f"**Office in {offices or 'Spain'}** · HQ {hq_text}"
-        elif presence == "eor":
-            where = f"**Hires in Spain through an employer of record** · HQ {hq_text}"
-        elif presence:
-            where = f"**No office in Spain** · HQ {hq_text}"
-        else:
-            where = "**Location and contract not yet recorded**"
-        facts = [
-            where,
-            work_model_cell(c) if c.get("work_model") else None,
-            ", ".join(CONTRACT_LABELS.get(x, x) for x in (c.get("contract") or [])) or None,
-        ]
-        facts = [f for f in facts if f]
-        if c.get("employees"):
-            facts.append(f"{c['employees']} employees")
-        if c.get("working_language"):
-            facts.append(f"Working language: {LANG_LABELS.get(c['working_language'], c['working_language'])}")
-
-        lines = [
-            f'<a id="{c["slug"]}"></a>',
-            "<details>",
-            f"<summary><b>{c['name']}</b> — {summary_tail}</summary>",
-            "",
-            " · ".join(facts),
-            "",
-            "| Role | Level | Base salary | Total comp | Bonus | Equity | Data points | Source | Updated |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
-        ]
-        levels = sorted(lib.iter_levels(c), key=lambda e: (e[0], lib.level_rank(e[1]["level"])))
-        for role, level in levels:
-            bonus = f"{level['bonus_pct']:g}%" if level.get("bonus_pct") is not None else "—"
-            lines.append(
-                f"| {role} | {level['level']} | {money_cell(level.get('base'), exact, ' €')} | "
-                f"{money_cell(level.get('total_comp'), exact, ' €')} | {bonus} | "
-                f"{level.get('equity', '—')} | {level.get('sample_size', '—')} | "
-                f"{sources_cell(level)} | {updated_cell(level.get('last_verified'))} |"
-            )
-        lines.append("")
-
-        perks = c.get("perks") or {}
-        if perks:
-            readable = []
-            for key, value in perks.items():
-                label = key.replace("_", " ").capitalize()
-                if value is True:
-                    readable.append(label)
-                elif value not in (False, None):
-                    readable.append(f"{label}: {value}")
-            if readable:
-                lines += [f"**Benefits** — {' · '.join(readable)}", ""]
-        if c.get("notes"):
-            lines += [c["notes"], ""]
-
-        links = [f"[Website]({c['website']})"] if c.get("website") else []
-        if c.get("careers_url"):
-            links.append(f"[Open positions]({c['careers_url']})")
-        if c.get("linkedin_id"):
-            links.append(f"[LinkedIn](https://www.linkedin.com/company/{c['linkedin_id']}/)")
-            links.append(
-                "[Jobs in Spain](https://www.linkedin.com/jobs/search/"
-                f"?f_C={c['linkedin_id']}&geoId=105646813&f_TPR=r604800)"
-            )
-        links.append(
-            "[Edit this entry](https://github.com/pugarte7/spanish-top-tech-companies"
-            f"/edit/main/data/companies/{c['slug']}.yml)"
-        )
-        lines += [" · ".join(links), "", "</details>", ""]
-        blocks.append("\n".join(lines))
-    return "\n".join(blocks).rstrip()
-
-
-# --------------------------------------------------------------------------- exports
-
+    return chr(10).join(rows)
 
 def write_exports(companies: list[dict]) -> None:
     lib.EXPORTS_DIR.mkdir(exist_ok=True)
@@ -454,23 +411,11 @@ def write_exports(companies: list[dict]) -> None:
     (lib.EXPORTS_DIR / "companies.csv").write_text(buffer.getvalue(), encoding="utf-8")
 
 
-def count_backlog() -> int:
-    path = lib.ROOT / "data" / "backlog.csv"
-    if not path.exists():
-        return 0
-    with path.open(encoding="utf-8") as fh:
-        return sum(1 for row in csv.DictReader(fh) if row.get("status") == "unresolved")
-
-
 def main() -> int:
     companies = lib.load_companies()
     text = README.read_text(encoding="utf-8")
-    text = replace_block(text, "STATS", render_stats(companies, count_backlog()))
-    text = replace_block(text, "BENCHMARKS", render_benchmarks())
+    text = replace_block(text, "STATS", render_stats(companies))
     text = replace_block(text, "COMPANIES", render_companies(companies))
-    text = replace_block(text, "SALARIES", render_salaries(companies))
-    text = replace_block(text, "BY_ROLE", render_by_role(companies))
-    text = replace_block(text, "PROFILES", render_profiles(companies))
     README.write_text(text, encoding="utf-8")
     write_exports(companies)
     print(f"Built README.md and exports/ from {len(companies)} companies.")
@@ -479,3 +424,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+

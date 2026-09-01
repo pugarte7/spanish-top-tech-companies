@@ -1,0 +1,22 @@
+slug: gartner
+name: Gartner
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: all
+      base:
+        p50: 93216
+      total_comp:
+        p50: 102642
+      sample_size: 1
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/gartner/salaries/software-engineer/locations/spain
+        date: '2026-08-31'
+      last_verified: '2026-08-31'
+      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level Senior Software Engineer,
+        15 years experience. Levels.fyi published no Spanish aggregate for this company, so this is one
+        data point rather than a band.'

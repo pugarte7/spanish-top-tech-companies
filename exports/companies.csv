@@ -1,129 +1,220 @@
 slug,name,linkedin_id,website,careers_url,hq_city,hq_country,spain_presence,offices_es,employees,sector,work_model,remote_within_spain,contract,working_language,role,level,base_min,base_p50,base_max,tc_min,tc_p50,tc_max,bonus_pct,equity,data_points,sources,last_verified
-accenture,Accenture,,,,,,,,,,,,,,data-scientist,all,,,,,39370,,,,,levels.fyi,2026-08-26
-accenture,Accenture,,,,,,,,,,,,,,business-analyst,all,,,,,24781,,,,,levels.fyi,2026-08-26
-accenture,Accenture,,,,,,,,,,,,,,security-analyst,all,,,,,24865,,,,,levels.fyi,2026-08-26
-adevinta,Adevinta,,https://www.adevinta.com,,Barcelona,ES,,,"1,001-10,000",internet,,,,,software-engineer,all,,,,,63324,,,,,levels.fyi,2026-08-27
-adevinta,Adevinta,,https://www.adevinta.com,,Barcelona,ES,,,"1,001-10,000",internet,,,,,software-engineering-manager,all,,,,,94670,,,,,levels.fyi,2026-08-27
-adidas,Adidas,,https://www.adidas.com,,Herzogenaurach,DE,,,"10,001+",e-commerce|sporting-goods|textiles|apparel-footwear,,,,,,,,,,,,,,,,,
-adyen,Adyen,,https://www.adyen.com,,Amsterdam,NL,,,"1,001-10,000",technology|e-commerce-marketplaces|information-technology-services|financial-services,,,,,,,,,,,,,,,,,
-aily-labs,Aily Labs,,https://ailylabs.com,https://www.ailylabs.com/careers,Amsterdam,,,,"201-1,000",artificial-intelligence|data-analytics|saas,,,,,data-scientist,all,,,,,41192,,,,,levels.fyi,2026-08-27
+accenture,Accenture,,,,,,,,,,,,,,data-scientist,all,,,,,39416,,,,,levels.fyi,2026-08-31
+accenture,Accenture,,,,,,,,,,,,,,business-analyst,all,,,,,24810,,,,,levels.fyi,2026-08-31
+accenture,Accenture,,,,,,,,,,,,,,security-analyst,all,,,,,24894,,,,,levels.fyi,2026-08-31
+accenture,Accenture,,,,,,,,,,,,,,software-engineer,all,,36355,,,36355,,,,1,levels.fyi,2026-08-31
+activision-blizzard,Activision Blizzard,,,,,,,,,,,,,,software-engineer,all,,73706,,,84707,,,,1,levels.fyi,2026-08-31
+adevinta,Adevinta,,https://www.adevinta.com,,Barcelona,ES,,,"1,001-10,000",internet,,,,,software-engineer,all,54669,65010,75725,54677,72044,86267,,,,levels.fyi,2026-08-31
+adidas,adidas,,,,,,,,,,,,,,software-engineer,all,,47303,,,50851,,,,1,levels.fyi,2026-08-31
+adyen,Adyen,,https://www.adyen.com,,Amsterdam,NL,,,"1,001-10,000",technology|e-commerce-marketplaces|information-technology-services|financial-services,,,,,software-engineer,all,,80085,,,80085,,,,1,levels.fyi,2026-08-31
+aetion,"Aetion, a Datavant Company",,,,,,,,,,,,,,software-engineer,all,,99306,,,109237,,,,1,levels.fyi,2026-08-31
+affirm,Affirm,,,,,,,,,,,,,,software-engineer,all,,88857,,,123932,,,,1,levels.fyi,2026-08-31
+aily-labs,Aily Labs,,https://ailylabs.com,https://www.ailylabs.com/careers,Amsterdam,,,,"201-1,000",artificial-intelligence|data-analytics|saas,,,,,data-scientist,all,,,,,41288,,,,,levels.fyi,2026-08-31
+aily-labs,Aily Labs,,https://ailylabs.com,https://www.ailylabs.com/careers,Amsterdam,,,,"201-1,000",artificial-intelligence|data-analytics|saas,,,,,software-engineer,all,68422,68422,108454,68422,68422,125946,,,,levels.fyi,2026-08-31
+akamai,Akamai Technologies,,,,,,,,,,,,,,software-engineer,all,,81060,,,92640,,,,1,levels.fyi,2026-08-31
 alan,Alan,,https://alan.com,,Paris,,,,"1,001-10,000",insurance|b2c,,,,,,,,,,,,,,,,,
-allianz,Allianz,,https://www.allianz.com,,München,DE,,,"10,001+",financial-services|insurance|asset-management|consulting-professional-services,,,,,,,,,,,,,,,,,
-amadeus,Amadeus,,,,,,,,,,,,,,product-manager,all,,,,,47688,,,,,levels.fyi,2026-08-26
-amazon,Amazon,,,,,,,,,,,,,,software-engineer,all,,,,,84360,,,,,levels.fyi,2026-08-27
-amazon,Amazon,,,,,,,,,,,,,,software-engineering-manager,all,,,,,142286,,,,,levels.fyi,2026-08-26
-amazon,Amazon,,,,,,,,,,,,,,data-analyst,all,,,,,51337,,,,,levels.fyi,2026-08-26
-amazon,Amazon,,,,,,,,,,,,,,business-analyst,all,,,,,46327,,,,,levels.fyi,2026-08-26
-amazon,Amazon,,,,,,,,,,,,,,product-manager,all,,,,,112691,,,,,levels.fyi,2026-08-26
-amazon,Amazon,,,,,,,,,,,,,,solution-architect,all,,,,,114279,,,,,levels.fyi,2026-08-26
-analog-devices,Analog Devices,,,,,,,,,,,,,,hardware-engineer,all,,,,,52679,,,,,levels.fyi,2026-08-26
+align-technology,Align Technology,,,,,,,,,,,,,,software-engineer,all,,71831,,,81831,,,,1,levels.fyi,2026-08-31
+allianz,Allianz,,,,,,,,,,,,,,software-engineer,all,,58549,,,64404,,,,1,levels.fyi,2026-08-31
+amadeus,Amadeus,,,,,,,,,,,,,,product-manager,all,,,,,47744,,,,,levels.fyi,2026-08-31
+amadeus,Amadeus,,,,,,,,,,,,,,software-engineer,all,,46639,,,46639,,,,1,levels.fyi,2026-08-31
+amazon,Amazon,,,,,,,,,,,,,,software-engineer,all,,67969,,,91234,,,,1,levels.fyi,2026-08-31
+amazon,Amazon,,,,,,,,,,,,,,software-engineering-manager,all,,,,,142452,,,,,levels.fyi,2026-08-31
+amazon,Amazon,,,,,,,,,,,,,,data-analyst,all,,,,,51398,,,,,levels.fyi,2026-08-31
+amazon,Amazon,,,,,,,,,,,,,,business-analyst,all,,,,,46381,,,,,levels.fyi,2026-08-31
+amazon,Amazon,,,,,,,,,,,,,,product-manager,all,,,,,112823,,,,,levels.fyi,2026-08-31
+amazon,Amazon,,,,,,,,,,,,,,solution-architect,all,,,,,114413,,,,,levels.fyi,2026-08-31
+analog-devices,Analog Devices,,,,,,,,,,,,,,hardware-engineer,all,,,,,52740,,,,,levels.fyi,2026-08-31
+astrazeneca,AstraZeneca,,,,,,,,,,,,,,software-engineer,all,,81386,,,97663,,,,1,levels.fyi,2026-08-31
+auth0,Auth0,,,,,,,,,,,,,,software-engineer,all,,120797,,,140930,,,,1,levels.fyi,2026-08-31
 back-market,Back Market,,https://www.backmarket.com,,Paris,FR,,,"201-1,000",web-services-apps|internet|b2c,,,,,,,,,,,,,,,,,
-barcelona-supercomputing-center,Barcelona Supercomputing Center,,http://bsc.es,,Barcelona,ES,,,"1,001-10,000",computer-science|scientific-academic-research|information-technology-services|technology,,,,,hardware-engineer,all,,,,,30108,,,,,levels.fyi,2026-08-27
-basf,BASF,,https://www.basf.com,,Ludwigshafen am Rhein,DE,,,"10,001+",chemicals|b2b|saas,,,,,data-scientist,all,,,,,57318,,,,,levels.fyi,2026-08-27
-bbva,BBVA,,https://www.bbva.com,,Birmingham,US,,,"10,001+",financial-services|consulting-professional-services|banking-mortgages|b2c,,,,,data-scientist,all,,,,,45655,,,,,levels.fyi,2026-08-27
-bbva,BBVA,,https://www.bbva.com,,Birmingham,US,,,"10,001+",financial-services|consulting-professional-services|banking-mortgages|b2c,,,,,solution-architect,all,,,,,55846,,,,,levels.fyi,2026-08-27
-bcg,BCG,,,,,,,,,,,,,,data-scientist,all,,,,,89275,,,,,levels.fyi,2026-08-26
-bitpanda,Bitpanda,,https://www.bitpanda.com,,Wien,AT,,,"201-1,000",technology|internet|e-commerce-marketplaces|publishing,,,,,,,,,,,,,,,,,
+barcelona-supercomputing-center,Barcelona Supercomputing Center,,http://bsc.es,,Barcelona,ES,,,"1,001-10,000",computer-science|scientific-academic-research|information-technology-services|technology,,,,,hardware-engineer,all,,,,,30178,,,,,levels.fyi,2026-08-31
+barcelona-supercomputing-center,Barcelona Supercomputing Center,,http://bsc.es,,Barcelona,ES,,,"1,001-10,000",computer-science|scientific-academic-research|information-technology-services|technology,,,,,software-engineer,all,33240,35421,43829,33240,35421,43829,,,,levels.fyi,2026-08-31
+basf,BASF,,https://www.basf.com,,Ludwigshafen am Rhein,DE,,,"10,001+",chemicals|b2b|saas,,,,,data-scientist,all,,,,,57452,,,,,levels.fyi,2026-08-31
+basf,BASF,,https://www.basf.com,,Ludwigshafen am Rhein,DE,,,"10,001+",chemicals|b2b|saas,,,,,software-engineer,all,,64607,,,64607,,,,1,levels.fyi,2026-08-31
+bayer,Bayer,,,,,,,,,,,,,,software-engineer,all,,75520,,,88466,,,,1,levels.fyi,2026-08-31
+bbva,BBVA,,https://www.bbva.com,,Birmingham,US,,,"10,001+",financial-services|consulting-professional-services|banking-mortgages|b2c,,,,,data-scientist,all,,,,,45762,,,,,levels.fyi,2026-08-31
+bbva,BBVA,,https://www.bbva.com,,Birmingham,US,,,"10,001+",financial-services|consulting-professional-services|banking-mortgages|b2c,,,,,solution-architect,all,,,,,55977,,,,,levels.fyi,2026-08-31
+bbva,BBVA,,https://www.bbva.com,,Birmingham,US,,,"10,001+",financial-services|consulting-professional-services|banking-mortgages|b2c,,,,,software-engineer,all,34928,41449,54401,34928,41449,55743,,,,levels.fyi,2026-08-31
+bcg,BCG,,,,,,,,,,,,,,data-scientist,all,,,,,89380,,,,,levels.fyi,2026-08-31
+bitpanda,Bitpanda,,,,,,,,,,,,,,software-engineer,all,,80951,,,80951,,,,1,levels.fyi,2026-08-31
 bmw-group,BMW Group,,https://www.bmwgroup.com,,München,DE,,,"10,001+",automotive|b2c,,,,,,,,,,,,,,,,,
 bookingcom,Booking.com,,https://www.booking.com,,Amsterdam,NL,,,"10,001+",internet|technology|b2c|marketplace,,,,,,,,,,,,,,,,,
-cabify,Cabify,,https://cabify.com,,Madrid,ES,,,"1,001-10,000",internet|b2c|mobile,,,,,software-engineer,all,,,,,52031,,,,,levels.fyi,2026-08-27
-cabify,Cabify,,https://cabify.com,,Madrid,ES,,,"1,001-10,000",internet|b2c|mobile,,,,,data-scientist,all,,,,,59151,,,,,levels.fyi,2026-08-27
-capgemini,Capgemini,,,,,,,,,,,,,,product-designer,all,,,,,24273,,,,,levels.fyi,2026-08-26
+brainly,Brainly,,,,,,,,,,,,,,software-engineer,all,,88838,,,88838,,,,1,levels.fyi,2026-08-31
+broadcom,Broadcom,,,,,,,,,,,,,,software-engineer,all,,67221,,,156415,,,,1,levels.fyi,2026-08-31
+bumble,Bumble Inc.,,,,,,,,,,,,,,software-engineer,all,,75996,,,75996,,,,1,levels.fyi,2026-08-31
+cabify,Cabify,,https://cabify.com,,Madrid,ES,,,"1,001-10,000",internet|b2c|mobile,,,,,software-engineer,all,46147,55297,69226,46147,55297,69226,,,,levels.fyi,2026-08-31
+cabify,Cabify,,https://cabify.com,,Madrid,ES,,,"1,001-10,000",internet|b2c|mobile,,,,,data-scientist,all,,,,,59290,,,,,levels.fyi,2026-08-31
+capgemini,Capgemini,,,,,,,,,,,,,,product-designer,all,,,,,24301,,,,,levels.fyi,2026-08-31
+capgemini,Capgemini,,,,,,,,,,,,,,software-engineer,all,,36892,,,36892,,,,1,levels.fyi,2026-08-31
 catawiki,Catawiki,,https://catawiki.com,,Assen,NL,,,"201-1,000",consumer-discretionary|internet|b2c,,,,,,,,,,,,,,,,,
-celonis,Celonis,,https://www.celonis.com,,München,DE,,,"1,001-10,000",information-technology-services|cloud-services|technology|saas,,,,,business-analyst,all,,,,,36079,,,,,levels.fyi,2026-08-27
-clarity-ai,Clarity AI,,https://clarity.ai,,Madrid,ES,,,"201-1,000",financial-exchanges|information-technology|machine-learning|software,,,,,,,,,,,,,,,,,
+celonis,Celonis,,https://www.celonis.com,,München,DE,,,"1,001-10,000",information-technology-services|cloud-services|technology|saas,,,,,business-analyst,all,,,,,36164,,,,,levels.fyi,2026-08-31
+celonis,Celonis,,https://www.celonis.com,,München,DE,,,"1,001-10,000",information-technology-services|cloud-services|technology|saas,,,,,software-engineer,all,,58829,,,72836,,,,1,levels.fyi,2026-08-31
+clarity-ai,Clarity AI,,,,,,,,,,,,,,software-engineer,all,43858,43858,74337,43858,43858,74337,,,,levels.fyi,2026-08-31
+clarivate,Clarivate,,,,,,,,,,,,,,software-engineer,all,,58883,,,62388,,,,1,levels.fyi,2026-08-31
 clickhouse,Clickhouse,,https://clickhouse.com,,Redwood City,US,,,"201-1,000",information-technology-services|technology|saas|b2b,,,,,,,,,,,,,,,,,
+collate,Collate,,,,,,,,,,,,,,software-engineer,all,87796,87796,92888,87796,87796,100888,,,,levels.fyi,2026-08-31
 creative-fabrica,Creative Fabrica,,https://www.creativefabrica.com,,Amsterdam,NL,,,"201-1,000",technology|internet|design|b2b,,,,,,,,,,,,,,,,,
-criteo,Criteo,,https://www.criteo.com,,Paris,FR,,,"1,001-10,000",marketing-advertising|technology|information-technology-services|saas,,,,,,,,,,,,,,,,,
-d-edge,D-EDGE,,https://www.d-edge.com,,Paris,FR,,,"201-1,000",e-commerce|travel-leisure|information-technology-services|technology,,,,,software-engineering-manager,all,,,,,63726,,,,,levels.fyi,2026-08-27
-datadog,Datadog,,,,,,,,,,,,,,software-engineer,all,,,,,109486,,,,,levels.fyi,2026-08-26
+criteo,Criteo,,,,,,,,,,,,,,software-engineer,all,,52548,,,57803,,,,1,levels.fyi,2026-08-31
+d-edge,D-EDGE,,https://www.d-edge.com,,Paris,FR,,,"201-1,000",e-commerce|travel-leisure|information-technology-services|technology,,,,,software-engineering-manager,all,,,,,63875,,,,,levels.fyi,2026-08-31
+datadog,Datadog,,,,,,,,,,,,,,software-engineer,all,,82100,,,128354,,,,1,levels.fyi,2026-08-31
 deepl,DeepL,,https://www.deepl.com,,North Rhine-Westphalia,DE,,,"1,001-10,000",software-developmen|software|technology,,,,,,,,,,,,,,,,,
-deloitte,Deloitte,,,,,,,,,,,,,,business-analyst,all,,,,,31584,,,,,levels.fyi,2026-08-26
-deloitte,Deloitte,,,,,,,,,,,,,,security-analyst,all,,,,,33141,,,,,levels.fyi,2026-08-26
-dlocal,dLocal,,https://dlocal.com,,Montevideo,UY,,,"1,001-10,000",payment-processing|financial-transactions|financial-services|e-commerce-solutions,,,,,,,,,,,,,,,,,
-docplanner,Docplanner,,https://www.docplanner.com,,Warszawa,PL,,,"1,001-10,000",technology|internet|information-technology-services|b2c,,,,,,,,,,,,,,,,,
-dynatrace,Dynatrace,,https://www.dynatrace.com,,Waltham,US,,,"1,001-10,000",information-technology-services|technology|saas|b2b,,,,,,,,,,,,,,,,,
-edreams-odigeo,eDreams ODIGEO,,https://www.edreamsodigeo.com,,Luxembourg,LU,,,"1,001-10,000",travel-leisure|internet|technology|marketplace,,,,,software-engineer,all,,,,,49311,,,,,levels.fyi,2026-08-27
-edreams-odigeo,eDreams ODIGEO,,https://www.edreamsodigeo.com,,Luxembourg,LU,,,"1,001-10,000",travel-leisure|internet|technology|marketplace,,,,,software-engineering-manager,all,,,,,81378,,,,,levels.fyi,2026-08-27
-epam-systems,EPAM Systems,,,,,,,,,,,,,,business-analyst,all,,,,,48908,,,,,levels.fyi,2026-08-26
-epam-systems,EPAM Systems,,,,,,,,,,,,,,solution-architect,all,,,,,66210,,,,,levels.fyi,2026-08-26
-ericsson,Ericsson,,,,,,,,,,,,,,data-scientist,all,,,,,48777,,,,,levels.fyi,2026-08-26
-ericsson,Ericsson,,,,,,,,,,,,,,solution-architect,all,,,,,69217,,,,,levels.fyi,2026-08-26
-ernst-and-young,Ernst and Young,,,,,,,,,,,,,,security-analyst,all,,,,,24790,,,,,levels.fyi,2026-08-26
-eventbrite,Eventbrite,,https://www.eventbrite.com,https://www.eventbrite.com/careers/,San Francisco,US,,,"201-1,000",internet|technology|marketplace|b2c,,,,,,,,,,,,,,,,,
-exoticca,Exoticca,,https://www.exoticca.com,,Miami,US,,,"201-1,000",travel-leisure|b2c|marketplace,,,,,,,,,,,,,,,,,
+deloitte,Deloitte,,,,,,,,,,,,,,business-analyst,all,,,,,31621,,,,,levels.fyi,2026-08-31
+deloitte,Deloitte,,,,,,,,,,,,,,security-analyst,all,,,,,33180,,,,,levels.fyi,2026-08-31
+deloitte,Deloitte,,,,,,,,,,,,,,software-engineer,all,,46230,,,46230,,,,1,levels.fyi,2026-08-31
+dlocal,dLocal,,,,,,,,,,,,,,software-engineer,all,70151,80174,82299,70151,80174,82299,,,,levels.fyi,2026-08-31
+docplanner,Docplanner,,,,,,,,,,,,,,software-engineer,all,,63998,,,63998,,,,1,levels.fyi,2026-08-31
+dynatrace,Dynatrace,,,,,,,,,,,,,,software-engineer,all,,68242,,,85302,,,,1,levels.fyi,2026-08-31
+edreams-odigeo,eDreams ODIGEO,,https://www.edreamsodigeo.com,,Luxembourg,LU,,,"1,001-10,000",travel-leisure|internet|technology|marketplace,,,,,software-engineer,all,50484,61356,66896,55133,66721,73430,,,,levels.fyi,2026-08-31
+edreams-odigeo,eDreams ODIGEO,,https://www.edreamsodigeo.com,,Luxembourg,LU,,,"1,001-10,000",travel-leisure|internet|technology|marketplace,,,,,software-engineering-manager,all,,,,,81569,,,,,levels.fyi,2026-08-31
+ef-education-first,EF,,,,,,,,,,,,,,software-engineer,all,,48789,,,48789,,,,1,levels.fyi,2026-08-31
+elastic,Elastic,,,,,,,,,,,,,,software-engineer,all,,103903,,,138537,,,,1,levels.fyi,2026-08-31
+electronic-arts,Electronic Arts (EA),,,,,,,,,,,,,,software-engineer,all,,65658,,,91468,,,,1,levels.fyi,2026-08-31
+epam-systems,EPAM Systems,,,,,,,,,,,,,,business-analyst,all,,,,,48965,,,,,levels.fyi,2026-08-31
+epam-systems,EPAM Systems,,,,,,,,,,,,,,solution-architect,all,,,,,66287,,,,,levels.fyi,2026-08-31
+epam-systems,EPAM Systems,,,,,,,,,,,,,,software-engineer,all,,63792,,,67336,,,,1,levels.fyi,2026-08-31
+ericsson,Ericsson,,,,,,,,,,,,,,data-scientist,all,,,,,48834,,,,,levels.fyi,2026-08-31
+ericsson,Ericsson,,,,,,,,,,,,,,solution-architect,all,,,,,69298,,,,,levels.fyi,2026-08-31
+ericsson,Ericsson,,,,,,,,,,,,,,software-engineer,all,,47272,,,54363,,,,1,levels.fyi,2026-08-31
+ernst-and-young,Ernst and Young,,,,,,,,,,,,,,security-analyst,all,,,,,24819,,,,,levels.fyi,2026-08-31
+ernst-and-young,Ernst and Young,,,,,,,,,,,,,,software-engineer,all,,29200,,,29200,,,,1,levels.fyi,2026-08-31
+eventbrite,Eventbrite,,,,,,,,,,,,,,software-engineer,all,71128,90781,99849,71128,101667,128360,,,,levels.fyi,2026-08-31
+exoticca,Exoticca,,,,,,,,,,,,,,software-engineer,all,46023,50234,70092,46023,54803,75673,,,,levels.fyi,2026-08-31
+expedia-group,Expedia Group,,,,,,,,,,,,,,software-engineer,all,,74332,,,79798,,,,1,levels.fyi,2026-08-31
 expleo-group,Expleo Group,,https://expleo.com,,Montigny-le-Bretonneux,FR,,,"10,001+",engineering|consulting-professional-services|information-technology-services|industrials-manufacturing,,,,,,,,,,,,,,,,,
-factorial,Factorial,,https://factorialhr.es,,Barcelona,ES,,,"1,001-10,000",information-technology-services|technology|human-resources|billing-management,,,,,product-designer,all,,,,,119944,,,,,levels.fyi,2026-08-27
+facebook,Meta Facebook,,,,,,,,,,,,,,software-engineer,all,,112714,,,183295,,,,1,levels.fyi,2026-08-31
+factorial,Factorial,,https://factorialhr.es,,Barcelona,ES,,,"1,001-10,000",information-technology-services|technology|human-resources|billing-management,,,,,product-designer,all,,,,,120226,,,,,levels.fyi,2026-08-31
+factorial,Factorial,,https://factorialhr.es,,Barcelona,ES,,,"1,001-10,000",information-technology-services|technology|human-resources|billing-management,,,,,software-engineer,all,57687,63363,77382,57687,63363,77382,,,,levels.fyi,2026-08-31
 feedzai,Feedzai,,https://www.feedzai.com,,Lisboa,PT,,,"201-1,000",information-technology-services|technology|saas|b2b,,,,,,,,,,,,,,,,,
-fever,Fever,,https://www.feverup.com,,New,US,,,"1,001-10,000",media-and-entertainment|ticketing,,,,,,,,,,,,,,,,,
+fever,Fever,,,,,,,,,,,,,,software-engineer,all,31337,59270,79179,31337,59270,85903,,,,levels.fyi,2026-08-31
 flow-traders,Flow Traders,,http://www.flowtraders.com,,Amsterdam,NL,,,"201-1,000",financial-services|b2b,,,,,,,,,,,,,,,,,
-free-now,FREE NOW,,https://free-now.com,,Hamburg,DE,,,"201-1,000",information-technology-services,,,,,product-manager,all,,,,,66657,,,,,levels.fyi,2026-08-27
-glovo,Glovo,,https://glovoapp.com,,Milano,IT,,,"1,001-10,000",technology|internet|services|b2c,,,,,software-engineer,all,,,,,68820,,,,,levels.fyi,2026-08-27
-glovo,Glovo,,https://glovoapp.com,,Milano,IT,,,"1,001-10,000",technology|internet|services|b2c,,,,,software-engineering-manager,all,,,,,109436,,,,,levels.fyi,2026-08-27
-glovo,Glovo,,https://glovoapp.com,,Milano,IT,,,"1,001-10,000",technology|internet|services|b2c,,,,,data-scientist,all,,,,,69216,,,,,levels.fyi,2026-08-27
-glovo,Glovo,,https://glovoapp.com,,Milano,IT,,,"1,001-10,000",technology|internet|services|b2c,,,,,data-analyst,all,,,,,42993,,,,,levels.fyi,2026-08-27
-glovo,Glovo,,https://glovoapp.com,,Milano,IT,,,"1,001-10,000",technology|internet|services|b2c,,,,,product-manager,all,,,,,67155,,,,,levels.fyi,2026-08-27
-hpe,HPE,,,,,,,,,,,,,,data-scientist,all,,,,,65968,,,,,levels.fyi,2026-08-26
-hpe,HPE,,,,,,,,,,,,,,product-manager,all,,,,,54601,,,,,levels.fyi,2026-08-26
-ikea,IKEA,,https://www.ikea.com,,Delft,NL,,,"10,001+",e-commerce|retail|consumer-discretionary|b2c,,,,,data-scientist,all,,,,,75509,,,,,levels.fyi,2026-08-27
-inditex,Inditex,,https://www.inditex.com,,Arteijo,ES,,,"10,001+",e-commerce|retail|consumer-staples|b2c,,,,,,,,,,,,,,,,,
-indra,Indra,,https://www.indracompany.com,,Alcobendas,,,,,consulting|telecommunications|professional-services|agency,,,,,software-engineer,all,,,,,34900,,,,,levels.fyi,2026-08-27
-indra,Indra,,https://www.indracompany.com,,Alcobendas,,,,,consulting|telecommunications|professional-services|agency,,,,,hardware-engineer,all,,,,,28353,,,,,levels.fyi,2026-08-27
-ing,ING,,https://www.ing.com,,Amsterdam,NL,,,"10,001+",financial-services|consulting-professional-services|banking-mortgages|b2b,,,,,,,,,,,,,,,,,
+flywire,Flywire,,,,,,,,,,,,,,software-engineer,all,,71515,,,92446,,,,1,levels.fyi,2026-08-31
+free-now,FREE NOW,,https://free-now.com,,Hamburg,DE,,,"201-1,000",information-technology-services,,,,,product-manager,all,,,,,66813,,,,,levels.fyi,2026-08-31
+free-now,FREE NOW,,https://free-now.com,,Hamburg,DE,,,"201-1,000",information-technology-services,,,,,software-engineer,all,,67188,,,67188,,,,1,levels.fyi,2026-08-31
+gartner,Gartner,,,,,,,,,,,,,,software-engineer,all,,93216,,,102642,,,,1,levels.fyi,2026-08-31
+github,GitHub,,,,,,,,,,,,,,software-engineer,all,,95764,,,195542,,,,1,levels.fyi,2026-08-31
+glovo,Glovo,,https://glovoapp.com,,Milano,IT,,,"1,001-10,000",technology|internet|services|b2c,,,,,software-engineer,all,62796,73431,84228,62796,79711,91668,,,,levels.fyi,2026-08-31
+glovo,Glovo,,https://glovoapp.com,,Milano,IT,,,"1,001-10,000",technology|internet|services|b2c,,,,,software-engineering-manager,all,,,,,109693,,,,,levels.fyi,2026-08-31
+glovo,Glovo,,https://glovoapp.com,,Milano,IT,,,"1,001-10,000",technology|internet|services|b2c,,,,,data-scientist,all,,,,,69378,,,,,levels.fyi,2026-08-31
+glovo,Glovo,,https://glovoapp.com,,Milano,IT,,,"1,001-10,000",technology|internet|services|b2c,,,,,data-analyst,all,,,,,43094,,,,,levels.fyi,2026-08-31
+glovo,Glovo,,https://glovoapp.com,,Milano,IT,,,"1,001-10,000",technology|internet|services|b2c,,,,,product-manager,all,,,,,67313,,,,,levels.fyi,2026-08-31
+google,Google,,,,,,,,,,,,,,software-engineer,all,,70342,,,93789,,,,1,levels.fyi,2026-08-31
+grafana,Grafana Labs,,,,,,,,,,,,,,software-engineer,all,,117172,,,117172,,,,1,levels.fyi,2026-08-31
+hopin,Hopin,,,,,,,,,,,,,,software-engineer,all,,127966,,,127966,,,,1,levels.fyi,2026-08-31
+hpe,HPE,,,,,,,,,,,,,,data-scientist,all,,,,,66046,,,,,levels.fyi,2026-08-31
+hpe,HPE,,,,,,,,,,,,,,product-manager,all,,,,,54665,,,,,levels.fyi,2026-08-31
+hpe,HPE,,,,,,,,,,,,,,software-engineer,all,,71832,,,71832,,,,1,levels.fyi,2026-08-31
+ibm,IBM,,,,,,,,,,,,,,software-engineer,all,,32933,,,53732,,,,1,levels.fyi,2026-08-31
+ikea,IKEA,,https://www.ikea.com,,Delft,NL,,,"10,001+",e-commerce|retail|consumer-discretionary|b2c,,,,,data-scientist,all,,,,,75687,,,,,levels.fyi,2026-08-31
+ikea,IKEA,,https://www.ikea.com,,Delft,NL,,,"10,001+",e-commerce|retail|consumer-discretionary|b2c,,,,,software-engineer,all,,50951,,,50951,,,,1,levels.fyi,2026-08-31
+inditex,Inditex,,,,,,,,,,,,,,software-engineer,all,43199,45489,64530,43199,45489,69240,,,,levels.fyi,2026-08-31
+indra,Indra,,https://www.indracompany.com,,Alcobendas,,,,,consulting|telecommunications|professional-services|agency,,,,,software-engineer,all,34925,39792,43468,34925,39792,43468,,,,levels.fyi,2026-08-31
+indra,Indra,,https://www.indracompany.com,,Alcobendas,,,,,consulting|telecommunications|professional-services|agency,,,,,hardware-engineer,all,,,,,28420,,,,,levels.fyi,2026-08-31
+ing,ING,,,,,,,,,,,,,,software-engineer,all,,62000,,,66000,,,,1,levels.fyi,2026-08-31
+intellias,Intellias,,,,,,,,,,,,,,software-engineer,all,,91474,,,91474,,,,1,levels.fyi,2026-08-31
 jetbrains,JetBrains,,https://www.jetbrains.com,,,CZ,,,"1,001-10,000",information-technology-services|technology|saas|b2b,,,,,,,,,,,,,,,,,
-jobandtalent,Jobandtalent,,https://www.jobandtalent.com,,Madrid,ES,,,"1,001-10,000",human-resources|consulting|agency|technology,,,,,,,,,,,,,,,,,
-klarna,Klarna,,https://www.klarna.com,,New York,US,,,"1,001-10,000",e-commerce|financial-services|technology|information-technology-services,,,,,,,,,,,,,,,,,
-manychat,ManyChat,,https://manychat.com,,San Francisco,US,,,"201-1,000",internet|technology|web-services-apps|saas,,,,,,,,,,,,,,,,,
-mckinsey,McKinsey,,,,,,,,,,,,,,data-scientist,all,,,,,43840,,,,,levels.fyi,2026-08-26
-mews,Mews,,https://www.mews.com,,,CZ,,,"1,001-10,000",information-technology-services|technology|b2b|saas,,,,,,,,,,,,,,,,,
-microsoft,Microsoft,,,,,,,,,,,,,,software-engineer,all,,,,,88495,,,,,levels.fyi,2026-08-26
-minsait,Minsait,,https://www.minsait.com,,Alcobendas,ES,,,"10,001+",computers|e-commerce|professional-services|crisis-management,,,,,business-analyst,all,,,,,26727,,,,,levels.fyi,2026-08-27
-minsait,Minsait,,https://www.minsait.com,,Alcobendas,ES,,,"10,001+",computers|e-commerce|professional-services|crisis-management,,,,,information-technologist,all,,,,,39324,,,,,levels.fyi,2026-08-27
+jobandtalent,Job&Talent,,,,,,,,,,,,,,software-engineer,all,75290,81055,93028,75290,81055,93028,,,,levels.fyi,2026-08-31
+keysight,Keysight Technologies,,,,,,,,,,,,,,software-engineer,all,,61871,,,63108,,,,1,levels.fyi,2026-08-31
+king,King,,,,,,,,,,,,,,software-engineer,all,,68892,,,76000,,,,1,levels.fyi,2026-08-31
+klarna,Klarna,,,,,,,,,,,,,,software-engineer,all,,62281,,,67650,,,,1,levels.fyi,2026-08-31
+manychat,Manychat,,,,,,,,,,,,,,software-engineer,all,,85004,,,85004,,,,1,levels.fyi,2026-08-31
+mckinsey,McKinsey,,,,,,,,,,,,,,data-scientist,all,,,,,43891,,,,,levels.fyi,2026-08-31
+medallia,Medallia,,,,,,,,,,,,,,software-engineer,all,,95701,,,95701,,,,1,levels.fyi,2026-08-31
+mercedes-benz,Mercedes-Benz AG,,,,,,,,,,,,,,software-engineer,all,,47753,,,52195,,,,1,levels.fyi,2026-08-31
+meta,Meta,,,,,,,,,,,,,,software-engineer,all,,112714,,,183295,,,,1,levels.fyi,2026-08-31
+mews,Mews,,,,,,,,,,,,,,software-engineer,all,69911,76449,76589,69911,76449,78875,,,,levels.fyi,2026-08-31
+microsoft,Microsoft,,,,,,,,,,,,,,software-engineer,all,,94175,,,125040,,,,1,levels.fyi,2026-08-31
+minsait,Minsait,,https://www.minsait.com,,Alcobendas,ES,,,"10,001+",computers|e-commerce|professional-services|crisis-management,,,,,business-analyst,all,,,,,26789,,,,,levels.fyi,2026-08-31
+minsait,Minsait,,https://www.minsait.com,,Alcobendas,ES,,,"10,001+",computers|e-commerce|professional-services|crisis-management,,,,,information-technologist,all,,,,,39417,,,,,levels.fyi,2026-08-31
+minsait,Minsait,,https://www.minsait.com,,Alcobendas,ES,,,"10,001+",computers|e-commerce|professional-services|crisis-management,,,,,software-engineer,all,32092,35212,42281,32092,35212,42281,,,,levels.fyi,2026-08-31
+mirantis,Mirantis,,,,,,,,,,,,,,software-engineer,all,,87226,,,87226,,,,1,levels.fyi,2026-08-31
 miro,Miro,,https://miro.com,,San Francisco,US,,,"1,001-10,000",information-technology-services,,,,,,,,,,,,,,,,,
-mitek-systems,Mitek Systems,,https://www.miteksystems.com,,San Diego,US,,,"201-1,000",information-technology-services|technology|saas|b2b,,,,,,,,,,,,,,,,,
-multiverse-computing,Multiverse Computing,,https://multiversecomputing.com,,Donostia,ES,,,"201-1,000",e-commerce|information-technology-services|computer-programming|software,,,,,,,,,,,,,,,,,
-n26,N26,,https://n26.com,,Berlin,DE,,,"1,001-10,000",financial-services|consulting-professional-services|mobile|b2b,,,,,software-engineer,all,,,,,69973,,,,,levels.fyi,2026-08-27
-n26,N26,,https://n26.com,,Berlin,DE,,,"1,001-10,000",financial-services|consulting-professional-services|mobile|b2b,,,,,software-engineering-manager,all,,,,,90137,,,,,levels.fyi,2026-08-27
-ncc-group,NCC Group,,https://www.nccgroup.com,,Manchester,GB,,,"1,001-10,000",consulting-professional-services|information-technology-services|b2b|enterprise,,,,,security-analyst,all,,,,,78264,,,,,levels.fyi,2026-08-27
+mitek-systems,Mitek Systems,,,,,,,,,,,,,,software-engineer,all,58328,74464,81251,58328,80304,98132,,,,levels.fyi,2026-08-31
+moonpay,MoonPay,,,,,,,,,,,,,,software-engineer,all,,91100,,,91100,,,,1,levels.fyi,2026-08-31
+multiverse-computing,Multiverse Computing,,,,,,,,,,,,,,software-engineer,all,57392,63521,65196,57392,70369,74044,,,,levels.fyi,2026-08-31
+n26,N26,,https://n26.com,,Berlin,DE,,,"1,001-10,000",financial-services|consulting-professional-services|mobile|b2b,,,,,software-engineer,all,,82128,,,82128,,,,1,levels.fyi,2026-08-31
+ncc-group,NCC Group,,https://www.nccgroup.com,,Manchester,GB,,,"1,001-10,000",consulting-professional-services|information-technology-services|b2b|enterprise,,,,,security-analyst,all,,,,,78447,,,,,levels.fyi,2026-08-31
 netlight,Netlight,,https://www.netlight.com,,Stockholm,SE,,,"1,001-10,000",computer-programming|software|professional-services|computers,,,,,,,,,,,,,,,,,
+new-relic,New Relic,,,,,,,,,,,,,,software-engineer,all,,83403,,,108097,,,,1,levels.fyi,2026-08-31
 new-work-se,NEW WORK SE,,http://www.new-work.se,,Hamburg,DE,,,"1,001-10,000",internet,,,,,,,,,,,,,,,,,
-novakid,NovaKid,,https://www.novakidschool.com,,San Francisco,US,,,"1,001-10,000",children|edtech|education|language-learning,,,,,product-manager,all,,,,,56232,,,,,levels.fyi,2026-08-27
-ntt-data,NTT DATA,,https://www.nttdata.com,,Koto City,,,,"10,001+",information-technology-services|consulting-professional-services|technology|b2b,,,,,solution-architect,all,,,,,45764,,,,,levels.fyi,2026-08-27
-ntt-data,NTT DATA,,https://www.nttdata.com,,Koto City,,,,"10,001+",information-technology-services|consulting-professional-services|technology|b2b,,,,,information-technologist,all,,,,,22071,,,,,levels.fyi,2026-08-27
-ntt-data,NTT DATA,,https://www.nttdata.com,,Koto City,,,,"10,001+",information-technology-services|consulting-professional-services|technology|b2b,,,,,security-analyst,all,,,,,44668,,,,,levels.fyi,2026-08-27
-oracle,Oracle,,,,,,,,,,,,,,product-designer,all,,,,,41056,,,,,levels.fyi,2026-08-26
-payfit,PayFit,,https://payfit.com,,Paris,FR,,,"201-1,000",information-technology-services|technology,,,,,,,,,,,,,,,,,
-pepsico,PepsiCo,,,,,,,,,,,,,,data-scientist,all,,,,,75652,,,,,levels.fyi,2026-08-26
-perk,Perk,,https://www.perk.com,,Austin,US,,,"1,001-10,000",media|mobile|consumer-web|ecommerce,,,,,,,,,,,,,,,,,
-personio,Personio,,https://www.personio.com,,München,DE,,,"1,001-10,000",information-technology-services|technology|saas|b2b,,,,,,,,,,,,,,,,,
-preply,Preply,,https://preply.com,,Brookline,US,,,"201-1,000",internet|technology|marketplace|b2c,,,,,,,,,,,,,,,,,
-qonto,Qonto,,https://qonto.com,,Paris,FR,,,"1,001-10,000",financial-services,,,,,,,,,,,,,,,,,
+nexthink,Nexthink,,,,,,,,,,,,,,software-engineer,all,,66979,,,71100,,,,1,levels.fyi,2026-08-31
+novakid,NovaKid,,https://www.novakidschool.com,,San Francisco,US,,,"1,001-10,000",children|edtech|education|language-learning,,,,,product-manager,all,,,,,56364,,,,,levels.fyi,2026-08-31
+ntt-data,NTT DATA,,https://www.nttdata.com,,Koto City,,,,"10,001+",information-technology-services|consulting-professional-services|technology|b2b,,,,,solution-architect,all,,,,,45871,,,,,levels.fyi,2026-08-31
+ntt-data,NTT DATA,,https://www.nttdata.com,,Koto City,,,,"10,001+",information-technology-services|consulting-professional-services|technology|b2b,,,,,information-technologist,all,,,,,22123,,,,,levels.fyi,2026-08-31
+ntt-data,NTT DATA,,https://www.nttdata.com,,Koto City,,,,"10,001+",information-technology-services|consulting-professional-services|technology|b2b,,,,,security-analyst,all,,,,,44773,,,,,levels.fyi,2026-08-31
+ntt-data,NTT DATA,,https://www.nttdata.com,,Koto City,,,,"10,001+",information-technology-services|consulting-professional-services|technology|b2b,,,,,software-engineer,all,23073,33137,48217,23073,33137,48217,,,,levels.fyi,2026-08-31
+ocado-group,Ocado Group,,,,,,,,,,,,,,software-engineer,all,,75725,,,75725,,,,1,levels.fyi,2026-08-31
+oracle,Oracle,,,,,,,,,,,,,,product-designer,all,,,,,41104,,,,,levels.fyi,2026-08-31
+oracle,Oracle,,,,,,,,,,,,,,software-engineer,all,,54371,,,66871,,,,1,levels.fyi,2026-08-31
+palo-alto-networks,Palo Alto Networks,,,,,,,,,,,,,,software-engineer,all,,87027,,,126480,,,,1,levels.fyi,2026-08-31
+payfit,PayFit,,,,,,,,,,,,,,software-engineer,all,43772,78268,91235,43772,78268,91235,,,,levels.fyi,2026-08-31
+pearson,Pearson,,,,,,,,,,,,,,software-engineer,all,,81948,,,81948,,,,1,levels.fyi,2026-08-31
+pepsico,PepsiCo,,,,,,,,,,,,,,data-scientist,all,,,,,75741,,,,,levels.fyi,2026-08-31
+perk,Perk,,,,,,,,,,,,,,software-engineer,all,70337,75945,90507,70337,75945,90507,,,,levels.fyi,2026-08-31
+personio,Personio,,,,,,,,,,,,,,software-engineer,all,,85805,,,101085,,,,1,levels.fyi,2026-08-31
+picsart,Picsart,,,,,,,,,,,,,,software-engineer,all,,93850,,,93850,,,,1,levels.fyi,2026-08-31
+pleo,Pleo,,,,,,,,,,,,,,software-engineer,all,,98899,,,98899,,,,1,levels.fyi,2026-08-31
+preply,Preply,,,,,,,,,,,,,,software-engineer,all,84571,96309,101538,84571,96309,101538,,,,levels.fyi,2026-08-31
+qonto,Qonto,,,,,,,,,,,,,,software-engineer,all,,69863,,,69863,,,,1,levels.fyi,2026-08-31
 rabobank,Rabobank,,https://www.rabobank.com,,Utrecht,NL,,,"10,001+",financial-services|consulting-professional-services|banking-mortgages|b2c,,,,,,,,,,,,,,,,,
-revolut,Revolut,,https://www.revolut.com,,London,GB,,,"10,001+",insurance|technology|information-technology-services|financial-services,,,,,software-engineer,all,,,,,107591,,,,,levels.fyi,2026-08-27
-revolut,Revolut,,https://www.revolut.com,,London,GB,,,"10,001+",insurance|technology|information-technology-services|financial-services,,,,,data-scientist,all,,,,,108981,,,,,levels.fyi,2026-08-27
-revolut,Revolut,,https://www.revolut.com,,London,GB,,,"10,001+",insurance|technology|information-technology-services|financial-services,,,,,data-analyst,all,,,,,61047,,,,,levels.fyi,2026-08-27
-revolut,Revolut,,https://www.revolut.com,,London,GB,,,"10,001+",insurance|technology|information-technology-services|financial-services,,,,,product-designer,all,,,,,60917,,,,,levels.fyi,2026-08-27
-rovercom,Rover.com,,,,,,,,,,,,,,software-engineering-manager,all,,,,,115983,,,,,levels.fyi,2026-08-26
-ryanair,Ryanair,,https://www.ryanair.com,,Swords,IE,,,"10,001+",airlines|b2c|b2b,,,,,,,,,,,,,,,,,
-sage,Sage,,,,,,,,,,,,,,product-manager,all,,,,,75044,,,,,levels.fyi,2026-08-26
-santander,Santander,,https://www.santander.com,,,ES,,,"10,001+",finance|finance-financial-planning-and-management-in-spain|banking|financial-services,,,,,,,,,,,,,,,,,
-sdg-group,SDG Group,,https://www.sdggroup.com,,Milano,IT,,,"1,001-10,000",consulting-professional-services|consulting|telecommunications|professional-services,,,,,data-analyst,all,,,,,25988,,,,,levels.fyi,2026-08-27
-seat-code,SEAT CODE,,https://www.code.seat,,Barcelona,ES,,,"201-1,000",information-technology-services|technology|automotive|customer-care,,,,,,,,,,,,,,,,,
-semidynamics,Semidynamics,,http://www.semidynamics.com,,Barcelona,ES,,,51-200,semiconductors|computer-hardware,,,,,hardware-engineer,all,,,,,44002,,,,,levels.fyi,2026-08-27
-semrush,Semrush,,http://www.semrush.com,,Boston,US,,,"1,001-10,000",technology|information-technology-services|internet|saas,,,,,software-engineer,all,,,,,71628,,,,,levels.fyi,2026-08-27
-semrush,Semrush,,http://www.semrush.com,,Boston,US,,,"1,001-10,000",technology|information-technology-services|internet|saas,,,,,data-analyst,all,,,,,49659,,,,,levels.fyi,2026-08-27
-sennder,sennder,,https://www.sennder.com,,Berlin,DE,,,"1,001-10,000",b2b,,,,,,,,,,,,,,,,,
-stenn,Stenn,,,,,,,,,,,,,,software-engineering-manager,all,,,,,133502,,,,,levels.fyi,2026-08-26
+red-hat,Red Hat,,,,,,,,,,,,,,software-engineer,all,,86482,,,100137,,,,1,levels.fyi,2026-08-31
+remote,Remote,,,,,,,,,,,,,,software-engineer,all,80778,99895,113167,80778,99895,125652,,,,levels.fyi,2026-08-31
+revolut,Revolut,,https://www.revolut.com,,London,GB,,,"10,001+",insurance|technology|information-technology-services|financial-services,,,,,software-engineer,all,95861,99122,120049,95861,104668,145145,,,,levels.fyi,2026-08-31
+revolut,Revolut,,https://www.revolut.com,,London,GB,,,"10,001+",insurance|technology|information-technology-services|financial-services,,,,,data-scientist,all,,,,,109237,,,,,levels.fyi,2026-08-31
+revolut,Revolut,,https://www.revolut.com,,London,GB,,,"10,001+",insurance|technology|information-technology-services|financial-services,,,,,data-analyst,all,,,,,61191,,,,,levels.fyi,2026-08-31
+ringcentral,RingCentral,,,,,,,,,,,,,,software-engineer,all,,96025,,,105626,,,,1,levels.fyi,2026-08-31
+rovercom,Rover.com,,,,,,,,,,,,,,software-engineering-manager,all,,,,,116119,,,,,levels.fyi,2026-08-31
+rovercom,Rover.com,,,,,,,,,,,,,,software-engineer,all,,83980,,,83980,,,,1,levels.fyi,2026-08-31
+ryanair,Ryanair - Europe's Favourite Airline,,,,,,,,,,,,,,software-engineer,all,41737,58749,64083,41737,58749,64083,,,,levels.fyi,2026-08-31
+sage,Sage,,,,,,,,,,,,,,product-manager,all,,,,,75132,,,,,levels.fyi,2026-08-31
+sage,Sage,,,,,,,,,,,,,,software-engineer,all,,63231,,,63231,,,,1,levels.fyi,2026-08-31
+sanofi,Sanofi,,,,,,,,,,,,,,software-engineer,all,74153,76279,77050,81249,83758,84689,,,,levels.fyi,2026-08-31
+santander,Santander,,,,,,,,,,,,,,software-engineer,all,,63318,,,68008,,,,1,levels.fyi,2026-08-31
+schneider-electric,Schneider Electric,,,,,,,,,,,,,,software-engineer,all,,45144,,,50932,,,,1,levels.fyi,2026-08-31
+scopely,Scopely,,,,,,,,,,,,,,software-engineer,all,,65534,,,72088,,,,1,levels.fyi,2026-08-31
+sdg-group,SDG Group,,https://www.sdggroup.com,,Milano,IT,,,"1,001-10,000",consulting-professional-services|consulting|telecommunications|professional-services,,,,,data-analyst,all,,,,,26049,,,,,levels.fyi,2026-08-31
+sdg-group,SDG Group,,https://www.sdggroup.com,,Milano,IT,,,"1,001-10,000",consulting-professional-services|consulting|telecommunications|professional-services,,,,,software-engineer,all,29326,32832,38116,29326,32832,39237,,,,levels.fyi,2026-08-31
+seat-code,SEAT CODE,,,,,,,,,,,,,,software-engineer,all,54658,61430,70955,61658,69165,79038,,,,levels.fyi,2026-08-31
+semidynamics,Semidynamics,,http://www.semidynamics.com,,Barcelona,ES,,,51-200,semiconductors|computer-hardware,,,,,hardware-engineer,all,,,,,44105,,,,,levels.fyi,2026-08-31
+semidynamics,Semidynamics,,http://www.semidynamics.com,,Barcelona,ES,,,51-200,semiconductors|computer-hardware,,,,,software-engineer,all,54022,54022,54022,54022,54022,54022,,,,levels.fyi,2026-08-31
+semrush,Semrush,,http://www.semrush.com,,Boston,US,,,"1,001-10,000",technology|information-technology-services|internet|saas,,,,,software-engineer,all,77219,84070,98060,77219,84070,98060,,,,levels.fyi,2026-08-31
+semrush,Semrush,,http://www.semrush.com,,Boston,US,,,"1,001-10,000",technology|information-technology-services|internet|saas,,,,,data-analyst,all,,,,,49776,,,,,levels.fyi,2026-08-31
+sennder,sennder,,,,,,,,,,,,,,software-engineer,all,,91466,,,100820,,,,1,levels.fyi,2026-08-31
+siemens,Siemens,,,,,,,,,,,,,,software-engineer,all,,38819,,,38819,,,,1,levels.fyi,2026-08-31
+skyscanner,Skyscanner,,,,,,,,,,,,,,software-engineer,all,,77280,,,85008,,,,1,levels.fyi,2026-08-31
+smileio,Smile.io,,,,,,,,,,,,,,software-engineer,all,,105000,,,105000,,,,1,levels.fyi,2026-08-31
+spotify,Spotify,,,,,,,,,,,,,,software-engineer,all,,115955,,,115955,,,,1,levels.fyi,2026-08-31
+stenn,Stenn,,,,,,,,,,,,,,software-engineering-manager,all,,,,,133659,,,,,levels.fyi,2026-08-31
+stenn,Stenn,,,,,,,,,,,,,,software-engineer,all,,89554,,,89554,,,,1,levels.fyi,2026-08-31
 strapi,Strapi,,https://strapi.io,,Paris,FR,,,51-200,information-technology-services|computer-programming|software|professional-services,,,,,,,,,,,,,,,,,
-t-systems,T-Systems,,https://www.t-systems.com,,Frankfurt,DE,,,"1,001-10,000",information-technology-services|computing-infrastructure|data-analytics|hosting-services,,,,,software-engineer,all,,,,,58141,,,,,levels.fyi,2026-08-27
+stripe,Stripe,,,,,,,,,,,,,,software-engineer,all,,97734,,,200612,,,,1,levels.fyi,2026-08-31
+suse,SUSE,,,,,,,,,,,,,,software-engineer,all,,84165,,,92581,,,,1,levels.fyi,2026-08-31
+swiss-re,Swiss Re,,,,,,,,,,,,,,software-engineer,all,,58981,,,66627,,,,1,levels.fyi,2026-08-31
+t-systems,T-Systems,,https://www.t-systems.com,,Frankfurt,DE,,,"1,001-10,000",information-technology-services|computing-infrastructure|data-analytics|hosting-services,,,,,software-engineer,all,,68240,,,68240,,,,1,levels.fyi,2026-08-31
+tabby,Tabby,,,,,,,,,,,,,,software-engineer,all,,75586,,,75586,,,,1,levels.fyi,2026-08-31
+teya,Teya,,,,,,,,,,,,,,software-engineer,all,,111756,,,111756,,,,1,levels.fyi,2026-08-31
+the-trade-desk,The Trade Desk,,,,,,,,,,,,,,software-engineer,all,,83390,,,133390,,,,1,levels.fyi,2026-08-31
 thefork,TheFork,,https://www.thefork.com,,Paris,FR,,,"1,001-10,000",information-technology-services,,,,,,,,,,,,,,,,,
-tiger-data,Tiger Data,,http://www.tigerdata.com,,New York,US,,,51-200,information-technology-services|computer-software,,,,,,,,,,,,,,,,,
-tinybird,Tinybird,,https://tinybird.co,https://www.tinybird.co/careers,Madrid,KN,,,51-200,saas|data-analytics|devops-infrastructure,,,,,,,,,,,,,,,,,
-tomtom,TomTom,,https://www.tomtom.com,,Amsterdam,NL,,,"1,001-10,000",information-technology-services|consumer-electronics|technology|b2c,,,,,data-scientist,all,,,,,52227,,,,,levels.fyi,2026-08-27
-transperfect,TransPerfect,,,,,,,,,,,,,,product-manager,all,,,,,35388,,,,,levels.fyi,2026-08-26
-travelperk,TravelPerk,,https://www.travelperk.com,,Barcelona,ES,,,"201-1,000",internet|technology|marketplace|b2c,,,,,software-engineer,all,,,,,71519,,,,,levels.fyi,2026-08-27
+thoughtworks,Thoughtworks,,,,,,,,,,,,,,software-engineer,all,,67589,,,67589,,,,1,levels.fyi,2026-08-31
+tiger-data,Tiger Data (creators of TimescaleDB),,,,,,,,,,,,,,software-engineer,all,173776,173776,173776,199842,199842,199842,,,,levels.fyi,2026-08-31
+timescale,Timescale,,,,,,,,,,,,,,software-engineer,all,106073,113167,153257,106073,113167,165046,,,,levels.fyi,2026-08-31
+tinybird,Tinybird,,,,,,,,,,,,,,software-engineer,all,81372,88578,100449,81372,121961,137356,,,,levels.fyi,2026-08-31
+tomtom,TomTom,,https://www.tomtom.com,,Amsterdam,NL,,,"1,001-10,000",information-technology-services|consumer-electronics|technology|b2c,,,,,data-scientist,all,,,,,52350,,,,,levels.fyi,2026-08-31
+tomtom,TomTom,,https://www.tomtom.com,,Amsterdam,NL,,,"1,001-10,000",information-technology-services|consumer-electronics|technology|b2c,,,,,software-engineer,all,,60025,,,60025,,,,1,levels.fyi,2026-08-31
+toptal,Toptal,,,,,,,,,,,,,,software-engineer,all,,116000,,,116000,,,,1,levels.fyi,2026-08-31
+tradingview,TradingView,,,,,,,,,,,,,,software-engineer,all,,73547,,,73547,,,,1,levels.fyi,2026-08-31
+transperfect,TransPerfect,,,,,,,,,,,,,,product-manager,all,,,,,35429,,,,,levels.fyi,2026-08-31
+travelperk,TravelPerk,,https://www.travelperk.com,,Barcelona,ES,,,"201-1,000",internet|technology|marketplace|b2c,,,,,software-engineer,all,69597,82217,86016,69597,82217,88337,,,,levels.fyi,2026-08-31
 tripactions,TripActions,,https://tripactions.com,,Palo Alto,US,,,"201-1,000",technology|internet|information-technology-services|b2b,,,,,,,,,,,,,,,,,
-typeform,Typeform,,https://www.typeform.com,,Barcelona,ES,,,"201-1,000",technology|web-services-apps|internet|information-technology-services,,,,,,,,,,,,,,,,,
-vestas,Vestas,,https://www.vestas.com,,Aarhus,DK,,,"10,001+",renewables-environment|energy|b2b|enterprise,,,,,data-scientist,all,,,,,62611,,,,,levels.fyi,2026-08-27
-wallapop,Wallapop,,https://www.wallapop.com,,Barcelona,ES,,,"201-1,000",retail|delivery-services|e-commerce|computer-programming,,,,,,,,,,,,,,,,,
-xata,Xata,,https://xata.io,,San Francisco,US,,,1-50,information-technology-services|technology,,,,,,,,,,,,,,,,,
+twilio,Twilio,,,,,,,,,,,,,,software-engineer,all,,70179,,,81188,,,,1,levels.fyi,2026-08-31
+typeform,Typeform,,,,,,,,,,,,,,software-engineer,all,70000,79791,88000,70000,79791,88000,,,,levels.fyi,2026-08-31
+unity,Unity,,,,,,,,,,,,,,software-engineer,all,,108909,,,154765,,,,1,levels.fyi,2026-08-31
+usertesting,UserTesting,,,,,,,,,,,,,,software-engineer,all,,65600,,,65600,,,,1,levels.fyi,2026-08-31
+veeva-systems,Veeva Systems,,,,,,,,,,,,,,software-engineer,all,,58502,,,75836,,,,1,levels.fyi,2026-08-31
+vestas,Vestas,,https://www.vestas.com,,Aarhus,DK,,,"10,001+",renewables-environment|energy|b2b|enterprise,,,,,data-scientist,all,,,,,62758,,,,,levels.fyi,2026-08-31
+vistaprint,VistaPrint,,,,,,,,,,,,,,software-engineer,all,,85273,,,85273,,,,1,levels.fyi,2026-08-31
+vmware,VMware,,,,,,,,,,,,,,software-engineer,all,,63506,,,85997,,,,1,levels.fyi,2026-08-31
+wallapop,Wallapop,,,,,,,,,,,,,,software-engineer,all,59000,69283,77329,59000,69283,77329,,,,levels.fyi,2026-08-31
+workato,Workato,,,,,,,,,,,,,,software-engineer,all,,138185,,,138185,,,,1,levels.fyi,2026-08-31
+workshop,The Workshop,,,,,,,,,,,,,,software-engineer,all,49000,49000,54290,49000,49000,54290,,,,levels.fyi,2026-08-31
+xata,Xata.io,,,,,,,,,,,,,,software-engineer,all,133675,134268,140040,133675,134268,140040,,,,levels.fyi,2026-08-28
+zendesk,Zendesk,,,,,,,,,,,,,,software-engineer,all,,93315,,,104166,,,,1,levels.fyi,2026-08-31
