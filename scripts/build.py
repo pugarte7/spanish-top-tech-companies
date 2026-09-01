@@ -151,6 +151,21 @@ def levels_page(slug: str | None) -> str | None:
     return f"https://www.levels.fyi/companies/{slug}/salaries" if slug else None
 
 
+def figure_url(entry: dict) -> str | None:
+    """Where a figure links to: the page its number was actually read off.
+
+    Not the company's own /companies/<slug>/salaries page. That one is scoped
+    by the reader's IP and shows the company's global ladder, so it answers a
+    different question than the Spanish figure printed beside it - a reader
+    clicking Adyen's Spanish 80.1k used to land on Dutch numbers. Fall back to
+    it only for a company we know of but hold no band for.
+    """
+    for source in (entry.get("level") or {}).get("sources") or []:
+        if source.get("url"):
+            return source["url"]
+    return levels_page(entry["levels_slug"])
+
+
 def company_levels_slug(company: dict) -> str | None:
     """The slug of the company's own Levels.fyi page, if a band cites one.
 
@@ -338,7 +353,7 @@ def render_companies(companies: list[dict]) -> str:
             vouched += 1
             source = f"**{source}**"
         figure = k(e["value"]) + marks.get(kind, "*")
-        page = levels_page(e["levels_slug"])
+        page = figure_url(e)
         cell = f"[{figure}]({page})" if page else figure
         rows.append(f"| {name} | {cell} | {points} | {source} |")
 

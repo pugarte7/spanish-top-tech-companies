@@ -9,146 +9,146 @@ Which tech companies in Spain pay senior software engineers 60.000 € a year or
 <!-- BEGIN:COMPANIES -->
 | Company | Senior+ | Data points | Source |
 | --- | --- | --- | --- |
-| [Tiger Data (creators of TimescaleDB)](https://www.linkedin.com/company/107383551) | [173.8k*](https://www.levels.fyi/companies/tiger-data/salaries) | — | levels.fyi |
-| [Timescale](https://www.linkedin.com/company/11065434) | [153.3k*](https://www.levels.fyi/companies/timescale/salaries) | — | levels.fyi |
-| [Xata.io](https://www.linkedin.com/company/69560619) | [140k*](https://www.levels.fyi/companies/xata/salaries) | — | levels.fyi |
-| [Workato](https://www.linkedin.com/company/3675685) | [138.2k†](https://www.levels.fyi/companies/workato/salaries) | 1 | levels.fyi |
-| [Hopin](https://www.linkedin.com/company/105238356) | [128k†](https://www.levels.fyi/companies/hopin/salaries) | 1 | levels.fyi |
-| [Auth0](https://www.linkedin.com/company/3089380) | [120.8k†](https://www.levels.fyi/companies/auth0/salaries) | 1 | levels.fyi |
-| [Revolut](https://www.linkedin.com/company/revolut) | [120k*](https://www.levels.fyi/companies/revolut/salaries) | — | levels.fyi |
-| [Grafana Labs](https://www.linkedin.com/company/11062162) | [117.2k†](https://www.levels.fyi/companies/grafana/salaries) | 1 | levels.fyi |
-| [Toptal](https://www.linkedin.com/company/1545609) | [116k†](https://www.levels.fyi/companies/toptal/salaries) | 1 | levels.fyi |
-| [Spotify](https://www.linkedin.com/company/207470) | [116k†](https://www.levels.fyi/companies/spotify/salaries) | 1 | levels.fyi |
-| [Remote](https://www.linkedin.com/company/17955831) | [113.2k*](https://www.levels.fyi/companies/remote/salaries) | — | levels.fyi |
-| [Meta](https://www.linkedin.com/company/10667) | [112.7k†](https://www.levels.fyi/companies/facebook/salaries) | 1 | levels.fyi |
-| [Teya](https://www.linkedin.com/company/93621491) | [111.8k†](https://www.levels.fyi/companies/teya/salaries) | 1 | levels.fyi |
-| [Unity](https://www.linkedin.com/company/212669) | [108.9k†](https://www.levels.fyi/companies/unity/salaries) | 1 | levels.fyi |
-| [Aily Labs](https://www.linkedin.com/company/ailylabs) | [108.5k*](https://www.levels.fyi/companies/aily-labs/salaries) | — | levels.fyi |
-| [Smile.io](https://www.linkedin.com/company/2400901) | [105k†](https://www.levels.fyi/companies/smileio/salaries) | 1 | levels.fyi |
-| [Elastic](https://www.linkedin.com/company/814025) | [103.9k†](https://www.levels.fyi/companies/elastic/salaries) | 1 | levels.fyi |
-| [Preply](https://www.linkedin.com/company/2762432) | [101.5k*](https://www.levels.fyi/companies/preply/salaries) | — | levels.fyi |
-| [Tinybird](https://www.linkedin.com/company/35704741) | [100.4k*](https://www.levels.fyi/companies/tinybird/salaries) | — | levels.fyi |
-| [Eventbrite](https://www.linkedin.com/company/167280) | [99.8k*](https://www.levels.fyi/companies/eventbrite/salaries) | — | levels.fyi |
-| [Aetion, a Datavant Company](https://www.linkedin.com/company/6576393) | [99.3k†](https://www.levels.fyi/companies/aetion/salaries) | 1 | levels.fyi |
-| [Pleo](https://www.linkedin.com/company/10275909) | [98.9k†](https://www.levels.fyi/companies/pleo/salaries) | 1 | levels.fyi |
-| [Semrush](https://www.linkedin.com/company/semrush) | [98.1k*](https://www.levels.fyi/companies/semrush/salaries) | — | levels.fyi |
-| [Stripe](https://www.linkedin.com/company/2135371) | [97.7k†](https://www.levels.fyi/companies/stripe/salaries) | 1 | levels.fyi |
-| [RingCentral](https://www.linkedin.com/company/60868) | [96k†](https://www.levels.fyi/companies/ringcentral/salaries) | 1 | levels.fyi |
-| [GitHub](https://www.linkedin.com/company/1418841) | [95.8k†](https://www.levels.fyi/companies/github/salaries) | 1 | levels.fyi |
-| [Medallia](https://www.linkedin.com/company/49697) | [95.7k†](https://www.levels.fyi/companies/medallia/salaries) | 1 | levels.fyi |
-| [Microsoft](https://www.linkedin.com/company/1035) | [94.2k†](https://www.levels.fyi/companies/microsoft/salaries) | 1 | levels.fyi |
-| [Picsart](https://www.linkedin.com/company/3007630) | [93.8k†](https://www.levels.fyi/companies/picsart/salaries) | 1 | levels.fyi |
-| [Zendesk](https://www.linkedin.com/company/418095) | [93.3k†](https://www.levels.fyi/companies/zendesk/salaries) | 1 | levels.fyi |
-| [Gartner](https://www.linkedin.com/company/2078) | [93.2k†](https://www.levels.fyi/companies/gartner/salaries) | 1 | levels.fyi |
-| [Job&Talent](https://www.linkedin.com/company/296493) | [93k*](https://www.levels.fyi/companies/jobandtalent/salaries) | — | levels.fyi |
-| [Collate](https://www.linkedin.com/company/78395355) | [92.9k*](https://www.levels.fyi/companies/collate/salaries) | — | levels.fyi |
-| [Intellias](https://www.linkedin.com/company/49445) | [91.5k†](https://www.levels.fyi/companies/intellias/salaries) | 1 | levels.fyi |
-| [sennder](https://www.linkedin.com/company/10442437) | [91.5k†](https://www.levels.fyi/companies/sennder/salaries) | 1 | levels.fyi |
-| [PayFit](https://www.linkedin.com/company/6436622) | [91.2k*](https://www.levels.fyi/companies/payfit/salaries) | — | levels.fyi |
-| [MoonPay](https://www.linkedin.com/company/12596773) | [91.1k†](https://www.levels.fyi/companies/moonpay/salaries) | 1 | levels.fyi |
-| [Perk](https://www.linkedin.com/company/perk) | [90.5k*](https://www.levels.fyi/companies/perk/salaries) | — | levels.fyi |
-| [Stenn](https://www.linkedin.com/company/stenn-financial-services) | [89.6k†](https://www.levels.fyi/companies/stenn/salaries) | 1 | levels.fyi |
-| [Affirm](https://www.linkedin.com/company/2963249) | [88.9k†](https://www.levels.fyi/companies/affirm/salaries) | 1 | levels.fyi |
-| [Brainly](https://www.linkedin.com/company/2745890) | [88.8k†](https://www.levels.fyi/companies/brainly/salaries) | 1 | levels.fyi |
-| [Typeform](https://www.linkedin.com/company/3226972) | [88k*](https://www.levels.fyi/companies/typeform/salaries) | — | levels.fyi |
-| [Mirantis](https://www.linkedin.com/company/7793) | [87.2k†](https://www.levels.fyi/companies/mirantis/salaries) | 1 | levels.fyi |
-| [Palo Alto Networks](https://www.linkedin.com/company/30086) | [87k†](https://www.levels.fyi/companies/palo-alto-networks/salaries) | 1 | levels.fyi |
-| [Red Hat](https://www.linkedin.com/company/3545) | [86.5k†](https://www.levels.fyi/companies/red-hat/salaries) | 1 | levels.fyi |
-| [TravelPerk](https://www.linkedin.com/company/travelperk) | [86k*](https://www.levels.fyi/companies/travelperk/salaries) | — | levels.fyi |
-| [Personio](https://www.linkedin.com/company/10180448) | [85.8k†](https://www.levels.fyi/companies/personio/salaries) | 1 | levels.fyi |
-| [VistaPrint](https://www.linkedin.com/company/8095) | [85.3k†](https://www.levels.fyi/companies/vistaprint/salaries) | 1 | levels.fyi |
-| [Manychat](https://www.linkedin.com/company/11058494) | [85k†](https://www.levels.fyi/companies/manychat/salaries) | 1 | levels.fyi |
-| [Glovo](https://www.linkedin.com/company/glovo-app) | [84.2k*](https://www.levels.fyi/companies/glovo/salaries) | — | levels.fyi |
-| [SUSE](https://www.linkedin.com/company/1455) | [84.2k†](https://www.levels.fyi/companies/suse/salaries) | 1 | levels.fyi |
-| [Rover.com](https://www.linkedin.com/company/2686335) | [84k†](https://www.levels.fyi/companies/rovercom/salaries) | 1 | levels.fyi |
-| [New Relic](https://www.linkedin.com/company/426253) | [83.4k†](https://www.levels.fyi/companies/new-relic/salaries) | 1 | levels.fyi |
-| [The Trade Desk](https://www.linkedin.com/company/892001) | [83.4k†](https://www.levels.fyi/companies/the-trade-desk/salaries) | 1 | levels.fyi |
-| [dLocal](https://www.linkedin.com/company/15156062) | [82.3k*](https://www.levels.fyi/companies/dlocal/salaries) | — | levels.fyi |
-| [N26](https://www.linkedin.com/company/n26) | [82.1k†](https://www.levels.fyi/companies/n26/salaries) | 1 | levels.fyi |
-| [Datadog](https://www.linkedin.com/company/1066442) | [82.1k†](https://www.levels.fyi/companies/datadog/salaries) | 1 | levels.fyi |
-| [Pearson](https://www.linkedin.com/company/2137) | [81.9k†](https://www.levels.fyi/companies/pearson/salaries) | 1 | levels.fyi |
-| [AstraZeneca](https://www.linkedin.com/company/1603) | [81.4k†](https://www.levels.fyi/companies/astrazeneca/salaries) | 1 | levels.fyi |
-| [Mitek Systems](https://www.linkedin.com/company/395288) | [81.3k*](https://www.levels.fyi/companies/mitek-systems/salaries) | — | levels.fyi |
-| [Akamai Technologies](https://www.linkedin.com/company/3925) | [81.1k†](https://www.levels.fyi/companies/akamai/salaries) | 1 | levels.fyi |
-| [Bitpanda](https://www.linkedin.com/company/18164565) | [81k†](https://www.levels.fyi/companies/bitpanda/salaries) | 1 | levels.fyi |
-| [Adyen](https://www.linkedin.com/company/adyen) | [80.1k†](https://www.levels.fyi/companies/adyen/salaries) | 1 | levels.fyi |
-| [Fever](https://www.linkedin.com/company/2346695) | [79.2k*](https://www.levels.fyi/companies/fever/salaries) | — | levels.fyi |
-| [Factorial](https://www.linkedin.com/company/factorialhr) | [77.4k*](https://www.levels.fyi/companies/factorial/salaries) | — | levels.fyi |
-| [Wallapop](https://www.linkedin.com/company/3302579) | [77.3k*](https://www.levels.fyi/companies/wallapop/salaries) | — | levels.fyi |
-| [Skyscanner](https://www.linkedin.com/company/123380) | [77.3k†](https://www.levels.fyi/companies/skyscanner/salaries) | 1 | levels.fyi |
-| [Sanofi](https://www.linkedin.com/company/1642) | [77k*](https://www.levels.fyi/companies/sanofi/salaries) | — | levels.fyi |
-| [Mews](https://www.linkedin.com/company/2574959) | [76.6k*](https://www.levels.fyi/companies/mews/salaries) | — | levels.fyi |
-| [Bumble Inc.](https://www.linkedin.com/company/9408755) | [76k†](https://www.levels.fyi/companies/bumble/salaries) | 1 | levels.fyi |
-| [Adevinta](https://www.linkedin.com/company/adevinta) | [75.7k*](https://www.levels.fyi/companies/adevinta/salaries) | — | levels.fyi |
-| [Ocado Group](https://www.linkedin.com/company/165276) | [75.7k†](https://www.levels.fyi/companies/ocado-group/salaries) | 1 | levels.fyi |
-| [Tabby](https://www.linkedin.com/company/26615638) | [75.6k†](https://www.levels.fyi/companies/tabby/salaries) | 1 | levels.fyi |
-| [Bayer](https://www.linkedin.com/company/1893) | [75.5k†](https://www.levels.fyi/companies/bayer/salaries) | 1 | levels.fyi |
-| [Clarity AI](https://www.linkedin.com/company/9480749) | [74.3k*](https://www.levels.fyi/companies/clarity-ai/salaries) | — | levels.fyi |
-| [Expedia Group](https://www.linkedin.com/company/2751) | [74.3k†](https://www.levels.fyi/companies/expedia-group/salaries) | 1 | levels.fyi |
-| [Activision Blizzard](https://www.linkedin.com/company/15415277) | [73.7k†](https://www.levels.fyi/companies/activision-blizzard/salaries) | 1 | levels.fyi |
-| [TradingView](https://www.linkedin.com/company/3179069) | [73.5k†](https://www.levels.fyi/companies/tradingview/salaries) | 1 | levels.fyi |
-| [HPE](https://www.linkedin.com/company/hewlett-packard-enterprise) | [71.8k†](https://www.levels.fyi/companies/hpe/salaries) | 1 | levels.fyi |
-| [Align Technology](https://www.linkedin.com/company/6867) | [71.8k†](https://www.levels.fyi/companies/align-technology/salaries) | 1 | levels.fyi |
-| [Flywire](https://www.linkedin.com/company/434598) | [71.5k†](https://www.levels.fyi/companies/flywire/salaries) | 1 | levels.fyi |
-| [SEAT CODE](https://www.linkedin.com/company/22296997) | [71k*](https://www.levels.fyi/companies/seat-code/salaries) | — | levels.fyi |
-| [Google](https://www.linkedin.com/company/1441) | [70.3k†](https://www.levels.fyi/companies/google/salaries) | 1 | levels.fyi |
-| [Twilio](https://www.linkedin.com/company/400528) | [70.2k†](https://www.levels.fyi/companies/twilio/salaries) | 1 | levels.fyi |
-| [Exoticca](https://www.linkedin.com/company/3317134) | [70.1k*](https://www.levels.fyi/companies/exoticca/salaries) | — | levels.fyi |
-| [Qonto](https://www.linkedin.com/company/13205888) | [69.9k†](https://www.levels.fyi/companies/qonto/salaries) | 1 | levels.fyi |
-| [Cabify](https://www.linkedin.com/company/cabify) | [69.2k*](https://www.levels.fyi/companies/cabify/salaries) | — | levels.fyi |
-| [King](https://www.linkedin.com/company/230546) | [68.9k†](https://www.levels.fyi/companies/king/salaries) | 1 | levels.fyi |
-| [Dynatrace](https://www.linkedin.com/company/125999) | [68.2k†](https://www.levels.fyi/companies/dynatrace/salaries) | 1 | levels.fyi |
-| [T-Systems](https://www.linkedin.com/company/tsystems-brasil) | [68.2k†](https://www.levels.fyi/companies/t-systems/salaries) | 1 | levels.fyi |
-| [Amazon](https://www.linkedin.com/company/1586) | [68k†](https://www.levels.fyi/companies/amazon/salaries) | 1 | levels.fyi |
-| [Thoughtworks](https://www.linkedin.com/company/157356) | [67.6k†](https://www.levels.fyi/companies/thoughtworks/salaries) | 1 | levels.fyi |
-| [Broadcom](https://www.linkedin.com/company/3072) | [67.2k†](https://www.levels.fyi/companies/broadcom/salaries) | 1 | levels.fyi |
-| [Freenow](https://www.linkedin.com/company/freenow) | [67.2k†](https://www.levels.fyi/companies/free-now/salaries) | 1 | levels.fyi |
-| [Nexthink](https://www.linkedin.com/company/92771) | [67k†](https://www.levels.fyi/companies/nexthink/salaries) | 1 | levels.fyi |
-| [eDreams ODIGEO](https://www.linkedin.com/company/edreamsodigeo) | [66.9k*](https://www.levels.fyi/companies/edreams-odigeo/salaries) | — | levels.fyi |
-| [Electronic Arts (EA)](https://www.linkedin.com/company/1449) | [65.7k†](https://www.levels.fyi/companies/electronic-arts/salaries) | 1 | levels.fyi |
-| [UserTesting](https://www.linkedin.com/company/564709) | [65.6k†](https://www.levels.fyi/companies/usertesting/salaries) | 1 | levels.fyi |
-| [Scopely](https://www.linkedin.com/company/2057437) | [65.5k†](https://www.levels.fyi/companies/scopely/salaries) | 1 | levels.fyi |
-| [Multiverse Computing](https://www.linkedin.com/company/18863453) | [65.2k*](https://www.levels.fyi/companies/multiverse-computing/salaries) | — | levels.fyi |
-| [BASF](https://www.linkedin.com/company/basf) | [64.6k†](https://www.levels.fyi/companies/basf/salaries) | 1 | levels.fyi |
-| [Inditex](https://www.linkedin.com/company/14853) | [64.5k*](https://www.levels.fyi/companies/inditex/salaries) | — | levels.fyi |
-| [Ryanair - Europe's Favourite Airline](https://www.linkedin.com/company/16584) | [64.1k*](https://www.levels.fyi/companies/ryanair/salaries) | — | levels.fyi |
-| [Docplanner](https://www.linkedin.com/company/2254852) | [64k†](https://www.levels.fyi/companies/docplanner/salaries) | 1 | levels.fyi |
-| [EPAM Systems](https://www.linkedin.com/company/4972) | [63.8k†](https://www.levels.fyi/companies/epam-systems/salaries) | 1 | levels.fyi |
-| [VMware](https://www.linkedin.com/company/2988) | [63.5k†](https://www.levels.fyi/companies/vmware/salaries) | 1 | levels.fyi |
-| [Santander](https://www.linkedin.com/company/2873) | [63.3k†](https://www.levels.fyi/companies/santander/salaries) | 1 | levels.fyi |
-| [Sage](https://www.linkedin.com/company/2802) | [63.2k†](https://www.levels.fyi/companies/sage/salaries) | 1 | levels.fyi |
-| [Klarna](https://www.linkedin.com/company/748731) | [62.3k†](https://www.levels.fyi/companies/klarna/salaries) | 1 | levels.fyi |
-| [ING](https://www.linkedin.com/company/2594164) | [62k†](https://www.levels.fyi/companies/ing/salaries) | 1 | levels.fyi |
-| [Keysight Technologies](https://www.linkedin.com/company/3812750) | [61.9k†](https://www.levels.fyi/companies/keysight/salaries) | 1 | levels.fyi |
-| [TomTom](https://www.linkedin.com/company/tomtom) | [60k†](https://www.levels.fyi/companies/tomtom/salaries) | 1 | levels.fyi |
-| [Swiss Re](https://www.linkedin.com/company/3845) | [59k†](https://www.levels.fyi/companies/swiss-re/salaries) | 1 | levels.fyi |
-| [Clarivate](https://www.linkedin.com/company/10950962) | [58.9k†](https://www.levels.fyi/companies/clarivate/salaries) | 1 | levels.fyi |
-| [Celonis](https://www.linkedin.com/company/celonis) | [58.8k†](https://www.levels.fyi/companies/celonis/salaries) | 1 | levels.fyi |
-| [Allianz](https://www.linkedin.com/company/2979) | [58.5k†](https://www.levels.fyi/companies/allianz/salaries) | 1 | levels.fyi |
-| [Veeva Systems](https://www.linkedin.com/company/402048) | [58.5k†](https://www.levels.fyi/companies/veeva-systems/salaries) | 1 | levels.fyi |
-| [BBVA](https://www.linkedin.com/company/bbva) | [54.4k*](https://www.levels.fyi/companies/bbva/salaries) | — | levels.fyi |
-| [Oracle](https://www.linkedin.com/company/1028) | [54.4k†](https://www.levels.fyi/companies/oracle/salaries) | 1 | levels.fyi |
-| [The Workshop](https://www.linkedin.com/company/10258548) | [54.3k*](https://www.levels.fyi/companies/workshop/salaries) | — | levels.fyi |
-| [Semidynamics](https://www.linkedin.com/company/semidynamics) | [54k*](https://www.levels.fyi/companies/semidynamics/salaries) | — | levels.fyi |
-| [Criteo](https://www.linkedin.com/company/37209) | [52.5k†](https://www.levels.fyi/companies/criteo/salaries) | 1 | levels.fyi |
-| [IKEA](https://www.linkedin.com/company/ikea) | [51k†](https://www.levels.fyi/companies/ikea/salaries) | 1 | levels.fyi |
-| [EF](https://www.linkedin.com/company/4856) | [48.8k†](https://www.levels.fyi/companies/ef-education-first/salaries) | 1 | levels.fyi |
-| [NTT DATA](https://www.linkedin.com/company/nttdata) | [48.2k*](https://www.levels.fyi/companies/ntt-data/salaries) | — | levels.fyi |
-| [Mercedes-Benz AG](https://www.linkedin.com/company/5383634) | [47.8k†](https://www.levels.fyi/companies/mercedes-benz/salaries) | 1 | levels.fyi |
-| [adidas](https://www.linkedin.com/company/3748) | [47.3k†](https://www.levels.fyi/companies/adidas/salaries) | 1 | levels.fyi |
-| [Ericsson](https://www.linkedin.com/company/1060) | [47.3k†](https://www.levels.fyi/companies/ericsson/salaries) | 1 | levels.fyi |
-| [Amadeus](https://www.linkedin.com/company/amadeus) | [46.6k†](https://www.levels.fyi/companies/amadeus/salaries) | 1 | levels.fyi |
-| [Deloitte](https://www.linkedin.com/company/1038) | [46.2k†](https://www.levels.fyi/companies/deloitte/salaries) | 1 | levels.fyi |
-| [Schneider Electric](https://www.linkedin.com/company/2329) | [45.1k†](https://www.levels.fyi/companies/schneider-electric/salaries) | 1 | levels.fyi |
-| [Barcelona Supercomputing Center](https://www.linkedin.com/company/barcelona-supercomputing-center) | [43.8k*](https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries) | — | levels.fyi |
-| [Indra](https://www.linkedin.com/company/indra) | [43.5k*](https://www.levels.fyi/companies/indra/salaries) | — | levels.fyi |
-| [Minsait](https://www.linkedin.com/company/minsait) | [42.3k*](https://www.levels.fyi/companies/minsait/salaries) | — | levels.fyi |
-| [Siemens](https://www.linkedin.com/company/1043) | [38.8k†](https://www.levels.fyi/companies/siemens/salaries) | 1 | levels.fyi |
-| [SDG Group](https://www.linkedin.com/company/sdg-group) | [38.1k*](https://www.levels.fyi/companies/sdg-group/salaries) | — | levels.fyi |
-| [Capgemini](https://www.linkedin.com/company/capgemini) | [36.9k†](https://www.levels.fyi/companies/capgemini/salaries) | 1 | levels.fyi |
-| [Accenture](https://www.linkedin.com/company/accenture) | [36.4k†](https://www.levels.fyi/companies/accenture/salaries) | 1 | levels.fyi |
-| [IBM](https://www.linkedin.com/company/1009) | [32.9k†](https://www.levels.fyi/companies/ibm/salaries) | 1 | levels.fyi |
-| [Ernst and Young](https://www.linkedin.com/company/ernstandyoung) | [29.2k†](https://www.levels.fyi/companies/ernst-and-young/salaries) | 1 | levels.fyi |
+| [Tiger Data (creators of TimescaleDB)](https://www.linkedin.com/company/107383551) | [173.8k*](https://www.levels.fyi/companies/tiger-data/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Timescale](https://www.linkedin.com/company/11065434) | [153.3k*](https://www.levels.fyi/companies/timescale/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Xata.io](https://www.linkedin.com/company/69560619) | [140k*](https://www.levels.fyi/companies/xata/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Workato](https://www.linkedin.com/company/3675685) | [138.2k†](https://www.levels.fyi/companies/workato/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Hopin](https://www.linkedin.com/company/105238356) | [128k†](https://www.levels.fyi/companies/hopin/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Auth0](https://www.linkedin.com/company/3089380) | [120.8k†](https://www.levels.fyi/companies/auth0/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Revolut](https://www.linkedin.com/company/revolut) | [120k*](https://www.levels.fyi/companies/revolut/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Grafana Labs](https://www.linkedin.com/company/11062162) | [117.2k†](https://www.levels.fyi/companies/grafana/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Toptal](https://www.linkedin.com/company/1545609) | [116k†](https://www.levels.fyi/companies/toptal/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Spotify](https://www.linkedin.com/company/207470) | [116k†](https://www.levels.fyi/companies/spotify/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Remote](https://www.linkedin.com/company/17955831) | [113.2k*](https://www.levels.fyi/companies/remote/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Meta](https://www.linkedin.com/company/10667) | [112.7k†](https://www.levels.fyi/companies/facebook/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Teya](https://www.linkedin.com/company/93621491) | [111.8k†](https://www.levels.fyi/companies/teya/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Unity](https://www.linkedin.com/company/212669) | [108.9k†](https://www.levels.fyi/companies/unity/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Aily Labs](https://www.linkedin.com/company/ailylabs) | [108.5k*](https://www.levels.fyi/companies/aily-labs/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Smile.io](https://www.linkedin.com/company/2400901) | [105k†](https://www.levels.fyi/companies/smileio/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Elastic](https://www.linkedin.com/company/814025) | [103.9k†](https://www.levels.fyi/companies/elastic/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Preply](https://www.linkedin.com/company/2762432) | [101.5k*](https://www.levels.fyi/companies/preply/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Tinybird](https://www.linkedin.com/company/35704741) | [100.4k*](https://www.levels.fyi/companies/tinybird/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Eventbrite](https://www.linkedin.com/company/167280) | [99.8k*](https://www.levels.fyi/companies/eventbrite/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Aetion, a Datavant Company](https://www.linkedin.com/company/6576393) | [99.3k†](https://www.levels.fyi/companies/aetion/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Pleo](https://www.linkedin.com/company/10275909) | [98.9k†](https://www.levels.fyi/companies/pleo/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Semrush](https://www.linkedin.com/company/semrush) | [98.1k*](https://www.levels.fyi/companies/semrush/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Stripe](https://www.linkedin.com/company/2135371) | [97.7k†](https://www.levels.fyi/companies/stripe/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [RingCentral](https://www.linkedin.com/company/60868) | [96k†](https://www.levels.fyi/companies/ringcentral/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [GitHub](https://www.linkedin.com/company/1418841) | [95.8k†](https://www.levels.fyi/companies/github/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Medallia](https://www.linkedin.com/company/49697) | [95.7k†](https://www.levels.fyi/companies/medallia/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Microsoft](https://www.linkedin.com/company/1035) | [94.2k†](https://www.levels.fyi/companies/microsoft/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Picsart](https://www.linkedin.com/company/3007630) | [93.8k†](https://www.levels.fyi/companies/picsart/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Zendesk](https://www.linkedin.com/company/418095) | [93.3k†](https://www.levels.fyi/companies/zendesk/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Gartner](https://www.linkedin.com/company/2078) | [93.2k†](https://www.levels.fyi/companies/gartner/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Job&Talent](https://www.linkedin.com/company/296493) | [93k*](https://www.levels.fyi/companies/jobandtalent/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Collate](https://www.linkedin.com/company/78395355) | [92.9k*](https://www.levels.fyi/companies/collate/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Intellias](https://www.linkedin.com/company/49445) | [91.5k†](https://www.levels.fyi/companies/intellias/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [sennder](https://www.linkedin.com/company/10442437) | [91.5k†](https://www.levels.fyi/companies/sennder/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [PayFit](https://www.linkedin.com/company/6436622) | [91.2k*](https://www.levels.fyi/companies/payfit/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [MoonPay](https://www.linkedin.com/company/12596773) | [91.1k†](https://www.levels.fyi/companies/moonpay/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Perk](https://www.linkedin.com/company/perk) | [90.5k*](https://www.levels.fyi/companies/perk/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Stenn](https://www.linkedin.com/company/stenn-financial-services) | [89.6k†](https://www.levels.fyi/companies/stenn/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Affirm](https://www.linkedin.com/company/2963249) | [88.9k†](https://www.levels.fyi/companies/affirm/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Brainly](https://www.linkedin.com/company/2745890) | [88.8k†](https://www.levels.fyi/companies/brainly/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Typeform](https://www.linkedin.com/company/3226972) | [88k*](https://www.levels.fyi/companies/typeform/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Mirantis](https://www.linkedin.com/company/7793) | [87.2k†](https://www.levels.fyi/companies/mirantis/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Palo Alto Networks](https://www.linkedin.com/company/30086) | [87k†](https://www.levels.fyi/companies/palo-alto-networks/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Red Hat](https://www.linkedin.com/company/3545) | [86.5k†](https://www.levels.fyi/companies/red-hat/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [TravelPerk](https://www.linkedin.com/company/travelperk) | [86k*](https://www.levels.fyi/companies/travelperk/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Personio](https://www.linkedin.com/company/10180448) | [85.8k†](https://www.levels.fyi/companies/personio/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [VistaPrint](https://www.linkedin.com/company/8095) | [85.3k†](https://www.levels.fyi/companies/vistaprint/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Manychat](https://www.linkedin.com/company/11058494) | [85k†](https://www.levels.fyi/companies/manychat/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Glovo](https://www.linkedin.com/company/glovo-app) | [84.2k*](https://www.levels.fyi/companies/glovo/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [SUSE](https://www.linkedin.com/company/1455) | [84.2k†](https://www.levels.fyi/companies/suse/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Rover.com](https://www.linkedin.com/company/2686335) | [84k†](https://www.levels.fyi/companies/rovercom/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [New Relic](https://www.linkedin.com/company/426253) | [83.4k†](https://www.levels.fyi/companies/new-relic/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [The Trade Desk](https://www.linkedin.com/company/892001) | [83.4k†](https://www.levels.fyi/companies/the-trade-desk/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [dLocal](https://www.linkedin.com/company/15156062) | [82.3k*](https://www.levels.fyi/companies/dlocal/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [N26](https://www.linkedin.com/company/n26) | [82.1k†](https://www.levels.fyi/companies/n26/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Datadog](https://www.linkedin.com/company/1066442) | [82.1k†](https://www.levels.fyi/companies/datadog/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Pearson](https://www.linkedin.com/company/2137) | [81.9k†](https://www.levels.fyi/companies/pearson/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [AstraZeneca](https://www.linkedin.com/company/1603) | [81.4k†](https://www.levels.fyi/companies/astrazeneca/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Mitek Systems](https://www.linkedin.com/company/395288) | [81.3k*](https://www.levels.fyi/companies/mitek-systems/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Akamai Technologies](https://www.linkedin.com/company/3925) | [81.1k†](https://www.levels.fyi/companies/akamai/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Bitpanda](https://www.linkedin.com/company/18164565) | [81k†](https://www.levels.fyi/companies/bitpanda/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Adyen](https://www.linkedin.com/company/adyen) | [80.1k†](https://www.levels.fyi/companies/adyen/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Fever](https://www.linkedin.com/company/2346695) | [79.2k*](https://www.levels.fyi/companies/fever/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Factorial](https://www.linkedin.com/company/factorialhr) | [77.4k*](https://www.levels.fyi/companies/factorial/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Wallapop](https://www.linkedin.com/company/3302579) | [77.3k*](https://www.levels.fyi/companies/wallapop/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Skyscanner](https://www.linkedin.com/company/123380) | [77.3k†](https://www.levels.fyi/companies/skyscanner/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Sanofi](https://www.linkedin.com/company/1642) | [77k*](https://www.levels.fyi/companies/sanofi/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Mews](https://www.linkedin.com/company/2574959) | [76.6k*](https://www.levels.fyi/companies/mews/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Bumble Inc.](https://www.linkedin.com/company/9408755) | [76k†](https://www.levels.fyi/companies/bumble/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Adevinta](https://www.linkedin.com/company/adevinta) | [75.7k*](https://www.levels.fyi/companies/adevinta/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Ocado Group](https://www.linkedin.com/company/165276) | [75.7k†](https://www.levels.fyi/companies/ocado-group/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Tabby](https://www.linkedin.com/company/26615638) | [75.6k†](https://www.levels.fyi/companies/tabby/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Bayer](https://www.linkedin.com/company/1893) | [75.5k†](https://www.levels.fyi/companies/bayer/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Clarity AI](https://www.linkedin.com/company/9480749) | [74.3k*](https://www.levels.fyi/companies/clarity-ai/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Expedia Group](https://www.linkedin.com/company/2751) | [74.3k†](https://www.levels.fyi/companies/expedia-group/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Activision Blizzard](https://www.linkedin.com/company/15415277) | [73.7k†](https://www.levels.fyi/companies/activision-blizzard/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [TradingView](https://www.linkedin.com/company/3179069) | [73.5k†](https://www.levels.fyi/companies/tradingview/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [HPE](https://www.linkedin.com/company/hewlett-packard-enterprise) | [71.8k†](https://www.levels.fyi/companies/hpe/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Align Technology](https://www.linkedin.com/company/6867) | [71.8k†](https://www.levels.fyi/companies/align-technology/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Flywire](https://www.linkedin.com/company/434598) | [71.5k†](https://www.levels.fyi/companies/flywire/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [SEAT CODE](https://www.linkedin.com/company/22296997) | [71k*](https://www.levels.fyi/companies/seat-code/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Google](https://www.linkedin.com/company/1441) | [70.3k†](https://www.levels.fyi/companies/google/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Twilio](https://www.linkedin.com/company/400528) | [70.2k†](https://www.levels.fyi/companies/twilio/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Exoticca](https://www.linkedin.com/company/3317134) | [70.1k*](https://www.levels.fyi/companies/exoticca/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Qonto](https://www.linkedin.com/company/13205888) | [69.9k†](https://www.levels.fyi/companies/qonto/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Cabify](https://www.linkedin.com/company/cabify) | [69.2k*](https://www.levels.fyi/companies/cabify/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [King](https://www.linkedin.com/company/230546) | [68.9k†](https://www.levels.fyi/companies/king/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Dynatrace](https://www.linkedin.com/company/125999) | [68.2k†](https://www.levels.fyi/companies/dynatrace/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [T-Systems](https://www.linkedin.com/company/tsystems-brasil) | [68.2k†](https://www.levels.fyi/companies/t-systems/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Amazon](https://www.linkedin.com/company/1586) | [68k†](https://www.levels.fyi/companies/amazon/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Thoughtworks](https://www.linkedin.com/company/157356) | [67.6k†](https://www.levels.fyi/companies/thoughtworks/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Broadcom](https://www.linkedin.com/company/3072) | [67.2k†](https://www.levels.fyi/companies/broadcom/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Freenow](https://www.linkedin.com/company/freenow) | [67.2k†](https://www.levels.fyi/companies/free-now/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Nexthink](https://www.linkedin.com/company/92771) | [67k†](https://www.levels.fyi/companies/nexthink/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [eDreams ODIGEO](https://www.linkedin.com/company/edreamsodigeo) | [66.9k*](https://www.levels.fyi/companies/edreams-odigeo/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Electronic Arts (EA)](https://www.linkedin.com/company/1449) | [65.7k†](https://www.levels.fyi/companies/electronic-arts/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [UserTesting](https://www.linkedin.com/company/564709) | [65.6k†](https://www.levels.fyi/companies/usertesting/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Scopely](https://www.linkedin.com/company/2057437) | [65.5k†](https://www.levels.fyi/companies/scopely/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Multiverse Computing](https://www.linkedin.com/company/18863453) | [65.2k*](https://www.levels.fyi/companies/multiverse-computing/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [BASF](https://www.linkedin.com/company/basf) | [64.6k†](https://www.levels.fyi/companies/basf/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Inditex](https://www.linkedin.com/company/14853) | [64.5k*](https://www.levels.fyi/companies/inditex/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Ryanair - Europe's Favourite Airline](https://www.linkedin.com/company/16584) | [64.1k*](https://www.levels.fyi/companies/ryanair/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Docplanner](https://www.linkedin.com/company/2254852) | [64k†](https://www.levels.fyi/companies/docplanner/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [EPAM Systems](https://www.linkedin.com/company/4972) | [63.8k†](https://www.levels.fyi/companies/epam-systems/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [VMware](https://www.linkedin.com/company/2988) | [63.5k†](https://www.levels.fyi/companies/vmware/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Santander](https://www.linkedin.com/company/2873) | [63.3k†](https://www.levels.fyi/companies/santander/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Sage](https://www.linkedin.com/company/2802) | [63.2k†](https://www.levels.fyi/companies/sage/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Klarna](https://www.linkedin.com/company/748731) | [62.3k†](https://www.levels.fyi/companies/klarna/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [ING](https://www.linkedin.com/company/2594164) | [62k†](https://www.levels.fyi/companies/ing/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Keysight Technologies](https://www.linkedin.com/company/3812750) | [61.9k†](https://www.levels.fyi/companies/keysight/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [TomTom](https://www.linkedin.com/company/tomtom) | [60k†](https://www.levels.fyi/companies/tomtom/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Swiss Re](https://www.linkedin.com/company/3845) | [59k†](https://www.levels.fyi/companies/swiss-re/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Clarivate](https://www.linkedin.com/company/10950962) | [58.9k†](https://www.levels.fyi/companies/clarivate/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Celonis](https://www.linkedin.com/company/celonis) | [58.8k†](https://www.levels.fyi/companies/celonis/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Allianz](https://www.linkedin.com/company/2979) | [58.5k†](https://www.levels.fyi/companies/allianz/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Veeva Systems](https://www.linkedin.com/company/402048) | [58.5k†](https://www.levels.fyi/companies/veeva-systems/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [BBVA](https://www.linkedin.com/company/bbva) | [54.4k*](https://www.levels.fyi/companies/bbva/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Oracle](https://www.linkedin.com/company/1028) | [54.4k†](https://www.levels.fyi/companies/oracle/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [The Workshop](https://www.linkedin.com/company/10258548) | [54.3k*](https://www.levels.fyi/companies/workshop/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Semidynamics](https://www.linkedin.com/company/semidynamics) | [54k*](https://www.levels.fyi/companies/semidynamics/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Criteo](https://www.linkedin.com/company/37209) | [52.5k†](https://www.levels.fyi/companies/criteo/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [IKEA](https://www.linkedin.com/company/ikea) | [51k†](https://www.levels.fyi/companies/ikea/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [EF](https://www.linkedin.com/company/4856) | [48.8k†](https://www.levels.fyi/companies/ef-education-first/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [NTT DATA](https://www.linkedin.com/company/nttdata) | [48.2k*](https://www.levels.fyi/companies/ntt-data/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Mercedes-Benz AG](https://www.linkedin.com/company/5383634) | [47.8k†](https://www.levels.fyi/companies/mercedes-benz/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [adidas](https://www.linkedin.com/company/3748) | [47.3k†](https://www.levels.fyi/companies/adidas/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Ericsson](https://www.linkedin.com/company/1060) | [47.3k†](https://www.levels.fyi/companies/ericsson/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Amadeus](https://www.linkedin.com/company/amadeus) | [46.6k†](https://www.levels.fyi/companies/amadeus/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Deloitte](https://www.linkedin.com/company/1038) | [46.2k†](https://www.levels.fyi/companies/deloitte/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Schneider Electric](https://www.linkedin.com/company/2329) | [45.1k†](https://www.levels.fyi/companies/schneider-electric/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Barcelona Supercomputing Center](https://www.linkedin.com/company/barcelona-supercomputing-center) | [43.8k*](https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Indra](https://www.linkedin.com/company/indra) | [43.5k*](https://www.levels.fyi/companies/indra/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Minsait](https://www.linkedin.com/company/minsait) | [42.3k*](https://www.levels.fyi/companies/minsait/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Siemens](https://www.linkedin.com/company/1043) | [38.8k†](https://www.levels.fyi/companies/siemens/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [SDG Group](https://www.linkedin.com/company/sdg-group) | [38.1k*](https://www.levels.fyi/companies/sdg-group/salaries/software-engineer/locations/spain) | — | levels.fyi |
+| [Capgemini](https://www.linkedin.com/company/capgemini) | [36.9k†](https://www.levels.fyi/companies/capgemini/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Accenture](https://www.linkedin.com/company/accenture) | [36.4k†](https://www.levels.fyi/companies/accenture/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [IBM](https://www.linkedin.com/company/1009) | [32.9k†](https://www.levels.fyi/companies/ibm/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
+| [Ernst and Young](https://www.linkedin.com/company/ernstandyoung) | [29.2k†](https://www.levels.fyi/companies/ernst-and-young/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
 | [ABN AMRO Bank N.V.](https://www.linkedin.com/company/1173) | — | — | — |
 | [Adobe](https://www.linkedin.com/company/1480) | — | — | — |
 | [Airbnb](https://www.linkedin.com/company/309694) | — | — | — |
