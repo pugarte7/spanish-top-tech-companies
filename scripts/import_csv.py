@@ -120,6 +120,21 @@ def main(argv: list[str]) -> int:
             name = clean(row.get("name"))
             if not name:
                 continue
+
+            # Check the whole row before writing anything. The skeleton used to
+            # be created first and the band built afterwards, so a row carrying
+            # only a name still left a company file behind with CHANGEME in
+            # every field - which is what data/job-postings-seed.csv is, 19
+            # names and no salaries.
+            missing = [column for column in ("role", "level") if not clean(row.get(column))]
+            if not any(as_int(row.get(f"base_{key}")) is not None
+                       for key in ("min", "p50", "max")):
+                missing.append("base_min/base_p50/base_max")
+            if missing:
+                print(f"  line {line_no}: skipped ({name}: no {', '.join(missing)})")
+                skipped += 1
+                continue
+
             slug = clean(row.get("slug")) or slugify(name)
 
             if slug not in companies:
