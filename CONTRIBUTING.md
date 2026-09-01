@@ -77,7 +77,7 @@ python3 scripts/fetch_levels.py --company Cabify --role data-engineer
 python3 scripts/fetch_levels.py --dry-run --company Cabify      # see the calls, no key needed
 ```
 
-It pulls per-level percentiles filtered to Spain, maps them onto our level ladder and merges them into the company file. Read [METHODOLOGY.md](METHODOLOGY.md#sources) first: the data is licensed, and a key is not permission to republish.
+It is meant to pull per-level percentiles filtered to Spain, map them onto our level ladder and merge them into the company file — which is the one thing the public pages cannot give. Nobody has run it against a real key yet, so treat it as untested and check what it writes. Read [METHODOLOGY.md](METHODOLOGY.md#sources) first: the data is licensed, and a key is not permission to republish.
 
 **Before you push:**
 
