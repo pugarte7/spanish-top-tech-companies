@@ -1,8 +1,8 @@
 # Working context
 
-Written 2026-08-31, at the end of a long session. Read this before touching the
-data pipeline; several things about Levels.fyi are counter-intuitive and cost a
-lot of time to discover.
+Read this before touching the data pipeline. Several things about Levels.fyi
+are counter-intuitive and cost a lot of time to discover, and one of them has
+now been paid for twice.
 
 ## What this repository is
 
@@ -19,15 +19,15 @@ bearing:
 
 A row should eventually mean: *I know someone in Spain doing this job and what
 they earn, or they offered me the position.* Nothing on the list meets that yet
-— all 144 figures are crowdsourced from Levels.fyi. The `Source` column exists
-to make that visible, and first-hand entries sort above everything else so the
+— every figure is crowdsourced from Levels.fyi. The `Source` column exists to
+make that visible, and first-hand entries sort above everything else so the
 list visibly converges on the standard as they are added.
 
 Recording one:
 
 ```csv
 name,role,level,base_p50,contract,sample_size,source,source_date
-Example Company,software-engineer,senior,78000,spanish-payroll,1,community,2026-08-31
+Example Company,software-engineer,senior,78000,spanish-payroll,1,community,2026-09-02
 ```
 
 `community` = someone told you. `offer-letter` = you were offered it. Then
@@ -35,19 +35,23 @@ Example Company,software-engineer,senior,78000,spanish-payroll,1,community,2026-
 
 ## Current state
 
-Branch `worktree-resolve-similar-names`, 10 commits ahead of `main`, pushed. No
-PR opened yet.
+All work is on `main`, which now contains the Spain-only pipeline merged from
+`worktree-resolve-similar-names` (2026-09-02). That branch and the stale
+`preview` branch can both be deleted.
 
 ```
-262 companies · 112 paying 60k+ · 144 with pay on file · 528 data points
+261 companies · 112 paying 60k+ · 140 with pay on file · 100 data points
 ```
 
-- `data/companies/*.yml` — 151 files (150 companies plus `_template.yml`)
-- `data/backlog.csv` — 243 rows, 223 resolved to a Levels.fyi slug, 20 not on
+- `data/companies/*.yml` — 170 files (169 companies plus `_template.yml`)
+- `data/backlog.csv` — 242 rows, 223 resolved to a Levels.fyi slug, 19 not on
   Levels.fyi at all
-- Front page rows: 3 measured senior, 41 upper-quartile estimates (`*`), 100
-  single submissions (`†`), 118 with no figure
-- Every row links to LinkedIn; figures link to Levels.fyi
+- Front page rows: 41 upper-quartile estimates (`*`), 99 single submissions
+  (`†`), 121 with no figure. **No measured senior rows.** The three that used to
+  be there came off the unscoped company page and did not survive the purge
+  below, which is the honest outcome.
+- Every row links to LinkedIn; every figure links to the Spain-scoped page it
+  was actually read from
 
 The front page is one table: company, senior figure, data points, source. The
 old per-role tables, benchmarks and 900 lines of company profiles were removed
@@ -58,12 +62,26 @@ deliberately — Levels.fyi presents that better and the full data is in
 
 **1. A company page silently serves another country.**
 `/companies/<slug>/salaries` is scoped by the caller's IP and falls back to the
-company's home country when there are no Spanish submissions. The old guard
+company's home country when there are no Spanish submissions. An early guard
 checked only that the page currency was EUR, which Germany, the Netherlands,
-France and Ireland all pass. This put Dutch salaries on Adyen and TomTom,
+France and Ireland all pass. That put Dutch salaries on Adyen and TomTom,
 German ones on Celonis, N26, FREE NOW and T-Systems, and US ones elsewhere.
-Those bands have been purged. `fetch_company.py` still has this flaw — prefer
-`fetch_spain.py`.
+
+This has now been enforced twice, and the second time is the instructive one.
+The first sweep removed 682 foreign bands and added the guard in `validate.py`.
+But the branch carrying all the Spain work had been cut *before* that sweep
+landed, so it never received either, and it carried 205 of those bands back in
+across 27 companies. Its own purge missed them for two independent reasons: it
+only ran for companies where no Spanish figure was found (so any company that
+did have one kept its foreign bands beside it), and it matched on the wording of
+`notes` rather than on the source URL, which caught `reports this as` while
+missing `Median across all levels` and `Common Range Average across all levels`
+— 173 of the 205.
+
+Both holes are closed, and the lesson is in where the fix lives: **the check
+that matters is in `validate.py`**, because that is the one every branch and
+every pull request has to pass. A guard that lives only in the fetcher protects
+only the data that fetcher happens to write.
 
 **2. The per-location page answers in two voices, and they disagree.**
 On `/companies/<slug>/salaries/software-engineer/locations/spain`:
@@ -95,14 +113,14 @@ figure" are different claims, and the second is often false.
 
 | Script | What it does | Safe? |
 | --- | --- | --- |
-| `fetch_spain.py` | Per-company Spain pay. Verifies Spain, writes base + total comp, records LinkedIn. | **Use this** |
+| `fetch_spain.py` | Per-company Spain pay. Verifies Spain, writes base + total comp, records LinkedIn, deletes any band whose source URL names no location. | **Use this** |
 | `fetch_levels_public.py` | Spain country pages (`/t/<role>/locations/spain`). Genuinely Spain-scoped but lists only ~10 companies per role/location, so it tops out around 47 companies. | Yes |
-| `fetch_company.py` | Per-level ladders from the unscoped company page. **Trap 1 applies.** | No, not without a location guard |
-| `fetch_levels.py` | Official Compensation API. Needs a key. | Yes |
+| `fetch_company.py` | Company metadata only — website, HQ, headcount, sector, vesting. Writes no salary at all, by design. | Yes |
+| `fetch_levels.py` | Official Compensation API. Needs a key, and has never actually been run. | Untested |
 | `resolve_slugs.py` | Company name → Levels.fyi slug, with verification and an alias table. | Yes |
-| `import_csv.py` | Bulk-load salaries from CSV. How first-hand entries get in. | See caveat below |
+| `import_csv.py` | Bulk-load salaries from CSV. How first-hand entries get in. Skips rows with no role, level or base figure. | Yes |
 | `build.py` | Regenerates the README table and `exports/`. | Yes |
-| `validate.py` | Schema and sanity checks. | Yes |
+| `validate.py` | Schema and sanity checks, including the location guard. | Yes |
 
 All Levels.fyi fetching **must run from Spain** — the pages are IP-scoped.
 
@@ -112,23 +130,19 @@ is what originally wrote 56 false `unmatched` rows into the backlog. Keep
 
 ## Known gaps
 
-- **118 companies have no figure.** Levels.fyi publishes nothing Spanish for
+- **121 companies have no figure.** Levels.fyi publishes nothing Spanish for
   them. `data/job-postings-seed.csv` is scaffolded for the LinkedIn job-ad
   route, which is source #3 in METHODOLOGY.md and the only way to reach these.
-- **`import_csv.py` footgun.** It only guards on `name` being present, and
-  writes the company skeleton *before* `merge_level` runs, so a row with no
-  role/level still creates a `.yml` with `website: https://CHANGEME`. Do not
-  run it over the blank seed file. A guard skipping rows with no role/level
-  would fix it.
-- **`fetch_company.py` is still unsafe** for the reason in trap 1.
-- **`Kubernetes (Official)`** is in `backlog.csv` but is a project, not an
-  employer. Probably delete the row.
+  It holds names only, no salaries; `import_csv.py` now skips such rows rather
+  than creating stub files from them.
+- **No first-hand data yet.** Every figure is crowdsourced. The repository's own
+  standard is not met by a single row, which is the biggest gap on this list.
 - **Duplicate slugs.** Levels.fyi files some employers twice (`meta` and
   `facebook`). `build.py` merges them via the resolver's `matched as` note,
   uppercase acronyms, and slug identity. If a company shows twice, that merge
   is where to look.
-- **Warnings.** 1018 of them, all pre-existing metadata gaps (no `work_model`,
-  non-canonical role slugs). 0 errors.
+- **Warnings.** 1003 of them, all pre-existing metadata gaps (no `work_model`,
+  no `spain_presence`, non-canonical role slugs). 0 errors.
 
 ## Commands
 
@@ -136,7 +150,7 @@ is what originally wrote 56 false `unmatched` rows into the backlog. Keep
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-python3 scripts/fetch_spain.py --delay 3.0        # ~14 min, 243 companies
+python3 scripts/fetch_spain.py --delay 3.0        # ~14 min, 242 companies
 python3 scripts/fetch_spain.py --audit            # report, write nothing
 python3 scripts/validate.py && python3 scripts/build.py
 ```

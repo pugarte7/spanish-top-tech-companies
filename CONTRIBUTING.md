@@ -35,6 +35,18 @@ python3 scripts/import_csv.py my-export.csv
 
 Columns are documented at the top of [`scripts/import_csv.py`](scripts/import_csv.py). It merges into existing files rather than overwriting them.
 
+**Spain-scoped pay, per company** (no key, but must run from Spain):
+
+```bash
+python3 scripts/fetch_spain.py --delay 3.0     # every resolved backlog slug, ~14 min
+python3 scripts/fetch_spain.py --company glovo
+python3 scripts/fetch_spain.py --audit         # report only, writes nothing
+```
+
+This is the main route, and the only one that gives base salary per company. It reads `/companies/<slug>/salaries/software-engineer/locations/spain` and writes a band only when the page says the figures it served really are Spanish — see [METHODOLOGY.md](METHODOLOGY.md#a-band-must-prove-it-is-spanish) for why that check is not optional. It also deletes any band already on file whose source URL names no location.
+
+Keep `--delay` at 2.5s or more. Levels.fyi answers 403, 405, 429 and 503 when it decides you are a bot, and all four mean *slow down*, not *no such company*.
+
 **From Levels.fyi's public pages** (no key needed):
 
 ```bash
@@ -46,18 +58,16 @@ This reads the markdown routes Levels.fyi publishes for agents and asks attribut
 
 Those pages are served from a 12-hour CDN cache and return nothing when cold, so any single run picks up only part of the data. Running it repeatedly over a few days accumulates coverage; it never overwrites a good band with an empty one.
 
-**Company details and per-level ladders** (no key, but must run from Spain):
+**Company details** — website, HQ, headcount, sector, vesting (no key needed):
 
 ```bash
 python3 scripts/fetch_company.py --all          # every company already on file
 python3 scripts/fetch_company.py --company glovo
 ```
 
-Each Levels.fyi company page embeds the company's own record (website, careers page, LinkedIn, headquarters, headcount, industry, vesting) and a per-level pay ladder with submission counts.
+Metadata only, deliberately. The same page carries a per-level pay ladder, and that ladder is **not** filtered to Spain: it is the company's global data shown in whatever currency your own IP implies, so `EUR` tells you nothing about where the money was earned. Reading it as Spanish once put 682 foreign bands in here, and a later branch put 205 more back. The script no longer writes salary of any kind — [`fetch_spain.py`](scripts/fetch_spain.py) above is the route for that.
 
-Two things to know. Those pages are scoped by **your IP address** and ignore every location query parameter, so from outside Spain they return another country's figures in another currency; the script checks and skips rather than writing them. And the company details come from Levels.fyi, which gets some of them wrong (it lists Glovo in Milan and BBVA in Birmingham) — worth checking against reality before trusting.
-
-It never overwrites a field a human has already filled in.
+The details themselves come from Levels.fyi, which gets some of them wrong (it lists Glovo in Milan and BBVA in Birmingham) — worth checking against reality before trusting. It never overwrites a field a human has already filled in.
 
 **From the Levels.fyi API** (needs a key, request one at [levels.fyi/api-access](https://www.levels.fyi/api-access/)):
 

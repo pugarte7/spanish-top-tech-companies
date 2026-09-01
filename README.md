@@ -3,7 +3,7 @@
 Which tech companies in Spain pay senior software engineers 60.000 € a year or more, and which ones nobody has checked yet.
 
 <!-- BEGIN:STATS -->
-**262 companies** · **112 paying 60k+** · 140 with pay on file · 100 data points · newest data 2026-08-31
+**261 companies** · **112 paying 60k+** · 140 with pay on file · 100 data points · newest data 2026-08-31
 <!-- END:STATS -->
 
 <!-- BEGIN:COMPANIES -->
@@ -211,7 +211,6 @@ Which tech companies in Spain pay senior software engineers 60.000 € a year or
 | [Just Eat Takeaway.com](https://www.linkedin.com/company/103531) | — | — | — |
 | [Kinaxis](https://www.linkedin.com/company/14051) | — | — | — |
 | [Kraken](https://www.linkedin.com/company/3787845) | — | — | — |
-| [Kubernetes (Official)](https://www.linkedin.com/company/1342262) | — | — | — |
 | [Ledgy](https://www.linkedin.com/company/18347648) | — | — | — |
 | [Lodgify](https://www.linkedin.com/company/3151385) | — | — | — |
 | [Lucid Motors](https://www.linkedin.com/company/1684122) | — | — | — |
@@ -272,7 +271,7 @@ Which tech companies in Spain pay senior software engineers 60.000 € a year or
 | [Xoople](https://www.linkedin.com/company/95972483) | — | — | — |
 | [Zartis](https://www.linkedin.com/company/2274396) | — | — | — |
 
-<sub>140 of 262 companies have pay on file, 0 of them first-hand. **Source** says where the number came from: **known personally** is someone in Spain who told the maintainer what they earn, **offer received** is an offer the maintainer was made, and anything else is crowdsourced and worth less. **Data points** is how many salaries the figure rests on. An unmarked figure is a measured senior salary; `*` (41) is the upper quartile of every engineer at that company in Spain; `†` (99) is one person's number. Company names link to LinkedIn, figures to Levels.fyi.</sub>
+<sub>140 of 261 companies have pay on file, 0 of them first-hand. **Source** says where the number came from: **known personally** is someone in Spain who told the maintainer what they earn, **offer received** is an offer the maintainer was made, and anything else is crowdsourced and worth less. **Data points** is how many salaries the figure rests on. How well a figure is known: `*` (41) is the upper quartile of every engineer at that company in Spain; `†` (99) is one person's number. Company names link to LinkedIn, figures to the Levels.fyi page they were read from.</sub>
 <!-- END:COMPANIES -->
 
 ## How to read this
@@ -347,7 +346,7 @@ The table is the short version. Every band, level, source and date is in the exp
 
 ### Attribution
 
-Compensation bands marked `levels.fyi` are retrieved through the official [Levels.fyi Compensation API](https://www.levels.fyi/api-access/) and stored as aggregate percentiles with a link back to the source page.
+Compensation bands marked `levels.fyi` are read from [Levels.fyi](https://www.levels.fyi)'s public pages and stored as aggregate percentiles or single published medians, never as their individual submission rows. Every figure links back to the page it was read from.
 
 > Data source: Levels.fyi (https://www.levels.fyi)
 

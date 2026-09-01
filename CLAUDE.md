@@ -9,8 +9,12 @@ The three things that will bite you:
 1. **Levels.fyi serves another country's salaries when it has no Spanish data**,
    and the page currency stays EUR for Germany, the Netherlands, France and
    Ireland. Guard on `percentiles.locationName`, never on currency and never on
-   `locationMeta`. Use `scripts/fetch_spain.py`; `scripts/fetch_company.py`
-   still has this flaw.
+   `locationMeta`. `scripts/fetch_spain.py` is the only script that writes pay;
+   `scripts/fetch_company.py` is metadata-only for exactly this reason.
+   `validate.py` rejects any levels.fyi source URL without `/locations/` in it,
+   which is the backstop that catches whatever a fetcher gets wrong — leave it
+   in place. This trap has been paid for twice: 682 foreign bands, then 205
+   more carried in by a branch cut before the first fix.
 2. **The per-location page has two independent sources.** `percentiles` is an
    aggregate that falls back to another country; `median` is one real Spanish
    submission that survives when the aggregate does not. Read both or you lose

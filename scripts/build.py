@@ -358,6 +358,17 @@ def render_companies(companies: list[dict]) -> str:
         rows.append(f"| {name} | {cell} | {points} | {source} |")
 
     documented = sum(1 for e in entries if e["value"] is not None)
+
+    # Only describe a marker the table actually uses. There are no measured
+    # senior rungs on the list at the moment, and counting a tier at zero while
+    # naming it anyway reads as a stronger dataset than this one is.
+    legend = []
+    if counts["senior"]:
+        legend.append(f"unmarked ({counts['senior']}) is a measured senior salary")
+    legend.append(f"`*` ({counts['quartile']}) is the upper quartile of every engineer "
+                  "at that company in Spain")
+    legend.append(f"`\u2020` ({counts['single']}) is one person's number")
+
     rows.append("")
     rows.append(
         f"<sub>{documented} of {len(entries)} companies have pay on file, "
@@ -365,10 +376,9 @@ def render_companies(companies: list[dict]) -> str:
         "**known personally** is someone in Spain who told the maintainer what they "
         "earn, **offer received** is an offer the maintainer was made, and anything "
         "else is crowdsourced and worth less. **Data points** is how many salaries "
-        "the figure rests on. An unmarked figure is a measured senior salary; "
-        f"`*` ({counts['quartile']}) is the upper quartile of every engineer at that "
-        f"company in Spain; `\u2020` ({counts['single']}) is one person's number. Company "
-        "names link to LinkedIn, figures to Levels.fyi.</sub>"
+        f"the figure rests on. How well a figure is known: {'; '.join(legend)}. "
+        "Company names link to LinkedIn, figures to the Levels.fyi page they were "
+        "read from.</sub>"
     )
     return chr(10).join(rows)
 

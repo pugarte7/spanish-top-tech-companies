@@ -39,15 +39,15 @@ Every band needs at least one source. In rough order of how much we trust them:
 4. `community` — reported directly to this repo
 5. `glassdoor`, `other` — treat with suspicion
 
-**levels.fyi bands come through their official API, never by scraping.** [`scripts/fetch_levels.py`](scripts/fetch_levels.py) calls the documented [Compensation API](https://www.levels.fyi/api-access/) and stores aggregate percentiles only: never their individual submission rows.
+**Every levels.fyi band on file today was read from their public pages, not from their API.** Only aggregate percentiles and published medians are stored, never their individual submission rows. [`scripts/fetch_levels.py`](scripts/fetch_levels.py) speaks the documented [Compensation API](https://www.levels.fyi/api-access/) instead, which needs a key and would give per-level Spanish ladders — but nothing here has come through it yet, so treat that script as untested.
 
-Bands retrieved that way use the **interquartile range**: `min` is the 25th percentile and `max` is the 75th. Using p10–p90 would make every company look like it pays anything to anyone.
+Bands that carry a range use the **interquartile range**: `min` is the 25th percentile and `max` is the 75th. Using p10–p90 would make every company look like it pays anything to anyone.
 
 ### A band must prove it is Spanish
 
 Levels.fyi does not refuse a location it has no data for. Ask a company page for Spain and, if nobody in Spain has submitted for that employer, it quietly answers with another country: Germany for Celonis and N26, the Netherlands for Adyen and TomTom, the United States for a great many more. The page currency is no defence, because every euro-zone country returns EUR.
 
-The per-location page carries `percentiles.locationName`, which names the country actually served rather than the one requested. [`scripts/fetch_spain.py`](scripts/fetch_spain.py) writes a band only when that field says Spain, and deletes bands written before this rule existed for any company that fails it. `locationMeta` is not a substitute: it only echoes the URL back.
+The per-location page carries `percentiles.locationName`, which names the country actually served rather than the one requested. [`scripts/fetch_spain.py`](scripts/fetch_spain.py) writes a band only when that field says Spain, and deletes any band whose source URL names no location — whether or not the company also has a Spanish figure of its own, because a Spanish software-engineer band says nothing about the Dutch product-designer band filed beside it. `locationMeta` is not a substitute: it only echoes the URL back.
 
 A company with no Spanish figure is listed with no figure. That is the honest answer, and it is the one thing this repository exists to get right.
 
@@ -69,8 +69,9 @@ Total compensation is base plus bonus plus annualised equity. It is a bigger num
 
 ## Where the Levels.fyi figures come from
 
-Two public surfaces, neither needing a key:
+Three public surfaces, none needing a key:
 
+- **Per-location company pages** (`/companies/<slug>/salaries/<role>/locations/spain`) are where most figures now come from. Alone among the three they publish base salary next to total compensation, and they name the country actually served. [`scripts/fetch_spain.py`](scripts/fetch_spain.py) reads them.
 - **Job-family pages** (`/t/<role>/locations/spain`) give Spain-wide percentiles and a top-paying-companies table. One median per company, across all levels, so those land at level `all`.
 - **Company pages** (`/companies/<slug>/salaries`) give company details only here: website, careers page, LinkedIn, headquarters, headcount, industry, vesting.
 
@@ -82,7 +83,9 @@ A company page is **not filtered to Spain**. It shows that company's global figu
 
 Reading it as Spanish data put 682 foreign bands into this repository before it was caught: Booking.com's page reads EUR over Dutch figures, Adidas over United States figures, Revolut over British ones. A €367.000 product manager was the giveaway.
 
-So the rule is: **a Levels.fyi source URL must name a location**, as `/t/<role>/locations/spain` does. `validate.py` enforces it and fails the build otherwise. Per-level Spanish ladders need the official API, which does take a location filter.
+So the rule is: **a Levels.fyi source URL must name a location**, as `/t/<role>/locations/spain` and `/companies/<slug>/salaries/<role>/locations/spain` both do. `validate.py` enforces it and fails the build otherwise.
+
+It has had to be enforced twice. The first sweep removed the 682 bands above; a branch that had been cut before that sweep landed then carried 205 of them back in, across 27 companies, because the guard did not yet exist on it and the purge it did run matched on the wording of `notes` rather than on the URL. That is why the check lives in `validate.py`, where every branch and every pull request meets it, rather than in the fetcher that happens to be writing.
 
 ## Freshness
 
