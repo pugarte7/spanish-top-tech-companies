@@ -31,19 +31,19 @@ compensation:
     levels:
     - level: all
       base:
-        min: 29326
-        p50: 32832
-        max: 38116
+        min: 25220
+        p50: 28236
+        max: 32780
       total_comp:
-        min: 29326
-        p50: 32832
-        max: 39237
+        min: 25220
+        p50: 28236
+        max: 33744
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/sdg-group/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
 linkedin_url: https://www.linkedin.com/company/sdg-group
 year_founded: 1991

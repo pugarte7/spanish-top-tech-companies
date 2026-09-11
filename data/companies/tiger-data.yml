@@ -8,17 +8,18 @@ compensation:
     levels:
     - level: all
       base:
-        min: 173776
-        p50: 173776
-        max: 173776
+        min: 149447
+        p50: 149447
+        max: 149447
       total_comp:
-        min: 199842
-        p50: 199842
-        max: 199842
+        min: 171864
+        p50: 171864
+        max: 171864
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/tiger-data/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
+linkedin_url: https://www.linkedin.com/company/tigerdata

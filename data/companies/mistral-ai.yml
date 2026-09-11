@@ -1,0 +1,13 @@
+slug: mistral-ai
+name: Mistral
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles: []
+spain_check:
+  date: '2026-09-10'
+  roles:
+  - software-engineer
+  - solution-architect
+  served: no data
+linkedin_url: https://www.linkedin.com/company/mistralai

@@ -6,17 +6,31 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 75996
+        p50: 70937
       total_comp:
-        p50: 75996
-      sample_size: 1
+        p50: 88364
+      sample_size: 8
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/bumble/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level L3, 13 years experience.
-        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
-        a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 8 Spanish submissions at L4. Levels.fyi publishes an average per level,
+        not a median.
+    - level: all
+      base:
+        p50: 63778
+      total_comp:
+        p50: 76036
+      sample_size: 13
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/bumble/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 13 Spanish submissions, spanning 2 rungs of this company's ladder,
+        rung means 52k to 70k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/bumbleinc

@@ -18,20 +18,21 @@ compensation:
     levels:
     - level: all
       base:
-        min: 62796
-        p50: 73431
-        max: 84228
+        min: 39841
+        p50: 58917
+        max: 72436
       total_comp:
-        min: 62796
-        p50: 79711
-        max: 91668
+        min: 39841
+        p50: 63926
+        max: 78795
+      sample_size: 49
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/glovo/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
   - role: software-engineering-manager
     levels:
     - level: all

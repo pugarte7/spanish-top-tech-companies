@@ -1,0 +1,16 @@
+slug: imc
+name: IMC Trading
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles: []
+spain_check:
+  date: '2026-09-10'
+  roles:
+  - data-analyst
+  - data-scientist
+  - hardware-engineer
+  - software-engineer
+  - software-engineering-manager
+  served: no data
+linkedin_url: https://www.linkedin.com/company/imc-trading

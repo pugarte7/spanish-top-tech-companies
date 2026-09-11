@@ -14,6 +14,16 @@ compensation:
   roles: []
   currency: EUR
   basis: gross_annual
+spain_check:
+  date: '2026-09-10'
+  roles:
+  - data-analyst
+  - data-scientist
+  - product-manager
+  - software-engineer
+  - software-engineering-manager
+  - solution-architect
+  served: no data
 linkedin_url: https://www.linkedin.com/company/booking.com
 year_founded: 1996
 notes: 'Digital travel company, global reach. Equity: RSU vesting 34/1,33/1,33/1|25/1,25/12,25/12,25/12.'

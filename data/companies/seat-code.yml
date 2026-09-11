@@ -8,17 +8,18 @@ compensation:
     levels:
     - level: all
       base:
-        min: 54658
-        p50: 61430
-        max: 70955
+        min: 47006
+        p50: 52830
+        max: 61021
       total_comp:
-        min: 61658
-        p50: 69165
-        max: 79038
+        min: 53026
+        p50: 59482
+        max: 67973
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/seat-code/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
+linkedin_url: https://www.linkedin.com/company/seatcode

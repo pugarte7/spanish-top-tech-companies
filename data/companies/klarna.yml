@@ -6,17 +6,31 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 62281
+        p50: 56401
       total_comp:
-        p50: 67650
-      sample_size: 1
+        p50: 59624
+      sample_size: 6
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/klarna/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level L3, 10 years experience.
-        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
-        a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 6 Spanish submissions at L3. Levels.fyi publishes an average per level,
+        not a median.
+    - level: all
+      base:
+        p50: 54255
+      total_comp:
+        p50: 57362
+      sample_size: 8
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/klarna/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 8 Spanish submissions, spanning 2 rungs of this company's ladder,
+        rung means 47k to 56k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/klarna

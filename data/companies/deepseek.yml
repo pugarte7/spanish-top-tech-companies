@@ -1,0 +1,12 @@
+slug: deepseek
+name: DeepSeek AI
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles: []
+spain_check:
+  date: '2026-09-10'
+  roles:
+  - software-engineer
+  served: no data
+linkedin_url: https://www.linkedin.com/company/deepseek-ai

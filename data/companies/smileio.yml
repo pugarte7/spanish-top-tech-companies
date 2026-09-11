@@ -15,8 +15,9 @@ compensation:
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/smileio/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level Senior, 8 years experience.
-        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
-        a band.'
+        Levels.fyi published no Spanish aggregate or ladder for this company, so this is one data point
+        rather than a band.'
+linkedin_url: https://www.linkedin.com/company/smile.io

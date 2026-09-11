@@ -16,20 +16,59 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 82128
+        p50: 80761
       total_comp:
-        p50: 82128
-      sample_size: 1
+        p50: 83989
+      sample_size: 13
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/n26/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level L3, 6 years experience.
-        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
-        a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 13 Spanish submissions at L4. Levels.fyi publishes an average per level,
+        not a median.
+    - level: principal
+      base:
+        p50: 111261
+      total_comp:
+        p50: 197583
+      sample_size: 3
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/n26/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 3 Spanish submissions at L6. Levels.fyi publishes an average per level,
+        not a median.
+    - level: lead
+      base:
+        p50: 89528
+      total_comp:
+        p50: 98197
+      sample_size: 6
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/n26/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 6 Spanish submissions at L5. Levels.fyi publishes an average per level,
+        not a median.
+    - level: all
+      base:
+        p50: 79472
+      total_comp:
+        p50: 89688
+      sample_size: 35
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/n26/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 35 Spanish submissions, spanning 4 rungs of this company's ladder,
+        rung means 66k to 111k. Levels.fyi published no Spanish interquartile range for this company,
+        so this is its ladder pooled rather than a measured distribution.
 linkedin_url: https://www.linkedin.com/company/n26
 year_founded: 2013
 notes: 'Mobile bank with real-time tracking. Equity: RSU vesting 25,25,25,25|25/1,25/12,25/12,25/12.'

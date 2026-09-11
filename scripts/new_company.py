@@ -10,8 +10,9 @@ import yaml
 
 SKELETON_ORDER = [
     "slug", "name", "linkedin_id", "website", "careers_url", "hq",
-    "spain_presence", "employees", "sector", "work_model",
+    "employees", "sector", "work_model",
     "remote_within_spain", "contract", "working_language", "compensation",
+    "spain_check",
 ]
 
 
@@ -45,7 +46,6 @@ def main(argv: list[str]) -> int:
         "website": "https://CHANGEME",
         "careers_url": "https://CHANGEME",
         "hq": {"city": "CHANGEME", "country": "ES"},
-        "spain_presence": "hub",
         "employees": "201-500",
         "sector": ["CHANGEME"],
         "work_model": "hybrid",

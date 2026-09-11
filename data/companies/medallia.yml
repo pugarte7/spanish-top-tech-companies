@@ -6,17 +6,31 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: staff
       base:
-        p50: 95701
+        p50: 82256
       total_comp:
-        p50: 95701
-      sample_size: 1
+        p50: 82256
+      sample_size: 2
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/medallia/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level Staff Engineer, 10 years experience.
-        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
-        a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 2 Spanish submissions at Staff Engineer. Levels.fyi publishes an average
+        per level, not a median.
+    - level: all
+      base:
+        p50: 82256
+      total_comp:
+        p50: 82256
+      sample_size: 2
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/medallia/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 2 Spanish submissions, all at Staff Engineer. Levels.fyi published
+        no Spanish interquartile range for this company, so this is its ladder pooled rather than a measured
+        distribution.
+linkedin_url: https://www.linkedin.com/company/medallia-inc.

@@ -6,16 +6,31 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 47303
+        p50: 52352
       total_comp:
-        p50: 50851
-      sample_size: 1
+        p50: 57721
+      sample_size: 3
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/adidas/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Zaragoza, AR, Spain, reported level P1, 5 years experience. Levels.fyi
-        published no Spanish aggregate for this company, so this is one data point rather than a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 3 Spanish submissions at Senior Software Engineer. Levels.fyi publishes
+        an average per level, not a median.
+    - level: all
+      base:
+        p50: 48059
+      total_comp:
+        p50: 51054
+      sample_size: 11
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/adidas/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 11 Spanish submissions, spanning 2 rungs of this company's ladder,
+        rung means 46k to 52k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/adidas

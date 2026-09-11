@@ -39,7 +39,7 @@ Every band needs at least one source. In rough order of how much we trust them:
 4. `community` — reported directly to this repo
 5. `glassdoor`, `other` — treat with suspicion
 
-**Every levels.fyi band on file today was read from their public pages, not from their API.** Only aggregate percentiles and published medians are stored, never their individual submission rows. [`scripts/fetch_levels.py`](scripts/fetch_levels.py) speaks the documented [Compensation API](https://www.levels.fyi/api-access/) instead, which needs a key and would give per-level Spanish ladders — but nothing here has come through it yet, so treat that script as untested.
+**Every levels.fyi band on file today was read from their public pages, not from their API.** Only aggregate percentiles, per-rung averages and published medians are stored, never their individual submission rows. [`scripts/fetch_levels.py`](scripts/fetch_levels.py) speaks the documented [Compensation API](https://www.levels.fyi/api-access/) instead, which needs a key and would give per-level Spanish ladders — but nothing here has come through it yet, so treat that script as untested.
 
 Bands that carry a range use the **interquartile range**: `min` is the 25th percentile and `max` is the 75th. Using p10–p90 would make every company look like it pays anything to anyone.
 
@@ -51,15 +51,47 @@ The per-location page carries `percentiles.locationName`, which names the countr
 
 A company with no Spanish figure is listed with no figure. That is the honest answer, and it is the one thing this repository exists to get right.
 
+### Recording that there was nothing to find
+
+"No figure" and "nobody has looked" are different facts and the table says which. When Levels.fyi answers a Spain-scoped page with nothing, the fetcher writes `spain_check` on the company:
+
+```yaml
+spain_check:
+  date: '2026-09-10'
+  roles: [software-engineer, data-scientist, product-manager]
+  served: United States        # what came back instead, or 'no data'
+```
+
+The front page turns that into a **no Spain data** row linking to the page that came back empty, instead of a dash. A role leaves `roles` the moment it produces a Spanish band, and `validate.py` fails the build if a file ever claims both at once — this is a structural field precisely so the table never has to guess from the wording of a note.
+
+A company with no `spain_check` and no bands is one nobody has been able to look up; those show as dashes, and as `not on Levels.fyi` where the resolver could not find a page at all.
+
 Levels.fyi requires attribution on derived work, and their Data License governs what may be republished. Holding an API key is not by itself permission to redistribute, so check the terms before adding bulk-fetched data.
 
-Their level names are per-company (`L4`, `IC3`, `Senior Engineer`). The fetcher maps them onto our ladder by name, falling back to seniority order when the name says nothing, and records the original in `notes` so a wrong guess is visible and fixable.
+Their level names are per-company (`L4`, `IC3`, `Senior Engineer`), and each rung carries several: Amazon's senior rung is filed as `sde-iii` and also answers to `L6` and `Senior SDE`. The fetcher searches every one of them and maps the rung onto our ladder when a name says what it is, recording the original in `notes` so a wrong call is visible and fixable.
+
+A rung whose names say nothing — `L3`, `Software Engineer II`, `Grade 10` — is left unmapped, and there is no fallback to ladder position. Deciding that Glovo's L3 is a senior engineer would be a guess, and a guess filed as data is indistinguishable from a measurement once it is in the file. Those companies get an `all` band instead.
 
 Never include anything that identifies a person: no names, no team, no "the guy who joined in March". A band with `sample_size: 1` is fine; a band that points at someone is not.
 
 ## Levels and the `all` aggregate
 
-A band at level `all` is a median across every seniority, which is what Levels.fyi's public country pages publish. It is a weaker signal than a per-level band: a company with a high `all` figure may simply employ more senior people. Treat it as a starting point and replace it with per-level data when someone has it.
+The front page shows the **highest** rung a company publishes at senior or above, not the cheapest rung that counts as senior. Amazon files 88.909 € at senior and 125.275 € at principal, and the table shows the second. A measured rung always beats the all-seniority band, even when the band is the larger number: Unity's senior rung is 58.4k and its all-levels mean 70.7k, and reporting the mean as senior pay would trade a measurement for an average.
+
+A company Levels.fyi publishes nothing for under `software-engineer` falls back to its best other job family, with that family printed beside the figure. Ten rows read that way today — data scientists at BCG, engineering managers at HP, a security analyst at NCC Group. The list is about engineers, so software engineering wins whenever there is any figure for it at all, however much larger another family's is.
+
+A band at level `all` spans every seniority, so it is a weaker signal than a per-level band: a company with a high `all` figure may simply employ more senior people. Treat it as a starting point and replace it with per-level data when someone has it.
+
+Four different things can be the figure shown, and `_computed.headline_kind` in [`exports/companies.json`](exports/companies.json) says which one a company's is:
+
+| `headline_kind` | What the number is |
+| --- | --- |
+| `senior` | A measured senior rung from a company that publishes a level-by-level ladder for Spain. The strongest figure here. |
+| `quartile` | The 75th percentile of Levels.fyi's Spanish interquartile aggregate. The closest this data gets to a senior figure without naming one. |
+| `spread` | Every Spanish submission at that company averaged together, weighted by how many sit at each rung. Written when the ladder has Spanish data but none of its rung names says which is senior, so there is no quartile to take. |
+| `single` | One person's reported salary. Not a band at all. |
+
+The front page prints the figure and nothing else — the four used to carry a footnote mark each, which made the table harder to read than the distinction was worth. It lives in the exports now.
 
 ## Base salary versus total compensation
 
@@ -71,11 +103,13 @@ Total compensation is base plus bonus plus annualised equity. It is a bigger num
 
 Three public surfaces, none needing a key:
 
-- **Per-location company pages** (`/companies/<slug>/salaries/<role>/locations/spain`) are where most figures now come from. Alone among the three they publish base salary next to total compensation, and they name the country actually served. [`scripts/fetch_spain.py`](scripts/fetch_spain.py) reads them.
+- **Per-location company pages** (`/companies/<slug>/salaries/<role>/locations/spain`) are where most figures now come from. Alone among the three they publish base salary next to total compensation, name the country actually served, and carry a per-rung ladder for the location asked about — the only public surface that can produce a senior salary rather than an all-seniority blur. [`scripts/fetch_spain.py`](scripts/fetch_spain.py) reads them.
 - **Job-family pages** (`/t/<role>/locations/spain`) give Spain-wide percentiles and a top-paying-companies table. One median per company, across all levels, so those land at level `all`.
 - **Company pages** (`/companies/<slug>/salaries`) give company details only here: website, careers page, LinkedIn, headquarters, headcount, industry, vesting.
 
-Figures are published in **USD**; each page carries a `locationExchangeRate` that converts them to EUR, and that conversion is applied on the way in. A band that skipped it would be roughly 17% too high.
+Figures are published in **USD**; each page carries a `locationExchangeRate` that converts them to EUR, and that conversion is applied on the way in. A band that skipped it would be roughly 16% too high — which is exactly what happened to all 141 bands `fetch_spain.py` wrote before 2026-09-09, because that script was written after this rule and did not follow it. The page's own FAQ text is the check: Glovo's Spanish median total of `79710.65` is published there as "€68,551".
+
+A submission record also carries its own unrounded `exchangeRate`, and that one round-trips to the figure the person actually typed in — Glovo's median base of `64068.9615` at `0.85845` is exactly 55.000 €, where the page-wide rate rounded to two places would say 55.099 €. Use the record's rate for a single submission and the page's for an aggregate.
 
 ### Why no salary data comes from company pages
 

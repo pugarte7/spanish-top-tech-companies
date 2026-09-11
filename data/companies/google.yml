@@ -6,17 +6,31 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 70342
+        p50: 87555
       total_comp:
-        p50: 93789
-      sample_size: 1
+        p50: 146673
+      sample_size: 5
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/google/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level L2, 4 years experience.
-        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
-        a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 5 Spanish submissions at L5. Levels.fyi publishes an average per level,
+        not a median.
+    - level: all
+      base:
+        p50: 78448
+      total_comp:
+        p50: 110146
+      sample_size: 16
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/google/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 16 Spanish submissions, spanning 3 rungs of this company's ladder,
+        rung means 69k to 87k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/google

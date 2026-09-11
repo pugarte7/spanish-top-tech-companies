@@ -6,17 +6,44 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 75725
+        p50: 58634
       total_comp:
-        p50: 75725
-      sample_size: 1
+        p50: 62607
+      sample_size: 13
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/ocado-group/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level E2, 8 years experience.
-        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
-        a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 13 Spanish submissions at E2. Levels.fyi publishes an average per level,
+        not a median.
+    - level: staff
+      base:
+        p50: 62775
+      total_comp:
+        p50: 65719
+      sample_size: 6
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ocado-group/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 6 Spanish submissions at E3. Levels.fyi publishes an average per level,
+        not a median.
+    - level: all
+      base:
+        p50: 55018
+      total_comp:
+        p50: 58000
+      sample_size: 25
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/ocado-group/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 25 Spanish submissions, spanning 3 rungs of this company's ladder,
+        rung means 39k to 62k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/ocadogroup

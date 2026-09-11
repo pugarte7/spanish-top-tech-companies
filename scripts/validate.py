@@ -51,6 +51,30 @@ def check_bands(where: str, role: str, level: dict) -> None:
         warnings.append(f"{where}: {role}/{level.get('level')} not verified in over a year")
 
 
+def check_spain_check(where: str, company: dict) -> None:
+    """`spain_check` says Levels.fyi had nothing. Hold it to that.
+
+    A role cannot both be on file as having no Spanish pay and carry a Spanish
+    band, and a file that claims both is one the fetcher failed to clean up.
+    The front page reads this field to decide whether a blank row says "asked,
+    nothing published" or "nobody has looked", so a wrong one is a false
+    statement on the front page rather than a tidiness problem.
+    """
+    check = company.get("spain_check")
+    if not check:
+        return
+    when = lib.parse_date(check.get("date"))
+    if when and when > lib.today_utc():
+        errors.append(f"{where}: spain_check date is in the future")
+    documented = {role for role, _ in lib.iter_levels(company)}
+    for role in check.get("roles") or []:
+        if role in documented:
+            errors.append(
+                f"{where}: spain_check says '{role}' has no Spanish pay, but a "
+                f"{role} band is on file"
+            )
+
+
 def main() -> int:
     schema = json.loads(lib.SCHEMA_PATH.read_text(encoding="utf-8"))
     validator = Draft202012Validator(schema)
@@ -89,15 +113,22 @@ def main() -> int:
         else:
             warnings.append(f"{where}: no linkedin_id")
 
-        for field in ("website", "hq", "spain_presence", "contract", "work_model"):
+        for field in ("website", "hq", "contract", "work_model"):
             if not payload.get(field):
                 warnings.append(f"{where}: {field} not filled in yet")
 
         for role, level in lib.iter_levels(payload):
             check_bands(where, role, level)
 
-        if not lib.qualifies(payload):
-            best = lib.top_band(payload)
+        check_spain_check(where, payload)
+
+        best = lib.top_band(payload)
+        if best is None and payload.get("spain_check"):
+            # Asked and answered. A company Levels.fyi publishes nothing
+            # Spanish for is a recorded fact, not an omission, and warning
+            # about it once per file buries the warnings that mean something.
+            pass
+        elif not lib.qualifies(payload):
             found = lib.fmt_eur(best[2]) if best else "nothing"
             warnings.append(
                 f"{where}: no documented band reaches {lib.fmt_eur(lib.THRESHOLD_EUR)} "

@@ -8,17 +8,18 @@ compensation:
     levels:
     - level: all
       base:
-        min: 87796
-        p50: 87796
-        max: 92888
+        min: 75505
+        p50: 75505
+        max: 79884
       total_comp:
-        min: 87796
-        p50: 87796
-        max: 100888
+        min: 75505
+        p50: 75505
+        max: 86764
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/collate/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
+linkedin_url: https://www.linkedin.com/company/collateinc

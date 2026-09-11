@@ -6,15 +6,53 @@ compensation:
   roles:
   - role: hardware-engineer
     levels:
-    - level: all
-      base: {}
+    - level: junior
+      base:
+        p50: 29111
       total_comp:
-        p50: 52740
+        p50: 29111
+      sample_size: 3
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/hardware-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: Median total compensation across all levels, Spain. Levels.fyi's public pages do not break
-        this out by level or separate base salary.
+        url: https://www.levels.fyi/companies/analog-devices/salaries/hardware-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 3 Spanish submissions at P1. Levels.fyi publishes an average per level,
+        not a median.
+    - level: senior
+      base:
+        p50: 41148
+      total_comp:
+        p50: 47222
+      sample_size: 3
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/analog-devices/salaries/hardware-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 3 Spanish submissions at P3. Levels.fyi publishes an average per level,
+        not a median.
+    - level: all
+      base:
+        p50: 35130
+      total_comp:
+        p50: 38166
+      sample_size: 6
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/analog-devices/salaries/hardware-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 6 Spanish submissions, spanning 2 rungs of this company's ladder,
+        rung means 29k to 41k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+spain_check:
+  date: '2026-09-10'
+  roles:
+  - data-analyst
+  - data-scientist
+  - product-manager
+  - software-engineer
+  - software-engineering-manager
+  served: no data
 linkedin_url: https://www.linkedin.com/company/analog-devices

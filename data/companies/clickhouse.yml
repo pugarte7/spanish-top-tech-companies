@@ -14,5 +14,10 @@ compensation:
   roles: []
   currency: EUR
   basis: gross_annual
+spain_check:
+  date: '2026-09-10'
+  roles:
+  - software-engineer
+  served: no data
 linkedin_url: https://www.linkedin.com/company/clickhouseinc
 year_founded: 2021

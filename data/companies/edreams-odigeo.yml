@@ -18,20 +18,20 @@ compensation:
     levels:
     - level: all
       base:
-        min: 50484
-        p50: 61356
-        max: 66896
+        min: 43416
+        p50: 52766
+        max: 57530
       total_comp:
-        min: 55133
-        p50: 66721
-        max: 73430
+        min: 47414
+        p50: 57380
+        max: 63150
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/edreams-odigeo/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
   - role: software-engineering-manager
     levels:
     - level: all

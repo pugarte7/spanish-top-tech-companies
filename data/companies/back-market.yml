@@ -13,5 +13,11 @@ compensation:
   roles: []
   currency: EUR
   basis: gross_annual
+spain_check:
+  date: '2026-09-10'
+  roles:
+  - product-manager
+  - software-engineer
+  served: Germany
 linkedin_url: https://www.linkedin.com/company/back-market
 year_founded: 2014

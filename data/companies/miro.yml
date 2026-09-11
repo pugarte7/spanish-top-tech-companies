@@ -11,6 +11,15 @@ compensation:
   roles: []
   currency: EUR
   basis: gross_annual
+spain_check:
+  date: '2026-09-10'
+  roles:
+  - data-analyst
+  - data-scientist
+  - product-manager
+  - software-engineer
+  - software-engineering-manager
+  served: no data
 linkedin_url: https://www.linkedin.com/company/mirohq
 year_founded: 2011
 notes: 'Online collaboration software for teams. Equity: Options vesting 25,25,25,25|25/1,25/12,25/12,25/12.'

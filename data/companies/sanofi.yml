@@ -6,19 +6,34 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: staff
       base:
-        min: 74153
-        p50: 76279
-        max: 77050
+        p50: 82984
       total_comp:
-        min: 81249
-        p50: 83758
-        max: 84689
+        p50: 90113
+      sample_size: 2
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/sanofi/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 2 Spanish submissions at Staff Software Engineer. Levels.fyi publishes
+        an average per level, not a median.
+    - level: all
+      base:
+        min: 63772
+        p50: 65600
+        max: 66263
+      total_comp:
+        min: 69874
+        p50: 72032
+        max: 72833
+      sample_size: 4
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/sanofi/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
+linkedin_url: https://www.linkedin.com/company/sanofi

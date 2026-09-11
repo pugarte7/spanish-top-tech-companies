@@ -1,0 +1,12 @@
+slug: valve
+name: Valve corporation
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles: []
+spain_check:
+  date: '2026-09-10'
+  roles:
+  - software-engineer
+  served: no data
+linkedin_url: https://www.linkedin.com/company/valve-corporation

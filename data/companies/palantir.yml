@@ -1,0 +1,16 @@
+slug: palantir
+name: Palantir Technologies
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles: []
+spain_check:
+  date: '2026-09-10'
+  roles:
+  - data-scientist
+  - product-manager
+  - software-engineer
+  - software-engineering-manager
+  - solution-architect
+  served: United States
+linkedin_url: https://www.linkedin.com/company/palantir

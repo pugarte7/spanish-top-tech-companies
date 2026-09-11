@@ -32,17 +32,44 @@ compensation:
         this out by level or separate base salary.
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 63792
+        p50: 49237
       total_comp:
-        p50: 67336
-      sample_size: 1
+        p50: 50064
+      sample_size: 23
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/epam-systems/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level L4, 10 years experience.
-        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
-        a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 23 Spanish submissions at L3. Levels.fyi publishes an average per level,
+        not a median.
+    - level: lead
+      base:
+        p50: 60327
+      total_comp:
+        p50: 61572
+      sample_size: 19
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/epam-systems/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 19 Spanish submissions at L4. Levels.fyi publishes an average per level,
+        not a median.
+    - level: all
+      base:
+        p50: 49274
+      total_comp:
+        p50: 50173
+      sample_size: 64
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/epam-systems/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 64 Spanish submissions, spanning 4 rungs of this company's ladder,
+        rung means 37k to 60k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/epam-systems

@@ -6,17 +6,31 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 77280
+        p50: 80708
       total_comp:
-        p50: 85008
-      sample_size: 1
+        p50: 86558
+      sample_size: 7
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/skyscanner/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level Software Engineer II, 9
-        years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data
-        point rather than a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 7 Spanish submissions at Senior Software Engineer. Levels.fyi publishes
+        an average per level, not a median.
+    - level: all
+      base:
+        p50: 62448
+      total_comp:
+        p50: 66918
+      sample_size: 22
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/skyscanner/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 22 Spanish submissions, spanning 3 rungs of this company's ladder,
+        rung means 43k to 80k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/skyscanner

@@ -1,0 +1,36 @@
+slug: hubspot
+name: HubSpot
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles:
+  - role: software-engineer
+    levels:
+    - level: senior
+      base:
+        p50: 87141
+      total_comp:
+        p50: 150471
+      sample_size: 3
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/hubspot/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 3 Spanish submissions at Senior Software Engineer II. Levels.fyi publishes
+        an average per level, not a median.
+    - level: all
+      base:
+        p50: 87141
+      total_comp:
+        p50: 150471
+      sample_size: 3
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/hubspot/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 3 Spanish submissions, all at Senior Software Engineer II. Levels.fyi
+        published no Spanish interquartile range for this company, so this is its ladder pooled rather
+        than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/hubspot

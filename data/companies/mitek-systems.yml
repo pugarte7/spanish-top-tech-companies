@@ -8,17 +8,18 @@ compensation:
     levels:
     - level: all
       base:
-        min: 58328
-        p50: 74464
-        max: 81251
+        min: 50162
+        p50: 64039
+        max: 69876
       total_comp:
-        min: 58328
-        p50: 80304
-        max: 98132
+        min: 50162
+        p50: 69062
+        max: 84393
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/mitek-systems/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
+linkedin_url: https://www.linkedin.com/company/miteksystems

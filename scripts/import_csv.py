@@ -5,11 +5,11 @@
 
 Required columns: name, role, level, and at least one of base_min/base_p50/base_max.
 Optional: slug, linkedin_id, website, careers_url, hq_city, hq_country,
-spain_presence, offices_es, employees, sector, work_model, remote_within_spain,
+employees, sector, work_model, remote_within_spain,
 contract, working_language, tc_min, tc_p50, tc_max, bonus_pct, equity,
 sample_size, source, source_url, source_date, last_verified.
 
-Pipe-separate multi-value columns: offices_es=Madrid|Barcelona, sector=fintech|saas,
+Pipe-separate multi-value columns: sector=fintech|saas,
 contract=spanish-payroll|eor. See data/import-template.csv for a starting point.
 
 Existing files are merged into, not overwritten: a role/level already present is
@@ -150,7 +150,6 @@ def main(argv: list[str]) -> int:
                             "city": clean(row.get("hq_city")) or "CHANGEME",
                             "country": clean(row.get("hq_country")) or "ES",
                         },
-                        "spain_presence": clean(row.get("spain_presence")) or "hub",
                         "work_model": clean(row.get("work_model")) or "hybrid",
                         "contract": (clean(row.get("contract")) or "spanish-payroll").split("|"),
                         "compensation": {"currency": "EUR", "basis": "gross_annual", "roles": []},
@@ -164,8 +163,6 @@ def main(argv: list[str]) -> int:
                         existing["employees"] = row["employees"].strip()
                     if clean(row.get("sector")):
                         existing["sector"] = [s.strip() for s in row["sector"].split("|")]
-                    if clean(row.get("offices_es")):
-                        existing["offices_es"] = [s.strip() for s in row["offices_es"].split("|")]
                     if clean(row.get("working_language")):
                         existing["working_language"] = row["working_language"].strip()
                 else:

@@ -31,19 +31,19 @@ compensation:
     levels:
     - level: all
       base:
-        min: 33240
-        p50: 35421
-        max: 43829
+        min: 28587
+        p50: 30462
+        max: 37693
       total_comp:
-        min: 33240
-        p50: 35421
-        max: 43829
+        min: 28587
+        p50: 30462
+        max: 37693
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
 linkedin_url: https://www.linkedin.com/company/barcelona-supercomputing-center
 year_founded: 2005

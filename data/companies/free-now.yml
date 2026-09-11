@@ -28,17 +28,17 @@ compensation:
     levels:
     - level: all
       base:
-        p50: 67188
+        p50: 62000
       total_comp:
-        p50: 67188
+        p50: 62000
       sample_size: 1
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/free-now/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level Senior, 7 years experience.
-        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
-        a band.'
+        Levels.fyi published no Spanish aggregate or ladder for this company, so this is one data point
+        rather than a band.'
 linkedin_url: https://www.linkedin.com/company/freenow
 year_founded: 2009

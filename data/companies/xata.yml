@@ -8,17 +8,18 @@ compensation:
     levels:
     - level: all
       base:
-        min: 133675
-        p50: 134268
-        max: 140040
+        min: 114960
+        p50: 115470
+        max: 120434
       total_comp:
-        min: 133675
-        p50: 134268
-        max: 140040
+        min: 114960
+        p50: 115470
+        max: 120434
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/xata/salaries/software-engineer/locations/spain
-        date: '2026-08-28'
-      last_verified: '2026-08-28'
-      notes: 'Spain only: Levels.fyi confirmed this location serves Spanish submissions. Base and total
-        compensation, interquartile range.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
+        range, converted from the USD the page stores.'
+linkedin_url: https://www.linkedin.com/company/xataio

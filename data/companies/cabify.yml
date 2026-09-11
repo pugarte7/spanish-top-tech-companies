@@ -17,20 +17,20 @@ compensation:
     levels:
     - level: all
       base:
-        min: 46147
-        p50: 55297
-        max: 69226
+        min: 39686
+        p50: 52519
+        max: 59926
       total_comp:
-        min: 46147
-        p50: 55297
-        max: 69226
+        min: 39686
+        p50: 52519
+        max: 59926
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/cabify/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
   - role: data-scientist
     levels:
     - level: all

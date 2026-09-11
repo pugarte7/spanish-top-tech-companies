@@ -6,16 +6,44 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: junior
       base:
-        p50: 71831
+        p50: 57587
       total_comp:
-        p50: 81831
-      sample_size: 1
+        p50: 62276
+      sample_size: 2
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/align-technology/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level L5, 6 years experience. Levels.fyi
-        published no Spanish aggregate for this company, so this is one data point rather than a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 2 Spanish submissions at L3. Levels.fyi publishes an average per level,
+        not a median.
+    - level: senior
+      base:
+        p50: 70331
+      total_comp:
+        p50: 80559
+      sample_size: 8
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/align-technology/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 8 Spanish submissions at L7. Levels.fyi publishes an average per level,
+        not a median.
+    - level: all
+      base:
+        p50: 65624
+      total_comp:
+        p50: 74490
+      sample_size: 13
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/align-technology/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 13 Spanish submissions, spanning 3 rungs of this company's ladder,
+        rung means 57k to 70k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/align-technology

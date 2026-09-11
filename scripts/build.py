@@ -37,7 +37,6 @@ def render_stats(companies: list[dict]) -> str:
     paid = [e for e in entries if e["value"] is not None and e["value"] >= lib.THRESHOLD_EUR]
     documented = [e for e in entries if e["value"] is not None]
     bands = [lvl for c in companies for _, lvl in lib.iter_levels(c)]
-    points = sum(lvl.get("sample_size") or 0 for lvl in bands)
     stale = sum(1 for lvl in bands if lib.is_stale(lvl.get("last_verified")))
     parts = [
         f"**{len(entries)} companies**",
@@ -46,9 +45,6 @@ def render_stats(companies: list[dict]) -> str:
         # count what is known rather than repeating the gap twice.
         f"{len(documented)} with pay on file",
     ]
-    # The public route publishes no sample sizes, so don't advertise "0 data points".
-    if points:
-        parts.append(f"{points} data points")
     if stale:
         parts.append(f"{stale} stale")
     freshest = max(
@@ -71,6 +67,10 @@ def upper_quartile(level: dict):
     An all-seniority band spans juniors to principals, so its median answers
     the wrong question. The upper quartile is where the senior half of the
     company sits, which is the closest this data gets to a senior figure.
+
+    Only an interquartile aggregate has one. A band pooled from a company's
+    ladder carries a mean per rung and no distribution, so this returns None
+    for it rather than inventing a quartile out of the top rung's average.
     """
     for block in (level.get("base") or {}, level.get("total_comp") or {}):
         if block.get("max") is not None:
@@ -78,59 +78,83 @@ def upper_quartile(level: dict):
     return None
 
 
+def role_headline(bands: dict):
+    """The best senior-or-above figure inside one job family, as (euros, kind).
+
+    The highest named rung the company publishes for Spain, not the cheapest
+    one that counts as senior: Twilio files 59.986 EUR at senior and 112.167 at
+    principal, and a list of what a company pays its senior engineers that
+    stops at the first rung answers a narrower question than it looks like.
+
+    A rung beats the all-seniority band even when the band is higher. Unity's
+    senior rung is 58.4k and its all-levels mean 70.7k; the mean is higher
+    because it pools staff and principals, and reporting it as senior pay would
+    be trading a measurement for an average.
+    """
+    best = None
+    for rung in SENIOR_PLUS:
+        level = bands.get(rung)
+        if not level:
+            continue
+        value = lib.level_value(level)
+        if value is not None and (best is None or value > best[0]):
+            best = (value, "senior", level)
+    if best:
+        return best
+
+    level = bands.get("all")
+    if not level:
+        return None, None, None
+    if level.get("sample_size") == 1:
+        return lib.level_value(level), "single", level
+    top = upper_quartile(level)
+    if top is not None:
+        return top, "quartile", level
+    return lib.level_value(level), "spread", level
+
+
 def headline(company: dict):
-    """The number the front page shows, as (euros, kind).
+    """The number the front page shows, as (euros, kind, level, role).
+
+    The best senior-or-above software-engineering figure the company has in
+    Spain. A company that has none falls back to its best other job family,
+    because a company paying data scientists 108k in Spain is worth a row even
+    when Levels.fyi publishes nothing for its engineers - with the family
+    printed beside the number, since a data scientist's salary passing silently
+    as an engineer's is the kind of quiet wrong answer this list exists to
+    avoid.
 
     kind is how much the number is worth:
-      "senior"   a measured senior rung from a real ladder
+      "senior"   a measured rung from a real ladder
       "quartile" the upper quartile of the Spanish aggregate, an estimate
+      "spread"   every level at the company averaged together, because its
+                 rungs are named L3 and L4 and nothing says which is senior
       "single"   one person's reported salary, not a band at all
 
-    The three are not interchangeable and the table marks which is which.
+    The four are not interchangeable and `exports/` records which is which.
     """
-    bands = {}
+    by_role: dict[str, dict] = {}
     for role, level in lib.iter_levels(company):
-        if role != "software-engineer":
-            continue
-        bands[level.get("level")] = level
-    for rung in SENIOR_PLUS:
-        if rung in bands:
-            value = lib.level_value(bands[rung])
-            if value is not None:
-                return value, "senior", bands[rung]
-    if "all" in bands:
-        level = bands["all"]
-        if level.get("sample_size") == 1:
-            return lib.level_value(level), "single", level
-        # Prefer the upper quartile; fall back to the median when a band
-        # carries only a single figure.
-        return upper_quartile(level) or lib.level_value(level), "quartile", level
-    return None, None, None
+        by_role.setdefault(role, {})[level.get("level")] = level
+
+    found = []
+    for role, bands in by_role.items():
+        value, kind, level = role_headline(bands)
+        if value is not None:
+            found.append((value, role == "software-engineer", kind, level, role))
+    if not found:
+        return None, None, None, None
+    # Software engineering wins outright, not just on a tie: this list is
+    # about engineers, and Amazon's engineering-manager median of 142.5k is a
+    # worse answer to "what does a senior engineer get" than its own measured
+    # senior rung of 88.9k, however much larger it is.
+    value, _, kind, level, role = max(found, key=lambda f: (f[1], f[0]))
+    return value, kind, level, role
 
 
-# How much a row is worth turning up for. A salary someone in Spain told the
-# maintainer directly outranks anything crowdsourced, so it is named plainly.
-SOURCE_LABELS = {
-    "offer-letter": "offer received",
-    "community": "known personally",
-    "job-posting": "job ad",
-    "company-published": "company",
-    "levels.fyi": "levels.fyi",
-    "glassdoor": "glassdoor",
-}
+# A salary someone in Spain told the maintainer directly outranks anything
+# crowdsourced, so it sorts above it however large the crowdsourced one is.
 VOUCHED = ("offer-letter", "community")
-
-
-def evidence(level: dict | None) -> tuple[str, str]:
-    """(data points, where it came from) for one band, ready to print."""
-    if not level:
-        return "—", "—"
-    points = level.get("sample_size")
-    names = [s.get("name") for s in (level.get("sources") or []) if s.get("name")]
-    # A band the maintainer can vouch for is the one worth naming first.
-    names.sort(key=lambda n: (n not in VOUCHED, n))
-    label = SOURCE_LABELS.get(names[0], names[0]) if names else "—"
-    return (str(points) if points else "—"), label
 
 
 def linkedin_url(entry: dict) -> str | None:
@@ -144,6 +168,26 @@ def linkedin_url(entry: dict) -> str | None:
         return entry["linkedin_url"]
     if entry.get("linkedin_id"):
         return f"https://www.linkedin.com/company/{entry['linkedin_id']}"
+    return None
+
+
+def jobs_url(entry: dict) -> str | None:
+    """This company's open roles in Spain.
+
+    LinkedIn filters a job search by numeric company id, which is what the
+    backlog carries. A company known only by a vanity URL gets the jobs tab on
+    its own page instead - the same list, without the country filter.
+
+    The country goes in as `location=Spain`, a literal LinkedIn resolves
+    itself. A `geoId` would be faster and is not worth it: get one digit wrong
+    and the link confidently serves another country's jobs, which is the exact
+    mistake this list exists not to make.
+    """
+    if entry.get("linkedin_id"):
+        return (f"https://www.linkedin.com/jobs/search/?f_C={entry['linkedin_id']}"
+                "&location=Spain")
+    if entry.get("linkedin_url"):
+        return entry["linkedin_url"].rstrip("/") + "/jobs/"
     return None
 
 
@@ -164,6 +208,21 @@ def figure_url(entry: dict) -> str | None:
         if source.get("url"):
             return source["url"]
     return levels_page(entry["levels_slug"])
+
+
+def spain_page(entry: dict) -> str | None:
+    """The Spain-scoped page that answered with nothing.
+
+    Worth linking: a reader who doubts a blank row can open the same page the
+    fetcher read and see the gap for themselves.
+    """
+    check = entry.get("spain_check") or {}
+    roles = check.get("roles") or []
+    slug = entry.get("levels_slug")
+    if not slug or not roles:
+        return None
+    role = "software-engineer" if "software-engineer" in roles else roles[0]
+    return f"https://www.levels.fyi/companies/{slug}/salaries/{role}/locations/spain"
 
 
 def company_levels_slug(company: dict) -> str | None:
@@ -223,15 +282,17 @@ def catalogue(companies: list[dict]) -> list[dict]:
 
     def absorb(entry: dict, name: str, slug: str | None, linkedin_id,
                alias: str | None = None, value=None, kind=None, level=None,
-               linkedin_url_=None) -> None:
+               linkedin_url_=None, spain_check=None, role=None) -> None:
         entry["linkedin_id"] = entry.get("linkedin_id") or linkedin_id
         entry["linkedin_url"] = entry.get("linkedin_url") or linkedin_url_
+        entry["spain_check"] = entry.get("spain_check") or spain_check
         if slug and not entry["levels_slug"]:
             entry["levels_slug"] = slug
         if entry["value"] is None and value is not None:
             entry["value"] = value
             entry["kind"] = kind
             entry["level"] = level
+            entry["role"] = role
         # Levels.fyi files some employers under two slugs, so the same company
         # arrives twice under a plain name and a padded one: Meta and "Meta
         # Facebook", BCG and "Boston Consulting Group (BCG)". The shorter is
@@ -268,13 +329,14 @@ def catalogue(companies: list[dict]) -> list[dict]:
                 backlog_rows.append(row)
 
     for c in companies:
-        value, kind, level = headline(c)
+        value, kind, level, role = headline(c)
         slug = company_levels_slug(c) or c.get("slug")
         alias = aliases.get(slug or "")
         existing = lookup(c["name"], slug, alias)
         if existing:
             absorb(existing, c["name"], slug, c.get("linkedin_id"), alias,
-                   value, kind, level, c.get("linkedin_url"))
+                   value, kind, level, c.get("linkedin_url"), c.get("spain_check"),
+                   role)
             continue
         entry = {
             "name": c["name"],
@@ -284,6 +346,8 @@ def catalogue(companies: list[dict]) -> list[dict]:
             "value": value,
             "kind": kind,
             "level": level,
+            "role": role,
+            "spain_check": c.get("spain_check"),
         }
         entries.append(entry)
         index(entry, alias=alias)
@@ -307,6 +371,8 @@ def catalogue(companies: list[dict]) -> list[dict]:
             "value": None,
             "kind": None,
             "level": None,
+            "role": None,
+            "spain_check": None,
         }
         entries.append(entry)
         index(entry, alias=alias)
@@ -336,49 +402,40 @@ def render_companies(companies: list[dict]) -> str:
 
     entries.sort(key=rank)
 
-    marks = {"senior": "", "quartile": "*", "single": "\u2020"}
-    rows = ["| Company | Senior+ | Data points | Source |", "| --- | --- | --- | --- |"]
-    counts = {"senior": 0, "quartile": 0, "single": 0}
-    vouched = 0
+    rows = ["| Company | Senior+ | Roles |", "| --- | --- | --- |"]
+    checked = 0
     for e in entries:
         li = linkedin_url(e)
         name = f"[{e['name']}]({li})" if li else e["name"]
-        if e["value"] is None:
-            rows.append(f"| {name} | \u2014 | \u2014 | \u2014 |")
-            continue
-        kind = e.get("kind") or "quartile"
-        counts[kind] = counts.get(kind, 0) + 1
-        points, source = evidence(e.get("level"))
-        if source in ("offer received", "known personally"):
-            vouched += 1
-            source = f"**{source}**"
-        figure = k(e["value"]) + marks.get(kind, "*")
-        page = figure_url(e)
-        cell = f"[{figure}]({page})" if page else figure
-        rows.append(f"| {name} | {cell} | {points} | {source} |")
+        jobs = jobs_url(e)
+        roles = f"[open roles]({jobs})" if jobs else "—"
+        if e["value"] is not None:
+            page = figure_url(e)
+            figure = k(e["value"])
+            cell = f"[{figure}]({page})" if page else figure
+            role = e.get("role")
+            if role and role != "software-engineer":
+                cell += f" ({role.replace('-', ' ')})"
+        elif e.get("spain_check"):
+            # Asked and answered. Say so, rather than leaving a dash that
+            # reads as "nobody has looked yet".
+            checked += 1
+            page = spain_page(e)
+            cell = f"[no Spain data]({page})" if page else "no Spain data"
+        else:
+            cell = "—"
+        rows.append(f"| {name} | {cell} | {roles} |")
 
     documented = sum(1 for e in entries if e["value"] is not None)
-
-    # Only describe a marker the table actually uses. There are no measured
-    # senior rungs on the list at the moment, and counting a tier at zero while
-    # naming it anyway reads as a stronger dataset than this one is.
-    legend = []
-    if counts["senior"]:
-        legend.append(f"unmarked ({counts['senior']}) is a measured senior salary")
-    legend.append(f"`*` ({counts['quartile']}) is the upper quartile of every engineer "
-                  "at that company in Spain")
-    legend.append(f"`\u2020` ({counts['single']}) is one person's number")
-
     rows.append("")
     rows.append(
-        f"<sub>{documented} of {len(entries)} companies have pay on file, "
-        f"{vouched} of them first-hand. **Source** says where the number came from: "
-        "**known personally** is someone in Spain who told the maintainer what they "
-        "earn, **offer received** is an offer the maintainer was made, and anything "
-        "else is crowdsourced and worth less. **Data points** is how many salaries "
-        f"the figure rests on. How well a figure is known: {'; '.join(legend)}. "
-        "Company names link to LinkedIn, figures to the Levels.fyi page they were "
-        "read from.</sub>"
+        f"<sub>{documented} of {len(entries)} companies have pay on file. A figure is "
+        "gross annual base salary in euros for the best-paid rung at senior or above, "
+        "and links to the page it was read from. A job family in brackets means "
+        "Levels.fyi publishes nothing for engineers there and this is the nearest "
+        f"family it does publish. **no Spain data** ({checked}) means Levels.fyi was "
+        "asked and published nothing for Spain at that company. Company names link "
+        "to LinkedIn.</sub>"
     )
     return chr(10).join(rows)
 
@@ -391,6 +448,7 @@ def write_exports(companies: list[dict]) -> None:
         best = lib.top_band(c)
         record["_computed"] = {
             "qualifies": lib.qualifies(c),
+            "headline_kind": headline(c)[1],
             "top_band_eur": best[2] if best else None,
             "top_band_role": best[0] if best else None,
             "top_band_level": best[1]["level"] if best else None,
@@ -404,7 +462,7 @@ def write_exports(companies: list[dict]) -> None:
     writer = csv.writer(buffer, lineterminator="\n")
     writer.writerow([
         "slug", "name", "linkedin_id", "website", "careers_url", "hq_city", "hq_country",
-        "spain_presence", "offices_es", "employees", "sector", "work_model",
+        "employees", "sector", "work_model",
         "remote_within_spain", "contract", "working_language",
         "role", "level", "base_min", "base_p50", "base_max",
         "tc_min", "tc_p50", "tc_max", "bonus_pct", "equity", "data_points",
@@ -414,7 +472,7 @@ def write_exports(companies: list[dict]) -> None:
         common = [
             c.get("slug"), c.get("name"), c.get("linkedin_id"), c.get("website"),
             c.get("careers_url"), c.get("hq", {}).get("city"), c.get("hq", {}).get("country"),
-            c.get("spain_presence"), "|".join(c.get("offices_es") or []), c.get("employees"),
+            c.get("employees"),
             "|".join(c.get("sector") or []), c.get("work_model"), c.get("remote_within_spain"),
             "|".join(c.get("contract", [])), c.get("working_language"),
         ]

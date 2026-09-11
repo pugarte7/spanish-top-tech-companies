@@ -8,17 +8,18 @@ compensation:
     levels:
     - level: all
       base:
-        min: 46023
-        p50: 50234
-        max: 70092
+        min: 39580
+        p50: 43201
+        max: 60279
       total_comp:
-        min: 46023
-        p50: 54803
-        max: 75673
+        min: 39580
+        p50: 47130
+        max: 65079
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/exoticca/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
+linkedin_url: https://www.linkedin.com/company/exoticca-travel-agency

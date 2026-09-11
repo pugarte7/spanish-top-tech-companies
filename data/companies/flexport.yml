@@ -1,0 +1,17 @@
+slug: flexport
+name: Flexport
+compensation:
+  currency: EUR
+  basis: gross_annual
+  roles: []
+spain_check:
+  date: '2026-09-10'
+  roles:
+  - data-analyst
+  - data-scientist
+  - product-manager
+  - software-engineer
+  - software-engineering-manager
+  - solution-architect
+  served: no data
+linkedin_url: https://www.linkedin.com/company/flexport

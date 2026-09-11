@@ -6,17 +6,31 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 115955
+        p50: 79500
       total_comp:
-        p50: 115955
-      sample_size: 1
+        p50: 108753
+      sample_size: 10
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/spotify/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level Senior Engineer, 15 years
-        experience. Levels.fyi published no Spanish aggregate for this company, so this is one data point
-        rather than a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 10 Spanish submissions at Senior Engineer. Levels.fyi publishes an average
+        per level, not a median.
+    - level: all
+      base:
+        p50: 74882
+      total_comp:
+        p50: 99780
+      sample_size: 17
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/spotify/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 17 Spanish submissions, spanning 2 rungs of this company's ladder,
+        rung means 68k to 79k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/spotify

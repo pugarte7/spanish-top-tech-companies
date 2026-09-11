@@ -8,15 +8,16 @@ compensation:
     levels:
     - level: all
       base:
-        p50: 65658
+        p50: 56136
       total_comp:
-        p50: 91468
-      sample_size: 1
+        p50: 84400
+      sample_size: 9
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/electronic-arts/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level SE 2, 10 years experience.
-        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
-        a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 9 Spanish submissions, spanning 3 rungs of this company's ladder,
+        rung means 47k to 68k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/electronic-arts

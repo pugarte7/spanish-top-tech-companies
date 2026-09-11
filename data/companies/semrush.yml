@@ -18,20 +18,20 @@ compensation:
     levels:
     - level: all
       base:
-        min: 77219
-        p50: 84070
-        max: 98060
+        min: 66409
+        p50: 72300
+        max: 84331
       total_comp:
-        min: 77219
-        p50: 84070
-        max: 98060
+        min: 66409
+        p50: 72300
+        max: 84331
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/semrush/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
   - role: data-analyst
     levels:
     - level: all

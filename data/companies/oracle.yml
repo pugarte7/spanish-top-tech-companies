@@ -19,17 +19,57 @@ compensation:
         this out by level or separate base salary.
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 54371
+        p50: 55655
       total_comp:
-        p50: 66871
-      sample_size: 1
+        p50: 64641
+      sample_size: 11
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/oracle/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level IC-2, 5 years experience.
-        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
-        a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 11 Spanish submissions at IC-3. Levels.fyi publishes an average per level,
+        not a median.
+    - level: staff
+      base:
+        p50: 40023
+      total_comp:
+        p50: 42470
+      sample_size: 8
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/oracle/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 8 Spanish submissions at IC-2. Levels.fyi publishes an average per level,
+        not a median.
+    - level: principal
+      base:
+        p50: 71511
+      total_comp:
+        p50: 84254
+      sample_size: 7
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/oracle/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 7 Spanish submissions at IC-4. Levels.fyi publishes an average per level,
+        not a median.
+    - level: all
+      base:
+        p50: 51041
+      total_comp:
+        p50: 58100
+      sample_size: 31
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/oracle/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 31 Spanish submissions, spanning 4 rungs of this company's ladder,
+        rung means 29k to 71k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/oracle

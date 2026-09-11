@@ -6,16 +6,57 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 70179
+        p50: 59986
       total_comp:
-        p50: 81188
-      sample_size: 1
+        p50: 82349
+      sample_size: 7
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/twilio/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level IC2, 4 years experience. Levels.fyi
-        published no Spanish aggregate for this company, so this is one data point rather than a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 7 Spanish submissions at IC3. Levels.fyi publishes an average per level,
+        not a median.
+    - level: staff
+      base:
+        p50: 79878
+      total_comp:
+        p50: 102531
+      sample_size: 8
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/twilio/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 8 Spanish submissions at IC4. Levels.fyi publishes an average per level,
+        not a median.
+    - level: principal
+      base:
+        p50: 112167
+      total_comp:
+        p50: 149556
+      sample_size: 2
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/twilio/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 2 Spanish submissions at IC5. Levels.fyi publishes an average per level,
+        not a median.
+    - level: all
+      base:
+        p50: 62008
+      total_comp:
+        p50: 80749
+      sample_size: 29
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/twilio/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 29 Spanish submissions, spanning 5 rungs of this company's ladder,
+        rung means 36k to 112k. Levels.fyi published no Spanish interquartile range for this company,
+        so this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/twilio-inc-

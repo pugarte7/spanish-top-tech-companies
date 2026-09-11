@@ -8,17 +8,18 @@ compensation:
     levels:
     - level: all
       base:
-        min: 70151
-        p50: 80174
-        max: 82299
+        min: 60330
+        p50: 68950
+        max: 70778
       total_comp:
-        min: 70151
-        p50: 80174
-        max: 82299
+        min: 60330
+        p50: 68950
+        max: 70778
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/dlocal/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
+linkedin_url: https://www.linkedin.com/company/dlocal

@@ -6,17 +6,31 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: principal
       base:
-        p50: 81386
+        p50: 80085
       total_comp:
-        p50: 97663
-      sample_size: 1
+        p50: 87084
+      sample_size: 2
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/astrazeneca/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Barcelona, CT, Spain, reported level Associate Principal Software
-        Engineer, 5 years experience. Levels.fyi published no Spanish aggregate for this company, so this
-        is one data point rather than a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 2 Spanish submissions at Associate Principal Software Engineer. Levels.fyi
+        publishes an average per level, not a median.
+    - level: all
+      base:
+        p50: 80085
+      total_comp:
+        p50: 87084
+      sample_size: 2
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/astrazeneca/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 2 Spanish submissions, all at Associate Principal Software Engineer.
+        Levels.fyi published no Spanish interquartile range for this company, so this is its ladder pooled
+        rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/astrazeneca

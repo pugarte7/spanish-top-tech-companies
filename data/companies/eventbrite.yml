@@ -6,19 +6,60 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        min: 71128
-        p50: 90781
-        max: 99849
+        p50: 57191
       total_comp:
-        min: 71128
-        p50: 101667
-        max: 128360
+        p50: 67063
+      sample_size: 9
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/eventbrite/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 9 Spanish submissions at Senior Software Engineer. Levels.fyi publishes
+        an average per level, not a median.
+    - level: staff
+      base:
+        p50: 85292
+      total_comp:
+        p50: 97687
+      sample_size: 4
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/eventbrite/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 4 Spanish submissions at Staff Software Engineer. Levels.fyi publishes
+        an average per level, not a median.
+    - level: principal
+      base:
+        p50: 100594
+      total_comp:
+        p50: 138996
+      sample_size: 3
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/eventbrite/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 3 Spanish submissions at Principal Engineer. Levels.fyi publishes an
+        average per level, not a median.
+    - level: all
+      base:
+        min: 62570
+        p50: 81122
+        max: 96219
+      total_comp:
+        min: 62570
+        p50: 93550
+        max: 128274
+      sample_size: 18
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/eventbrite/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
+linkedin_url: https://www.linkedin.com/company/eventbrite

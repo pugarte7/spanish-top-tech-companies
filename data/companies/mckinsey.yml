@@ -7,14 +7,26 @@ compensation:
   - role: data-scientist
     levels:
     - level: all
-      base: {}
+      base:
+        p50: 38664
       total_comp:
-        p50: 43891
+        p50: 43224
+      sample_size: 5
       sources:
       - name: levels.fyi
-        url: https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: Median total compensation across all levels, Madrid Metropolitan Area, ES. Levels.fyi's public
-        pages do not break this out by level or separate base salary.
+        url: https://www.levels.fyi/companies/mckinsey/salaries/data-scientist/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 5 Spanish submissions, all at Data Scientist. Levels.fyi published
+        no Spanish interquartile range for this company, so this is its ladder pooled rather than a measured
+        distribution.
+spain_check:
+  date: '2026-09-10'
+  roles:
+  - data-analyst
+  - product-manager
+  - software-engineer
+  - software-engineering-manager
+  - solution-architect
+  served: no data
 linkedin_url: https://www.linkedin.com/company/mckinsey

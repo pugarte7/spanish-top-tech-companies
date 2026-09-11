@@ -6,16 +6,31 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 58981
+        p50: 81192
       total_comp:
-        p50: 66627
-      sample_size: 1
+        p50: 96842
+      sample_size: 2
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/swiss-re/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level L2, 3 years experience. Levels.fyi
-        published no Spanish aggregate for this company, so this is one data point rather than a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 2 Spanish submissions at Sr Software Development Engineer. Levels.fyi
+        publishes an average per level, not a median.
+    - level: all
+      base:
+        p50: 81192
+      total_comp:
+        p50: 96842
+      sample_size: 2
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/swiss-re/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 2 Spanish submissions, all at Sr Software Development Engineer. Levels.fyi
+        published no Spanish interquartile range for this company, so this is its ladder pooled rather
+        than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/swiss-re

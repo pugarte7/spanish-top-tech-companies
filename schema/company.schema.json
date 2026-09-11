@@ -58,26 +58,6 @@
       },
       "minProperties": 1
     },
-    "founded_country": {
-      "type": "string",
-      "pattern": "^[A-Z]{2}$"
-    },
-    "spain_presence": {
-      "enum": [
-        "hq",
-        "hub",
-        "remote-only",
-        "eor"
-      ],
-      "description": "hq = headquartered in Spain. hub = real office/entity in Spain. remote-only = hires people living in Spain with no office. eor = hires only through an employer of record."
-    },
-    "offices_es": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Spanish cities with an office."
-    },
     "employees": {
       "type": "string",
       "maxLength": 40,
@@ -291,6 +271,36 @@
               }
             }
           }
+        }
+      }
+    },
+    "spain_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "roles"
+      ],
+      "description": "The last time Levels.fyi was asked for Spanish pay here and had none. Structural on purpose: the front page reads this field, never the wording of a note. A role leaves `roles` as soon as it yields a Spanish band.",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "roles": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "description": "Job families asked for, that answered with nothing Spanish."
+        },
+        "served": {
+          "type": "string",
+          "maxLength": 60,
+          "description": "What the page answered with instead: another country's name, or 'no data'."
         }
       }
     },

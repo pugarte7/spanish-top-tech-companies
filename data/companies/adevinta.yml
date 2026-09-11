@@ -15,19 +15,20 @@ compensation:
     levels:
     - level: all
       base:
-        min: 54669
-        p50: 65010
-        max: 75725
+        min: 47015
+        p50: 55909
+        max: 65123
       total_comp:
-        min: 54677
-        p50: 72044
-        max: 86267
+        min: 49958
+        p50: 63331
+        max: 74254
+      sample_size: 43
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/adevinta/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
 linkedin_url: https://www.linkedin.com/company/adevinta
 year_founded: 2019

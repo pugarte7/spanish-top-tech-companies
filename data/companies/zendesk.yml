@@ -6,17 +6,44 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 93315
+        p50: 70781
       total_comp:
-        p50: 104166
-      sample_size: 1
+        p50: 78325
+      sample_size: 4
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/zendesk/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level Senior Software Engineer, 7
-        years experience. Levels.fyi published no Spanish aggregate for this company, so this is one data
-        point rather than a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 4 Spanish submissions at Senior Software Engineer. Levels.fyi publishes
+        an average per level, not a median.
+    - level: staff
+      base:
+        p50: 113047
+      total_comp:
+        p50: 153344
+      sample_size: 2
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/zendesk/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 2 Spanish submissions at Senior Staff Software Engineer. Levels.fyi publishes
+        an average per level, not a median.
+    - level: all
+      base:
+        p50: 84870
+      total_comp:
+        p50: 103332
+      sample_size: 6
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/zendesk/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 6 Spanish submissions, spanning 2 rungs of this company's ladder,
+        rung means 70k to 113k. Levels.fyi published no Spanish interquartile range for this company,
+        so this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/zendesk

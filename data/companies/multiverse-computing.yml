@@ -8,17 +8,18 @@ compensation:
     levels:
     - level: all
       base:
-        min: 57392
-        p50: 63521
-        max: 65196
+        min: 49357
+        p50: 54628
+        max: 56069
       total_comp:
-        min: 57392
-        p50: 70369
-        max: 74044
+        min: 49357
+        p50: 60517
+        max: 63678
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/multiverse-computing/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
+linkedin_url: https://www.linkedin.com/company/multiversecomputing

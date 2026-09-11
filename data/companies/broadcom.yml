@@ -6,17 +6,44 @@ compensation:
   roles:
   - role: software-engineer
     levels:
-    - level: all
+    - level: senior
       base:
-        p50: 67221
+        p50: 64725
       total_comp:
-        p50: 156415
-      sample_size: 1
+        p50: 118718
+      sample_size: 2
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/broadcom/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level ICB 3, 10 years experience.
-        Levels.fyi published no Spanish aggregate for this company, so this is one data point rather than
-        a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 2 Spanish submissions at ICB 3. Levels.fyi publishes an average per level,
+        not a median.
+    - level: principal
+      base:
+        p50: 88513
+      total_comp:
+        p50: 315942
+      sample_size: 2
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/broadcom/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean of 2 Spanish submissions at ICB 5. Levels.fyi publishes an average per level,
+        not a median.
+    - level: all
+      base:
+        p50: 76619
+      total_comp:
+        p50: 217330
+      sample_size: 4
+      sources:
+      - name: levels.fyi
+        url: https://www.levels.fyi/companies/broadcom/salaries/software-engineer/locations/spain
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 4 Spanish submissions, spanning 2 rungs of this company's ladder,
+        rung means 64k to 88k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/broadcom

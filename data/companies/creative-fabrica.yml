@@ -14,5 +14,12 @@ compensation:
   roles: []
   currency: EUR
   basis: gross_annual
+spain_check:
+  date: '2026-09-10'
+  roles:
+  - data-scientist
+  - product-manager
+  - software-engineer
+  served: no data
 linkedin_url: https://www.linkedin.com/company/creative-fabrica
 year_founded: 2016

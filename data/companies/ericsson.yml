@@ -34,14 +34,16 @@ compensation:
     levels:
     - level: all
       base:
-        p50: 47272
+        p50: 41079
       total_comp:
-        p50: 54363
-      sample_size: 1
+        p50: 45229
+      sample_size: 9
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/ericsson/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
-      notes: 'Single Spanish submission: Madrid, MD, Spain, reported level JS4, 3 years experience. Levels.fyi
-        published no Spanish aggregate for this company, so this is one data point rather than a band.'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
+      notes: Spain only. Mean across 9 Spanish submissions, spanning 3 rungs of this company's ladder,
+        rung means 36k to 45k. Levels.fyi published no Spanish interquartile range for this company, so
+        this is its ladder pooled rather than a measured distribution.
+linkedin_url: https://www.linkedin.com/company/ericsson

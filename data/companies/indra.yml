@@ -16,20 +16,20 @@ compensation:
     levels:
     - level: all
       base:
-        min: 34925
-        p50: 39792
-        max: 43468
+        min: 30035
+        p50: 34221
+        max: 37383
       total_comp:
-        min: 34925
-        p50: 39792
-        max: 43468
+        min: 30035
+        p50: 34221
+        max: 37383
       sources:
       - name: levels.fyi
         url: https://www.levels.fyi/companies/indra/salaries/software-engineer/locations/spain
-        date: '2026-08-31'
-      last_verified: '2026-08-31'
+        date: '2026-09-10'
+      last_verified: '2026-09-10'
       notes: 'Spain only: Levels.fyi reports this location as Spain. Base and total compensation, interquartile
-        range.'
+        range, converted from the USD the page stores.'
   - role: hardware-engineer
     levels:
     - level: all
