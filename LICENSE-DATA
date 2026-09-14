@@ -1,6 +1,6 @@
 # Dataset license
 
-Everything under `data/` and `exports/` is licensed
+`companies.csv`, and the tables generated from it in `README.md`, are licensed
 **Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**.
 
 Full text: https://creativecommons.org/licenses/by-sa/4.0/legalcode
@@ -9,7 +9,7 @@ Summary:   https://creativecommons.org/licenses/by-sa/4.0/
 You may share and adapt it, including commercially, as long as you credit this
 repository and license anything you build from it under the same terms.
 
-The scripts, schema and workflows are MIT — see LICENSE.
+The scripts and workflows are MIT — see LICENSE.
 
 ## Third-party data
 

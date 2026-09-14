@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fetch Spain-scoped pay per company from Levels.fyi, and only Spain.
 
-    python3 scripts/fetch_spain.py                 # every resolved backlog slug
+    python3 scripts/fetch_spain.py                 # every resolved company in companies.csv
     python3 scripts/fetch_spain.py --company glovo
     python3 scripts/fetch_spain.py --audit         # report, write nothing
 
@@ -47,7 +47,7 @@ data". Only the `averages` counts are a real Spanish sample size.
 from __future__ import annotations
 
 import argparse
-import csv
+import copy
 import gzip
 import json
 import re
@@ -57,8 +57,6 @@ import urllib.error
 import urllib.request
 
 import lib
-import yaml
-from new_company import SKELETON_ORDER
 
 BASE = "https://www.levels.fyi"
 # The job family the list is about. --role reads any other one Levels.fyi
@@ -68,7 +66,7 @@ ATTRIBUTION = "Data source: Levels.fyi (https://www.levels.fyi)"
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/128.0 Safari/537.36")
 
-# Company rung -> the level slugs schema/company.schema.json allows.
+# Company rung -> the level slugs lib.LEVEL_ORDER allows.
 #
 # Searched most senior first and against every title a rung carries, not just
 # its slug. Both halves of that matter. Amazon files its senior rung as
@@ -95,7 +93,7 @@ LEVEL_PATTERNS = [
 ]
 
 
-def unscoped(level: dict) -> bool:
+def unscoped(band: dict) -> bool:
     """Was this band read off a page that never named a location?
 
     A /companies/<slug>/salaries URL is the company's global ladder, served in
@@ -105,16 +103,13 @@ def unscoped(level: dict) -> bool:
     The test is the source URL, not the wording of `notes`. An earlier version
     matched on "reports this as" and so caught the per-level rows while missing
     "Median across all levels" and "Common Range Average across all levels" -
-    173 of the 205 stale bands, which then shipped in exports/.
+    173 of the 205 stale bands, which then shipped.
     """
-    for source in level.get("sources") or []:
-        url = source.get("url") or ""
-        if "levels.fyi" in url and "/locations/" not in url:
-            return True
-    return False
+    url = band.get("source_url") or ""
+    return "levels.fyi" in url and "/locations/" not in url
 
 
-def ours(level: dict) -> bool:
+def ours(band: dict) -> bool:
     """Was this band written by this script on an earlier run?
 
     Those are replaced wholesale, because the ladder they came from can gain
@@ -123,16 +118,12 @@ def ours(level: dict) -> bool:
     not write - a first-hand figure, a job ad, a country-page row - is left
     exactly where it is.
     """
-    sources = level.get("sources") or []
-    return bool(sources) and all(
-        source.get("name") == "levels.fyi"
-        and "/companies/" in (source.get("url") or "")
-        and "/locations/" in (source.get("url") or "")
-        for source in sources
-    )
+    url = band.get("source_url") or ""
+    return (band.get("source") == "levels.fyi"
+            and "/companies/" in url and "/locations/" in url)
 
 
-def superseded(level: dict, replacing: set[str]) -> bool:
+def superseded(band: dict, replacing: set[str]) -> bool:
     """A weaker Levels.fyi reading of a level this run just measured.
 
     A country page (/t/<role>/locations/spain) publishes one median per company
@@ -144,9 +135,7 @@ def superseded(level: dict, replacing: set[str]) -> bool:
     Only a Levels.fyi band is replaced. A first-hand figure or a job ad at the
     same level is worth more than anything scraped and stays.
     """
-    sources = level.get("sources") or []
-    return (level.get("level") in replacing and bool(sources)
-            and all(source.get("name") == "levels.fyi" for source in sources))
+    return band.get("level") in replacing and band.get("source") == "levels.fyi"
 
 
 class Blocked(RuntimeError):
@@ -327,8 +316,7 @@ def bands(page: dict, today: str) -> list[dict]:
         named = ", ".join(rung.get("primaryLevelName") or rung.get("level") or "?"
                           for rung in group)
         out.append(assemble(
-            level, {"p50": base} if base is not None else {},
-            {"p50": total} if total is not None else {}, count, today,
+            level, {"p50": base}, {"p50": total}, count, today,
             f"Spain only. Mean of {count} Spanish submission"
             f"{'s' if count != 1 else ''} at {named}. Levels.fyi publishes an "
             "average per level, not a median.", page["url"]))
@@ -341,20 +329,13 @@ def bands(page: dict, today: str) -> list[dict]:
 
 def assemble(level: str, base: dict, total: dict, count: int | None, today: str,
              notes: str, url: str) -> dict:
-    """One band, fields in the order data/companies/_template.yml uses.
-
-    Each band gets its own copy of the source: sharing one dict makes
-    yaml.safe_dump emit anchors and aliases, which are valid YAML and horrible
-    to hand-edit, and these files are meant to be edited by hand.
-    """
-    band = {"level": level, "base": base}
-    if total:
-        band["total_comp"] = total
-    if count:
-        band["sample_size"] = count
-    band["sources"] = [{"name": "levels.fyi", "url": url, "date": today}]
-    band["last_verified"] = today
-    band["notes"] = notes
+    """One band. `base` and `total` map min/p50/max to euros, None for unpublished."""
+    band = {"level": level}
+    for block, figures in (("base", base), ("total", total)):
+        for part in ("min", "p50", "max"):
+            band[f"{block}_{part}"] = figures.get(part)
+    band.update(sample_size=count or None, source="levels.fyi", source_url=url,
+                date=today, notes=notes)
     return band
 
 
@@ -396,8 +377,7 @@ def spread_band(page: dict, today: str) -> dict | None:
             where = (f"spanning {len(rungs)} rungs of this company's ladder, "
                      f"rung means {lib.fmt_eur(means[0])} to {lib.fmt_eur(means[-1])}")
         return assemble(
-            "all", {"p50": base} if base is not None else {},
-            {"p50": total} if total is not None else {}, count, today,
+            "all", {"p50": base}, {"p50": total}, count, today,
             f"Spain only. Mean across {count} Spanish submission"
             f"{'s' if count != 1 else ''}, {where}. Levels.fyi published no "
             "Spanish interquartile range for this company, so this is its "
@@ -418,8 +398,7 @@ def spread_band(page: dict, today: str) -> dict | None:
     years = submission.get("yearsOfExperience")
     where = submission.get("location") or "Spain"
     return assemble(
-        "all", {"p50": base} if base is not None else {},
-        {"p50": total} if total is not None else {}, 1, today,
+        "all", {"p50": base}, {"p50": total}, 1, today,
         f"Single Spanish submission: {where}, reported level {reported}"
         f"{f', {years} years experience' if years is not None else ''}. "
         "Levels.fyi published no Spanish aggregate or ladder for this company, "
@@ -428,7 +407,7 @@ def spread_band(page: dict, today: str) -> dict | None:
 
 def summarise(band: dict) -> str:
     """One band, for the run report."""
-    figure = (band.get("base") or {}).get("p50") or (band.get("total_comp") or {}).get("p50")
+    figure = band.get("base_p50") or band.get("total_p50")
     count = band.get("sample_size")
     return f"{band['level']} {lib.fmt_eur(figure)}" + (f" n={count}" if count else "")
 
@@ -441,52 +420,49 @@ def note_check(company: dict, role: str, found: bool, served: str, today: str) -
     dash: it tells a reader the gap is Levels.fyi's coverage rather than
     somebody forgetting to look.
 
-    The front page reads this field rather than the wording of a note, which is
-    the same lesson as the location purge - prose is not a machine-readable
+    The front page reads these columns rather than the wording of a note, which
+    is the same lesson as the location purge - prose is not a machine-readable
     fact, and matching on it is what let 173 stale bands through.
     """
-    check = company.get("spain_check") or {}
-    roles = set(check.get("roles") or [])
+    checked = set(company.get("spain_check_roles") or [])
     if found:
-        roles.discard(role)
+        checked.discard(role)
     else:
-        roles.add(role)
-    if not roles:
-        company.pop("spain_check", None)
+        checked.add(role)
+    if not checked:
+        company.update(spain_check_date=None, spain_check_roles=[], spain_check_served=None)
         return
     # Only a negative answer is dated: finding pay in one role says nothing
     # about when the others were last asked.
-    fresh = {"date": today if not found else check.get("date") or today,
-             "roles": sorted(roles)}
-    served = served if not found else check.get("served")
-    if served:
-        fresh["served"] = served
-    company["spain_check"] = fresh
+    if not found:
+        company.update(spain_check_date=today, spain_check_served=served or None)
+    elif not company.get("spain_check_date"):
+        company["spain_check_date"] = today
+    company["spain_check_roles"] = sorted(checked)
 
 
 def write(slug: str, new_bands: list[dict], name_hint: str, today: str,
           record: dict | None = None, role: str = ROLE,
           served: str | None = None) -> str:
-    """Update one company file. Returns what happened, for the run report."""
-    path = lib.COMPANIES_DIR / f"{slug}.yml"
-    company = yaml.safe_load(path.read_text(encoding="utf-8")) if path.exists() else None
+    """Update one company in companies.csv. Returns what happened, for the run report.
+
+    The whole file is read and written for each company, so a run that gets
+    blocked halfway keeps everything it fetched before that.
+    """
+    companies = lib.load_companies()
+    company = lib.by_slug(companies, slug)
     created = company is None
-    company = company or {"slug": slug, "name": name_hint or slug}
-    company.setdefault("slug", slug)
-    company.setdefault("name", name_hint or slug)
+    if created:
+        company = lib.blank_company(name_hint or (record or {}).get("name") or slug,
+                                    levels_slug=slug, levels_status="resolved")
+    before = copy.deepcopy(company)
 
     # The employer's own LinkedIn page, which the front page links company
     # names to. Never overwrite one already on file: a hand-entered URL was
     # put there deliberately and is better than anything guessed here.
     handle = (record or {}).get("linkedin")
-    linked = bool(handle) and not company.get("linkedin_url")
-    if linked:
+    if handle and not company.get("linkedin_url"):
         company["linkedin_url"] = f"https://www.linkedin.com/{handle.strip('/')}"
-
-    compensation = company.setdefault("compensation", {})
-    compensation.setdefault("currency", "EUR")
-    compensation.setdefault("basis", "gross_annual")
-    roles = compensation.setdefault("roles", [])
 
     # Anything read off the unscoped company page is another country's pay,
     # whatever role it sits under. Drop it whether or not this company also
@@ -494,63 +470,37 @@ def write(slug: str, new_bands: list[dict], name_hint: str, today: str,
     # nothing about the Dutch product-designer band filed beside it, and the
     # earlier version only ran this when the company had no Spanish data at
     # all, so 27 companies kept theirs.
-    dropped = 0
-    for bucket in list(roles):
-        kept = [lvl for lvl in bucket.get("levels") or [] if not unscoped(lvl)]
-        dropped += len(bucket.get("levels") or []) - len(kept)
-        bucket["levels"] = kept
-        if not kept:
-            roles.remove(bucket)
+    company["bands"] = [band for band in company["bands"] if not unscoped(band)]
 
-    # Re-read the bucket: the purge above may have just removed it.
-    bucket = next((r for r in roles if r.get("role") == role), None)
-    before = dict(company.get("spain_check") or {})
     # A page that never loaded is not evidence of anything, so only an answer
     # we actually read updates the record.
     if served is not None:
         note_check(company, role, bool(new_bands), served, today)
-    if not new_bands and not [lvl for lvl in (bucket or {}).get("levels") or [] if ours(lvl)]:
-        # No pay to record. The file is still written, so the row can say the
-        # question was asked and answered - see note_check. Skip only when
-        # nothing at all would change.
-        if not dropped and not linked and company.get("spain_check") == before:
-            return "skipped"
-    if new_bands and bucket is None:
-        bucket = {"role": role, "levels": []}
-        roles.append(bucket)
-    if bucket is not None:
-        replacing = {band["level"] for band in new_bands}
-        keep = [lvl for lvl in bucket.get("levels") or []
-                if not ours(lvl) and not superseded(lvl, replacing)]
-        bucket["levels"] = sorted(keep + new_bands,
-                                  key=lambda e: lib.level_rank(e["level"]))
-        if not bucket["levels"]:
-            roles.remove(bucket)
 
-    rest = {k: v for k, v in company.items() if k not in SKELETON_ORDER}
-    ordered = {k: company[k] for k in SKELETON_ORDER if k in company}
-    ordered.update(rest)
-    path.write_text(
-        yaml.safe_dump(ordered, sort_keys=False, allow_unicode=True, width=100),
-        encoding="utf-8")
+    replacing = {band["level"] for band in new_bands}
+    company["bands"] = [
+        band for band in company["bands"]
+        if band["role"] != role or not (ours(band) or superseded(band, replacing))
+    ] + [dict(band, role=role) for band in new_bands]
+
+    if company == before:
+        return "skipped"
+    if created:
+        if lib.by_name(companies, company["company"]):
+            print(f"  {slug}: not written, {company['company']!r} is already in "
+                  f"{lib.DATA.name} under another slug", file=sys.stderr)
+            return "refused"
+        companies.append(company)
+    lib.save_companies(companies)
     if not new_bands:
         return "created" if created else "cleaned"
     return "created" if created else "updated"
 
 
 def targets() -> list[tuple[str, str]]:
-    """(slug, name) for every company worth asking about, backlog and files."""
-    out: dict[str, str] = {}
-    path = lib.ROOT / "data" / "backlog.csv"
-    if path.exists():
-        with path.open(encoding="utf-8") as fh:
-            for row in csv.DictReader(fh):
-                if row.get("status") == "resolved" and row.get("levels_slug"):
-                    out.setdefault(row["levels_slug"], (row.get("name") or "").strip())
-    for existing in sorted(lib.COMPANIES_DIR.glob("*.yml")):
-        if not existing.name.startswith("_"):
-            out.setdefault(existing.stem, "")
-    return sorted(out.items())
+    """(slug, name) for every company with a confirmed Levels.fyi page."""
+    return sorted((c["levels_slug"], c["company"]) for c in lib.load_companies()
+                  if c.get("levels_slug") and c.get("levels_status") == "resolved")
 
 
 def main(argv: list[str]) -> int:
@@ -592,7 +542,7 @@ def main(argv: list[str]) -> int:
     print("\nserved by country: " + ", ".join(
         f"{k} {v}" for k, v in sorted(served.items(), key=lambda kv: -kv[1])))
     if not args.audit:
-        print("files: " + ", ".join(f"{k} {v}" for k, v in sorted(tally.items())))
+        print("companies: " + ", ".join(f"{k} {v}" for k, v in sorted(tally.items())))
         print(f"\n{ATTRIBUTION}")
         print("Next: python3 scripts/validate.py && python3 scripts/build.py")
     return 0

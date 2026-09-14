@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-"""Regenerate the README tables and the exports/ files from data/companies/."""
+"""Rebuild README.md from companies.csv, and rewrite the CSV in canonical order."""
 from __future__ import annotations
 
-import csv
-import io
-import json
 import re
 import sys
+from typing import NamedTuple
 
 import lib
 
 README = lib.ROOT / "README.md"
-
 
 
 def replace_block(text: str, marker: str, body: str) -> str:
@@ -23,45 +20,33 @@ def replace_block(text: str, marker: str, body: str) -> str:
     return pattern.sub(lambda m: m.group(1) + body + m.group(2), text)
 
 
-# --------------------------------------------------------------------------- cells
+# --------------------------------------------------------------------------- figures
 
 
-def k(value) -> str:
-    if value is None:
-        return "—"
-    return f"{value / 1000:.1f}k".replace(".0k", "k")
-
-
-def render_stats(companies: list[dict]) -> str:
-    entries = catalogue(companies)
-    paid = [e for e in entries if e["value"] is not None and e["value"] >= lib.THRESHOLD_EUR]
-    documented = [e for e in entries if e["value"] is not None]
-    bands = [lvl for c in companies for _, lvl in lib.iter_levels(c)]
-    stale = sum(1 for lvl in bands if lib.is_stale(lvl.get("last_verified")))
-    parts = [
-        f"**{len(entries)} companies**",
-        f"**{len(paid)} paying 60k+**",
-        # The table footnote already accounts for the undocumented rows, so
-        # count what is known rather than repeating the gap twice.
-        f"{len(documented)} with pay on file",
-    ]
-    if stale:
-        parts.append(f"{stale} stale")
-    freshest = max(
-        (d for d in (lib.parse_date(lvl.get("last_verified")) for lvl in bands) if d),
-        default=None,
-    )
-    if freshest:
-        parts.append(f"newest data {freshest}")
-    return " · ".join(parts)
+class Headline(NamedTuple):
+    """The number a company is ranked by, and where in the table it sits."""
+    value: int
+    kind: str    # senior | quartile | spread | single, see headline()
+    band: dict
+    block: str   # "base" or "total"
+    part: str    # "p50", "max" or "all": which part of that cell to bold
 
 
 # Senior and above, cheapest rung first. A company's senior+ pay is best
 # represented by the rung you reach it at; staff and principal sit above.
 SENIOR_PLUS = ("senior", "staff", "principal", "lead")
 
+# A salary someone in Spain told the maintainer directly outranks anything
+# crowdsourced, so it sorts above it however large the crowdsourced one is.
+VOUCHED = ("offer-letter", "community")
 
-def upper_quartile(level: dict):
+
+def point(band: dict, block: str) -> str:
+    """Bold the median when there is one, else the whole range it came from."""
+    return "p50" if band.get(f"{block}_p50") is not None else "all"
+
+
+def upper_quartile(band: dict) -> tuple[int | None, str | None]:
     """The 75th percentile of a band, base before total comp.
 
     An all-seniority band spans juniors to principals, so its median answers
@@ -72,14 +57,14 @@ def upper_quartile(level: dict):
     ladder carries a mean per rung and no distribution, so this returns None
     for it rather than inventing a quartile out of the top rung's average.
     """
-    for block in (level.get("base") or {}, level.get("total_comp") or {}):
-        if block.get("max") is not None:
-            return block["max"]
-    return None
+    for block in ("base", "total"):
+        if band.get(f"{block}_max") is not None:
+            return band[f"{block}_max"], block
+    return None, None
 
 
-def role_headline(bands: dict):
-    """The best senior-or-above figure inside one job family, as (euros, kind).
+def role_headline(bands: list[dict]) -> Headline | None:
+    """The best senior-or-above figure inside one job family.
 
     The highest named rung the company publishes for Spain, not the cheapest
     one that counts as senior: Twilio files 59.986 EUR at senior and 112.167 at
@@ -93,36 +78,44 @@ def role_headline(bands: dict):
     """
     best = None
     for rung in SENIOR_PLUS:
-        level = bands.get(rung)
-        if not level:
-            continue
-        value = lib.level_value(level)
-        if value is not None and (best is None or value > best[0]):
-            best = (value, "senior", level)
+        for band in bands:
+            value, block = lib.figure(band)
+            if band["level"] == rung and value is not None and (best is None or value > best.value):
+                best = Headline(value, "senior", band, block, point(band, block))
     if best:
         return best
 
-    level = bands.get("all")
-    if not level:
-        return None, None, None
-    if level.get("sample_size") == 1:
-        return lib.level_value(level), "single", level
-    top = upper_quartile(level)
-    if top is not None:
-        return top, "quartile", level
-    return lib.level_value(level), "spread", level
+    for band in bands:
+        value, block = lib.figure(band)
+        if band["level"] != "all" or value is None:
+            continue
+        top, top_block = upper_quartile(band)
+        if band.get("sample_size") == 1:
+            candidate = Headline(value, "single", band, block, point(band, block))
+        elif top is not None:
+            candidate = Headline(top, "quartile", band, top_block, "max")
+        else:
+            candidate = Headline(value, "spread", band, block, point(band, block))
+        if best is None or candidate.value > best.value:
+            best = candidate
+    return best
 
 
-def headline(company: dict):
-    """The number the front page shows, as (euros, kind, level, role).
+def roles(company: dict) -> dict[str, Headline | None]:
+    names = dict.fromkeys(band["role"] for band in company["bands"])
+    return {role: role_headline([b for b in company["bands"] if b["role"] == role])
+            for role in names}
+
+
+def headline(company: dict) -> Headline | None:
+    """The number a company is ranked by.
 
     The best senior-or-above software-engineering figure the company has in
     Spain. A company that has none falls back to its best other job family,
     because a company paying data scientists 108k in Spain is worth a row even
-    when Levels.fyi publishes nothing for its engineers - with the family
-    printed beside the number, since a data scientist's salary passing silently
-    as an engineer's is the kind of quiet wrong answer this list exists to
-    avoid.
+    when Levels.fyi publishes nothing for its engineers - the Role column says
+    which family it is, since a data scientist's salary passing silently as an
+    engineer's is the kind of quiet wrong answer this list exists to avoid.
 
     kind is how much the number is worth:
       "senior"   a measured rung from a real ladder
@@ -130,381 +123,237 @@ def headline(company: dict):
       "spread"   every level at the company averaged together, because its
                  rungs are named L3 and L4 and nothing says which is senior
       "single"   one person's reported salary, not a band at all
-
-    The four are not interchangeable and `exports/` records which is which.
     """
-    by_role: dict[str, dict] = {}
-    for role, level in lib.iter_levels(company):
-        by_role.setdefault(role, {})[level.get("level")] = level
-
-    found = []
-    for role, bands in by_role.items():
-        value, kind, level = role_headline(bands)
-        if value is not None:
-            found.append((value, role == "software-engineer", kind, level, role))
+    found = [h for h in roles(company).values() if h]
     if not found:
-        return None, None, None, None
+        return None
     # Software engineering wins outright, not just on a tie: this list is
     # about engineers, and Amazon's engineering-manager median of 142.5k is a
     # worse answer to "what does a senior engineer get" than its own measured
-    # senior rung of 88.9k, however much larger it is.
-    value, _, kind, level, role = max(found, key=lambda f: (f[1], f[0]))
-    return value, kind, level, role
+    # principal rung, however much larger it is.
+    return max(found, key=lambda h: (h.band["role"] == "software-engineer", h.value))
 
 
-# A salary someone in Spain told the maintainer directly outranks anything
-# crowdsourced, so it sorts above it however large the crowdsourced one is.
-VOUCHED = ("offer-letter", "community")
+# --------------------------------------------------------------------------- cells
 
 
-def linkedin_url(entry: dict) -> str | None:
+def k(value) -> str:
+    return f"{value / 1000:.1f}k".replace(".0k", "k")
+
+
+def escape(value: str) -> str:
+    return value.replace("|", "\\|")
+
+
+ACRONYMS = {"ai": "AI", "qa": "QA", "sre": "SRE", "ux": "UX", "it": "IT"}
+
+
+def role_label(role: str) -> str:
+    label = " ".join(ACRONYMS.get(word, word) for word in role.split("-"))
+    return label[:1].upper() + label[1:]
+
+
+def level_label(level: str) -> str:
+    return "All levels" if level == "all" else level.capitalize()
+
+
+def money(band: dict, block: str, bold: str | None = None) -> str:
+    """A figure, with its 25th-75th percentile range in brackets when it has one.
+
+    `bold` marks the number the company is ranked by: "p50" the figure, "max"
+    the top of its range, "all" the whole cell.
+    """
+    low, mid, high = (band.get(f"{block}_{part}") for part in ("min", "p50", "max"))
+    if mid is None:
+        if low is None and high is None:
+            return "—"
+        if None not in (low, high) and low != high:
+            cell = f"{k(low)}–{k(high)}"
+        else:
+            cell = k(high if high is not None else low)
+        return f"**{cell}**" if bold else cell
+    if None in (low, high) or low == mid == high:
+        return f"**{k(mid)}**" if bold else k(mid)
+    main, top = k(mid), k(high)
+    if bold == "max":
+        top = f"**{top}**"
+    elif bold:
+        main = f"**{main}**"
+    return f"{main} ({k(low)}–{top})"
+
+
+def linkedin_url(company: dict) -> str | None:
     """Where the company name points.
 
     A vanity URL is what a person would recognise and what Levels.fyi records,
     so it wins over the numeric id from the LinkedIn job-search filter. The id
-    still resolves, and is all the backlog rows have.
+    still resolves, and is all some companies have.
     """
-    if entry.get("linkedin_url"):
-        return entry["linkedin_url"]
-    if entry.get("linkedin_id"):
-        return f"https://www.linkedin.com/company/{entry['linkedin_id']}"
+    if company.get("linkedin_url"):
+        return company["linkedin_url"]
+    if company.get("linkedin_ids"):
+        return f"https://www.linkedin.com/company/{company['linkedin_ids'][0]}"
     return None
 
 
-def jobs_url(entry: dict) -> str | None:
+def jobs_url(company: dict) -> str | None:
     """This company's open roles in Spain.
 
-    LinkedIn filters a job search by numeric company id, which is what the
-    backlog carries. A company known only by a vanity URL gets the jobs tab on
-    its own page instead - the same list, without the country filter.
+    LinkedIn filters a job search by numeric company id, and takes several at
+    once, so Amazon's link covers AWS too. A company known only by a vanity URL
+    gets the jobs tab on its own page instead - the same list, without the
+    country filter.
 
     The country goes in as `location=Spain`, a literal LinkedIn resolves
     itself. A `geoId` would be faster and is not worth it: get one digit wrong
     and the link confidently serves another country's jobs, which is the exact
     mistake this list exists not to make.
     """
-    if entry.get("linkedin_id"):
-        return (f"https://www.linkedin.com/jobs/search/?f_C={entry['linkedin_id']}"
+    if company.get("linkedin_ids"):
+        return (f"https://www.linkedin.com/jobs/search/?f_C={'%2C'.join(company['linkedin_ids'])}"
                 "&location=Spain")
-    if entry.get("linkedin_url"):
-        return entry["linkedin_url"].rstrip("/") + "/jobs/"
+    if company.get("linkedin_url"):
+        return company["linkedin_url"].rstrip("/") + "/jobs/"
     return None
 
 
-def levels_page(slug: str | None) -> str | None:
-    return f"https://www.levels.fyi/companies/{slug}/salaries" if slug else None
-
-
-def figure_url(entry: dict) -> str | None:
-    """Where a figure links to: the page its number was actually read off.
-
-    Not the company's own /companies/<slug>/salaries page. That one is scoped
-    by the reader's IP and shows the company's global ladder, so it answers a
-    different question than the Spanish figure printed beside it - a reader
-    clicking Adyen's Spanish 80.1k used to land on Dutch numbers. Fall back to
-    it only for a company we know of but hold no band for.
-    """
-    for source in (entry.get("level") or {}).get("sources") or []:
-        if source.get("url"):
-            return source["url"]
-    return levels_page(entry["levels_slug"])
-
-
-def spain_page(entry: dict) -> str | None:
+def spain_page(company: dict) -> str | None:
     """The Spain-scoped page that answered with nothing.
 
     Worth linking: a reader who doubts a blank row can open the same page the
     fetcher read and see the gap for themselves.
     """
-    check = entry.get("spain_check") or {}
-    roles = check.get("roles") or []
-    slug = entry.get("levels_slug")
-    if not slug or not roles:
+    checked = company.get("spain_check_roles") or []
+    slug = company.get("levels_slug")
+    if not slug or not checked:
         return None
-    role = "software-engineer" if "software-engineer" in roles else roles[0]
+    role = "software-engineer" if "software-engineer" in checked else checked[0]
     return f"https://www.levels.fyi/companies/{slug}/salaries/{role}/locations/spain"
 
 
-def company_levels_slug(company: dict) -> str | None:
-    """The slug of the company's own Levels.fyi page, if a band cites one.
+def company_cell(company: dict) -> str:
+    url = linkedin_url(company)
+    return f"[{escape(company['company'])}]({url})" if url else escape(company["company"])
 
-    Bands taken from a country aggregate cite a role/location page like
-    /t/software-engineer/locations/spain, which is about every employer in
-    Spain rather than this one. Only /companies/ URLs identify a company.
+
+def jobs_cell(company: dict) -> str:
+    url = jobs_url(company)
+    return f"[open roles]({url})" if url else "—"
+
+
+def source_cell(band: dict) -> str:
+    label = (band.get("source") or "—").replace("-", " ")
+    return f"[{label}]({band['source_url']})" if band.get("source_url") else label
+
+
+def status_cell(company: dict) -> str:
+    """Why a company has no figure. Each kind of blank says which it is."""
+    page = spain_page(company)
+    if page:
+        served = company.get("spain_check_served")
+        shown = f" (shows {served} pay)" if served and served != "no data" else ""
+        return f"[no Spain data]({page}){shown}"
+    if company.get("levels_slug"):
+        return "not checked yet"
+    if company.get("levels_status") == "unmatched":
+        return "not on Levels.fyi"
+    return "not looked up yet"
+
+
+# --------------------------------------------------------------------------- tables
+
+
+PAY_HEADER = [
+    "| Company | Role | Level | Base | Total comp | Data points | Source | Jobs |",
+    "| --- | --- | --- | ---: | ---: | ---: | --- | --- |",
+]
+
+
+def pay_rows(company: dict, head: Headline) -> list[str]:
+    """Every figure a company has: its best job family first, best-paid rung first.
+
+    By pay rather than by ladder position, because ladders disagree on where
+    lead sits relative to principal, and this way the ranked figure is nearly
+    always the first row. The all-levels band goes last whatever it pays.
     """
-    for _, level in lib.iter_levels(company):
-        for source in level.get("sources", []) or []:
-            url = source.get("url") or ""
-            if source.get("name") == "levels.fyi" and "/companies/" in url:
-                return url.split("/companies/")[1].split("/")[0]
-    return None
-
-
-def catalogue(companies: list[dict]) -> list[dict]:
-    """Every company the repo knows about, documented or not.
-
-    Two sources overlap: data/companies/*.yml carries the researched ones,
-    data/backlog.csv carries the rest plus the Levels.fyi slugs the resolver
-    confirmed. Keyed on that slug where there is one so a company filed twice
-    under different names (Adevinta and Adevinta Spain, Amazon and AWS) lands
-    on one row, and on the name otherwise.
-    """
-    entries: list[dict] = []
-    by_slug: dict[str, dict] = {}
-    by_name: dict[str, dict] = {}
-
-    def name_keys(name: str) -> list[str]:
-        """Every spelling a row might use for this company.
-
-        "Boston Consulting Group (BCG)" and "BCG" are one employer filed twice.
-        Only uppercase parentheticals count as the acronym, so "(Official)" and
-        "(Europe's favourite airline)" do not become merge keys.
-        """
-        name = name.strip()
-        keys = [name.casefold()]
-        outer = re.sub(r"\s*\([^)]*\)", "", name).strip()
-        if outer and outer.casefold() != keys[0]:
-            keys.append(outer.casefold())
-        for inner in re.findall(r"\(([^)]{1,6})\)", name):
-            token = inner.strip()
-            if token.isalnum() and token.isupper():
-                keys.append(token.casefold())
-        return keys
-
-    def index(entry: dict, name: str | None = None, alias: str | None = None) -> None:
-        keys = name_keys(name or entry["name"])
-        if alias:
-            keys += name_keys(alias)
-        for key in keys:
-            by_name.setdefault(key, entry)
-        if entry["levels_slug"]:
-            by_slug.setdefault(entry["levels_slug"], entry)
-
-    def absorb(entry: dict, name: str, slug: str | None, linkedin_id,
-               alias: str | None = None, value=None, kind=None, level=None,
-               linkedin_url_=None, spain_check=None, role=None) -> None:
-        entry["linkedin_id"] = entry.get("linkedin_id") or linkedin_id
-        entry["linkedin_url"] = entry.get("linkedin_url") or linkedin_url_
-        entry["spain_check"] = entry.get("spain_check") or spain_check
-        if slug and not entry["levels_slug"]:
-            entry["levels_slug"] = slug
-        if entry["value"] is None and value is not None:
-            entry["value"] = value
-            entry["kind"] = kind
-            entry["level"] = level
-            entry["role"] = role
-        # Levels.fyi files some employers under two slugs, so the same company
-        # arrives twice under a plain name and a padded one: Meta and "Meta
-        # Facebook", BCG and "Boston Consulting Group (BCG)". The shorter is
-        # the one worth showing.
-        if len(name) < len(entry["name"]):
-            entry["name"] = name
-        # Names we have now seen for this company, so the next row carrying one
-        # merges here instead of opening a second entry.
-        index(entry, name, alias)
-
-    def lookup(name: str, slug: str | None, alias: str | None):
-        if slug and slug in by_slug:
-            return by_slug[slug]
-        for key in name_keys(name) + ([alias.strip().casefold()] if alias else []):
-            if key in by_name:
-                return by_name[key]
-        return None
-
-    # The resolver records the name Levels.fyi answered with, which is how
-    # "Meta Facebook" is known to be Meta. Both now have their own company
-    # file, so the aliases have to be known before those files are read or the
-    # two are appended as separate companies before anything can pair them.
-    backlog_rows = []
-    aliases: dict[str, str] = {}
-    path = lib.ROOT / "data" / "backlog.csv"
-    if path.exists():
-        with path.open(encoding="utf-8") as fh:
-            for row in csv.DictReader(fh):
-                if not (row.get("name") or "").strip():
-                    continue
-                found = re.search(r"matched as ([^,]+)", row.get("notes") or "")
-                if found and row.get("levels_slug"):
-                    aliases[row["levels_slug"]] = found.group(1).strip()
-                backlog_rows.append(row)
-
-    for c in companies:
-        value, kind, level, role = headline(c)
-        slug = company_levels_slug(c) or c.get("slug")
-        alias = aliases.get(slug or "")
-        existing = lookup(c["name"], slug, alias)
-        if existing:
-            absorb(existing, c["name"], slug, c.get("linkedin_id"), alias,
-                   value, kind, level, c.get("linkedin_url"), c.get("spain_check"),
-                   role)
-            continue
-        entry = {
-            "name": c["name"],
-            "levels_slug": slug,
-            "linkedin_id": c.get("linkedin_id"),
-            "linkedin_url": c.get("linkedin_url"),
-            "value": value,
-            "kind": kind,
-            "level": level,
-            "role": role,
-            "spain_check": c.get("spain_check"),
-        }
-        entries.append(entry)
-        index(entry, alias=alias)
-
-    for row in backlog_rows:
-        name = (row.get("name") or "").strip()
-        slug = row.get("levels_slug") or None
-        alias = aliases.get(slug or "")
-        # Slug first: it is the identity two differently-named rows share
-        # (Amazon and "Amazon Web Services (AWS)" both resolve to amazon).
-        # Then our name, then the name Levels.fyi answered with.
-        existing = lookup(name, slug, alias)
-        if existing:
-            absorb(existing, name, slug, row.get("linkedin_id"), alias)
-            continue
-        entry = {
-            "name": name,
-            "levels_slug": slug,
-            "linkedin_id": row.get("linkedin_id"),
-            "linkedin_url": None,
-            "value": None,
-            "kind": None,
-            "level": None,
-            "role": None,
-            "spain_check": None,
-        }
-        entries.append(entry)
-        index(entry, alias=alias)
-
-    return entries
-
-
-def render_companies(companies: list[dict]) -> str:
-    entries = catalogue(companies)
-    if not entries:
-        return (
-            "_No companies documented yet._ Copy `data/companies/_template.yml`, "
-            "fill it in, and run `python3 scripts/build.py`."
-        )
-
-    # First-hand before crowdsourced, then best-paying, then everything
-    # undocumented alphabetically at the bottom so it reads as a directory
-    # rather than a gap. A salary someone in Spain reported directly is worth
-    # more than any number scraped from a submission site, so it sorts above
-    # one however large that number is.
-    def rank(entry: dict):
-        level = entry.get("level") or {}
-        names = {s.get("name") for s in (level.get("sources") or [])}
-        first_hand = bool(names & set(VOUCHED))
-        return (not first_hand, entry["value"] is None,
-                -(entry["value"] or 0), entry["name"].lower())
-
-    entries.sort(key=rank)
-
-    rows = ["| Company | Senior+ | Roles |", "| --- | --- | --- |"]
-    checked = 0
-    for e in entries:
-        li = linkedin_url(e)
-        name = f"[{e['name']}]({li})" if li else e["name"]
-        jobs = jobs_url(e)
-        roles = f"[open roles]({jobs})" if jobs else "—"
-        if e["value"] is not None:
-            page = figure_url(e)
-            figure = k(e["value"])
-            cell = f"[{figure}]({page})" if page else figure
-            role = e.get("role")
-            if role and role != "software-engineer":
-                cell += f" ({role.replace('-', ' ')})"
-        elif e.get("spain_check"):
-            # Asked and answered. Say so, rather than leaving a dash that
-            # reads as "nobody has looked yet".
-            checked += 1
-            page = spain_page(e)
-            cell = f"[no Spain data]({page})" if page else "no Spain data"
-        else:
-            cell = "—"
-        rows.append(f"| {name} | {cell} | {roles} |")
-
-    documented = sum(1 for e in entries if e["value"] is not None)
-    rows.append("")
-    rows.append(
-        f"<sub>{documented} of {len(entries)} companies have pay on file. A figure is "
-        "gross annual base salary in euros for the best-paid rung at senior or above, "
-        "and links to the page it was read from. A job family in brackets means "
-        "Levels.fyi publishes nothing for engineers there and this is the nearest "
-        f"family it does publish. **no Spain data** ({checked}) means Levels.fyi was "
-        "asked and published nothing for Spain at that company. Company names link "
-        "to LinkedIn.</sub>"
-    )
-    return chr(10).join(rows)
-
-def write_exports(companies: list[dict]) -> None:
-    lib.EXPORTS_DIR.mkdir(exist_ok=True)
-
-    payload = []
-    for c in companies:
-        record = {key: value for key, value in c.items() if not key.startswith("_")}
-        best = lib.top_band(c)
-        record["_computed"] = {
-            "qualifies": lib.qualifies(c),
-            "headline_kind": headline(c)[1],
-            "top_band_eur": best[2] if best else None,
-            "top_band_role": best[0] if best else None,
-            "top_band_level": best[1]["level"] if best else None,
-        }
-        payload.append(record)
-    (lib.EXPORTS_DIR / "companies.json").write_text(
-        json.dumps(payload, indent=2, ensure_ascii=False, default=str) + "\n", encoding="utf-8"
-    )
-
-    buffer = io.StringIO()
-    writer = csv.writer(buffer, lineterminator="\n")
-    writer.writerow([
-        "slug", "name", "linkedin_id", "website", "careers_url", "hq_city", "hq_country",
-        "employees", "sector", "work_model",
-        "remote_within_spain", "contract", "working_language",
-        "role", "level", "base_min", "base_p50", "base_max",
-        "tc_min", "tc_p50", "tc_max", "bonus_pct", "equity", "data_points",
-        "sources", "last_verified",
-    ])
-    for c in companies:
-        common = [
-            c.get("slug"), c.get("name"), c.get("linkedin_id"), c.get("website"),
-            c.get("careers_url"), c.get("hq", {}).get("city"), c.get("hq", {}).get("country"),
-            c.get("employees"),
-            "|".join(c.get("sector") or []), c.get("work_model"), c.get("remote_within_spain"),
-            "|".join(c.get("contract", [])), c.get("working_language"),
+    best = {role: h.value if h else 0 for role, h in roles(company).items()}
+    bands = sorted(company["bands"], key=lambda b: (
+        b["role"] != "software-engineer", -best[b["role"]], b["role"],
+        b["level"] == "all", -(lib.level_value(b) or 0), lib.band_order(b)))
+    rows = []
+    for index, band in enumerate(bands):
+        ranked = band is head.band
+        cells = [
+            company_cell(company) if index == 0 else "",
+            role_label(band["role"]),
+            level_label(band["level"]),
+            money(band, "base", head.part if ranked and head.block == "base" else None),
+            money(band, "total", head.part if ranked and head.block == "total" else None),
+            str(band["sample_size"]) if band.get("sample_size") else "—",
+            source_cell(band),
+            jobs_cell(company) if index == 0 else "",
         ]
-        levels = list(lib.iter_levels(c))
-        if not levels:
-            writer.writerow(common + [""] * 13)
-            continue
-        for role, level in levels:
-            base = level.get("base", {})
-            tc = level.get("total_comp", {}) or {}
-            writer.writerow(common + [
-                role, level.get("level"),
-                base.get("min"), base.get("p50"), base.get("max"),
-                tc.get("min"), tc.get("p50"), tc.get("max"),
-                level.get("bonus_pct"), level.get("equity"), level.get("sample_size"),
-                "|".join(s["name"] for s in level.get("sources", [])),
-                level.get("last_verified"),
-            ])
-    (lib.EXPORTS_DIR / "companies.csv").write_text(buffer.getvalue(), encoding="utf-8")
+        rows.append("| " + " | ".join(cells) + " |")
+    return rows
+
+
+def render_stats(companies: list[dict], heads: list[Headline | None]) -> str:
+    paid = [h for h in heads if h]
+    bands = [band for company in companies for band in company["bands"]]
+    parts = [
+        f"**{len(companies)} companies**",
+        f"**{sum(1 for h in paid if h.value >= lib.THRESHOLD_EUR)} paying 60k+**",
+        f"{len(paid)} with pay on file",
+        f"{len(bands)} salary figures",
+    ]
+    stale = sum(1 for band in bands if lib.is_stale(band.get("date")))
+    if stale:
+        parts.append(f"{stale} stale")
+    dates = sorted(d for d in (lib.parse_date(band.get("date")) for band in bands) if d)
+    if dates:
+        parts.append(f"data from {dates[0]} to {dates[-1]}" if dates[0] != dates[-1]
+                     else f"data from {dates[0]}")
+    return " · ".join(parts)
+
+
+def render_companies(companies: list[dict], heads: list[Headline | None]) -> str:
+    # First-hand before crowdsourced, then best-paying. A salary someone in
+    # Spain reported directly is worth more than any number scraped from a
+    # submission site, so it sorts above one however large that number is.
+    paid = sorted(
+        ((c, h) for c, h in zip(companies, heads) if h),
+        key=lambda ch: (ch[1].band.get("source") not in VOUCHED, -ch[1].value,
+                        ch[0]["company"].casefold()))
+    unpaid = sorted((c for c, h in zip(companies, heads) if not h),
+                    key=lambda c: c["company"].casefold())
+
+    out: list[str] = []
+    for title, group in (
+        ("60k and above", [(c, h) for c, h in paid if h.value >= lib.THRESHOLD_EUR]),
+        ("Under 60k", [(c, h) for c, h in paid if h.value < lib.THRESHOLD_EUR]),
+    ):
+        if group:
+            out += [f"## {title}", "", *PAY_HEADER]
+            for company, head in group:
+                out += pay_rows(company, head)
+            out.append("")
+    if unpaid:
+        out += ["## No pay on file", "", "| Company | Levels.fyi | Jobs |", "| --- | --- | --- |"]
+        out += [f"| {company_cell(c)} | {status_cell(c)} | {jobs_cell(c)} |" for c in unpaid]
+    return "\n".join(out).rstrip()
 
 
 def main() -> int:
     companies = lib.load_companies()
-    text = README.read_text(encoding="utf-8")
-    text = replace_block(text, "STATS", render_stats(companies))
-    text = replace_block(text, "COMPANIES", render_companies(companies))
-    README.write_text(text, encoding="utf-8")
-    write_exports(companies)
-    print(f"Built README.md and exports/ from {len(companies)} companies.")
+    lib.save_companies(companies)
+    heads = [headline(company) for company in companies]
+    readme = README.read_text(encoding="utf-8")
+    readme = replace_block(readme, "STATS", render_stats(companies, heads))
+    readme = replace_block(readme, "COMPANIES", render_companies(companies, heads))
+    README.write_text(readme, encoding="utf-8")
+    print(f"Built README.md from {len(companies)} companies.")
     return 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
-

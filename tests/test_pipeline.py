@@ -3,7 +3,7 @@
 
     python3 tests/test_pipeline.py
 
-No test framework on purpose: CI installs requirements.txt and nothing else.
+No test framework and no dependencies on purpose: CI runs plain Python.
 
 Every case below is a bug this repository shipped, not a hypothetical. The
 location guard in particular has had to be enforced twice - 682 foreign salary
@@ -21,9 +21,7 @@ import tempfile
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-import yaml
-
-import lib
+import lib  # noqa: E402
 
 UNSCOPED = "https://www.levels.fyi/companies/adyen/salaries"
 PER_LOCATION = ("https://www.levels.fyi/companies/adyen/salaries"
@@ -41,26 +39,34 @@ def check(label: str, got, want) -> None:
         failures.append(label)
 
 
-def band(url: str, level: str = "all", notes: str = "") -> dict:
+def band(url: str, level: str = "all", notes: str = "",
+         role: str = "software-engineer") -> dict:
     return {
-        "level": level,
-        "base": {"p50": 80000},
-        "notes": notes,
-        "last_verified": "2026-08-31",
-        "sources": [{"name": "levels.fyi", "url": url, "date": "2026-08-31"}],
+        "role": role, "level": level, "base_p50": 80000, "notes": notes,
+        "source": "levels.fyi", "source_url": url, "date": "2026-08-31",
     }
 
 
 @contextlib.contextmanager
-def temp_companies():
-    """Point the scripts at a throwaway data/companies/ for the duration."""
-    original = lib.COMPANIES_DIR
+def temp_data(*companies: dict):
+    """Point the scripts at a throwaway companies.csv holding these companies."""
+    original = lib.DATA
     with tempfile.TemporaryDirectory() as directory:
-        lib.COMPANIES_DIR = pathlib.Path(directory)
+        lib.DATA = pathlib.Path(directory) / "companies.csv"
         try:
-            yield lib.COMPANIES_DIR
+            lib.save_companies(list(companies))
+            yield lib.DATA
         finally:
-            lib.COMPANIES_DIR = original
+            lib.DATA = original
+
+
+def acme(*bands: dict, **fields) -> dict:
+    return lib.blank_company("Acme", levels_slug="acme", levels_status="resolved",
+                             **fields) | {"bands": list(bands)}
+
+
+def stored(slug: str = "acme") -> dict | None:
+    return lib.by_slug(lib.load_companies(), slug)
 
 
 def test_location_guard() -> None:
@@ -74,14 +80,14 @@ def test_location_guard() -> None:
         ("country job-family page is accepted", COUNTRY, False),
     ):
         validate.errors.clear()
-        validate.check_bands("test.yml", "software-engineer", band(url))
+        validate.check_band("test", band(url))
         check(label, any("not Spain-scoped" in e for e in validate.errors), rejected)
 
     # Someone reporting their own salary has no Levels.fyi URL to name.
     validate.errors.clear()
-    validate.check_bands("test.yml", "software-engineer", {
-        "level": "senior", "base": {"p50": 78000}, "last_verified": "2026-08-31",
-        "sources": [{"name": "offer-letter", "date": "2026-08-31"}],
+    validate.check_band("test", {
+        "role": "software-engineer", "level": "senior", "base_p50": 78000,
+        "source": "offer-letter", "date": "2026-08-31",
     })
     check("first-hand source needs no location",
           any("not Spain-scoped" in e for e in validate.errors), False)
@@ -114,66 +120,20 @@ def test_purge_runs_even_when_spain_data_exists() -> None:
     print("fetch_spain.write() drops foreign bands beside a Spanish one")
     import fetch_spain
 
-    with temp_companies() as directory:
-        (directory / "acme.yml").write_text(yaml.safe_dump({
-            "slug": "acme", "name": "Acme",
-            "compensation": {"currency": "EUR", "basis": "gross_annual", "roles": [
-                {"role": "software-engineer",
-                 "levels": [band(UNSCOPED, "senior", "reports this as 'L3'.")]},
-                {"role": "product-designer",
-                 "levels": [band(UNSCOPED, "all", "Common Range Average across all levels.")]},
-            ]},
-        }, sort_keys=False))
-
-        spanish = band(PER_LOCATION, "all", "Spain only.")
-        fetch_spain.write("acme", [spanish], "Acme", "2026-09-02")
-
-        result = yaml.safe_load((directory / "acme.yml").read_text())
-        urls = {r["role"]: [lvl["sources"][0]["url"] for lvl in r["levels"]]
-                for r in result["compensation"]["roles"]}
+    with temp_data(acme(
+        band(UNSCOPED, "senior", "reports this as 'L3'."),
+        band(UNSCOPED, "all", "Common Range Average across all levels.", "product-designer"),
+    )):
+        fetch_spain.write("acme", [band(PER_LOCATION, "all", "Spain only.")], "Acme", "2026-09-02")
+        urls = {}
+        for b in stored()["bands"]:
+            urls.setdefault(b["role"], []).append(b["source_url"])
         check("only the Spanish band survives", urls, {"software-engineer": [PER_LOCATION]})
 
-    with temp_companies() as directory:
-        (directory / "acme.yml").write_text(yaml.safe_dump({
-            "slug": "acme", "name": "Acme",
-            "compensation": {"currency": "EUR", "basis": "gross_annual", "roles": [
-                {"role": "data-scientist", "levels": [band(COUNTRY, "all", "Spain.")]},
-            ]},
-        }, sort_keys=False))
-
+    with temp_data(acme(band(COUNTRY, "all", "Spain.", "data-scientist"))):
         fetch_spain.write("acme", [], "Acme", "2026-09-02")
-        result = yaml.safe_load((directory / "acme.yml").read_text())
-        kept = [r["role"] for r in result["compensation"]["roles"]]
-        check("a Spain country-page band is left alone", kept, ["data-scientist"])
-
-
-def test_import_skips_rows_with_no_band() -> None:
-    """A name-only row used to leave a company file full of CHANGEME behind."""
-    print("import_csv.py skips a row carrying no salary")
-    import import_csv
-
-    with tempfile.TemporaryDirectory() as directory:
-        csv_path = pathlib.Path(directory) / "rows.csv"
-        csv_path.write_text(
-            "name,role,level,base_p50,source,source_date\n"
-            "Real Co,software-engineer,senior,78000,community,2026-08-31\n"
-            "Nameless Co,,,,job-posting,2026-08-31\n"
-        )
-        with temp_companies() as companies:
-            with contextlib.redirect_stdout(io.StringIO()):
-                import_csv.main([str(csv_path)])
-            written = sorted(p.stem for p in companies.glob("*.yml"))
-            check("only the row with a band creates a file", written, ["real-co"])
-
-            # The file that does get written is a real record. CHANGEME in the
-            # metadata is intended - a human fills those in - but the salary
-            # has to have made it through.
-            created = yaml.safe_load((companies / "real-co.yml").read_text())
-            roles = created["compensation"]["roles"]
-            check("the surviving row keeps its band",
-                  [(r["role"], r["levels"][0]["level"], r["levels"][0]["base"]["p50"])
-                   for r in roles],
-                  [("software-engineer", "senior", 78000)])
+        check("a Spain country-page band is left alone",
+              [b["role"] for b in stored()["bands"]], ["data-scientist"])
 
 
 def props(**overrides) -> dict:
@@ -205,8 +165,7 @@ def test_figures_are_converted_to_euros() -> None:
     Levels.fyi stores every figure in USD and multiplies by
     locationExchangeRate to print euros - its own FAQ text on Glovo's Spanish
     page says the median total of 79710.65 is EUR 68.551. This script wrote the
-    raw number under `compensation.currency: EUR`, so every figure it produced
-    was about 16% high.
+    raw number as euros, so every figure it produced was about 16% high.
     """
     print("fetch_spain converts USD to EUR")
     import fetch_spain
@@ -218,8 +177,8 @@ def test_figures_are_converted_to_euros() -> None:
     })
     _, parsed, _ = fetch_spain.interpret(page, "glovo", PER_LOCATION)
     [aggregate] = fetch_spain.bands(parsed, "2026-09-10")
-    check("aggregate base is euros", aggregate["base"]["p50"], 63151)
-    check("aggregate total is euros", aggregate["total_comp"]["p50"], 68551)
+    check("aggregate base is euros", aggregate["base_p50"], 63151)
+    check("aggregate total is euros", aggregate["total_p50"], 68551)
 
     # A submission carries its own unrounded rate, and it round-trips to the
     # figure the person actually typed: exactly 55.000 EUR, not 55.099.
@@ -228,7 +187,7 @@ def test_figures_are_converted_to_euros() -> None:
                          "totalCompensation": 69893.4125, "yearsOfExperience": 6})
     _, parsed, _ = fetch_spain.interpret(page, "glovo", PER_LOCATION)
     [single] = fetch_spain.bands(parsed, "2026-09-10")
-    check("submission uses its own rate", single["base"]["p50"], 55000)
+    check("submission uses its own rate", single["base_p50"], 55000)
 
 
 def test_sample_size_is_not_a_spanish_count() -> None:
@@ -323,63 +282,58 @@ def test_a_country_page_band_gives_way() -> None:
     print("fetch_spain.write() replaces a country-page band it supersedes")
     import fetch_spain
 
-    with temp_companies() as directory:
-        first_hand = {
-            "level": "all", "base": {"p50": 70000}, "last_verified": "2026-08-31",
-            "sources": [{"name": "community", "date": "2026-08-31"}],
-        }
-        (directory / "acme.yml").write_text(yaml.safe_dump({
-            "slug": "acme", "name": "Acme",
-            "compensation": {"currency": "EUR", "basis": "gross_annual", "roles": [
-                {"role": "data-scientist", "levels": [band(COUNTRY), first_hand]},
-            ]},
-        }, sort_keys=False))
-
+    first_hand = {"role": "data-scientist", "level": "all", "base_p50": 70000,
+                  "source": "community", "date": "2026-08-31"}
+    with temp_data(acme(band(COUNTRY, role="data-scientist"), first_hand)):
         fresh = band(PER_LOCATION, "all", "Spain only.")
         fetch_spain.write("acme", [fresh], "Acme", "2026-09-10", role="data-scientist",
                           served="Spain (aggregate)")
-
-        levels = yaml.safe_load((directory / "acme.yml").read_text())
-        levels = levels["compensation"]["roles"][0]["levels"]
+        bands = stored()["bands"]
         check("the country-page band is gone",
-              [s["sources"][0]["name"] for s in levels], ["community", "levels.fyi"])
+              [b["source"] for b in bands], ["community", "levels.fyi"])
         check("and the survivor is the Spain-scoped one",
-              [s["sources"][0].get("url") for s in levels], [None, PER_LOCATION])
+              [b["source_url"] for b in bands], [None, PER_LOCATION])
+        check("filed under the role that was fetched",
+              {b["role"] for b in bands}, {"data-scientist"})
 
 
 def test_a_checked_company_says_so() -> None:
     """A blank row must distinguish "asked, nothing there" from "nobody looked".
 
-    The front page reads `spain_check` for that, so the fetcher has to write a
-    file even when it finds no pay, and has to take the role back out of the
-    field the day that role does produce a band.
+    The front page reads the spain_check columns for that, so the fetcher has
+    to write a row even when it finds no pay, and has to take the role back out
+    the day that role does produce a band.
     """
     print("fetch_spain records that Levels.fyi was asked and had nothing")
     import fetch_spain
 
-    company: dict = {}
+    def recorded(company: dict) -> tuple:
+        return (company["spain_check_date"], company["spain_check_roles"],
+                company["spain_check_served"])
+
+    company = lib.blank_company("Acme")
     fetch_spain.note_check(company, "software-engineer", False, "United States", "2026-09-10")
-    check("a miss is recorded", company["spain_check"],
-          {"date": "2026-09-10", "roles": ["software-engineer"], "served": "United States"})
+    check("a miss is recorded", recorded(company),
+          ("2026-09-10", ["software-engineer"], "United States"))
 
     fetch_spain.note_check(company, "data-scientist", False, "no data", "2026-09-11")
-    check("a second miss joins the first", company["spain_check"]["roles"],
+    check("a second miss joins the first", company["spain_check_roles"],
           ["data-scientist", "software-engineer"])
 
     fetch_spain.note_check(company, "software-engineer", True, "Spain (ladder)", "2026-09-12")
-    check("a hit takes its role back out", company["spain_check"]["roles"], ["data-scientist"])
+    check("a hit takes its role back out", company["spain_check_roles"], ["data-scientist"])
     check("and does not re-date the roles it says nothing about",
-          company["spain_check"]["date"], "2026-09-11")
+          company["spain_check_date"], "2026-09-11")
 
     fetch_spain.note_check(company, "data-scientist", True, "Spain (ladder)", "2026-09-12")
-    check("the last hit drops the field", company.get("spain_check"), None)
+    check("the last hit clears the record", recorded(company), (None, [], None))
 
-    with temp_companies() as directory:
+    with temp_data():
         fetch_spain.write("acme", [], "Acme", "2026-09-10", role="software-engineer",
                           served="United States")
-        written = yaml.safe_load((directory / "acme.yml").read_text())
-        check("a company with no pay still gets a file",
-              written.get("spain_check", {}).get("roles"), ["software-engineer"])
+        written = stored()
+        check("a company with no pay still gets a row",
+              written and written["spain_check_roles"], ["software-engineer"])
 
 
 def test_a_file_cannot_claim_both() -> None:
@@ -387,28 +341,22 @@ def test_a_file_cannot_claim_both() -> None:
     print("validate.py rejects a spain_check the bands disprove")
     import validate
 
-    payload = {
-        "slug": "acme", "name": "Acme",
-        "spain_check": {"date": "2026-09-10", "roles": ["software-engineer"]},
-        "compensation": {"currency": "EUR", "basis": "gross_annual", "roles": [
-            {"role": "software-engineer", "levels": [band(PER_LOCATION)]},
-        ]},
-    }
+    company = acme(band(PER_LOCATION), spain_check_date="2026-09-10",
+                   spain_check_roles=["software-engineer"])
     validate.errors.clear()
-    validate.check_spain_check("acme.yml", payload)
+    validate.check_spain_check("acme", company)
     check("a contradicted check is an error",
           any("but a software-engineer band is on file" in e for e in validate.errors), True)
 
-    payload["compensation"]["roles"] = []
+    company["bands"] = []
     validate.errors.clear()
-    validate.check_spain_check("acme.yml", payload)
+    validate.check_spain_check("acme", company)
     check("an uncontradicted one is fine", validate.errors, [])
 
 
 def main() -> int:
     for test in (test_location_guard, test_unscoped_classifier,
                  test_purge_runs_even_when_spain_data_exists,
-                 test_import_skips_rows_with_no_band,
                  test_figures_are_converted_to_euros,
                  test_sample_size_is_not_a_spanish_count,
                  test_rung_names_decide_seniority,

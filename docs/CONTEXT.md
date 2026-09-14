@@ -15,70 +15,76 @@ bearing:
 - **Senior and above.** An all-seniority median includes juniors and answers a
   different question.
 
+### The README is the product
+
+The maintainer's words: the product is the repo's front page, not the CSV and
+not the code. Every company, every salary figure and every link is in
+`README.md`. Nothing a reader would want lives only in a side file.
+
+This was learned the hard way. On 2026-09-11 the table was slimmed to one
+figure per company with "the full data is in `exports/`", beside 243 YAML
+files, a backlog CSV, a benchmarks JSON and two exports. On 2026-09-14 the
+maintainer called that wrong, and it was rebuilt the other way round:
+
+- `README.md`: every figure for every company, generated.
+- `companies.csv`: the only data file. One row per salary figure, the
+  company's own columns repeated on each of its rows, and a single row with
+  the salary columns empty for a company with none.
+
+Do not move figures out of the README to make it shorter, and do not split the
+CSV into per-company files or add a second data file.
+
 ### The standard the maintainer wants
 
 A row should eventually mean: *I know someone in Spain doing this job and what
-they earn, or they offered me the position.* Nothing on the list meets that yet
-— every figure is crowdsourced from Levels.fyi. First-hand entries sort above
+they earn, or they offered me the position.* Nothing on the list meets that yet:
+every figure is crowdsourced from Levels.fyi. First-hand entries sort above
 everything else, so the list visibly converges on the standard as they are
-added. They no longer carry a label in the table: the `Source` column came off
-on 2026-09-11 because all 261 rows said the same thing. Put it back the day a
-row does not.
+added, and the Source column names them.
 
-Recording one:
-
-```csv
-name,role,level,base_p50,contract,sample_size,source,source_date
-Example Company,software-engineer,senior,78000,spanish-payroll,1,community,2026-09-02
-```
-
-`community` = someone told you. `offer-letter` = you were offered it. Then
-`python3 scripts/import_csv.py file.csv`.
+Recording one: copy one of the company's rows in `companies.csv` (or add a row
+with `company` and `linkedin_ids` for a new one), set `role`, `level`,
+`base_p50`, `source` and `date`, and put the contract type in `notes`.
+`community` = someone told you. `offer-letter` = you were offered it. Neither
+needs a `source_url`. Then `python3 scripts/validate.py && python3 scripts/build.py`.
 
 ## Current state
 
-All work is on `main`, which now contains the Spain-only pipeline merged from
-`worktree-resolve-similar-names` (2026-09-02). That branch and the stale
-`preview` branch can both be deleted.
-
 ```
-261 companies · 117 paying 60k+ · 159 with pay on file
+261 companies · 117 paying 60k+ · 159 with pay on file · 298 salary figures
 ```
 
-- `data/companies/*.yml` — 244 files (243 companies plus `_template.yml`).
-  Every resolved backlog slug now has one, including the ones with no pay: a
-  file is what carries `spain_check`.
-- `data/backlog.csv` — 242 rows, 223 resolved to a Levels.fyi slug, 19 not on
-  Levels.fyi at all
-- Front page rows: 159 with a figure, 83 reading **no Spain data**, 19 dashes.
-  The breakdown by how well a figure is known — measured rung, upper-quartile
-  estimate, pooled ladder, single submission — is `_computed.headline_kind` in
-  `exports/`, not in the table.
-- On 2026-09-11 the figure became the **highest** rung at senior or above
-  rather than the first one that counts as senior, and a company with no
-  software-engineer figure at all started falling back to its best other job
-  family, labelled. That took 103 companies over 60k to 117 and 149 figures to
-  159. It also moved 17 existing rows up, Amazon from its senior rung (88.9k,
-  10 submissions) to its principal one (125.3k, 2) — the column answers "the
-  best senior-or-above rung pays this" now, not "you get this on reaching
-  senior".
-- A blank row still says which kind of blank it is. `spain_check` on the
-  company records that Levels.fyi was asked and had nothing, and the front page
-  turns that into a `no Spain data` cell linking to the empty page. The 19
-  dashes are the companies the resolver never found a Levels.fyi page for.
-- Every row links to LinkedIn and to that company's open roles in Spain; every
-  figure links to the Spain-scoped page it was read from
+- `companies.csv`: 400 rows. 298 are figures across 159 companies, 102 are
+  companies with none: 83 that Levels.fyi was asked about and published nothing
+  Spanish for, and 19 the resolver never found a Levels.fyi page for.
+- The README has three sections: *60k and above* (117 companies), *Under 60k*
+  (42) and *No pay on file* (102). Each paid company lists every figure it has,
+  its best job family first, and the one it is ranked by is bold.
+- Every company links to LinkedIn and to its open roles in Spain, and every
+  figure to the Spain-scoped page it was read from.
+
+How the move to one CSV was checked, 2026-09-14: all 299 YAML figures, all 242
+backlog LinkedIn ids and every company field were compared with the CSV, and
+the ranked figure, source link and LinkedIn link of all 261 companies matched
+the old README exactly. Two things changed on purpose. `meta.yml` was a
+duplicate of `facebook.yml`, figure for figure, and was folded into it. Six
+employers filed under two LinkedIn ids (Amazon and AWS, Google and DeepMind,
+Adevinta and Adevinta Spain, Allianz and Allianz Technology, Meta, Compound)
+now keep both, and their jobs link searches both. The resolver's "matched as"
+notes and `benchmarks.json`, neither of which reached the page, were dropped.
+
+On 2026-09-11 the ranked figure became the **highest** rung at senior or above
+rather than the first one that counts as senior, and a company with no
+software-engineer figure at all started falling back to its best other job
+family. That took 103 companies over 60k to 117. It also moved Amazon from its
+senior rung (88.9k, 10 submissions) to its principal one (125.3k, 2): the bold
+figure answers "the best senior-or-above rung pays this", not "you get this on
+reaching senior".
 
 The senior rungs and the sample counts arrived on 2026-09-09, when `averages`
 was finally read (trap 2 below). The count of companies over 60k **fell** from
 112 to 103 in the same pass, because every figure until then was USD wearing a
 euro sign (trap 4).
-
-The front page is one table: company, senior figure, open roles. Data points,
-the source column and the footnote marks came off on 2026-09-11 — every row
-said `levels.fyi`, and the marks cost more reading than they bought. The old
-per-role tables, benchmarks and 900 lines of company profiles went earlier, for
-the same reason. The full data is in `exports/`.
 
 ## The four traps in Levels.fyi data
 
@@ -168,11 +174,11 @@ text proves it: Glovo's Spanish median total of `79710.65` appears there as
 
 METHODOLOGY.md had said this from the beginning and `fetch_levels_public.py`
 had always done it. `fetch_spain.py` was written afterwards and did not, so all
-141 bands it wrote went into files whose `compensation.currency` says EUR at
-roughly 116% of the truth — Glovo's headline read 84.2k where the site says
-72.4k. Nothing caught it: the numbers were plausible, they were Spain-scoped,
-and they passed every guard, because the guards were all about *where* the
-money was earned and none about what it was denominated in.
+141 bands it wrote went into files that said EUR at roughly 116% of the truth —
+Glovo's headline read 84.2k where the site says 72.4k. Nothing caught it: the
+numbers were plausible, they were Spain-scoped, and they passed every guard,
+because the guards were all about *where* the money was earned and none about
+what it was denominated in.
 
 The lesson is narrower than the last two and worth stating anyway: a rule that
 lives only in prose is not enforced. This one is now a case in
@@ -188,71 +194,69 @@ the page's for an aggregate.
 
 | Script | What it does | Safe? |
 | --- | --- | --- |
-| `fetch_spain.py` | Per-company Spain pay. Verifies Spain, converts USD to EUR, writes a band per named ladder rung plus one `all` band, records LinkedIn, deletes any band whose source URL names no location. `--role` reads any other job family. | **Use this** |
-| `fetch_levels_public.py` | Spain country pages (`/t/<role>/locations/spain`). Genuinely Spain-scoped but lists only ~10 companies per role/location, so it tops out around 47 companies. | Yes |
-| `fetch_company.py` | Company metadata only — website, HQ, headcount, sector, vesting. Writes no salary at all, by design. | Yes |
-| `fetch_levels.py` | Official Compensation API. Needs a key, and has never actually been run. | Untested |
-| `resolve_slugs.py` | Company name → Levels.fyi slug, with verification and an alias table. | Yes |
-| `import_csv.py` | Bulk-load salaries from CSV. How first-hand entries get in. Skips rows with no role, level or base figure. | Yes |
-| `build.py` | Regenerates the README table and `exports/`. | Yes |
-| `validate.py` | Schema and sanity checks, including the location guard and the `spain_check` contradiction guard. | Yes |
+| `fetch_spain.py` | Per-company Spain pay. Verifies Spain, converts USD to EUR, writes a figure per named ladder rung plus one `all` figure, records LinkedIn, deletes any figure whose source URL names no location. `--role` reads any other job family. | **Use this** |
+| `fetch_levels_public.py` | Spain country pages (`/t/<role>/locations/spain`). Genuinely Spain-scoped but lists only ~10 companies per role/location, so it is mostly for finding companies. Never overwrites a company-page or first-hand figure. | Yes |
+| `fetch_company.py` | Company details only: website, HQ, headcount, sector, vesting. Writes no salary at all, by design. Only fills companies already in the CSV. | Yes |
+| `resolve_slugs.py` | Company name → Levels.fyi slug, with verification and an alias table. Folds a company into the one already holding its slug. | Yes |
+| `build.py` | Regenerates the README and rewrites `companies.csv` in canonical order. | Yes |
+| `validate.py` | Column checks and sanity checks, including the location guard and the `spain_check` contradiction guard. | Yes |
+
+`lib.py` is the only code that reads or writes `companies.csv`. Writes go to a
+temporary file first, because an interrupted fetch must not truncate the only
+copy of the data.
 
 All Levels.fyi fetching **must run from Spain** — the pages are IP-scoped.
 
 Rate limiting: 403/405/429/503 all mean throttled. Treating them as "not found"
-is what originally wrote 56 false `unmatched` rows into the backlog. Keep
+is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 `--delay` at 2.5s or more.
 
 ## Known gaps
 
-- **112 companies have no figure.** Levels.fyi publishes nothing Spanish for
-  them under `software-engineer` — no ladder, no aggregate, not even one
+- **102 companies have no figure.** For 83 of them Levels.fyi publishes nothing
+  Spanish under `software-engineer`, no ladder, no aggregate, not even one
   submission. That is a fact about Levels.fyi's coverage of Spain, not about
-  whether the company pays well here.
+  whether the company pays well here. The other 19 have no Levels.fyi page.
 
-  All 93 of those that resolve to a Levels.fyi slug were then asked for six
-  other job families (`software-engineering-manager`, `data-scientist`,
-  `product-manager`, `solution-architect`, `hardware-engineer`,
-  `data-analyst`) on 2026-09-10. **Nine answered**: Analog Devices and BCG with
-  a small ladder, D-EDGE, HP, NovaKid, TransPerfect and Vestas with an
-  aggregate, McKinsey and PepsiCo with one submission. Those are on file now
-  and appear in `exports/`. Six of them are now the front-page figure for a
-  company that has no software-engineer band at all, labelled with the family
-  they came from; the rest sit under a company that does. The other 84 have nothing Spanish at all, under any of the seven
-  families, and their `spain_check.roles` lists all seven so the row can say
-  so. Do not re-run that sweep hoping for a different answer; run it again in
-  six months, or go at these companies through job ads instead. `data/job-postings-seed.csv` is scaffolded for the LinkedIn job-ad
-  route, which is source #3 in METHODOLOGY.md and the only way to reach these.
-  It holds names only, no salaries; `import_csv.py` now skips such rows rather
-  than creating stub files from them.
+  The 93 companies with no software-engineer figure on 2026-09-10 were then
+  asked for up to six other job families (`software-engineering-manager`,
+  `data-scientist`, `product-manager`, `solution-architect`,
+  `hardware-engineer`, `data-analyst`). **Nine answered**: Analog Devices and
+  BCG with a small ladder, D-EDGE, HP, NovaKid, TransPerfect and Vestas with an
+  aggregate, McKinsey and PepsiCo with one submission. Those nine, plus NCC
+  Group through a country page, are ranked by that other family. The other 83
+  have nothing Spanish under any family asked, and `spain_check_roles` lists
+  every family that was, so the row can say so. Do not re-run that sweep
+  hoping for a different answer; run it again in six months, or go at these
+  companies through job ads, which is source #3 in METHODOLOGY.md and the only
+  way to reach them. A figure from an ad goes in as a row with `source`
+  `job-posting`.
 - **No first-hand data yet.** Every figure is crowdsourced. The repository's own
   standard is not met by a single row, which is the biggest gap on this list.
 - **Duplicate slugs.** Levels.fyi files some employers twice (`meta` and
-  `facebook`). `build.py` merges them via the resolver's `matched as` note,
-  uppercase acronyms, and slug identity. If a company shows twice, that merge
-  is where to look.
-- **Warnings.** 1440 of them, all metadata gaps (no `work_model`, no
-  non-canonical role slugs) plus the companies whose highest
-  Spanish band is under 60k. 0 errors.
+  `facebook` serve the same data). `companies.csv` holds one row group per
+  employer and `validate.py` rejects a slug used twice; the list uses
+  `facebook` for Meta.
+- **Warnings.** 0 errors, 0 warnings as of 2026-09-14.
 
 ## Commands
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-
 python3 scripts/fetch_spain.py --delay 3.0        # ~14 min, 242 companies
 python3 scripts/fetch_spain.py --audit            # report, write nothing
 python3 tests/test_pipeline.py
 python3 scripts/validate.py && python3 scripts/build.py
 ```
 
-`tests/test_pipeline.py` is dependency-free and runs first in CI. Every case in
-it is a bug this repository actually shipped, so a failure there means one of
-them is back rather than that the test needs updating.
+No dependencies: everything is the Python standard library.
+
+`tests/test_pipeline.py` runs first in CI. Every case in it is a bug this
+repository actually shipped, so a failure there means one of them is back rather
+than that the test needs updating.
 
 `build.py` is idempotent; CI rebuilds and fails if the result differs from
-what is committed, so always commit the regenerated `README.md` and `exports/`.
+what is committed, so always commit the regenerated `README.md` and
+`companies.csv`.
 
 ## Conventions
 
