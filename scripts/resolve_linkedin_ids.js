@@ -1,4 +1,5 @@
-// Turn the LinkedIn company IDs in data/backlog.csv into company names.
+// Turn the companies in a LinkedIn job search's Company filter into rows for
+// companies.csv.
 //
 // The IDs come from the `f_C` parameter of a LinkedIn job search URL.
 // linkedin.com/company/<id> redirects to the login wall, so this has to run in
@@ -7,10 +8,14 @@
 //   1. Open your job search URL (the long one with all the f_C ids).
 //   2. Click the "Company" filter so its dropdown opens.
 //   3. Open DevTools (Cmd+Option+I) -> Console, paste this, press Enter.
-//   4. It expands the list, then prints CSV and copies it to your clipboard.
+//   4. It expands the list, then prints `company,linkedin_ids` rows and copies
+//      them to your clipboard.
 //
-// It reports how many of the 243 it found. If the number looks short, scroll
-// the dropdown to the bottom and run it again.
+// Paste the rows at the end of companies.csv, drop any company already in it,
+// then run scripts/resolve_slugs.py to find each one's Levels.fyi page.
+//
+// Set EXPECTED to the count the filter shows. If the number found looks short,
+// scroll the dropdown to the bottom and run it again.
 
 (async () => {
   const EXPECTED = 243;
@@ -53,18 +58,9 @@
     return;
   }
 
-  const slug = (name) =>
-    name
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[̀-ͯ]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-
-  const csv = [
-    "linkedin_id,name,slug,status,notes",
-    ...[...rows].map(([id, name]) => `${id},"${name.replace(/"/g, '""')}",${slug(name)},resolved,`),
-  ].join("\n");
+  const csv = [...rows]
+    .map(([id, name]) => `"${name.replace(/"/g, '""')}",${id}`)
+    .join("\n");
 
   console.log(`Resolved ${rows.size} of ~${EXPECTED} companies.`);
   if (rows.size < EXPECTED) {

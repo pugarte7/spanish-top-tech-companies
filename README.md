@@ -1,361 +1,444 @@
 # Spanish Top Tech Companies
 
-Which tech companies in Spain pay senior software engineers 60.000 € a year or more, and which ones nobody has checked yet.
+Companies in Spain that pay senior software engineers 60.000 € a year or more, with every salary on file for each of them. Figures link to the page they were read from, company names to LinkedIn, and every company to its open roles in Spain.
 
 <!-- BEGIN:STATS -->
-**261 companies** · **112 paying 60k+** · 140 with pay on file · 100 data points · newest data 2026-08-31
+**261 companies** · **117 paying 60k+** · 159 with pay on file · 298 salary figures · data from 2026-08-31 to 2026-09-10
 <!-- END:STATS -->
 
+Base is gross annual base salary in euros, before tax; total comp adds bonus and equity. A range in brackets is the 25th to 75th percentile around the median. Data points is how many Spanish submissions a figure rests on. **Bold** is the figure a company is ranked by, normally its best-paid software engineer rung at senior or above ([how it is picked](METHODOLOGY.md#levels-and-the-all-aggregate)). **No Spain data** means Levels.fyi was asked and published nothing for Spain at that company.
+
 <!-- BEGIN:COMPANIES -->
-| Company | Senior+ | Data points | Source |
-| --- | --- | --- | --- |
-| [Tiger Data (creators of TimescaleDB)](https://www.linkedin.com/company/107383551) | [173.8k*](https://www.levels.fyi/companies/tiger-data/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Timescale](https://www.linkedin.com/company/11065434) | [153.3k*](https://www.levels.fyi/companies/timescale/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Xata.io](https://www.linkedin.com/company/69560619) | [140k*](https://www.levels.fyi/companies/xata/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Workato](https://www.linkedin.com/company/3675685) | [138.2k†](https://www.levels.fyi/companies/workato/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Hopin](https://www.linkedin.com/company/105238356) | [128k†](https://www.levels.fyi/companies/hopin/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Auth0](https://www.linkedin.com/company/3089380) | [120.8k†](https://www.levels.fyi/companies/auth0/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Revolut](https://www.linkedin.com/company/revolut) | [120k*](https://www.levels.fyi/companies/revolut/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Grafana Labs](https://www.linkedin.com/company/11062162) | [117.2k†](https://www.levels.fyi/companies/grafana/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Toptal](https://www.linkedin.com/company/1545609) | [116k†](https://www.levels.fyi/companies/toptal/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Spotify](https://www.linkedin.com/company/207470) | [116k†](https://www.levels.fyi/companies/spotify/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Remote](https://www.linkedin.com/company/17955831) | [113.2k*](https://www.levels.fyi/companies/remote/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Meta](https://www.linkedin.com/company/10667) | [112.7k†](https://www.levels.fyi/companies/facebook/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Teya](https://www.linkedin.com/company/93621491) | [111.8k†](https://www.levels.fyi/companies/teya/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Unity](https://www.linkedin.com/company/212669) | [108.9k†](https://www.levels.fyi/companies/unity/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Aily Labs](https://www.linkedin.com/company/ailylabs) | [108.5k*](https://www.levels.fyi/companies/aily-labs/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Smile.io](https://www.linkedin.com/company/2400901) | [105k†](https://www.levels.fyi/companies/smileio/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Elastic](https://www.linkedin.com/company/814025) | [103.9k†](https://www.levels.fyi/companies/elastic/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Preply](https://www.linkedin.com/company/2762432) | [101.5k*](https://www.levels.fyi/companies/preply/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Tinybird](https://www.linkedin.com/company/35704741) | [100.4k*](https://www.levels.fyi/companies/tinybird/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Eventbrite](https://www.linkedin.com/company/167280) | [99.8k*](https://www.levels.fyi/companies/eventbrite/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Aetion, a Datavant Company](https://www.linkedin.com/company/6576393) | [99.3k†](https://www.levels.fyi/companies/aetion/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Pleo](https://www.linkedin.com/company/10275909) | [98.9k†](https://www.levels.fyi/companies/pleo/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Semrush](https://www.linkedin.com/company/semrush) | [98.1k*](https://www.levels.fyi/companies/semrush/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Stripe](https://www.linkedin.com/company/2135371) | [97.7k†](https://www.levels.fyi/companies/stripe/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [RingCentral](https://www.linkedin.com/company/60868) | [96k†](https://www.levels.fyi/companies/ringcentral/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [GitHub](https://www.linkedin.com/company/1418841) | [95.8k†](https://www.levels.fyi/companies/github/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Medallia](https://www.linkedin.com/company/49697) | [95.7k†](https://www.levels.fyi/companies/medallia/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Microsoft](https://www.linkedin.com/company/1035) | [94.2k†](https://www.levels.fyi/companies/microsoft/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Picsart](https://www.linkedin.com/company/3007630) | [93.8k†](https://www.levels.fyi/companies/picsart/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Zendesk](https://www.linkedin.com/company/418095) | [93.3k†](https://www.levels.fyi/companies/zendesk/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Gartner](https://www.linkedin.com/company/2078) | [93.2k†](https://www.levels.fyi/companies/gartner/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Job&Talent](https://www.linkedin.com/company/296493) | [93k*](https://www.levels.fyi/companies/jobandtalent/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Collate](https://www.linkedin.com/company/78395355) | [92.9k*](https://www.levels.fyi/companies/collate/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Intellias](https://www.linkedin.com/company/49445) | [91.5k†](https://www.levels.fyi/companies/intellias/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [sennder](https://www.linkedin.com/company/10442437) | [91.5k†](https://www.levels.fyi/companies/sennder/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [PayFit](https://www.linkedin.com/company/6436622) | [91.2k*](https://www.levels.fyi/companies/payfit/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [MoonPay](https://www.linkedin.com/company/12596773) | [91.1k†](https://www.levels.fyi/companies/moonpay/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Perk](https://www.linkedin.com/company/perk) | [90.5k*](https://www.levels.fyi/companies/perk/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Stenn](https://www.linkedin.com/company/stenn-financial-services) | [89.6k†](https://www.levels.fyi/companies/stenn/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Affirm](https://www.linkedin.com/company/2963249) | [88.9k†](https://www.levels.fyi/companies/affirm/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Brainly](https://www.linkedin.com/company/2745890) | [88.8k†](https://www.levels.fyi/companies/brainly/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Typeform](https://www.linkedin.com/company/3226972) | [88k*](https://www.levels.fyi/companies/typeform/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Mirantis](https://www.linkedin.com/company/7793) | [87.2k†](https://www.levels.fyi/companies/mirantis/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Palo Alto Networks](https://www.linkedin.com/company/30086) | [87k†](https://www.levels.fyi/companies/palo-alto-networks/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Red Hat](https://www.linkedin.com/company/3545) | [86.5k†](https://www.levels.fyi/companies/red-hat/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [TravelPerk](https://www.linkedin.com/company/travelperk) | [86k*](https://www.levels.fyi/companies/travelperk/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Personio](https://www.linkedin.com/company/10180448) | [85.8k†](https://www.levels.fyi/companies/personio/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [VistaPrint](https://www.linkedin.com/company/8095) | [85.3k†](https://www.levels.fyi/companies/vistaprint/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Manychat](https://www.linkedin.com/company/11058494) | [85k†](https://www.levels.fyi/companies/manychat/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Glovo](https://www.linkedin.com/company/glovo-app) | [84.2k*](https://www.levels.fyi/companies/glovo/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [SUSE](https://www.linkedin.com/company/1455) | [84.2k†](https://www.levels.fyi/companies/suse/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Rover.com](https://www.linkedin.com/company/2686335) | [84k†](https://www.levels.fyi/companies/rovercom/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [New Relic](https://www.linkedin.com/company/426253) | [83.4k†](https://www.levels.fyi/companies/new-relic/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [The Trade Desk](https://www.linkedin.com/company/892001) | [83.4k†](https://www.levels.fyi/companies/the-trade-desk/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [dLocal](https://www.linkedin.com/company/15156062) | [82.3k*](https://www.levels.fyi/companies/dlocal/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [N26](https://www.linkedin.com/company/n26) | [82.1k†](https://www.levels.fyi/companies/n26/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Datadog](https://www.linkedin.com/company/1066442) | [82.1k†](https://www.levels.fyi/companies/datadog/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Pearson](https://www.linkedin.com/company/2137) | [81.9k†](https://www.levels.fyi/companies/pearson/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [AstraZeneca](https://www.linkedin.com/company/1603) | [81.4k†](https://www.levels.fyi/companies/astrazeneca/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Mitek Systems](https://www.linkedin.com/company/395288) | [81.3k*](https://www.levels.fyi/companies/mitek-systems/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Akamai Technologies](https://www.linkedin.com/company/3925) | [81.1k†](https://www.levels.fyi/companies/akamai/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Bitpanda](https://www.linkedin.com/company/18164565) | [81k†](https://www.levels.fyi/companies/bitpanda/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Adyen](https://www.linkedin.com/company/adyen) | [80.1k†](https://www.levels.fyi/companies/adyen/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Fever](https://www.linkedin.com/company/2346695) | [79.2k*](https://www.levels.fyi/companies/fever/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Factorial](https://www.linkedin.com/company/factorialhr) | [77.4k*](https://www.levels.fyi/companies/factorial/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Wallapop](https://www.linkedin.com/company/3302579) | [77.3k*](https://www.levels.fyi/companies/wallapop/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Skyscanner](https://www.linkedin.com/company/123380) | [77.3k†](https://www.levels.fyi/companies/skyscanner/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Sanofi](https://www.linkedin.com/company/1642) | [77k*](https://www.levels.fyi/companies/sanofi/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Mews](https://www.linkedin.com/company/2574959) | [76.6k*](https://www.levels.fyi/companies/mews/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Bumble Inc.](https://www.linkedin.com/company/9408755) | [76k†](https://www.levels.fyi/companies/bumble/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Adevinta](https://www.linkedin.com/company/adevinta) | [75.7k*](https://www.levels.fyi/companies/adevinta/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Ocado Group](https://www.linkedin.com/company/165276) | [75.7k†](https://www.levels.fyi/companies/ocado-group/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Tabby](https://www.linkedin.com/company/26615638) | [75.6k†](https://www.levels.fyi/companies/tabby/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Bayer](https://www.linkedin.com/company/1893) | [75.5k†](https://www.levels.fyi/companies/bayer/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Clarity AI](https://www.linkedin.com/company/9480749) | [74.3k*](https://www.levels.fyi/companies/clarity-ai/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Expedia Group](https://www.linkedin.com/company/2751) | [74.3k†](https://www.levels.fyi/companies/expedia-group/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Activision Blizzard](https://www.linkedin.com/company/15415277) | [73.7k†](https://www.levels.fyi/companies/activision-blizzard/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [TradingView](https://www.linkedin.com/company/3179069) | [73.5k†](https://www.levels.fyi/companies/tradingview/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [HPE](https://www.linkedin.com/company/hewlett-packard-enterprise) | [71.8k†](https://www.levels.fyi/companies/hpe/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Align Technology](https://www.linkedin.com/company/6867) | [71.8k†](https://www.levels.fyi/companies/align-technology/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Flywire](https://www.linkedin.com/company/434598) | [71.5k†](https://www.levels.fyi/companies/flywire/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [SEAT CODE](https://www.linkedin.com/company/22296997) | [71k*](https://www.levels.fyi/companies/seat-code/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Google](https://www.linkedin.com/company/1441) | [70.3k†](https://www.levels.fyi/companies/google/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Twilio](https://www.linkedin.com/company/400528) | [70.2k†](https://www.levels.fyi/companies/twilio/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Exoticca](https://www.linkedin.com/company/3317134) | [70.1k*](https://www.levels.fyi/companies/exoticca/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Qonto](https://www.linkedin.com/company/13205888) | [69.9k†](https://www.levels.fyi/companies/qonto/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Cabify](https://www.linkedin.com/company/cabify) | [69.2k*](https://www.levels.fyi/companies/cabify/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [King](https://www.linkedin.com/company/230546) | [68.9k†](https://www.levels.fyi/companies/king/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Dynatrace](https://www.linkedin.com/company/125999) | [68.2k†](https://www.levels.fyi/companies/dynatrace/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [T-Systems](https://www.linkedin.com/company/tsystems-brasil) | [68.2k†](https://www.levels.fyi/companies/t-systems/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Amazon](https://www.linkedin.com/company/1586) | [68k†](https://www.levels.fyi/companies/amazon/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Thoughtworks](https://www.linkedin.com/company/157356) | [67.6k†](https://www.levels.fyi/companies/thoughtworks/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Broadcom](https://www.linkedin.com/company/3072) | [67.2k†](https://www.levels.fyi/companies/broadcom/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Freenow](https://www.linkedin.com/company/freenow) | [67.2k†](https://www.levels.fyi/companies/free-now/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Nexthink](https://www.linkedin.com/company/92771) | [67k†](https://www.levels.fyi/companies/nexthink/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [eDreams ODIGEO](https://www.linkedin.com/company/edreamsodigeo) | [66.9k*](https://www.levels.fyi/companies/edreams-odigeo/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Electronic Arts (EA)](https://www.linkedin.com/company/1449) | [65.7k†](https://www.levels.fyi/companies/electronic-arts/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [UserTesting](https://www.linkedin.com/company/564709) | [65.6k†](https://www.levels.fyi/companies/usertesting/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Scopely](https://www.linkedin.com/company/2057437) | [65.5k†](https://www.levels.fyi/companies/scopely/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Multiverse Computing](https://www.linkedin.com/company/18863453) | [65.2k*](https://www.levels.fyi/companies/multiverse-computing/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [BASF](https://www.linkedin.com/company/basf) | [64.6k†](https://www.levels.fyi/companies/basf/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Inditex](https://www.linkedin.com/company/14853) | [64.5k*](https://www.levels.fyi/companies/inditex/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Ryanair - Europe's Favourite Airline](https://www.linkedin.com/company/16584) | [64.1k*](https://www.levels.fyi/companies/ryanair/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Docplanner](https://www.linkedin.com/company/2254852) | [64k†](https://www.levels.fyi/companies/docplanner/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [EPAM Systems](https://www.linkedin.com/company/4972) | [63.8k†](https://www.levels.fyi/companies/epam-systems/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [VMware](https://www.linkedin.com/company/2988) | [63.5k†](https://www.levels.fyi/companies/vmware/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Santander](https://www.linkedin.com/company/2873) | [63.3k†](https://www.levels.fyi/companies/santander/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Sage](https://www.linkedin.com/company/2802) | [63.2k†](https://www.levels.fyi/companies/sage/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Klarna](https://www.linkedin.com/company/748731) | [62.3k†](https://www.levels.fyi/companies/klarna/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [ING](https://www.linkedin.com/company/2594164) | [62k†](https://www.levels.fyi/companies/ing/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Keysight Technologies](https://www.linkedin.com/company/3812750) | [61.9k†](https://www.levels.fyi/companies/keysight/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [TomTom](https://www.linkedin.com/company/tomtom) | [60k†](https://www.levels.fyi/companies/tomtom/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Swiss Re](https://www.linkedin.com/company/3845) | [59k†](https://www.levels.fyi/companies/swiss-re/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Clarivate](https://www.linkedin.com/company/10950962) | [58.9k†](https://www.levels.fyi/companies/clarivate/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Celonis](https://www.linkedin.com/company/celonis) | [58.8k†](https://www.levels.fyi/companies/celonis/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Allianz](https://www.linkedin.com/company/2979) | [58.5k†](https://www.levels.fyi/companies/allianz/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Veeva Systems](https://www.linkedin.com/company/402048) | [58.5k†](https://www.levels.fyi/companies/veeva-systems/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [BBVA](https://www.linkedin.com/company/bbva) | [54.4k*](https://www.levels.fyi/companies/bbva/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Oracle](https://www.linkedin.com/company/1028) | [54.4k†](https://www.levels.fyi/companies/oracle/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [The Workshop](https://www.linkedin.com/company/10258548) | [54.3k*](https://www.levels.fyi/companies/workshop/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Semidynamics](https://www.linkedin.com/company/semidynamics) | [54k*](https://www.levels.fyi/companies/semidynamics/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Criteo](https://www.linkedin.com/company/37209) | [52.5k†](https://www.levels.fyi/companies/criteo/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [IKEA](https://www.linkedin.com/company/ikea) | [51k†](https://www.levels.fyi/companies/ikea/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [EF](https://www.linkedin.com/company/4856) | [48.8k†](https://www.levels.fyi/companies/ef-education-first/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [NTT DATA](https://www.linkedin.com/company/nttdata) | [48.2k*](https://www.levels.fyi/companies/ntt-data/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Mercedes-Benz AG](https://www.linkedin.com/company/5383634) | [47.8k†](https://www.levels.fyi/companies/mercedes-benz/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [adidas](https://www.linkedin.com/company/3748) | [47.3k†](https://www.levels.fyi/companies/adidas/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Ericsson](https://www.linkedin.com/company/1060) | [47.3k†](https://www.levels.fyi/companies/ericsson/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Amadeus](https://www.linkedin.com/company/amadeus) | [46.6k†](https://www.levels.fyi/companies/amadeus/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Deloitte](https://www.linkedin.com/company/1038) | [46.2k†](https://www.levels.fyi/companies/deloitte/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Schneider Electric](https://www.linkedin.com/company/2329) | [45.1k†](https://www.levels.fyi/companies/schneider-electric/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Barcelona Supercomputing Center](https://www.linkedin.com/company/barcelona-supercomputing-center) | [43.8k*](https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Indra](https://www.linkedin.com/company/indra) | [43.5k*](https://www.levels.fyi/companies/indra/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Minsait](https://www.linkedin.com/company/minsait) | [42.3k*](https://www.levels.fyi/companies/minsait/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Siemens](https://www.linkedin.com/company/1043) | [38.8k†](https://www.levels.fyi/companies/siemens/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [SDG Group](https://www.linkedin.com/company/sdg-group) | [38.1k*](https://www.levels.fyi/companies/sdg-group/salaries/software-engineer/locations/spain) | — | levels.fyi |
-| [Capgemini](https://www.linkedin.com/company/capgemini) | [36.9k†](https://www.levels.fyi/companies/capgemini/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Accenture](https://www.linkedin.com/company/accenture) | [36.4k†](https://www.levels.fyi/companies/accenture/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [IBM](https://www.linkedin.com/company/1009) | [32.9k†](https://www.levels.fyi/companies/ibm/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [Ernst and Young](https://www.linkedin.com/company/ernstandyoung) | [29.2k†](https://www.levels.fyi/companies/ernst-and-young/salaries/software-engineer/locations/spain) | 1 | levels.fyi |
-| [ABN AMRO Bank N.V.](https://www.linkedin.com/company/1173) | — | — | — |
-| [Adobe](https://www.linkedin.com/company/1480) | — | — | — |
-| [Airbnb](https://www.linkedin.com/company/309694) | — | — | — |
-| [Alan](https://www.linkedin.com/company/avec-alan) | — | — | — |
-| [Analog Devices](https://www.linkedin.com/company/analog-devices) | — | — | — |
-| [Anduril Industries](https://www.linkedin.com/company/18293159) | — | — | — |
-| [ASML](https://www.linkedin.com/company/3894) | — | — | — |
-| [Atlassian](https://www.linkedin.com/company/22688) | — | — | — |
-| [Auro](https://www.linkedin.com/company/107716961) | — | — | — |
-| [Autodesk](https://www.linkedin.com/company/1879) | — | — | — |
-| [Back Market](https://www.linkedin.com/company/back-market) | — | — | — |
-| [BCG](https://www.linkedin.com/company/1784) | — | — | — |
-| [Blizzard Entertainment](https://www.linkedin.com/company/5329) | — | — | — |
-| [Bloomberg](https://www.linkedin.com/company/2494) | — | — | — |
-| [BMW Group](https://www.linkedin.com/company/bmw-group) | — | — | — |
-| [Bolt](https://www.linkedin.com/company/35626123) | — | — | — |
-| [Booking.com](https://www.linkedin.com/company/booking.com) | — | — | — |
-| [Bosch](https://www.linkedin.com/company/2508619) | — | — | — |
-| [Carwow](https://www.linkedin.com/company/1722873) | — | — | — |
-| [Catawiki](https://www.linkedin.com/company/catawiki) | — | — | — |
-| [Cisco](https://www.linkedin.com/company/1063) | — | — | — |
-| [Cleo](https://www.linkedin.com/company/10280968) | — | — | — |
-| [Clickhouse](https://www.linkedin.com/company/clickhouseinc) | — | — | — |
-| [Cloudflare](https://www.linkedin.com/company/407222) | — | — | — |
-| [Cobee](https://www.linkedin.com/company/18826329) | — | — | — |
-| [Compound](https://www.linkedin.com/company/78383639) | — | — | — |
-| [Confluent, an IBM Company](https://www.linkedin.com/company/88873) | — | — | — |
-| [Creative Fabrica](https://www.linkedin.com/company/creative-fabrica) | — | — | — |
-| [CrowdStrike](https://www.linkedin.com/company/2497653) | — | — | — |
-| [Crunch.io](https://www.linkedin.com/company/1065469) | — | — | — |
-| [D-EDGE](https://www.linkedin.com/company/d-edge-hospitality-solutions) | — | — | — |
-| [Da Vinci](https://www.linkedin.com/company/15211263) | — | — | — |
-| [Databricks](https://www.linkedin.com/company/3477522) | — | — | — |
-| [Deel](https://www.linkedin.com/company/18922914) | — | — | — |
-| [DeepL](https://www.linkedin.com/company/deepl) | — | — | — |
-| [DeepSeek AI](https://www.linkedin.com/company/106112505) | — | — | — |
-| [DEGIRO](https://www.linkedin.com/company/2529574) | — | — | — |
-| [Deliveroo](https://www.linkedin.com/company/2837535) | — | — | — |
-| [Desia](https://www.linkedin.com/company/101926060) | — | — | — |
-| [Disney Streaming](https://www.linkedin.com/company/11826960) | — | — | — |
-| [Docker, Inc](https://www.linkedin.com/company/1301808) | — | — | — |
-| [Dow Jones](https://www.linkedin.com/company/2284) | — | — | — |
-| [eBay](https://www.linkedin.com/company/1481) | — | — | — |
-| [Enverus](https://www.linkedin.com/company/40801353) | — | — | — |
-| [Etsy](https://www.linkedin.com/company/67849) | — | — | — |
-| [Expleo Group](https://www.linkedin.com/company/expleo-group) | — | — | — |
-| [Feedzai](https://www.linkedin.com/company/feedzai) | — | — | — |
-| [Flexport](https://www.linkedin.com/company/3131483) | — | — | — |
-| [Flow Traders](https://www.linkedin.com/company/flow-traders) | — | — | — |
-| [GitLab](https://www.linkedin.com/company/5101804) | — | — | — |
-| [HashiCorp](https://www.linkedin.com/company/2830763) | — | — | — |
-| [Helsing](https://www.linkedin.com/company/71719093) | — | — | — |
-| [HP](https://www.linkedin.com/company/5390798) | — | — | — |
-| [HubSpot](https://www.linkedin.com/company/68529) | — | — | — |
-| [IFS](https://www.linkedin.com/company/164301) | — | — | — |
-| [IMC Trading](https://www.linkedin.com/company/200030) | — | — | — |
-| [Intel](https://www.linkedin.com/company/1053) | — | — | — |
-| [JetBrains](https://www.linkedin.com/company/jetbrains) | — | — | — |
-| [Johnson & Johnson](https://www.linkedin.com/company/1207) | — | — | — |
-| [Just Eat Takeaway.com](https://www.linkedin.com/company/103531) | — | — | — |
-| [Kinaxis](https://www.linkedin.com/company/14051) | — | — | — |
-| [Kraken](https://www.linkedin.com/company/3787845) | — | — | — |
-| [Ledgy](https://www.linkedin.com/company/18347648) | — | — | — |
-| [Lodgify](https://www.linkedin.com/company/3151385) | — | — | — |
-| [Lucid Motors](https://www.linkedin.com/company/1684122) | — | — | — |
-| [Lucid Software](https://www.linkedin.com/company/1214453) | — | — | — |
-| [Mastercard](https://www.linkedin.com/company/3015) | — | — | — |
-| [McKinsey](https://www.linkedin.com/company/mckinsey) | — | — | — |
-| [Meshcapade](https://www.linkedin.com/company/18852605) | — | — | — |
-| [Miro](https://www.linkedin.com/company/mirohq) | — | — | — |
-| [Mistral](https://www.linkedin.com/company/94273421) | — | — | — |
-| [Mozilla](https://www.linkedin.com/company/13948) | — | — | — |
-| [MyInvestor](https://www.linkedin.com/company/11064675) | — | — | — |
-| [NCC Group](https://www.linkedin.com/company/ncc-group) | — | — | — |
-| [NDA](https://www.linkedin.com/company/77173985) | — | — | — |
-| [Netflix](https://www.linkedin.com/company/165158) | — | — | — |
-| [Netlight](https://www.linkedin.com/company/netlight-consulting) | — | — | — |
-| [NEW WORK SE](https://www.linkedin.com/company/new-work-se) | — | — | — |
-| [NovaKid](https://www.linkedin.com/company/novakid) | — | — | — |
-| [NVIDIA](https://www.linkedin.com/company/3608) | — | — | — |
-| [OLX](https://www.linkedin.com/company/167557) | — | — | — |
-| [OpenAI](https://www.linkedin.com/company/11130470) | — | — | — |
-| [Optiver](https://www.linkedin.com/company/13216) | — | — | — |
-| [Oxide Computer Company](https://www.linkedin.com/company/52179120) | — | — | — |
-| [Palantir Technologies](https://www.linkedin.com/company/20708) | — | — | — |
-| [PayPal](https://www.linkedin.com/company/1482) | — | — | — |
-| [PepsiCo](https://www.linkedin.com/company/1431) | — | — | — |
-| [Perplexity](https://www.linkedin.com/company/88007673) | — | — | — |
-| [Porsche AG](https://www.linkedin.com/company/3823740) | — | — | — |
-| [Rabobank](https://www.linkedin.com/company/rabobank) | — | — | — |
-| [Radix](https://www.linkedin.com/company/906658) | — | — | — |
-| [Reddit, Inc.](https://www.linkedin.com/company/150573) | — | — | — |
-| [Redslim](https://www.linkedin.com/company/3193403) | — | — | — |
-| [Rippling](https://www.linkedin.com/company/17988315) | — | — | — |
-| [Salesforce](https://www.linkedin.com/company/3185) | — | — | — |
-| [SeQura](https://www.linkedin.com/company/5043989) | — | — | — |
-| [Slack](https://www.linkedin.com/company/1612748) | — | — | — |
-| [Snap Inc.](https://www.linkedin.com/company/15191764) | — | — | — |
-| [Snowflake](https://www.linkedin.com/company/3653845) | — | — | — |
-| [SparkPost, a MessageBird company](https://www.linkedin.com/company/9486856) | — | — | — |
-| [SpliceBio](https://www.linkedin.com/company/69852936) | — | — | — |
-| [Strapi](https://www.linkedin.com/company/strapi) | — | — | — |
-| [Swish Analytics](https://www.linkedin.com/company/3886282) | — | — | — |
-| [TheFork](https://www.linkedin.com/company/the-fork) | — | — | — |
-| [Threecolts](https://www.linkedin.com/company/71701124) | — | — | — |
-| [Tower Research Capital](https://www.linkedin.com/company/36865) | — | — | — |
-| [Trading 212](https://www.linkedin.com/company/18161113) | — | — | — |
-| [TransPerfect](https://www.linkedin.com/company/transperfect) | — | — | — |
-| [TripActions](https://www.linkedin.com/company/tripactions) | — | — | — |
-| [Tripadvisor](https://www.linkedin.com/company/15027) | — | — | — |
-| [Uber](https://www.linkedin.com/company/1815218) | — | — | — |
-| [Uptail](https://www.linkedin.com/company/104609501) | — | — | — |
-| [Valve corporation](https://www.linkedin.com/company/13922) | — | — | — |
-| [Vercel](https://www.linkedin.com/company/16181286) | — | — | — |
-| [Vestas](https://www.linkedin.com/company/vestas) | — | — | — |
-| [Volkswagen Digital:Hub](https://www.linkedin.com/company/94799807) | — | — | — |
-| [Vorwerk Group](https://www.linkedin.com/company/784322) | — | — | — |
-| [Workday](https://www.linkedin.com/company/17719) | — | — | — |
-| [Worldpay](https://www.linkedin.com/company/260387) | — | — | — |
-| [Xoople](https://www.linkedin.com/company/95972483) | — | — | — |
-| [Zartis](https://www.linkedin.com/company/2274396) | — | — | — |
+## 60k and above
 
-<sub>140 of 261 companies have pay on file, 0 of them first-hand. **Source** says where the number came from: **known personally** is someone in Spain who told the maintainer what they earn, **offer received** is an offer the maintainer was made, and anything else is crowdsourced and worth less. **Data points** is how many salaries the figure rests on. How well a figure is known: `*` (41) is the upper quartile of every engineer at that company in Spain; `†` (99) is one person's number. Company names link to LinkedIn, figures to the Levels.fyi page they were read from.</sub>
+| Company | Role | Level | Base | Total comp | Data points | Source | Jobs |
+| --- | --- | --- | ---: | ---: | ---: | --- | --- |
+| [Tiger Data (creators of TimescaleDB)](https://www.linkedin.com/company/tigerdata) | Software engineer | All levels | **149.4k** | 171.9k | — | [levels.fyi](https://www.levels.fyi/companies/tiger-data/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=107383551&location=Spain) |
+| [Timescale](https://www.linkedin.com/company/timescaledb) | Software engineer | All levels | 97.3k (91.2k–**131.8k**) | 97.3k (91.2k–141.9k) | — | [levels.fyi](https://www.levels.fyi/companies/timescale/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=11065434&location=Spain) |
+| [Amazon](https://www.linkedin.com/company/amazon) | Software engineer | Principal | **125.3k** | 393.1k | 2 | [levels.fyi](https://www.levels.fyi/companies/amazon/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1586%2C2382910&location=Spain) |
+|  | Software engineer | Senior | 88.9k | 138.2k | 10 | [levels.fyi](https://www.levels.fyi/companies/amazon/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 61.6k | 93.4k | 49 | [levels.fyi](https://www.levels.fyi/companies/amazon/salaries/software-engineer/locations/spain) |  |
+|  | Software engineering manager | All levels | — | 142.5k | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) |  |
+|  | Solution architect | All levels | — | 114.4k | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/spain) |  |
+|  | Product manager | All levels | — | 112.8k | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/greater-barcelona-area) |  |
+|  | Data analyst | All levels | — | 51.4k | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) |  |
+|  | Business analyst | All levels | — | 46.4k | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) |  |
+| [Xata.io](https://www.linkedin.com/company/xataio) | Software engineer | All levels | 115.5k (115k–**120.4k**) | 115.5k (115k–120.4k) | — | [levels.fyi](https://www.levels.fyi/companies/xata/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=69560619&location=Spain) |
+| [Hopin](https://www.linkedin.com/company/retail-innovation-week) | Software engineer | All levels | **120k** | 120k | 1 | [levels.fyi](https://www.levels.fyi/companies/hopin/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=105238356&location=Spain) |
+| [Workato](https://www.linkedin.com/company/workato) | Software engineer | All levels | **120k** | 120k | 1 | [levels.fyi](https://www.levels.fyi/companies/workato/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3675685&location=Spain) |
+| [Zendesk](https://www.linkedin.com/company/zendesk) | Software engineer | Staff | **113k** | 153.3k | 2 | [levels.fyi](https://www.levels.fyi/companies/zendesk/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=418095&location=Spain) |
+|  | Software engineer | Senior | 70.8k | 78.3k | 4 | [levels.fyi](https://www.levels.fyi/companies/zendesk/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 84.9k | 103.3k | 6 | [levels.fyi](https://www.levels.fyi/companies/zendesk/salaries/software-engineer/locations/spain) |  |
+| [Microsoft](https://www.linkedin.com/company/microsoft) | Software engineer | Principal | **112.8k** | 170.9k | 4 | [levels.fyi](https://www.levels.fyi/companies/microsoft/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1035&location=Spain) |
+|  | Software engineer | Senior | 84.1k | 121.5k | 7 | [levels.fyi](https://www.levels.fyi/companies/microsoft/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 75.1k | 108.6k | 50 | [levels.fyi](https://www.levels.fyi/companies/microsoft/salaries/software-engineer/locations/spain) |  |
+| [Grafana Labs](https://www.linkedin.com/company/grafana-labs) | Software engineer | Staff | **112.5k** | 130.3k | 4 | [levels.fyi](https://www.levels.fyi/companies/grafana/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=11062162&location=Spain) |
+|  | Software engineer | Senior | 82.6k | 85.7k | 3 | [levels.fyi](https://www.levels.fyi/companies/grafana/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 99.7k | 111.2k | 7 | [levels.fyi](https://www.levels.fyi/companies/grafana/salaries/software-engineer/locations/spain) |  |
+| [Twilio](https://www.linkedin.com/company/twilio-inc-) | Software engineer | Principal | **112.2k** | 149.6k | 2 | [levels.fyi](https://www.levels.fyi/companies/twilio/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=400528&location=Spain) |
+|  | Software engineer | Staff | 79.9k | 102.5k | 8 | [levels.fyi](https://www.levels.fyi/companies/twilio/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | Senior | 60k | 82.3k | 7 | [levels.fyi](https://www.levels.fyi/companies/twilio/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 62k | 80.7k | 29 | [levels.fyi](https://www.levels.fyi/companies/twilio/salaries/software-engineer/locations/spain) |  |
+| [N26](https://www.linkedin.com/company/n26) | Software engineer | Principal | **111.3k** | 197.6k | 3 | [levels.fyi](https://www.levels.fyi/companies/n26/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3116425&location=Spain) |
+|  | Software engineer | Lead | 89.5k | 98.2k | 6 | [levels.fyi](https://www.levels.fyi/companies/n26/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | Senior | 80.8k | 84k | 13 | [levels.fyi](https://www.levels.fyi/companies/n26/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 79.5k | 89.7k | 35 | [levels.fyi](https://www.levels.fyi/companies/n26/salaries/software-engineer/locations/spain) |  |
+| [BCG](https://www.linkedin.com/company/boston-consulting-group) | Data scientist | Lead | **108.6k** | 136.9k | 2 | [levels.fyi](https://www.levels.fyi/companies/bcg/salaries/data-scientist/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1784&location=Spain) |
+|  | Data scientist | Senior | 87.3k | 99.3k | 2 | [levels.fyi](https://www.levels.fyi/companies/bcg/salaries/data-scientist/locations/spain) |  |
+|  | Data scientist | All levels | 87.3k | 102.4k | 7 | [levels.fyi](https://www.levels.fyi/companies/bcg/salaries/data-scientist/locations/spain) |  |
+| [Smile.io](https://www.linkedin.com/company/smile.io) | Software engineer | All levels | **105k** | 105k | 1 | [levels.fyi](https://www.levels.fyi/companies/smileio/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2400901&location=Spain) |
+| [Datadog](https://www.linkedin.com/company/datadog) | Software engineer | Senior | **104.9k** | 141.4k | 11 | [levels.fyi](https://www.levels.fyi/companies/datadog/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1066442&location=Spain) |
+|  | Software engineer | All levels | 83.8k | 108.9k | 34 | [levels.fyi](https://www.levels.fyi/companies/datadog/salaries/software-engineer/locations/spain) |  |
+| [Meta](https://www.linkedin.com/company/facebook) | Software engineer | All levels | **104.4k** | 262.9k | 12 | [levels.fyi](https://www.levels.fyi/companies/facebook/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=10667%2C78833680&location=Spain) |
+| [Revolut](https://www.linkedin.com/company/revolut) | Software engineer | Senior | **103.1k** | 113.8k | 12 | [levels.fyi](https://www.levels.fyi/companies/revolut/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=5356541&location=Spain) |
+|  | Software engineer | All levels | 85.2k (82.5k–103.2k) | 90k (82.5k–125.3k) | 24 | [levels.fyi](https://www.levels.fyi/companies/revolut/salaries/software-engineer/locations/spain) |  |
+|  | Data scientist | All levels | — | 109.2k | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/greater-barcelona-area) |  |
+|  | Data analyst | All levels | — | 61.2k | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) |  |
+| [Toptal](https://www.linkedin.com/company/toptal) | Software engineer | Principal | **101.5k** | 101.5k | 2 | [levels.fyi](https://www.levels.fyi/companies/toptal/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1545609&location=Spain) |
+|  | Software engineer | All levels | 101.5k | 101.5k | 2 | [levels.fyi](https://www.levels.fyi/companies/toptal/salaries/software-engineer/locations/spain) |  |
+| [Eventbrite](https://www.linkedin.com/company/eventbrite) | Software engineer | Principal | **100.6k** | 139k | 3 | [levels.fyi](https://www.levels.fyi/companies/eventbrite/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=167280&location=Spain) |
+|  | Software engineer | Staff | 85.3k | 97.7k | 4 | [levels.fyi](https://www.levels.fyi/companies/eventbrite/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | Senior | 57.2k | 67.1k | 9 | [levels.fyi](https://www.levels.fyi/companies/eventbrite/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 81.1k (62.6k–96.2k) | 93.5k (62.6k–128.3k) | 18 | [levels.fyi](https://www.levels.fyi/companies/eventbrite/salaries/software-engineer/locations/spain) |  |
+| [Adobe](https://www.linkedin.com/company/adobe) | Software engineer | All levels | **98.3k** | 155.4k | 6 | [levels.fyi](https://www.levels.fyi/companies/adobe/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1480&location=Spain) |
+| [Elastic](https://www.linkedin.com/company/elastic-co) | Software engineer | Senior | **97.9k** | 131.1k | 8 | [levels.fyi](https://www.levels.fyi/companies/elastic/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=814025&location=Spain) |
+|  | Software engineer | Principal | 80k | 98.1k | 2 | [levels.fyi](https://www.levels.fyi/companies/elastic/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 84.3k | 108.3k | 16 | [levels.fyi](https://www.levels.fyi/companies/elastic/salaries/software-engineer/locations/spain) |  |
+| [Remote](https://www.linkedin.com/company/remote.com) | Software engineer | All levels | 85.9k (69.5k–**97.3k**) | 85.9k (69.5k–108.1k) | — | [levels.fyi](https://www.levels.fyi/companies/remote/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=17955831&location=Spain) |
+| [Stripe](https://www.linkedin.com/company/stripe) | Software engineer | All levels | **96.6k** | 190.2k | 5 | [levels.fyi](https://www.levels.fyi/companies/stripe/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2135371&location=Spain) |
+| [VistaPrint](https://www.linkedin.com/company/vistaprint) | Software engineer | Principal | **95.9k** | 100.2k | 2 | [levels.fyi](https://www.levels.fyi/companies/vistaprint/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=8095&location=Spain) |
+|  | Software engineer | Lead | 82k | 85.8k | 3 | [levels.fyi](https://www.levels.fyi/companies/vistaprint/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 70.7k | 72.5k | 11 | [levels.fyi](https://www.levels.fyi/companies/vistaprint/salaries/software-engineer/locations/spain) |  |
+| [Teya](https://www.linkedin.com/company/teya-global) | Software engineer | All levels | **95k** | 95k | 1 | [levels.fyi](https://www.levels.fyi/companies/teya/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=93621491&location=Spain) |
+| [Aily Labs](https://www.linkedin.com/company/ailylabs) | Software engineer | All levels | 58.8k (58.8k–**93.3k**) | 58.8k (58.8k–108.3k) | — | [levels.fyi](https://www.levels.fyi/companies/aily-labs/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/ailylabs/jobs/) |
+|  | Data scientist | All levels | — | 41.3k | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) |  |
+| [GitHub](https://www.linkedin.com/company/github) | Software engineer | Staff | **90.8k** | 183.6k | 4 | [levels.fyi](https://www.levels.fyi/companies/github/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1418841&location=Spain) |
+|  | Software engineer | All levels | 90.8k | 183.6k | 4 | [levels.fyi](https://www.levels.fyi/companies/github/salaries/software-engineer/locations/spain) |  |
+| [Pleo](https://www.linkedin.com/company/pleo-company) | Software engineer | All levels | 85.1k (83.3k–**90.7k**) | 85.1k (83.3k–90.7k) | — | [levels.fyi](https://www.levels.fyi/companies/pleo/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=10275909&location=Spain) |
+| [VMware](https://www.linkedin.com/company/vmware) | Software engineer | Staff | **90.2k** | 184.2k | 2 | [levels.fyi](https://www.levels.fyi/companies/vmware/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2988&location=Spain) |
+|  | Software engineer | Senior | 65.8k | 100.9k | 4 | [levels.fyi](https://www.levels.fyi/companies/vmware/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 62.6k | 98.5k | 11 | [levels.fyi](https://www.levels.fyi/companies/vmware/salaries/software-engineer/locations/spain) |  |
+| [Auth0](https://www.linkedin.com/company/auth0) | Software engineer | All levels | **90k** | 105k | 1 | [levels.fyi](https://www.levels.fyi/companies/auth0/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3089380&location=Spain) |
+| [Personio](https://www.linkedin.com/company/personio) | Software engineer | Lead | **89.4k** | 89.4k | 3 | [levels.fyi](https://www.levels.fyi/companies/personio/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=10180448&location=Spain) |
+|  | Software engineer | Senior | 69.8k | 78.5k | 6 | [levels.fyi](https://www.levels.fyi/companies/personio/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 65.8k | 70.1k | 16 | [levels.fyi](https://www.levels.fyi/companies/personio/salaries/software-engineer/locations/spain) |  |
+| [Broadcom](https://www.linkedin.com/company/broadcom) | Software engineer | Principal | **88.5k** | 315.9k | 2 | [levels.fyi](https://www.levels.fyi/companies/broadcom/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3072&location=Spain) |
+|  | Software engineer | Senior | 64.7k | 118.7k | 2 | [levels.fyi](https://www.levels.fyi/companies/broadcom/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 76.6k | 217.3k | 4 | [levels.fyi](https://www.levels.fyi/companies/broadcom/salaries/software-engineer/locations/spain) |  |
+| [sennder](https://www.linkedin.com/company/sennder) | Software engineer | All levels | **88k** | 97k | 1 | [levels.fyi](https://www.levels.fyi/companies/sennder/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=10442437&location=Spain) |
+| [Google](https://www.linkedin.com/company/google) | Software engineer | Senior | **87.6k** | 146.7k | 5 | [levels.fyi](https://www.levels.fyi/companies/google/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1441%2C1594050&location=Spain) |
+|  | Software engineer | All levels | 78.4k | 110.1k | 16 | [levels.fyi](https://www.levels.fyi/companies/google/salaries/software-engineer/locations/spain) |  |
+| [Preply](https://www.linkedin.com/company/preply) | Software engineer | All levels | 82.8k (72.7k–**87.3k**) | 82.8k (72.7k–87.3k) | — | [levels.fyi](https://www.levels.fyi/companies/preply/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2762432&location=Spain) |
+| [HubSpot](https://www.linkedin.com/company/hubspot) | Software engineer | Senior | **87.1k** | 150.5k | 3 | [levels.fyi](https://www.levels.fyi/companies/hubspot/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=68529&location=Spain) |
+|  | Software engineer | All levels | 87.1k | 150.5k | 3 | [levels.fyi](https://www.levels.fyi/companies/hubspot/salaries/software-engineer/locations/spain) |  |
+| [Affirm](https://www.linkedin.com/company/affirm) | Software engineer | Senior | **87k** | 109.7k | 5 | [levels.fyi](https://www.levels.fyi/companies/affirm/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2963249&location=Spain) |
+|  | Software engineer | All levels | 80.1k | 106.5k | 11 | [levels.fyi](https://www.levels.fyi/companies/affirm/salaries/software-engineer/locations/spain) |  |
+| [Workday](https://www.linkedin.com/company/workday) | Software engineer | Principal | **86.9k** | 182.6k | 2 | [levels.fyi](https://www.levels.fyi/companies/workday/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=17719&location=Spain) |
+|  | Software engineer | All levels | 72k | 140.9k | 4 | [levels.fyi](https://www.levels.fyi/companies/workday/salaries/software-engineer/locations/spain) |  |
+| [Tinybird](https://www.linkedin.com/company/tinybird-co) | Software engineer | All levels | 76.2k (70k–**86.4k**) | 104.9k (70k–118.1k) | — | [levels.fyi](https://www.levels.fyi/companies/tinybird/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=35704741&location=Spain) |
+| [Cisco](https://www.linkedin.com/company/cisco) | Software engineer | All levels | **86k** | 105.9k | 3 | [levels.fyi](https://www.levels.fyi/companies/cisco/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1063&location=Spain) |
+| [Aetion, a Datavant Company](https://www.linkedin.com/company/aetion-inc-) | Software engineer | All levels | **85k** | 93.5k | 1 | [levels.fyi](https://www.levels.fyi/companies/aetion/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=6576393&location=Spain) |
+| [Manychat](https://www.linkedin.com/company/manychat) | Software engineer | All levels | 73.1k (67k–**84.4k**) | 73.1k (67k–84.4k) | — | [levels.fyi](https://www.levels.fyi/companies/manychat/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=11058494&location=Spain) |
+| [Semrush](https://www.linkedin.com/company/semrush) | Software engineer | All levels | 72.3k (66.4k–**84.3k**) | 72.3k (66.4k–84.3k) | — | [levels.fyi](https://www.levels.fyi/companies/semrush/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/semrush/jobs/) |
+|  | Data analyst | All levels | — | 49.8k | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) |  |
+| [Intel](https://www.linkedin.com/company/intel-corporation) | Software engineer | All levels | **84.2k** | 92.7k | 2 | [levels.fyi](https://www.levels.fyi/companies/intel/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1053&location=Spain) |
+| [Sanofi](https://www.linkedin.com/company/sanofi) | Software engineer | Staff | **83k** | 90.1k | 2 | [levels.fyi](https://www.levels.fyi/companies/sanofi/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1642&location=Spain) |
+|  | Software engineer | All levels | 65.6k (63.8k–66.3k) | 72k (69.9k–72.8k) | 4 | [levels.fyi](https://www.levels.fyi/companies/sanofi/salaries/software-engineer/locations/spain) |  |
+| [Medallia](https://www.linkedin.com/company/medallia-inc.) | Software engineer | Staff | **82.3k** | 82.3k | 2 | [levels.fyi](https://www.levels.fyi/companies/medallia/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=49697&location=Spain) |
+|  | Software engineer | All levels | 82.3k | 82.3k | 2 | [levels.fyi](https://www.levels.fyi/companies/medallia/salaries/software-engineer/locations/spain) |  |
+| [Stenn](https://www.linkedin.com/company/stenn-financial-services) | Software engineer | All levels | **82k** | 82k | 1 | [levels.fyi](https://www.levels.fyi/companies/stenn/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/stenn-financial-services/jobs/) |
+|  | Software engineering manager | All levels | — | 133.7k | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) |  |
+| [IBM](https://www.linkedin.com/company/ibm) | Software engineer | Senior | **81.9k** | 101.9k | 4 | [levels.fyi](https://www.levels.fyi/companies/ibm/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1009&location=Spain) |
+|  | Software engineer | Junior | 35.9k | 38.9k | 9 | [levels.fyi](https://www.levels.fyi/companies/ibm/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | Staff | 35.6k | 35.6k | 3 | [levels.fyi](https://www.levels.fyi/companies/ibm/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 50.4k | 56.1k | 19 | [levels.fyi](https://www.levels.fyi/companies/ibm/salaries/software-engineer/locations/spain) |  |
+| [Swiss Re](https://www.linkedin.com/company/swiss-re) | Software engineer | Senior | **81.2k** | 96.8k | 2 | [levels.fyi](https://www.levels.fyi/companies/swiss-re/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3845&location=Spain) |
+|  | Software engineer | All levels | 81.2k | 96.8k | 2 | [levels.fyi](https://www.levels.fyi/companies/swiss-re/salaries/software-engineer/locations/spain) |  |
+| [Skyscanner](https://www.linkedin.com/company/skyscanner) | Software engineer | Senior | **80.7k** | 86.6k | 7 | [levels.fyi](https://www.levels.fyi/companies/skyscanner/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=123380&location=Spain) |
+|  | Software engineer | All levels | 62.4k | 66.9k | 22 | [levels.fyi](https://www.levels.fyi/companies/skyscanner/salaries/software-engineer/locations/spain) |  |
+| [RingCentral](https://www.linkedin.com/company/ringcentral) | Software engineer | All levels | **80.4k** | 86.4k | 16 | [levels.fyi](https://www.levels.fyi/companies/ringcentral/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=60868&location=Spain) |
+| [AstraZeneca](https://www.linkedin.com/company/astrazeneca) | Software engineer | Principal | **80.1k** | 87.1k | 2 | [levels.fyi](https://www.levels.fyi/companies/astrazeneca/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1603&location=Spain) |
+|  | Software engineer | All levels | 80.1k | 87.1k | 2 | [levels.fyi](https://www.levels.fyi/companies/astrazeneca/salaries/software-engineer/locations/spain) |  |
+| [Job&Talent](https://www.linkedin.com/company/jobandtalent) | Software engineer | All levels | 69.7k (64.8k–**80k**) | 69.7k (64.8k–80k) | — | [levels.fyi](https://www.levels.fyi/companies/jobandtalent/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=296493&location=Spain) |
+| [Mirantis](https://www.linkedin.com/company/mirantis) | Software engineer | All levels | **80k** | 80k | 1 | [levels.fyi](https://www.levels.fyi/companies/mirantis/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=7793&location=Spain) |
+| [MoonPay](https://www.linkedin.com/company/moonpay) | Software engineer | All levels | **80k** | 80k | 1 | [levels.fyi](https://www.levels.fyi/companies/moonpay/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=12596773&location=Spain) |
+| [Picsart](https://www.linkedin.com/company/picsart) | Software engineer | All levels | **80k** | 80k | 1 | [levels.fyi](https://www.levels.fyi/companies/picsart/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3007630&location=Spain) |
+| [Rover.com](https://www.linkedin.com/company/roverdotcom) | Software engineer | All levels | **80k** | 80k | 1 | [levels.fyi](https://www.levels.fyi/companies/rovercom/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2686335&location=Spain) |
+|  | Software engineering manager | All levels | — | 116.1k | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) |  |
+| [Collate](https://www.linkedin.com/company/collateinc) | Software engineer | All levels | 75.5k (75.5k–**79.9k**) | 75.5k (75.5k–86.8k) | — | [levels.fyi](https://www.levels.fyi/companies/collate/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=78395355&location=Spain) |
+| [Spotify](https://www.linkedin.com/company/spotify) | Software engineer | Senior | **79.5k** | 108.8k | 10 | [levels.fyi](https://www.levels.fyi/companies/spotify/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=207470&location=Spain) |
+|  | Software engineer | All levels | 74.9k | 99.8k | 17 | [levels.fyi](https://www.levels.fyi/companies/spotify/salaries/software-engineer/locations/spain) |  |
+| [HP](https://www.linkedin.com/company/hp) | Software engineering manager | All levels | **79.4k** | 103.5k | — | [levels.fyi](https://www.levels.fyi/companies/hp/salaries/software-engineering-manager/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=5390798&location=Spain) |
+|  | Solution architect | All levels | 56.3k | 64.4k | — | [levels.fyi](https://www.levels.fyi/companies/hp/salaries/solution-architect/locations/spain) |  |
+| [New Relic](https://www.linkedin.com/company/new-relic-inc-) | Software engineer | Senior | **79.2k** | 92.7k | 26 | [levels.fyi](https://www.levels.fyi/companies/new-relic/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=426253&location=Spain) |
+|  | Software engineer | Junior | 49.5k | 77k | 2 | [levels.fyi](https://www.levels.fyi/companies/new-relic/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 72.9k | 86.1k | 41 | [levels.fyi](https://www.levels.fyi/companies/new-relic/salaries/software-engineer/locations/spain) |  |
+| [Expedia Group](https://www.linkedin.com/company/expediagroup) | Software engineer | Senior | **79k** | 92k | 5 | [levels.fyi](https://www.levels.fyi/companies/expedia-group/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2751&location=Spain) |
+|  | Software engineer | All levels | 70.8k | 82.7k | 18 | [levels.fyi](https://www.levels.fyi/companies/expedia-group/salaries/software-engineer/locations/spain) |  |
+| [NCC Group](https://www.linkedin.com/company/ncc-group) | Security analyst | All levels | — | **78.4k** | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) | [open roles](https://www.linkedin.com/company/ncc-group/jobs/) |
+| [Bitpanda](https://www.linkedin.com/company/bitpanda) | Software engineer | All levels | **78k** | 78k | 1 | [levels.fyi](https://www.levels.fyi/companies/bitpanda/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=18164565&location=Spain) |
+| [Intellias](https://www.linkedin.com/company/intellias) | Software engineer | All levels | **78k** | 78k | 1 | [levels.fyi](https://www.levels.fyi/companies/intellias/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=49445&location=Spain) |
+| [Perk](https://www.linkedin.com/company/perk) | Software engineer | All levels | 65.3k (60.5k–**77.8k**) | 65.3k (60.5k–77.8k) | — | [levels.fyi](https://www.levels.fyi/companies/perk/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=9310632&location=Spain) |
+| [SUSE](https://www.linkedin.com/company/suse) | Software engineer | All levels | **77k** | 84.7k | 1 | [levels.fyi](https://www.levels.fyi/companies/suse/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1455&location=Spain) |
+| [Brainly](https://www.linkedin.com/company/brainly-com) | Software engineer | All levels | **76k** | 76k | 1 | [levels.fyi](https://www.levels.fyi/companies/brainly/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2745890&location=Spain) |
+| [Typeform](https://www.linkedin.com/company/typeform-) | Software engineer | All levels | 68.6k (60.2k–**75.7k**) | 68.6k (60.2k–75.7k) | — | [levels.fyi](https://www.levels.fyi/companies/typeform/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3226972&location=Spain) |
+| [Gartner](https://www.linkedin.com/company/gartner) | Software engineer | Senior | **75.4k** | 81k | 4 | [levels.fyi](https://www.levels.fyi/companies/gartner/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2078&location=Spain) |
+|  | Software engineer | All levels | 66.5k | 71.6k | 6 | [levels.fyi](https://www.levels.fyi/companies/gartner/salaries/software-engineer/locations/spain) |  |
+| [Palo Alto Networks](https://www.linkedin.com/company/palo-alto-networks) | Software engineer | All levels | **75k** | 109k | 1 | [levels.fyi](https://www.levels.fyi/companies/palo-alto-networks/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=30086&location=Spain) |
+| [TravelPerk](https://www.linkedin.com/company/travelperk) | Software engineer | All levels | 70.7k (59.9k–**74k**) | 70.7k (59.9k–76k) | — | [levels.fyi](https://www.levels.fyi/companies/travelperk/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/travelperk/jobs/) |
+| [Bayer](https://www.linkedin.com/company/bayer) | Software engineer | All levels | **73.2k** | 81k | 4 | [levels.fyi](https://www.levels.fyi/companies/bayer/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1893&location=Spain) |
+| [Red Hat](https://www.linkedin.com/company/red-hat) | Software engineer | Principal | **72.5k** | 96.7k | 4 | [levels.fyi](https://www.levels.fyi/companies/red-hat/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3545&location=Spain) |
+|  | Software engineer | Senior | 60.7k | 73.2k | 16 | [levels.fyi](https://www.levels.fyi/companies/red-hat/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | Junior | 35.3k | 35.7k | 3 | [levels.fyi](https://www.levels.fyi/companies/red-hat/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 56.3k | 67.2k | 30 | [levels.fyi](https://www.levels.fyi/companies/red-hat/salaries/software-engineer/locations/spain) |  |
+| [Glovo](https://www.linkedin.com/company/glovo-app) | Software engineer | All levels | 58.9k (39.8k–**72.4k**) | 63.9k (39.8k–78.8k) | 49 | [levels.fyi](https://www.levels.fyi/companies/glovo/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=9262901&location=Spain) |
+|  | Software engineering manager | All levels | — | 109.7k | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) |  |
+|  | Data scientist | All levels | — | 69.4k | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) |  |
+|  | Product manager | All levels | — | 67.3k | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) |  |
+|  | Data analyst | All levels | — | 43.1k | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) |  |
+| [Adyen](https://www.linkedin.com/company/adyen) | Software engineer | All levels | **72k** | 72k | 1 | [levels.fyi](https://www.levels.fyi/companies/adyen/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=279565&location=Spain) |
+| [Oracle](https://www.linkedin.com/company/oracle) | Software engineer | Principal | **71.5k** | 84.3k | 7 | [levels.fyi](https://www.levels.fyi/companies/oracle/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1028&location=Spain) |
+|  | Software engineer | Senior | 55.7k | 64.6k | 11 | [levels.fyi](https://www.levels.fyi/companies/oracle/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | Staff | 40k | 42.5k | 8 | [levels.fyi](https://www.levels.fyi/companies/oracle/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 51k | 58.1k | 31 | [levels.fyi](https://www.levels.fyi/companies/oracle/salaries/software-engineer/locations/spain) |  |
+|  | Product designer | All levels | — | 41.1k | — | [levels.fyi](https://www.levels.fyi/t/product-designer/locations/spain) |  |
+| [Bumble Inc.](https://www.linkedin.com/company/bumbleinc) | Software engineer | Senior | **70.9k** | 88.4k | 8 | [levels.fyi](https://www.levels.fyi/companies/bumble/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=9408755&location=Spain) |
+|  | Software engineer | All levels | 63.8k | 76k | 13 | [levels.fyi](https://www.levels.fyi/companies/bumble/salaries/software-engineer/locations/spain) |  |
+| [Deel](https://www.linkedin.com/company/deel) | Software engineer | All levels | **70.9k** | 70.9k | 3 | [levels.fyi](https://www.levels.fyi/companies/deel/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=18922914&location=Spain) |
+| [dLocal](https://www.linkedin.com/company/dlocal) | Software engineer | All levels | 69k (60.3k–**70.8k**) | 69k (60.3k–70.8k) | — | [levels.fyi](https://www.levels.fyi/companies/dlocal/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=15156062&location=Spain) |
+| [Pearson](https://www.linkedin.com/company/pearson) | Software engineer | Senior | **70.6k** | 74.6k | 2 | [levels.fyi](https://www.levels.fyi/companies/pearson/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2137&location=Spain) |
+|  | Software engineer | All levels | 70.6k | 74.6k | 2 | [levels.fyi](https://www.levels.fyi/companies/pearson/salaries/software-engineer/locations/spain) |  |
+| [Align Technology](https://www.linkedin.com/company/align-technology) | Software engineer | Senior | **70.3k** | 80.6k | 8 | [levels.fyi](https://www.levels.fyi/companies/align-technology/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=6867&location=Spain) |
+|  | Software engineer | Junior | 57.6k | 62.3k | 2 | [levels.fyi](https://www.levels.fyi/companies/align-technology/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 65.6k | 74.5k | 13 | [levels.fyi](https://www.levels.fyi/companies/align-technology/salaries/software-engineer/locations/spain) |  |
+| [PepsiCo](https://www.linkedin.com/company/pepsico) | Data scientist | All levels | **70k** | 77k | 1 | [levels.fyi](https://www.levels.fyi/companies/pepsico/salaries/data-scientist/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1431&location=Spain) |
+| [Tabby](https://www.linkedin.com/company/footballdotcom) | Software engineer | All levels | **70k** | 70k | 1 | [levels.fyi](https://www.levels.fyi/companies/tabby/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=26615638&location=Spain) |
+| [Mitek Systems](https://www.linkedin.com/company/miteksystems) | Software engineer | All levels | 64k (50.2k–**69.9k**) | 69.1k (50.2k–84.4k) | — | [levels.fyi](https://www.levels.fyi/companies/mitek-systems/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=395288&location=Spain) |
+| [The Trade Desk](https://www.linkedin.com/company/the-trade-desk) | Software engineer | All levels | **69.8k** | 114.8k | 2 | [levels.fyi](https://www.levels.fyi/companies/the-trade-desk/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=892001&location=Spain) |
+| [New Work SE](https://www.linkedin.com/company/new-work-se) | Software engineer | All levels | **68.5k** | 68.5k | 1 | [levels.fyi](https://www.levels.fyi/companies/new-work-se/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=28513290&location=Spain) |
+| [D-EDGE](https://www.linkedin.com/company/d-edge-hospitality-solutions) | Software engineering manager | All levels | 64.3k (64.2k–**68.3k**) | 64.3k (64.2k–68.3k) | — | [levels.fyi](https://www.levels.fyi/companies/d-edge/salaries/software-engineering-manager/locations/spain) | [open roles](https://www.linkedin.com/company/d-edge-hospitality-solutions/jobs/) |
+| [Celonis](https://www.linkedin.com/company/celonis) | Software engineer | Staff | **67.6k** | 77.8k | 2 | [levels.fyi](https://www.levels.fyi/companies/celonis/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3118913&location=Spain) |
+|  | Software engineer | Senior | 58.7k | 74.2k | 5 | [levels.fyi](https://www.levels.fyi/companies/celonis/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 53.4k | 64.3k | 15 | [levels.fyi](https://www.levels.fyi/companies/celonis/salaries/software-engineer/locations/spain) |  |
+|  | Business analyst | All levels | — | 36.2k | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) |  |
+| [Qonto](https://www.linkedin.com/company/qonto) | Software engineer | All levels | **67k** | 67k | 1 | [levels.fyi](https://www.levels.fyi/companies/qonto/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=13205888&location=Spain) |
+| [Activision Blizzard](https://www.linkedin.com/company/activision-blizzard) | Software engineer | All levels | **67k** | 77k | 1 | [levels.fyi](https://www.levels.fyi/companies/activision-blizzard/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=15415277&location=Spain) |
+| [Akamai Technologies](https://www.linkedin.com/company/akamai-technologies) | Software engineer | Senior | **66.5k** | 78.4k | 3 | [levels.fyi](https://www.levels.fyi/companies/akamai/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3925&location=Spain) |
+|  | Software engineer | All levels | 67.4k | 77.1k | 6 | [levels.fyi](https://www.levels.fyi/companies/akamai/salaries/software-engineer/locations/spain) |  |
+| [Factorial](https://www.linkedin.com/company/factorialhr) | Software engineer | All levels | 54.5k (49.6k–**66.5k**) | 54.5k (49.6k–66.5k) | — | [levels.fyi](https://www.levels.fyi/companies/factorial/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=11016997&location=Spain) |
+|  | Product designer | All levels | — | 120.2k | — | [levels.fyi](https://www.levels.fyi/t/product-designer/locations/spain) |  |
+| [Wallapop](https://www.linkedin.com/company/wallapop) | Software engineer | All levels | 59.6k (50.7k–**66.5k**) | 59.6k (50.7k–66.5k) | — | [levels.fyi](https://www.levels.fyi/companies/wallapop/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3302579&location=Spain) |
+| [Mews](https://www.linkedin.com/company/mewssystems) | Software engineer | All levels | 65.7k (60.1k–**65.9k**) | 65.7k (60.1k–67.8k) | — | [levels.fyi](https://www.levels.fyi/companies/mews/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2574959&location=Spain) |
+| [Vestas](https://www.linkedin.com/company/vestas) | Data scientist | All levels | 63.2k (61k–**65.8k**) | 63.2k (61k–65.8k) | — | [levels.fyi](https://www.levels.fyi/companies/vestas/salaries/data-scientist/locations/spain) | [open roles](https://www.linkedin.com/company/vestas/jobs/) |
+| [Adevinta](https://www.linkedin.com/company/adevinta) | Software engineer | All levels | 55.9k (47k–**65.1k**) | 63.3k (50k–74.3k) | 43 | [levels.fyi](https://www.levels.fyi/companies/adevinta/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=13981593%2C13981594&location=Spain) |
+| [Nexthink](https://www.linkedin.com/company/nexthink) | Software engineer | All levels | **65k** | 69k | 1 | [levels.fyi](https://www.levels.fyi/companies/nexthink/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=92771&location=Spain) |
+| [T-Systems](https://www.linkedin.com/company/tsystems-brasil) | Software engineer | All levels | **65k** | 65k | 1 | [levels.fyi](https://www.levels.fyi/companies/t-systems/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=999183&location=Spain) |
+| [TradingView](https://www.linkedin.com/company/tradingview) | Software engineer | All levels | **65k** | 65k | 1 | [levels.fyi](https://www.levels.fyi/companies/tradingview/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3179069&location=Spain) |
+| [Dow Jones](https://www.linkedin.com/company/dow-jones) | Software engineer | Senior | **64.3k** | 64.3k | 2 | [levels.fyi](https://www.levels.fyi/companies/dow-jones/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2284&location=Spain) |
+|  | Software engineer | All levels | 64.3k | 64.3k | 2 | [levels.fyi](https://www.levels.fyi/companies/dow-jones/salaries/software-engineer/locations/spain) |  |
+| [Clarity AI](https://www.linkedin.com/company/clarity-ai) | Software engineer | All levels | 37.7k (37.7k–**63.9k**) | 37.7k (37.7k–63.9k) | — | [levels.fyi](https://www.levels.fyi/companies/clarity-ai/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=9480749&location=Spain) |
+| [Dynatrace](https://www.linkedin.com/company/dynatrace) | Software engineer | Senior | **63.4k** | 75.1k | 17 | [levels.fyi](https://www.levels.fyi/companies/dynatrace/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=125999&location=Spain) |
+|  | Software engineer | All levels | 59.4k | 70.1k | 21 | [levels.fyi](https://www.levels.fyi/companies/dynatrace/salaries/software-engineer/locations/spain) |  |
+| [Veeva Systems](https://www.linkedin.com/company/veeva-systems) | Software engineer | All levels | **63.3k** | 80.2k | 2 | [levels.fyi](https://www.levels.fyi/companies/veeva-systems/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=402048&location=Spain) |
+| [King](https://www.linkedin.com/company/king) | Software engineer | All levels | **63k** | 69.5k | 1 | [levels.fyi](https://www.levels.fyi/companies/king/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=230546&location=Spain) |
+| [Ocado Group](https://www.linkedin.com/company/ocadogroup) | Software engineer | Staff | **62.8k** | 65.7k | 6 | [levels.fyi](https://www.levels.fyi/companies/ocado-group/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=165276&location=Spain) |
+|  | Software engineer | Senior | 58.6k | 62.6k | 13 | [levels.fyi](https://www.levels.fyi/companies/ocado-group/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 55k | 58k | 25 | [levels.fyi](https://www.levels.fyi/companies/ocado-group/salaries/software-engineer/locations/spain) |  |
+| [Thoughtworks](https://www.linkedin.com/company/thoughtworks) | Software engineer | Lead | **62.6k** | 63.1k | 9 | [levels.fyi](https://www.levels.fyi/companies/thoughtworks/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=157356&location=Spain) |
+|  | Software engineer | Senior | 48.4k | 49k | 10 | [levels.fyi](https://www.levels.fyi/companies/thoughtworks/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 49.9k | 51.7k | 25 | [levels.fyi](https://www.levels.fyi/companies/thoughtworks/salaries/software-engineer/locations/spain) |  |
+| [Freenow](https://www.linkedin.com/company/freenow) | Software engineer | All levels | **62k** | 62k | 1 | [levels.fyi](https://www.levels.fyi/companies/free-now/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=14815756&location=Spain) |
+|  | Product manager | All levels | — | 66.8k | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) |  |
+| [Strapi](https://www.linkedin.com/company/strapi) | Software engineer | All levels | **62k** | 69.7k | — | [levels.fyi](https://www.levels.fyi/companies/strapi/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=11251903&location=Spain) |
+| [Flywire](https://www.linkedin.com/company/flywire) | Software engineer | All levels | **61.5k** | 79.5k | 1 | [levels.fyi](https://www.levels.fyi/companies/flywire/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=434598&location=Spain) |
+| [SEAT CODE](https://www.linkedin.com/company/seatcode) | Software engineer | All levels | 52.8k (47k–**61k**) | 59.5k (53k–68k) | — | [levels.fyi](https://www.levels.fyi/companies/seat-code/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=22296997&location=Spain) |
+| [NovaKid](https://www.linkedin.com/company/novakid) | Product manager | All levels | 56.8k (56.8k–**60.6k**) | 56.8k (56.8k–60.6k) | — | [levels.fyi](https://www.levels.fyi/companies/novakid/salaries/product-manager/locations/spain) | [open roles](https://www.linkedin.com/company/novakid/jobs/) |
+| [Fever](https://www.linkedin.com/company/fever-up) | Software engineer | All levels | 51k (26.9k–**60.5k**) | 51k (26.9k–66.3k) | — | [levels.fyi](https://www.levels.fyi/companies/fever/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2346695&location=Spain) |
+| [EPAM Systems](https://www.linkedin.com/company/epam-systems) | Software engineer | Lead | **60.3k** | 61.6k | 19 | [levels.fyi](https://www.levels.fyi/companies/epam-systems/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=4972&location=Spain) |
+|  | Software engineer | Senior | 49.2k | 50.1k | 23 | [levels.fyi](https://www.levels.fyi/companies/epam-systems/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 49.3k | 50.2k | 64 | [levels.fyi](https://www.levels.fyi/companies/epam-systems/salaries/software-engineer/locations/spain) |  |
+|  | Solution architect | All levels | — | 66.3k | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/spain) |  |
+|  | Business analyst | All levels | — | 49k | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) |  |
+| [Exoticca](https://www.linkedin.com/company/exoticca-travel-agency) | Software engineer | All levels | 43.2k (39.6k–**60.3k**) | 47.1k (39.6k–65.1k) | — | [levels.fyi](https://www.levels.fyi/companies/exoticca/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3317134&location=Spain) |
+| [UserTesting](https://www.linkedin.com/company/usertesting-com) | Software engineer | All levels | **60.1k** | 60.1k | 1 | [levels.fyi](https://www.levels.fyi/companies/usertesting/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=564709&location=Spain) |
+| [Docplanner](https://www.linkedin.com/company/docplannergroup) | Software engineer | All levels | **60k** | 60k | 1 | [levels.fyi](https://www.levels.fyi/companies/docplanner/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2254852&location=Spain) |
+| [Scopely](https://www.linkedin.com/company/scopely) | Software engineer | All levels | **60k** | 66k | 1 | [levels.fyi](https://www.levels.fyi/companies/scopely/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2057437&location=Spain) |
+
+## Under 60k
+
+| Company | Role | Level | Base | Total comp | Data points | Source | Jobs |
+| --- | --- | --- | ---: | ---: | ---: | --- | --- |
+| [Cabify](https://www.linkedin.com/company/cabify) | Software engineer | All levels | 52.5k (39.7k–**59.9k**) | 52.5k (39.7k–59.9k) | — | [levels.fyi](https://www.levels.fyi/companies/cabify/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2394728&location=Spain) |
+|  | Data scientist | All levels | — | 59.3k | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) |  |
+| [Keysight Technologies](https://www.linkedin.com/company/keysight-technologies) | Software engineer | All levels | **59.6k** | 62.5k | 2 | [levels.fyi](https://www.levels.fyi/companies/keysight/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3812750&location=Spain) |
+| [TomTom](https://www.linkedin.com/company/tomtom) | Software engineer | All levels | **59.5k** | 60k | 10 | [levels.fyi](https://www.levels.fyi/companies/tomtom/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=166474&location=Spain) |
+|  | Data scientist | All levels | — | 52.4k | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) |  |
+| [Unity](https://www.linkedin.com/company/unity) | Software engineer | Senior | **58.4k** | 79.6k | 3 | [levels.fyi](https://www.levels.fyi/companies/unity/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=212669&location=Spain) |
+|  | Software engineer | All levels | 70.7k | 96.6k | 7 | [levels.fyi](https://www.levels.fyi/companies/unity/salaries/software-engineer/locations/spain) |  |
+| [eDreams ODIGEO](https://www.linkedin.com/company/edreamsodigeo) | Software engineer | All levels | 52.8k (43.4k–**57.5k**) | 57.4k (47.4k–63.1k) | — | [levels.fyi](https://www.levels.fyi/companies/edreams-odigeo/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/edreamsodigeo/jobs/) |
+|  | Software engineering manager | All levels | — | 81.6k | — | [levels.fyi](https://www.levels.fyi/t/software-engineering-manager/locations/spain) |  |
+| [Klarna](https://www.linkedin.com/company/klarna) | Software engineer | Senior | **56.4k** | 59.6k | 6 | [levels.fyi](https://www.levels.fyi/companies/klarna/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=748731&location=Spain) |
+|  | Software engineer | All levels | 54.3k | 57.4k | 8 | [levels.fyi](https://www.levels.fyi/companies/klarna/salaries/software-engineer/locations/spain) |  |
+| [Electronic Arts (EA)](https://www.linkedin.com/company/electronic-arts) | Software engineer | All levels | **56.1k** | 84.4k | 9 | [levels.fyi](https://www.levels.fyi/companies/electronic-arts/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1449&location=Spain) |
+| [Multiverse Computing](https://www.linkedin.com/company/multiversecomputing) | Software engineer | All levels | 54.6k (49.4k–**56.1k**) | 60.5k (49.4k–63.7k) | — | [levels.fyi](https://www.levels.fyi/companies/multiverse-computing/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=18863453&location=Spain) |
+| [Inditex](https://www.linkedin.com/company/inditex) | Software engineer | All levels | 39.1k (37.2k–**55.5k**) | 39.1k (37.2k–59.5k) | — | [levels.fyi](https://www.levels.fyi/companies/inditex/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=14853&location=Spain) |
+| [Ryanair - Europe's Favourite Airline](https://www.linkedin.com/company/ryanair-airline) | Software engineer | All levels | 50.5k (35.9k–**55.1k**) | 50.5k (35.9k–55.1k) | — | [levels.fyi](https://www.levels.fyi/companies/ryanair/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=16584&location=Spain) |
+| [ING](https://www.linkedin.com/company/ing) | Software engineer | All levels | **54.3k** | 62k | 3 | [levels.fyi](https://www.levels.fyi/companies/ing/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2594164&location=Spain) |
+| [Sage](https://www.linkedin.com/company/sage-software) | Software engineer | All levels | **54k** | 54k | 1 | [levels.fyi](https://www.levels.fyi/companies/sage/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2802&location=Spain) |
+|  | Product manager | All levels | — | 75.1k | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) |  |
+| [Santander](https://www.linkedin.com/company/banco-santander) | Software engineer | All levels | **54k** | 58k | 1 | [levels.fyi](https://www.levels.fyi/companies/santander/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2873&location=Spain) |
+| [adidas](https://www.linkedin.com/company/adidas) | Software engineer | Senior | **52.4k** | 57.7k | 3 | [levels.fyi](https://www.levels.fyi/companies/adidas/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3748&location=Spain) |
+|  | Software engineer | All levels | 48.1k | 51.1k | 11 | [levels.fyi](https://www.levels.fyi/companies/adidas/salaries/software-engineer/locations/spain) |  |
+| [Clarivate](https://www.linkedin.com/company/clarivate) | Software engineer | All levels | **50.4k** | 53.4k | 1 | [levels.fyi](https://www.levels.fyi/companies/clarivate/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=10950962&location=Spain) |
+| [Allianz](https://www.linkedin.com/company/allianz) | Software engineer | All levels | **50k** | 55k | 1 | [levels.fyi](https://www.levels.fyi/companies/allianz/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2979%2C3964931&location=Spain) |
+| [Accenture](https://www.linkedin.com/company/accenture) | Software engineer | Lead | **49.9k** | 57.7k | 3 | [levels.fyi](https://www.levels.fyi/companies/accenture/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/accenture/jobs/) |
+|  | Software engineer | Senior | 39k | 39.5k | 9 | [levels.fyi](https://www.levels.fyi/companies/accenture/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | Junior | 27k | 28.7k | 14 | [levels.fyi](https://www.levels.fyi/companies/accenture/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 33.4k | 34.8k | 36 | [levels.fyi](https://www.levels.fyi/companies/accenture/salaries/software-engineer/locations/spain) |  |
+|  | Data scientist | All levels | — | 39.4k | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) |  |
+|  | Security analyst | All levels | — | 24.9k | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) |  |
+|  | Business analyst | All levels | — | 24.8k | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) |  |
+| [Deloitte](https://www.linkedin.com/company/deloitte) | Software engineer | Senior | **48.6k** | 55k | 3 | [levels.fyi](https://www.levels.fyi/companies/deloitte/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1038&location=Spain) |
+|  | Software engineer | All levels | 37.8k | 40.7k | 32 | [levels.fyi](https://www.levels.fyi/companies/deloitte/salaries/software-engineer/locations/spain) |  |
+|  | Security analyst | All levels | — | 33.2k | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) |  |
+|  | Business analyst | All levels | — | 31.6k | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) |  |
+| [IKEA](https://www.linkedin.com/company/ikea) | Software engineer | All levels | **47k** | 47k | 1 | [levels.fyi](https://www.levels.fyi/companies/ikea/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2743&location=Spain) |
+|  | Data scientist | All levels | — | 75.7k | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) |  |
+| [BBVA](https://www.linkedin.com/company/bbva) | Software engineer | All levels | 35.6k (30k–**46.8k**) | 35.6k (30k–47.9k) | — | [levels.fyi](https://www.levels.fyi/companies/bbva/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/bbva/jobs/) |
+|  | Solution architect | All levels | — | 56k | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area) |  |
+|  | Data scientist | All levels | — | 45.8k | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) |  |
+| [The Workshop](https://www.linkedin.com/company/use-workshop) | Software engineer | All levels | 42.1k (42.1k–**46.7k**) | 42.1k (42.1k–46.7k) | — | [levels.fyi](https://www.levels.fyi/companies/workshop/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=10258548&location=Spain) |
+| [Semidynamics](https://www.linkedin.com/company/semidynamics) | Software engineer | All levels | **46.5k** | 46.5k | — | [levels.fyi](https://www.levels.fyi/companies/semidynamics/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/semidynamics/jobs/) |
+|  | Hardware engineer | All levels | — | 44.1k | — | [levels.fyi](https://www.levels.fyi/t/hardware-engineer/locations/spain) |  |
+| [BASF](https://www.linkedin.com/company/basf) | Software engineer | All levels | **45.8k** | 45.8k | 2 | [levels.fyi](https://www.levels.fyi/companies/basf/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/basf/jobs/) |
+|  | Data scientist | All levels | — | 57.5k | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/madrid-metropolitan-area) |  |
+| [Criteo](https://www.linkedin.com/company/criteo) | Software engineer | All levels | **43.5k** | 44.6k | 4 | [levels.fyi](https://www.levels.fyi/companies/criteo/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=37209&location=Spain) |
+| [Mercedes-Benz AG](https://www.linkedin.com/company/mercedes-benz_ag) | Software engineer | All levels | **43k** | 47k | 1 | [levels.fyi](https://www.levels.fyi/companies/mercedes-benz/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=5383634&location=Spain) |
+| [Capgemini](https://www.linkedin.com/company/capgemini) | Software engineer | Senior | **42.9k** | 43.8k | 6 | [levels.fyi](https://www.levels.fyi/companies/capgemini/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/capgemini/jobs/) |
+|  | Software engineer | Junior | 24.5k | 24.5k | 15 | [levels.fyi](https://www.levels.fyi/companies/capgemini/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 29.2k | 29.4k | 36 | [levels.fyi](https://www.levels.fyi/companies/capgemini/salaries/software-engineer/locations/spain) |  |
+|  | Product designer | All levels | — | 24.3k | — | [levels.fyi](https://www.levels.fyi/t/product-designer/locations/spain) |  |
+| [HPE](https://www.linkedin.com/company/hewlett-packard-enterprise) | Software engineer | Mid | 29.3k | 30.4k | 2 | [levels.fyi](https://www.levels.fyi/companies/hpe/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/hewlett-packard-enterprise/jobs/) |
+|  | Software engineer | Junior | 27.2k | 27.2k | 2 | [levels.fyi](https://www.levels.fyi/companies/hpe/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | **42.7k** | 44.7k | 13 | [levels.fyi](https://www.levels.fyi/companies/hpe/salaries/software-engineer/locations/spain) |  |
+|  | Data scientist | All levels | — | 66k | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) |  |
+|  | Product manager | All levels | — | 54.7k | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) |  |
+| [EF](https://www.linkedin.com/company/ef-education-first) | Software engineer | All levels | **42k** | 42k | 1 | [levels.fyi](https://www.levels.fyi/companies/ef-education-first/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=4856&location=Spain) |
+| [TransPerfect](https://www.linkedin.com/company/transperfect) | Product manager | All levels | 35.7k (28.7k–**41.9k**) | 35.7k (28.7k–41.9k) | — | [levels.fyi](https://www.levels.fyi/companies/transperfect/salaries/product-manager/locations/spain) | [open roles](https://www.linkedin.com/company/transperfect/jobs/) |
+| [Siemens](https://www.linkedin.com/company/siemens) | Software engineer | All levels | **41.6k** | 45.1k | 9 | [levels.fyi](https://www.levels.fyi/companies/siemens/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1043&location=Spain) |
+| [Analog Devices](https://www.linkedin.com/company/analog-devices) | Hardware engineer | Senior | **41.1k** | 47.2k | 3 | [levels.fyi](https://www.levels.fyi/companies/analog-devices/salaries/hardware-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/analog-devices/jobs/) |
+|  | Hardware engineer | Junior | 29.1k | 29.1k | 3 | [levels.fyi](https://www.levels.fyi/companies/analog-devices/salaries/hardware-engineer/locations/spain) |  |
+|  | Hardware engineer | All levels | 35.1k | 38.2k | 6 | [levels.fyi](https://www.levels.fyi/companies/analog-devices/salaries/hardware-engineer/locations/spain) |  |
+| [Ericsson](https://www.linkedin.com/company/ericsson) | Software engineer | All levels | **41.1k** | 45.2k | 9 | [levels.fyi](https://www.levels.fyi/companies/ericsson/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1060&location=Spain) |
+|  | Solution architect | All levels | — | 69.3k | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/madrid-metropolitan-area) |  |
+|  | Data scientist | All levels | — | 48.8k | — | [levels.fyi](https://www.levels.fyi/t/data-scientist/locations/spain) |  |
+| [Amadeus](https://www.linkedin.com/company/amadeus) | Software engineer | All levels | **40k** | 40k | 1 | [levels.fyi](https://www.levels.fyi/companies/amadeus/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/amadeus/jobs/) |
+|  | Product manager | All levels | — | 47.7k | — | [levels.fyi](https://www.levels.fyi/t/product-manager/locations/spain) |  |
+| [McKinsey](https://www.linkedin.com/company/mckinsey) | Data scientist | All levels | **38.7k** | 43.2k | 5 | [levels.fyi](https://www.levels.fyi/companies/mckinsey/salaries/data-scientist/locations/spain) | [open roles](https://www.linkedin.com/company/mckinsey/jobs/) |
+| [NTT DATA](https://www.linkedin.com/company/nttdata) | Software engineer | Senior | **37.8k** | 39k | 7 | [levels.fyi](https://www.levels.fyi/companies/ntt-data/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/nttdata/jobs/) |
+|  | Software engineer | Lead | 37.5k | 37.8k | 3 | [levels.fyi](https://www.levels.fyi/companies/ntt-data/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | Principal | 23.6k | 24.1k | 2 | [levels.fyi](https://www.levels.fyi/companies/ntt-data/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | Junior | 19.8k | 20.2k | 13 | [levels.fyi](https://www.levels.fyi/companies/ntt-data/salaries/software-engineer/locations/spain) |  |
+|  | Software engineer | All levels | 24.4k (19.5k–30k) | 24.4k (19.5k–30k) | 36 | [levels.fyi](https://www.levels.fyi/companies/ntt-data/salaries/software-engineer/locations/spain) |  |
+|  | Solution architect | All levels | — | 45.9k | — | [levels.fyi](https://www.levels.fyi/t/solution-architect/locations/spain) |  |
+|  | Security analyst | All levels | — | 44.8k | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) |  |
+|  | Information technologist | All levels | — | 22.1k | — | [levels.fyi](https://www.levels.fyi/t/information-technologist/locations/spain) |  |
+| [Barcelona Supercomputing Center](https://www.linkedin.com/company/barcelona-supercomputing-center) | Software engineer | All levels | 30.5k (28.6k–**37.7k**) | 30.5k (28.6k–37.7k) | — | [levels.fyi](https://www.levels.fyi/companies/barcelona-supercomputing-center/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/barcelona-supercomputing-center/jobs/) |
+|  | Hardware engineer | All levels | — | 30.2k | — | [levels.fyi](https://www.levels.fyi/t/hardware-engineer/locations/spain) |  |
+| [Indra](https://www.linkedin.com/company/indra) | Software engineer | All levels | 34.2k (30k–**37.4k**) | 34.2k (30k–37.4k) | — | [levels.fyi](https://www.levels.fyi/companies/indra/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/indra/jobs/) |
+|  | Hardware engineer | All levels | — | 28.4k | — | [levels.fyi](https://www.levels.fyi/t/hardware-engineer/locations/spain) |  |
+| [PayFit](https://www.linkedin.com/company/payfit) | Software engineer | All levels | **37.3k** | 37.3k | 1 | [levels.fyi](https://www.levels.fyi/companies/payfit/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=6436622&location=Spain) |
+| [Minsait](https://www.linkedin.com/company/minsait) | Software engineer | All levels | 30.3k (27.6k–**36.4k**) | 30.3k (27.6k–36.4k) | — | [levels.fyi](https://www.levels.fyi/companies/minsait/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/minsait/jobs/) |
+|  | Information technologist | All levels | — | 39.4k | — | [levels.fyi](https://www.levels.fyi/t/information-technologist/locations/spain) |  |
+|  | Business analyst | All levels | — | 26.8k | — | [levels.fyi](https://www.levels.fyi/t/business-analyst/locations/spain) |  |
+| [SDG Group](https://www.linkedin.com/company/sdg-group) | Software engineer | All levels | 28.2k (25.2k–**32.8k**) | 28.2k (25.2k–33.7k) | — | [levels.fyi](https://www.levels.fyi/companies/sdg-group/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/sdg-group/jobs/) |
+|  | Data analyst | All levels | — | 26k | — | [levels.fyi](https://www.levels.fyi/t/data-analyst/locations/spain) |  |
+| [Schneider Electric](https://www.linkedin.com/company/schneider-electric) | Software engineer | All levels | **30.6k** | 33.4k | 4 | [levels.fyi](https://www.levels.fyi/companies/schneider-electric/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2329&location=Spain) |
+| [Ernst and Young](https://www.linkedin.com/company/ernstandyoung) | Software engineer | All levels | **24.3k** | 24.3k | 4 | [levels.fyi](https://www.levels.fyi/companies/ernst-and-young/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/ernstandyoung/jobs/) |
+|  | Security analyst | All levels | — | 24.8k | — | [levels.fyi](https://www.levels.fyi/t/security-analyst/locations/spain) |  |
+
+## No pay on file
+
+| Company | Levels.fyi | Jobs |
+| --- | --- | --- |
+| [ABN AMRO Bank N.V.](https://www.linkedin.com/company/abn-amro) | [no Spain data](https://www.levels.fyi/companies/abn-amro/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1173&location=Spain) |
+| [Airbnb](https://www.linkedin.com/company/airbnb) | [no Spain data](https://www.levels.fyi/companies/airbnb/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=309694&location=Spain) |
+| [Alan](https://www.linkedin.com/company/avec-alan) | [no Spain data](https://www.levels.fyi/companies/alan/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=10424439&location=Spain) |
+| [Anduril Industries](https://www.linkedin.com/company/anduril) | [no Spain data](https://www.levels.fyi/companies/anduril-industries/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=18293159&location=Spain) |
+| [ASML](https://www.linkedin.com/company/asml) | [no Spain data](https://www.levels.fyi/companies/asml/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3894&location=Spain) |
+| [Atlassian](https://www.linkedin.com/company/atlassian) | [no Spain data](https://www.levels.fyi/companies/atlassian/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=22688&location=Spain) |
+| [Auro](https://www.linkedin.com/company/107716961) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=107716961&location=Spain) |
+| [Autodesk](https://www.linkedin.com/company/autodesk) | [no Spain data](https://www.levels.fyi/companies/autodesk/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1879&location=Spain) |
+| [Back Market](https://www.linkedin.com/company/back-market) | [no Spain data](https://www.levels.fyi/companies/back-market/salaries/software-engineer/locations/spain) (shows Germany pay) | [open roles](https://www.linkedin.com/jobs/search/?f_C=4793443&location=Spain) |
+| [Blizzard Entertainment](https://www.linkedin.com/company/blizzard-entertainment) | [no Spain data](https://www.levels.fyi/companies/blizzard-entertainment/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=5329&location=Spain) |
+| [Bloomberg](https://www.linkedin.com/company/bloomberg-lp) | [no Spain data](https://www.levels.fyi/companies/bloomberg/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2494&location=Spain) |
+| [BMW Group](https://www.linkedin.com/company/bmw-group) | [no Spain data](https://www.levels.fyi/companies/bmw-group/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2387&location=Spain) |
+| [Bolt](https://www.linkedin.com/company/bolt-com) | [no Spain data](https://www.levels.fyi/companies/bolt/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=35626123&location=Spain) |
+| [Booking.com](https://www.linkedin.com/company/booking.com) | [no Spain data](https://www.levels.fyi/companies/bookingcom/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=11348&location=Spain) |
+| [Bosch](https://www.linkedin.com/company/bosch) | [no Spain data](https://www.levels.fyi/companies/bosch-global/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2508619&location=Spain) |
+| [Carwow](https://www.linkedin.com/company/carwow) | [no Spain data](https://www.levels.fyi/companies/carwow/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1722873&location=Spain) |
+| [Catawiki](https://www.linkedin.com/company/catawiki) | [no Spain data](https://www.levels.fyi/companies/catawiki/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1314652&location=Spain) |
+| [Cleo](https://www.linkedin.com/company/cleo-ai) | [no Spain data](https://www.levels.fyi/companies/cleo/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=10280968&location=Spain) |
+| [ClickHouse](https://www.linkedin.com/company/clickhouseinc) | [no Spain data](https://www.levels.fyi/companies/clickhouse/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=80114151&location=Spain) |
+| [Cloudflare](https://www.linkedin.com/company/cloudflare) | [no Spain data](https://www.levels.fyi/companies/cloudflare/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=407222&location=Spain) |
+| [Cobee](https://www.linkedin.com/company/18826329) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=18826329&location=Spain) |
+| [Compound](https://www.linkedin.com/company/compoundfinance) | [no Spain data](https://www.levels.fyi/companies/compound/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=78383639%2C99465223&location=Spain) |
+| [Confluent, an IBM Company](https://www.linkedin.com/company/confluent) | [no Spain data](https://www.levels.fyi/companies/confluent/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=88873&location=Spain) |
+| [Creative Fabrica](https://www.linkedin.com/company/creative-fabrica) | [no Spain data](https://www.levels.fyi/companies/creative-fabrica/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=10854260&location=Spain) |
+| [CrowdStrike](https://www.linkedin.com/company/crowdstrike) | [no Spain data](https://www.levels.fyi/companies/crowdstrike/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2497653&location=Spain) |
+| [Crunch.io](https://www.linkedin.com/company/1065469) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=1065469&location=Spain) |
+| [Da Vinci](https://www.linkedin.com/company/da-vinci-trading) | [no Spain data](https://www.levels.fyi/companies/da-vinci-derivatives/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=15211263&location=Spain) |
+| [Databricks](https://www.linkedin.com/company/databricks) | [no Spain data](https://www.levels.fyi/companies/databricks/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3477522&location=Spain) |
+| [DeepL](https://www.linkedin.com/company/deepl) | [no Spain data](https://www.levels.fyi/companies/deepl/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=11520354&location=Spain) |
+| [DeepSeek AI](https://www.linkedin.com/company/deepseek-ai) | [no Spain data](https://www.levels.fyi/companies/deepseek/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=106112505&location=Spain) |
+| [DEGIRO](https://www.linkedin.com/company/degiro-b-v-) | [no Spain data](https://www.levels.fyi/companies/degiro/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2529574&location=Spain) |
+| [Deliveroo](https://www.linkedin.com/company/deliveroo) | [no Spain data](https://www.levels.fyi/companies/deliveroo/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2837535&location=Spain) |
+| [Desia](https://www.linkedin.com/company/101926060) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=101926060&location=Spain) |
+| [Disney Streaming](https://www.linkedin.com/company/the-walt-disney-company) | [no Spain data](https://www.levels.fyi/companies/disney/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=11826960&location=Spain) |
+| [Docker, Inc](https://www.linkedin.com/company/docker) | [no Spain data](https://www.levels.fyi/companies/docker/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1301808&location=Spain) |
+| [eBay](https://www.linkedin.com/company/ebay) | [no Spain data](https://www.levels.fyi/companies/ebay/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1481&location=Spain) |
+| [Enverus](https://www.linkedin.com/company/enverus-energy) | [no Spain data](https://www.levels.fyi/companies/enverus/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=40801353&location=Spain) |
+| [Etsy](https://www.linkedin.com/company/etsy) | [no Spain data](https://www.levels.fyi/companies/etsy/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=67849&location=Spain) |
+| [Expleo Group](https://www.linkedin.com/company/expleo-group) | [no Spain data](https://www.levels.fyi/companies/expleo-group/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=26684491&location=Spain) |
+| [Feedzai](https://www.linkedin.com/company/feedzai) | [no Spain data](https://www.levels.fyi/companies/feedzai/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=869560&location=Spain) |
+| [Flexport](https://www.linkedin.com/company/flexport) | [no Spain data](https://www.levels.fyi/companies/flexport/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3131483&location=Spain) |
+| [Flow Traders](https://www.linkedin.com/company/flow-traders) | [no Spain data](https://www.levels.fyi/companies/flow-traders/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=63592&location=Spain) |
+| [GitLab](https://www.linkedin.com/company/gitlab-com) | [no Spain data](https://www.levels.fyi/companies/gitlab/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=5101804&location=Spain) |
+| [HashiCorp](https://www.linkedin.com/company/hashicorp) | [no Spain data](https://www.levels.fyi/companies/hashicorp/salaries/software-engineer/locations/spain) (shows United States pay) | [open roles](https://www.linkedin.com/jobs/search/?f_C=2830763&location=Spain) |
+| [Helsing](https://www.linkedin.com/company/helsing) | [no Spain data](https://www.levels.fyi/companies/helsing/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=71719093&location=Spain) |
+| [IFS](https://www.linkedin.com/company/ifs) | [no Spain data](https://www.levels.fyi/companies/ifs/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=164301&location=Spain) |
+| [IMC Trading](https://www.linkedin.com/company/imc-trading) | [no Spain data](https://www.levels.fyi/companies/imc/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=200030&location=Spain) |
+| [JetBrains](https://www.linkedin.com/company/jetbrains) | [no Spain data](https://www.levels.fyi/companies/jetbrains/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=12515&location=Spain) |
+| [Johnson & Johnson](https://www.linkedin.com/company/johnson-&-johnson) | [no Spain data](https://www.levels.fyi/companies/johnson-and-johnson/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1207&location=Spain) |
+| [Just Eat Takeaway.com](https://www.linkedin.com/company/just-eat-group) | [no Spain data](https://www.levels.fyi/companies/just-eat/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=103531&location=Spain) |
+| [Kinaxis](https://www.linkedin.com/company/kinaxis) | [no Spain data](https://www.levels.fyi/companies/kinaxis/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=14051&location=Spain) |
+| [Kraken](https://www.linkedin.com/company/krakenfx) | [no Spain data](https://www.levels.fyi/companies/kraken/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3787845&location=Spain) |
+| [Ledgy](https://www.linkedin.com/company/18347648) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=18347648&location=Spain) |
+| [Lodgify](https://www.linkedin.com/company/3151385) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=3151385&location=Spain) |
+| [Lucid Motors](https://www.linkedin.com/company/lucidmotors) | [no Spain data](https://www.levels.fyi/companies/lucid-motors/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1684122&location=Spain) |
+| [Lucid Software](https://www.linkedin.com/company/lucidsoftware) | [no Spain data](https://www.levels.fyi/companies/lucid/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1214453&location=Spain) |
+| [Mastercard](https://www.linkedin.com/company/mastercard) | [no Spain data](https://www.levels.fyi/companies/mastercard/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3015&location=Spain) |
+| [Meshcapade](https://www.linkedin.com/company/18852605) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=18852605&location=Spain) |
+| [Miro](https://www.linkedin.com/company/mirohq) | [no Spain data](https://www.levels.fyi/companies/miro/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=19029173&location=Spain) |
+| [Mistral](https://www.linkedin.com/company/mistralai) | [no Spain data](https://www.levels.fyi/companies/mistral-ai/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=94273421&location=Spain) |
+| [Mozilla](https://www.linkedin.com/company/mozilla-corporation) | [no Spain data](https://www.levels.fyi/companies/mozilla/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=13948&location=Spain) |
+| [MyInvestor](https://www.linkedin.com/company/11064675) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=11064675&location=Spain) |
+| [NDA](https://www.linkedin.com/company/nda-p) | [no Spain data](https://www.levels.fyi/companies/nda/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=77173985&location=Spain) |
+| [Netflix](https://www.linkedin.com/company/netflix) | [no Spain data](https://www.levels.fyi/companies/netflix/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=165158&location=Spain) |
+| [Netlight](https://www.linkedin.com/company/netlight-consulting) | [no Spain data](https://www.levels.fyi/companies/netlight/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=36435&location=Spain) |
+| [NVIDIA](https://www.linkedin.com/company/nvidia) | [no Spain data](https://www.levels.fyi/companies/nvidia/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3608&location=Spain) |
+| [OLX](https://www.linkedin.com/company/prop-trends) | [no Spain data](https://www.levels.fyi/companies/olx-group/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=167557&location=Spain) |
+| [OpenAI](https://www.linkedin.com/company/openai) | [no Spain data](https://www.levels.fyi/companies/openai/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=11130470&location=Spain) |
+| [Optiver](https://www.linkedin.com/company/optiver) | [no Spain data](https://www.levels.fyi/companies/optiver/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=13216&location=Spain) |
+| [Oxide Computer Company](https://www.linkedin.com/company/oxidecomputer) | [no Spain data](https://www.levels.fyi/companies/oxide-computer-company/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=52179120&location=Spain) |
+| [Palantir Technologies](https://www.linkedin.com/company/palantir) | [no Spain data](https://www.levels.fyi/companies/palantir/salaries/software-engineer/locations/spain) (shows United States pay) | [open roles](https://www.linkedin.com/jobs/search/?f_C=20708&location=Spain) |
+| [PayPal](https://www.linkedin.com/company/paypal) | [no Spain data](https://www.levels.fyi/companies/paypal/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1482&location=Spain) |
+| [Perplexity](https://www.linkedin.com/company/perplexity-ai) | [no Spain data](https://www.levels.fyi/companies/perplexity-ai/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=88007673&location=Spain) |
+| [Porsche AG](https://www.linkedin.com/company/3823740) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=3823740&location=Spain) |
+| [Rabobank](https://www.linkedin.com/company/rabobank) | [no Spain data](https://www.levels.fyi/companies/rabobank/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1970&location=Spain) |
+| [Radix](https://www.linkedin.com/company/bi-radix) | [no Spain data](https://www.levels.fyi/companies/radix/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=906658&location=Spain) |
+| [Reddit, Inc.](https://www.linkedin.com/company/reddit-com) | [no Spain data](https://www.levels.fyi/companies/reddit/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=150573&location=Spain) |
+| [Redslim](https://www.linkedin.com/company/3193403) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=3193403&location=Spain) |
+| [Rippling](https://www.linkedin.com/company/rippling) | [no Spain data](https://www.levels.fyi/companies/rippling/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=17988315&location=Spain) |
+| [Salesforce](https://www.linkedin.com/company/salesforce) | [no Spain data](https://www.levels.fyi/companies/salesforce/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3185&location=Spain) |
+| [SeQura](https://www.linkedin.com/company/5043989) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=5043989&location=Spain) |
+| [Slack](https://www.linkedin.com/company/tiny-spec-inc) | [no Spain data](https://www.levels.fyi/companies/slack/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1612748&location=Spain) |
+| [Snap Inc.](https://www.linkedin.com/company/snap-inc-co) | [no Spain data](https://www.levels.fyi/companies/snap/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=15191764&location=Spain) |
+| [Snowflake](https://www.linkedin.com/company/snowflake-computing) | [no Spain data](https://www.levels.fyi/companies/snowflake/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3653845&location=Spain) |
+| [SparkPost, a MessageBird company](https://www.linkedin.com/company/birdapp) | [no Spain data](https://www.levels.fyi/companies/bird/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=9486856&location=Spain) |
+| [SpliceBio](https://www.linkedin.com/company/69852936) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=69852936&location=Spain) |
+| [Swish Analytics](https://www.linkedin.com/company/swish-analytics) | [no Spain data](https://www.levels.fyi/companies/swish-analytics/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=3886282&location=Spain) |
+| [TheFork](https://www.linkedin.com/company/the-fork) | [no Spain data](https://www.levels.fyi/companies/thefork/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=10001198&location=Spain) |
+| [Threecolts](https://www.linkedin.com/company/71701124) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=71701124&location=Spain) |
+| [Tower Research Capital](https://www.linkedin.com/company/tower-research-capital) | [no Spain data](https://www.levels.fyi/companies/tower-research-capital/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=36865&location=Spain) |
+| [Trading 212](https://www.linkedin.com/company/18161113) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=18161113&location=Spain) |
+| [TripActions](https://www.linkedin.com/company/tripactions) | [no Spain data](https://www.levels.fyi/companies/tripactions/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=6442095&location=Spain) |
+| [Tripadvisor](https://www.linkedin.com/company/tripadvisor) | [no Spain data](https://www.levels.fyi/companies/tripadvisor/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=15027&location=Spain) |
+| [Uber](https://www.linkedin.com/company/uber-com) | [no Spain data](https://www.levels.fyi/companies/uber/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=1815218&location=Spain) |
+| [Uptail](https://www.linkedin.com/company/104609501) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=104609501&location=Spain) |
+| [Valve corporation](https://www.linkedin.com/company/valve-corporation) | [no Spain data](https://www.levels.fyi/companies/valve/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=13922&location=Spain) |
+| [Vercel](https://www.linkedin.com/company/vercel) | [no Spain data](https://www.levels.fyi/companies/vercel/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=16181286&location=Spain) |
+| [Volkswagen Digital:Hub](https://www.linkedin.com/company/volkswagen-ag) | [no Spain data](https://www.levels.fyi/companies/volkswagen/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/jobs/search/?f_C=94799807&location=Spain) |
+| [Vorwerk Group](https://www.linkedin.com/company/784322) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=784322&location=Spain) |
+| [Worldpay](https://www.linkedin.com/company/260387) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=260387&location=Spain) |
+| [Xoople](https://www.linkedin.com/company/95972483) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=95972483&location=Spain) |
+| [Zartis](https://www.linkedin.com/company/2274396) | not on Levels.fyi | [open roles](https://www.linkedin.com/jobs/search/?f_C=2274396&location=Spain) |
 <!-- END:COMPANIES -->
-
-## How to read this
-
-Every company hiring engineers in Spain that we know of is on the list. Most do not have pay on file yet; those rows are there so the name and the LinkedIn page are, and so anyone can claim one and fill it in.
-
-Figures are **gross annual base salary in euros** where Levels.fyi publishes one, and total compensation where it does not. Click a figure to see which, along with the percentiles behind it.
-
-The figure is what a **senior** engineer earns, and how well we know it varies:
-
-- **unmarked** — a measured senior rung from a company that publishes a level-by-level ladder for Spain. Trust these.
-- **`*`** — the upper quartile of every engineer at that company in Spain. An estimate of senior pay, not a measurement of it.
-- **`†`** — one person's reported salary. Not a band. A single submission is a data point with a decimal place, and one unusual offer will move it.
-
-**Every figure is Spain only.** Levels.fyi serves another country's salaries when it holds no Spanish submissions for a company, so a figure is recorded only once the page confirms it is reporting Spain. Companies whose data turned out to be German, Dutch or American are listed with no figure rather than a foreign one.
-
-Whether the money reaches you as a Spanish payroll salary, through an employer of record, or as a contractor rate changes what actually lands in your account. [METHODOLOGY.md](METHODOLOGY.md) explains why that matters.
-
-## What a row is worth
-
-The **Source** column is the point of this list. Two values mean somebody stands behind the number:
-
-- **known personally** — someone working in Spain said what they earn.
-- **offer received** — an offer actually made to a real person.
-
-Those sort to the top of the table, ahead of every crowdsourced figure however large. Everything else is aggregated from strangers on the internet and is only as good as their honesty and their memory. **Data points** is how many salaries a figure rests on; a `1` there is one person, not a market rate.
-
-The goal is for every company on this list to have a first-hand figure. Until one does, its crowdsourced number is a placeholder that says roughly where to start looking.
-
-### Recording a first-hand salary
-
-Add it to a CSV and import it. `source` is `community` when someone told you, `offer-letter` when it was offered to you:
-
-```csv
-name,role,level,base_p50,contract,sample_size,source,source_date
-Example Company,software-engineer,senior,78000,spanish-payroll,1,community,2026-08-31
-```
-
-`sample_size` is how many people that figure represents, and it fills the **Data points** column. Leave it out and the row shows a dash.
-
-```bash
-python3 scripts/import_csv.py my-entries.csv
-python3 scripts/validate.py && python3 scripts/build.py
-```
-
-Never record anything that identifies the person: no names, no team, no joining date. A band is a number, not a colleague.
-
-## Adding a company
-
-Send a pull request adding or editing one file in [`data/companies/`](data/companies/), or open an [issue](../../issues/new/choose) if you would rather not write YAML. Both are fine, and you can contribute anonymously.
-
-The table above is generated. Do not edit it by hand; edit the data and run the build:
-
-```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python3 scripts/validate.py && python3 scripts/build.py
-```
-
-CI runs both on every pull request and will tell you if the table is out of sync with the data.
-
-Full instructions are in [CONTRIBUTING.md](CONTRIBUTING.md). The rules about sources, levels and what we will not publish are in [METHODOLOGY.md](METHODOLOGY.md).
-
-There is also a backlog of companies that have not been researched yet in [`data/backlog.csv`](data/backlog.csv). Claiming one of those is the easiest way to help.
 
 ## Data
 
-The table is the short version. Every band, level, source and date is in the exports, rebuilt on every change:
+Every figure above comes from [`companies.csv`](companies.csv), one row per salary figure, which also records the date and notes behind each one. The tables are generated from it: edit the CSV, then rebuild.
 
-- [`exports/companies.csv`](exports/companies.csv) — one row per company, role and level
-- [`exports/companies.json`](exports/companies.json) — the full records
+```bash
+python3 scripts/validate.py && python3 scripts/build.py
+```
 
-### Attribution
-
-Compensation bands marked `levels.fyi` are read from [Levels.fyi](https://www.levels.fyi)'s public pages and stored as aggregate percentiles or single published medians, never as their individual submission rows. Every figure links back to the page it was read from.
-
-> Data source: Levels.fyi (https://www.levels.fyi)
-
-Their data is crowdsourced from people who submit their own compensation, and its reuse is governed by the [Levels.fyi Data License](https://www.levels.fyi/offerings/data/).
+Send a pull request with the change, or open an [issue](../../issues/new/choose) if you would rather not touch the CSV. [CONTRIBUTING.md](CONTRIBUTING.md) has the details and [METHODOLOGY.md](METHODOLOGY.md) the rules about sources and levels.
 
 ## Licence
 
-Code is [MIT](LICENSE). The dataset is [CC BY-SA 4.0](LICENSE-DATA): use it, credit the repository, keep it open.
+Code is [MIT](LICENSE), data is [CC BY-SA 4.0](LICENSE-DATA). Compensation is read from [Levels.fyi](https://www.levels.fyi)'s public pages and reused under their [Data License](https://www.levels.fyi/offerings/data/).
 
-## Caveats
+> Data source: Levels.fyi (https://www.levels.fyi)
 
-These are ranges reported by other people, not offers anyone is guaranteed. Sample sizes are small, sources disagree, and a band from two years ago may be meaningless today. Check the date on levels.fyi before using any of this in a negotiation.
+These are ranges other people reported, not offers anyone is guaranteed.

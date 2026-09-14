@@ -2,7 +2,7 @@
 
 Two ways in. Pick whichever you're comfortable with.
 
-## 1. Open an issue (no YAML)
+## 1. Open an issue (no CSV)
 
 Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or update a salary band**](../../issues/new?template=update-band.yml). Fill the form, we turn it into a PR. This is the right route if you're sharing your own numbers.
 
@@ -10,98 +10,94 @@ Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or 
 
 ## 2. Open a pull request
 
+All the data is one file, [`companies.csv`](companies.csv): one row per salary figure, with the company's own columns repeated on each of its rows. A company with no figure has a single row with the salary columns empty. The README tables are generated from it.
+
 ```bash
 git clone https://github.com/pugarte7/spanish-top-tech-companies
 cd spanish-top-tech-companies
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
 ```
 
-**New company:**
+Nothing to install. The scripts use plain Python 3.9 or newer.
+
+**A new salary for a company already listed:** copy one of its rows and change `role`, `level`, the figures, `source`, `source_url`, `date` and `notes`. Someone telling you their own salary is `source` `community`; an offer you received is `offer-letter`. Neither needs a URL.
+
+**A new company:** add a line at the end with its name and LinkedIn company id, `Acme,1234567`, and let the scripts fill in the rest:
 
 ```bash
-python3 scripts/new_company.py "Company Name" 1234567   # name + LinkedIn id
+python3 scripts/resolve_slugs.py                 # finds its Levels.fyi page
+python3 scripts/fetch_spain.py --company acme    # reads its Spanish pay
 ```
 
-That writes `data/companies/company-name.yml` with `CHANGEME` everywhere. Replace all of them. [`_template.yml`](data/companies/_template.yml) documents every field.
+The id is the `f_C` number in a LinkedIn job search filtered to that company. [`scripts/resolve_linkedin_ids.js`](scripts/resolve_linkedin_ids.js) turns a whole search's Company filter into these lines at once.
 
-**Existing company:** edit its file directly. One company per PR keeps reviews quick.
+### Columns
 
-**Bulk import** from a spreadsheet:
+| Column | What goes in it |
+| --- | --- |
+| `company` | The name shown in the README. Every row of a company uses the same spelling. |
+| `linkedin_ids` | LinkedIn company ids, `\|`-separated when an employer has several (Amazon and AWS). |
+| `linkedin_url` | The company's LinkedIn page, if it has a vanity URL. |
+| `levels_slug`, `levels_status` | Its Levels.fyi page, and `resolved`, `review` or `unmatched` (not on Levels.fyi). Written by `resolve_slugs.py`. |
+| `role`, `level` | A role slug from [METHODOLOGY.md](METHODOLOGY.md#canonical-role-slugs) and one of the levels listed there, or `all`. |
+| `base_min`, `base_p50`, `base_max` | Gross annual base salary in euros. A range is the 25th to 75th percentile, or the range a job ad published. |
+| `total_min`, `total_p50`, `total_max` | Total compensation, same shape. |
+| `sample_size` | How many salaries the figure is built from, if known. |
+| `source`, `source_url`, `date` | Where the figure came from and when it was checked, `YYYY-MM-DD`. |
+| `notes` | Anything a reader of the CSV needs to trust the figure. |
+| `spain_check_date`, `spain_check_roles`, `spain_check_served` | Written by `fetch_spain.py` when Levels.fyi had nothing for Spain. See [METHODOLOGY.md](METHODOLOGY.md#recording-that-there-was-nothing-to-find). |
+| `website`, `careers_url`, `hq_city`, `hq_country`, `employees`, `sector`, `year_founded`, `about` | Company details from Levels.fyi. Written by `fetch_company.py`. |
 
-```bash
-python3 scripts/import_csv.py my-export.csv
-```
-
-Columns are documented at the top of [`scripts/import_csv.py`](scripts/import_csv.py). It merges into existing files rather than overwriting them.
+### Fetching from Levels.fyi
 
 **Spain-scoped pay, per company** (no key, but must run from Spain):
 
 ```bash
-python3 scripts/fetch_spain.py --delay 3.0     # every resolved backlog slug, ~14 min
+python3 scripts/fetch_spain.py --delay 3.0     # every resolved company, ~14 min
 python3 scripts/fetch_spain.py --company glovo
 python3 scripts/fetch_spain.py --audit         # report only, writes nothing
 ```
 
-This is the main route, and the only one that gives base salary per company. It reads `/companies/<slug>/salaries/software-engineer/locations/spain` and writes a band only when the page says the figures it served really are Spanish — see [METHODOLOGY.md](METHODOLOGY.md#a-band-must-prove-it-is-spanish) for why that check is not optional. It also deletes any band already on file whose source URL names no location.
+This is the main route, and the only one that gives base salary per company. It reads `/companies/<slug>/salaries/software-engineer/locations/spain` and writes a figure only when the page says the figures it served really are Spanish. See [METHODOLOGY.md](METHODOLOGY.md#a-band-must-prove-it-is-spanish) for why that check is not optional. It also deletes any figure already on file whose source URL names no location.
 
 Keep `--delay` at 2.5s or more. Levels.fyi answers 403, 405, 429 and 503 when it decides you are a bot, and all four mean *slow down*, not *no such company*.
 
-**From Levels.fyi's public pages** (no key needed):
+**Country job-family pages** (no key):
 
 ```bash
 python3 scripts/fetch_levels_public.py            # all job families
 python3 scripts/fetch_levels_public.py --dry-run  # just show the URLs
 ```
 
-This reads the markdown routes Levels.fyi publishes for agents and asks attribution for. It gives Spain-wide benchmarks and top-paying-company medians, at level `all`, as total compensation. It cannot give per-level ladders, base-salary splits or sample sizes.
+These give each job family's top-paying companies in Spain, one total compensation median per company across all levels. Mostly useful for finding companies that are not on the list yet. It never overwrites a figure from a company's own Spain page or a first-hand one.
 
-Those pages are served from a 12-hour CDN cache and return nothing when cold, so any single run picks up only part of the data. Running it repeatedly over a few days accumulates coverage; it never overwrites a good band with an empty one.
-
-**Company details** — website, HQ, headcount, sector, vesting (no key needed):
+**Company details**: website, HQ, headcount, sector, vesting (no key):
 
 ```bash
-python3 scripts/fetch_company.py --all          # every company already on file
+python3 scripts/fetch_company.py --all
 python3 scripts/fetch_company.py --company glovo
 ```
 
-Metadata only, deliberately. The same page carries a per-level pay ladder, and that ladder is **not** filtered to Spain: it is the company's global data shown in whatever currency your own IP implies, so `EUR` tells you nothing about where the money was earned. Reading it as Spanish once put 682 foreign bands in here, and a later branch put 205 more back. The script no longer writes salary of any kind — [`fetch_spain.py`](scripts/fetch_spain.py) above is the route for that.
+Details only, deliberately. The same page carries a per-level pay ladder, and that ladder is **not** filtered to Spain: it is the company's global data shown in whatever currency your own IP implies, so `EUR` tells you nothing about where the money was earned. Reading it as Spanish once put 682 foreign bands in here, and a later branch put 205 more back.
 
-The details themselves come from Levels.fyi, which gets some of them wrong (it lists Glovo in Milan and BBVA in Birmingham) — worth checking against reality before trusting. It never overwrites a field a human has already filled in.
+The details themselves come from Levels.fyi, which gets some of them wrong (it lists Glovo in Milan and BBVA in Birmingham), so check them against reality before trusting. It never overwrites a field a human has already filled in.
 
-**From the Levels.fyi API** (needs a key, request one at [levels.fyi/api-access](https://www.levels.fyi/api-access/)):
-
-```bash
-export LEVELS_FYI_API_KEY=...
-python3 scripts/fetch_levels.py --company Cabify --role data-engineer
-python3 scripts/fetch_levels.py --dry-run --company Cabify      # see the calls, no key needed
-```
-
-It is meant to pull per-level percentiles filtered to Spain, map them onto our level ladder and merge them into the company file — which is the one thing the public pages cannot give. Nobody has run it against a real key yet, so treat it as untested and check what it writes. Read [METHODOLOGY.md](METHODOLOGY.md#sources) first: the data is licensed, and a key is not permission to republish.
-
-**Before you push:**
+### Before you push
 
 ```bash
 python3 tests/test_pipeline.py   # regressions we have actually shipped
 python3 scripts/validate.py      # must pass
-python3 scripts/build.py         # regenerates README tables + exports/
+python3 scripts/build.py         # regenerates the README and tidies companies.csv
 ```
 
-Commit the regenerated `README.md` and `exports/` along with your data change. CI runs both and will tell you if they're out of sync.
+Commit the regenerated `README.md` and `companies.csv` along with your change. `build.py` rewrites the CSV in a fixed order, so the diff shows only what changed. CI runs all three and fails if either file is out of date.
 
 ## What makes a submission usable
 
 - **A source.** A link, or `offer-letter` / `community` if you're reporting your own. No source, no merge.
-- **A date.** `last_verified` is when you actually checked, not today's date by reflex.
-- **The median, or a real range.** "Around 70k" is a `p50`. A range you saw in a job ad is `min`/`max`.
+- **A date.** `date` is when you actually checked, not today's date by reflex.
+- **The median, or a real range.** "Around 70k" is a `base_p50`. A range you saw in a job ad is `base_min` and `base_max`.
 - **No people in it.** No names, no teams, no identifying detail. See [METHODOLOGY.md](METHODOLOGY.md#sources).
-- **Base salary, before tax, in euros.** Bonus and equity have their own fields. If your source quotes total compensation (levels.fyi does), put it in `total_comp` and leave `base` for base.
-
-## Working through the backlog
-
-[`data/backlog.csv`](data/backlog.csv) holds LinkedIn company IDs that haven't been researched. To claim some, open an issue saying which rows you're taking so two people don't do the same work.
-
-The IDs need resolving to names first — [`scripts/resolve_linkedin_ids.js`](scripts/resolve_linkedin_ids.js) explains how, since LinkedIn requires a logged-in session.
+- **Base salary, before tax, in euros.** If your source quotes total compensation (levels.fyi does), put it in the `total_` columns and leave the `base_` ones for base. Contract type, bonus and equity go in `notes`.
 
 ## Removals
 

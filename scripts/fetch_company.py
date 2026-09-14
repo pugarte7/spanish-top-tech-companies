@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Fill in company details from Levels.fyi company pages. METADATA ONLY.
 
-    python3 scripts/fetch_company.py --all            # every company on file
+    python3 scripts/fetch_company.py --all            # every company with a Levels.fyi slug
     python3 scripts/fetch_company.py --company glovo
-    python3 scripts/fetch_company.py --from-backlog   # resolved names in backlog.csv
 
 Each /companies/<slug>/salaries page embeds the company's own record: website,
 careers page, LinkedIn, headquarters, headcount, industry, founding year and
@@ -17,14 +16,13 @@ reader is in the eurozone. Booking.com's page reads EUR while its figures are
 Dutch; Adidas reads EUR over United States figures; Revolut over British ones.
 Trusting that once put 682 foreign salary bands into this repository.
 
-Spain-scoped compensation comes from the job-family pages instead, which name
-the country in the URL - see scripts/fetch_levels_public.py. Per-level Spanish
-ladders need the official API: scripts/fetch_levels.py.
+Spain-scoped compensation comes from pages that name the country in the URL
+instead - scripts/fetch_spain.py per company, scripts/fetch_levels_public.py
+for the country job-family pages.
 """
 from __future__ import annotations
 
 import argparse
-import csv
 import gzip
 import json
 import re
@@ -34,9 +32,6 @@ import urllib.error
 import urllib.request
 
 import lib
-import yaml
-from fetch_levels_public import TECH_FAMILIES
-from new_company import SKELETON_ORDER, slugify
 
 BASE = "https://www.levels.fyi"
 ATTRIBUTION = "Data source: Levels.fyi (https://www.levels.fyi)"
@@ -57,12 +52,6 @@ def check_blocked(status: int, body: str | None) -> None:
             "--delay. For bulk access, use the official API: "
             "https://www.levels.fyi/api-access/"
         )
-
-
-# Their ladders are generic (L1..L5). Map by position and keep the original in
-# notes so a wrong guess stays visible.
-LADDER = ["junior", "mid", "senior", "staff", "principal"]
-AGGREGATE_LEVELS = {"median", "common-range-average"}
 
 
 def get(url: str, delay: float) -> str | None:
@@ -109,59 +98,54 @@ def metadata(record: dict) -> dict:
         out["careers_url"] = record["career_page"]
     if record.get("linkedin"):
         out["linkedin_url"] = f"https://www.linkedin.com/{record['linkedin'].strip('/')}"
-    country = record.get("country") or {}
-    if record.get("hq_city") or country.get("codeIso2"):
-        out["hq"] = {k: v for k, v in
-                     (("city", record.get("hq_city")), ("country", country.get("codeIso2"))) if v}
+    if record.get("hq_city"):
+        out["hq_city"] = record["hq_city"]
+    if (record.get("country") or {}).get("codeIso2"):
+        out["hq_country"] = record["country"]["codeIso2"]
     if record.get("employee_count_range"):
         out["employees"] = record["employee_count_range"]
-    if record.get("year_founded"):
-        out["year_founded"] = record["year_founded"]
-    tags = [slugify(t) for t in (record.get("tags") or []) if t]
+    if str(record.get("year_founded") or "").isdigit():
+        out["year_founded"] = int(record["year_founded"])
+    tags = [lib.slugify(t) for t in (record.get("tags") or []) if t]
     if tags:
         out["sector"] = tags[:4]
     elif record.get("industry"):
-        out["sector"] = [slugify(record["industry"])]
+        out["sector"] = [lib.slugify(record["industry"])]
     return out
 
 
-def merge(slug: str, props: dict, today: str) -> int:
+def merge(slug: str, props: dict) -> int | None:
+    """Fill in whatever is still blank. None when the slug is not on file."""
     record = props.get("company") or {}
-    url = f"{BASE}/companies/{slug}/salaries"
-    path = lib.COMPANIES_DIR / f"{slug}.yml"
-    company = yaml.safe_load(path.read_text(encoding="utf-8")) if path.exists() else {}
-    company = company or {"slug": slug, "name": record.get("name") or slug}
-    company.setdefault("slug", slug)
-    company.setdefault("name", record.get("name") or slug)
+    companies = lib.load_companies()
+    company = lib.by_slug(companies, slug)
+    if company is None:
+        return None
 
     filled = 0
     for key, value in metadata(record).items():
         if not company.get(key):          # never clobber something a human set
             company[key] = value
             filled += 1
-    if record.get("vesting_type") and not company.get("notes"):
+    if record.get("vesting_type") and not company.get("about"):
         detail = record.get("vesting_schedule")
-        company["notes"] = (
+        company["about"] = (
             f"{record.get('short_description') or ''} "
             f"Equity: {record['vesting_type']}"
             f"{f' vesting {detail}' if detail else ''}."
         ).strip()
+        filled += 1
 
-    rest = {k: v for k, v in company.items() if k not in SKELETON_ORDER}
-    ordered = {k: company[k] for k in SKELETON_ORDER if k in company}
-    ordered.update(rest)
-    path.write_text(
-        yaml.safe_dump(ordered, sort_keys=False, allow_unicode=True, width=100), encoding="utf-8")
+    if filled:
+        lib.save_companies(companies)
     return filled
 
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--company", action="append", default=[], help="Levels.fyi slug. Repeatable.")
-    parser.add_argument("--all", action="store_true", help="Every company already in data/companies/.")
-    parser.add_argument("--from-backlog", action="store_true", help="Resolved names in data/backlog.csv.")
-    parser.add_argument("--include-review", action="store_true",
-                        help="Also fetch backlog rows whose slug match is unconfirmed.")
+    parser.add_argument("--all", action="store_true",
+                        help="Every company in companies.csv with a resolved Levels.fyi slug.")
     parser.add_argument("--delay", type=float, default=3.0,
                         help="Seconds between pages. These are 400KB each; be generous.")
     parser.add_argument("--dry-run", action="store_true")
@@ -169,25 +153,17 @@ def main(argv: list[str]) -> int:
 
     slugs = list(args.company)
     if args.all:
-        slugs += [p.stem for p in sorted(lib.COMPANIES_DIR.glob("*.yml"))
-                  if not p.name.startswith("_")]
-    if args.from_backlog:
-        path = lib.ROOT / "data" / "backlog.csv"
-        if path.exists():
-            with path.open(encoding="utf-8") as fh:
-                wanted = {"resolved"} | ({"review"} if args.include_review else set())
-                slugs += [row["levels_slug"] for row in csv.DictReader(fh)
-                          if row.get("levels_slug") and row.get("status") in wanted]
+        slugs += sorted(c["levels_slug"] for c in lib.load_companies()
+                        if c.get("levels_slug") and c.get("levels_status") == "resolved")
     slugs = [s for s in dict.fromkeys(slugs) if s]
     if not slugs:
-        parser.error("give --company SLUG, --all, or --from-backlog")
+        parser.error("give --company SLUG or --all")
 
     if args.dry_run:
         for slug in slugs:
             print(f"GET {BASE}/companies/{slug}/salaries")
         return 0
 
-    today = lib.today_utc().isoformat()
     ok = missing = 0
     consecutive_missing = 0
     total_filled = 0
@@ -205,7 +181,10 @@ def main(argv: list[str]) -> int:
             continue
         consecutive_missing = 0
 
-        filled = merge(slug, props, today)
+        filled = merge(slug, props)
+        if filled is None:
+            print(f"  {slug}: not in {lib.DATA.name}, add the company first")
+            continue
         total_filled += filled
         ok += 1
         print(f"  {slug}: {filled} fields")

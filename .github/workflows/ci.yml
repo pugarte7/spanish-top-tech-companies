@@ -27,23 +27,20 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: pip
-
-      - run: pip install -r requirements.txt
 
       - name: Pipeline regression tests
         run: python3 tests/test_pipeline.py
 
-      - name: Validate every company file
+      - name: Validate companies.csv
         run: python3 scripts/validate.py | tee validate.log
 
-      - name: Rebuild README and exports
+      - name: Rebuild README and normalise companies.csv
         run: python3 scripts/build.py
 
       - name: Fail if generated files are out of date
         run: |
-          if ! git diff --exit-code -- README.md exports/; then
-            echo "::error::README.md or exports/ are stale. Run 'python3 scripts/build.py' and commit the result."
+          if ! git diff --exit-code -- README.md companies.csv; then
+            echo "::error::README.md or companies.csv are stale. Run 'python3 scripts/build.py' and commit the result."
             exit 1
           fi
 

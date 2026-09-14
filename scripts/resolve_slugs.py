@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""Match company names in data/backlog.csv to Levels.fyi company slugs.
+"""Match company names in companies.csv to Levels.fyi company slugs.
 
     python3 scripts/resolve_slugs.py
 
 Levels.fyi's company search is behind the paid API and its /companies directory
 is bot-protected, so this guesses slugs from the name and checks each with a
 HEAD request (a few hundred bytes, versus 400KB for the page itself). The first
-candidate that answers 200 wins and is written back to backlog.csv.
+candidate that answers 200 wins and is written back to companies.csv.
+
+A company that turns out to be one already on file under another name - AWS is
+Amazon - is folded into it, LinkedIn ids and all, so the list keeps one row per
+employer.
 """
 from __future__ import annotations
 
 import argparse
-import csv
 import difflib
 import gzip
 import json
@@ -30,8 +33,8 @@ class Blocked(RuntimeError):
 
 
 # A throttled probe must never be mistaken for "this company is not on
-# Levels.fyi": that verdict gets written to backlog.csv and the row is then
-# skipped by every later run. 404 means absent; these mean "ask again later".
+# Levels.fyi": that verdict gets written to companies.csv and the company is
+# then skipped by every later run. 404 means absent; these mean "ask again later".
 THROTTLE_CODES = frozenset({403, 405, 429, 503})
 
 
@@ -251,6 +254,8 @@ def verify(slug: str, name: str, delay: float) -> tuple[str, str, int]:
         # for a coincidence. A human decides.
         return "review", theirs, rows
     return "no", theirs, rows
+
+
 def exists(slug: str, delay: float) -> bool:
     request = urllib.request.Request(
         f"{BASE}/{slug}/salaries", method="HEAD",
@@ -269,37 +274,41 @@ def exists(slug: str, delay: float) -> bool:
         time.sleep(delay)
 
 
+def fold(company: dict, into: dict) -> None:
+    """Merge a company into the one already filed under the same slug."""
+    into["linkedin_ids"] += [i for i in company["linkedin_ids"] if i not in into["linkedin_ids"]]
+    into["bands"] += company["bands"]
+    for column in lib.COMPANY_COLUMNS:
+        if into.get(column) in (None, []) and company.get(column) not in (None, []):
+            into[column] = company[column]
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--delay", type=float, default=2.0,
                         help="Seconds between probes. Below ~1.5 trips their WAF.")
     parser.add_argument("--retry-missing", action="store_true",
-                        help="Re-probe rows already marked unmatched.")
+                        help="Re-probe companies already marked unmatched.")
     parser.add_argument("--only", metavar="STATUS", action="append", default=[],
-                        help="Restrict the run to rows with this status. Repeatable. "
-                             "Pair with --retry-missing to re-probe just the "
-                             "unmatched rows instead of all 240-odd.")
+                        help="Restrict the run to companies with this levels_status. "
+                             "Repeatable. Pair with --retry-missing to re-probe just the "
+                             "unmatched ones instead of all 260-odd.")
     args = parser.parse_args(argv)
 
-    path = lib.ROOT / "data" / "backlog.csv"
-    with path.open(encoding="utf-8") as fh:
-        rows = list(csv.DictReader(fh))
-
-    fields = ["linkedin_id", "name", "levels_slug", "status", "notes"]
+    companies = lib.load_companies()
     hits = misses = skipped = review = 0
 
     try:
-      for row in rows:
-        name = (row.get("name") or "").strip()
-        if not name:
-            continue
-        if args.only and row.get("status") not in args.only:
+      for company in list(companies):
+        name = company["company"]
+        status = company.get("levels_status")
+        if args.only and status not in args.only:
             skipped += 1
             continue
-        if row.get("levels_slug") and not args.retry_missing:
+        if company.get("levels_slug") and not args.retry_missing:
             skipped += 1
             continue
-        if row.get("status") in ("unmatched", "review") and not args.retry_missing:
+        if status in ("unmatched", "review") and not args.retry_missing:
             skipped += 1
             continue
 
@@ -309,11 +318,15 @@ def main(argv: list[str]) -> int:
                 continue
             verdict, theirs, found = verify(slug, name, args.delay)
             if verdict == "strong":
-                row["levels_slug"] = slug
-                row["status"] = "resolved"
-                row["notes"] = "" if normalise(theirs) == normalise(name) else f"matched as {theirs}"
                 hits += 1
-                print(f"  {name}  ->  {slug}  ({theirs}, {found} rows)")
+                owner = lib.by_slug(companies, slug)
+                if owner is not None and owner is not company:
+                    fold(company, owner)
+                    companies.remove(company)
+                    print(f"  {name}  ->  {slug}  ({theirs}, {found} rows), merged into {owner['company']}")
+                else:
+                    company["levels_slug"], company["levels_status"] = slug, "resolved"
+                    print(f"  {name}  ->  {slug}  ({theirs}, {found} rows)")
                 break
             if verdict == "review":
                 if pending is None:
@@ -328,14 +341,17 @@ def main(argv: list[str]) -> int:
         else:
             if pending:
                 slug, theirs, found = pending
-                row["levels_slug"] = slug
-                row["status"] = "review"
-                row["notes"] = f"loose match to '{theirs}' ({found} rows) - confirm before trusting"
                 review += 1
+                owner = lib.by_slug(companies, slug)
+                if owner is not None and owner is not company:
+                    # A loose match is not enough to fold two companies together.
+                    print(f"  {name}  ->  {slug}?  needs review (page says '{theirs}', "
+                          f"{found} rows), already filed as {owner['company']}")
+                    continue
+                company["levels_slug"], company["levels_status"] = slug, "review"
                 print(f"  {name}  ->  {slug}?  needs review (page says '{theirs}', {found} rows)")
             else:
-                row["levels_slug"] = ""
-                row["status"] = "unmatched"
+                company["levels_slug"], company["levels_status"] = None, "unmatched"
                 misses += 1
                 print(f"  {name}  ->  not on Levels.fyi")
 
@@ -343,12 +359,7 @@ def main(argv: list[str]) -> int:
         print(f"\n{exc}", file=sys.stderr)
         print("Progress so far is saved.", file=sys.stderr)
 
-    with path.open("w", encoding="utf-8", newline="") as fh:
-        writer = csv.DictWriter(fh, fieldnames=fields, extrasaction="ignore")
-        writer.writeheader()
-        for row in rows:
-            writer.writerow({k: row.get(k, "") for k in fields})
-
+    lib.save_companies(companies)
     print(f"\n{hits} matched, {review} need review, {misses} unmatched, {skipped} already done")
     return 0
 

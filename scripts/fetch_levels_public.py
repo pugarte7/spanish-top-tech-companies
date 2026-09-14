@@ -16,8 +16,12 @@ empty body when cold, and only the page exposes the exchange rate and the
 submission counts.
 
 Everything published is TOTAL COMPENSATION across all levels, so it lands in
-`total_comp` at level `all`, never in `base`. Per-level ladders and base-salary
-splits need the official API: see scripts/fetch_levels.py.
+`total_p50` at level `all`, never in base. Per-level ladders and base salary
+come from each company's own Spain page instead: see scripts/fetch_spain.py.
+
+Its real use is discovery. The top-paying tables name employers nobody thought
+to look up, and that is how Accenture, BBVA, Indra and TravelPerk got onto the
+list.
 """
 from __future__ import annotations
 
@@ -31,8 +35,6 @@ import urllib.error
 import urllib.request
 
 import lib
-import yaml
-from new_company import SKELETON_ORDER, slugify
 
 BASE = "https://www.levels.fyi"
 ATTRIBUTION = "Data source: Levels.fyi (https://www.levels.fyi)"
@@ -121,24 +123,15 @@ def to_eur(value, rate) -> int | None:
     return int(round(value * rate))
 
 
-def merge_company(name: str, slug: str, role: str, p50: int, url: str,
-                  date: str, location: str) -> None:
-    path = lib.COMPANIES_DIR / f"{slug}.yml"
-    if path.exists():
-        company = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    else:
-        company = {
-            "slug": slug,
-            "name": name,
-            "compensation": {"currency": "EUR", "basis": "gross_annual", "roles": []},
-        }
+def merge_company(companies: list[dict], name: str, slug: str, role: str, p50: int,
+                  url: str, date: str, location: str) -> None:
+    company = lib.by_slug(companies, slug) or lib.by_name(companies, name)
+    if company is None:
+        company = lib.add_company(companies, name, levels_slug=slug, levels_status="resolved")
 
     band = {
-        "level": "all",
-        "base": {},
-        "total_comp": {"p50": p50},
-        "sources": [{"name": "levels.fyi", "url": url, "date": date}],
-        "last_verified": date,
+        "role": role, "level": "all", "total_p50": p50,
+        "source": "levels.fyi", "source_url": url, "date": date,
         "notes": (
             f"Median total compensation across all levels, {location}. "
             "Levels.fyi's public pages do not break this out by level or "
@@ -146,26 +139,19 @@ def merge_company(name: str, slug: str, role: str, p50: int, url: str,
         ),
     }
 
-    roles = company.setdefault("compensation", {}).setdefault("roles", [])
-    bucket = next((r for r in roles if r["role"] == role), None)
-    if bucket is None:
-        bucket = {"role": role, "levels": []}
-        roles.append(bucket)
-    existing = next((e for e in bucket["levels"] if e.get("level") == "all"), None)
+    same = [b for b in company["bands"] if b["role"] == role and b["level"] == "all"]
+    country = [b for b in same if "/t/" in (b.get("source_url") or "")]
+    # A company's own Spain page, or someone's first-hand figure, already says
+    # more than one median pooled across every level. fetch_spain.py replaces a
+    # country-page band with its own for the same reason.
+    if len(same) > len(country):
+        return
     # Several locations cover the same company; keep the highest observed median
     # so a thin metro slice doesn't overwrite the national figure.
-    if existing is None:
-        bucket["levels"].append(band)
-    elif p50 > (existing.get("total_comp") or {}).get("p50", 0):
-        bucket["levels"][bucket["levels"].index(existing)] = band
-    bucket["levels"].sort(key=lambda e: lib.level_rank(e["level"]))
-
-    rest = {k: v for k, v in company.items() if k not in SKELETON_ORDER}
-    ordered = {k: company[k] for k in SKELETON_ORDER if k in company}
-    ordered.update(rest)
-    path.write_text(
-        yaml.safe_dump(ordered, sort_keys=False, allow_unicode=True, width=100), encoding="utf-8"
-    )
+    if not country:
+        company["bands"].append(band)
+    elif p50 > (country[0].get("total_p50") or 0):
+        company["bands"][company["bands"].index(country[0])] = band
 
 
 def main(argv: list[str]) -> int:
@@ -183,7 +169,8 @@ def main(argv: list[str]) -> int:
             parser.error("none of those roles exist in the Levels.fyi taxonomy")
 
     print(f"{len(families)} job families x {len(locations)} locations")
-    benchmarks, touched, pages = [], set(), 0
+    companies = [] if args.dry_run else lib.load_companies()
+    touched, pages = set(), 0
 
     for family in families:
         for location in locations:
@@ -199,46 +186,30 @@ def main(argv: list[str]) -> int:
                 print(f"  skipping {family}/{location}: currency {currency}", file=sys.stderr)
                 continue
 
-            companies = props.get("topPayingCompanies") or []
-            percentiles = props.get("jobFamilyLocationPercentiles") or {}
-            if not companies and not percentiles:
+            paying = props.get("topPayingCompanies") or []
+            if not paying:
                 continue
             pages += 1
             place = props.get("location") or props.get("compTableFilterLocationName") or location
 
-            if percentiles.get("p50"):
-                benchmarks.append({
-                    "role": family, "location": place, "location_slug": location,
-                    "currency": "EUR", "url": url, "last_updated": today,
-                    "data_points": percentiles.get("count") or props.get("totalJobFamilySubmissionCount"),
-                    **{p: to_eur(percentiles.get(p), rate) for p in ("p25", "p50", "p75", "p90")},
-                })
-
             written = 0
-            for entry in companies:
+            for entry in paying:
                 value = to_eur(entry.get("totalCompensation"), rate)
-                slug = entry.get("slug") or slugify(entry.get("name", ""))
+                slug = entry.get("slug") or lib.slugify(entry.get("name", ""))
                 if not value or not slug:
                     continue
-                merge_company(entry.get("name") or slug, slug, family, value, url, today, place)
+                merge_company(companies, entry.get("name") or slug, slug, family, value,
+                              url, today, place)
                 touched.add(slug)
                 written += 1
-            if written or percentiles.get("p50"):
-                print(f"  {family} / {location}: {written} companies"
-                      f"{', benchmark ' + str(to_eur(percentiles.get('p50'), rate)) if percentiles.get('p50') else ''}")
+            if written:
+                lib.save_companies(companies)
+                print(f"  {family} / {location}: {written} companies")
 
     if args.dry_run:
         return 0
 
-    if benchmarks:
-        benchmarks.sort(key=lambda b: (b["role"], b["location_slug"]))
-        (lib.ROOT / "data" / "benchmarks.json").write_text(
-            json.dumps({"attribution": ATTRIBUTION, "generated": today,
-                        "benchmarks": benchmarks}, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
-
-    print(f"\n{pages} pages with data · {len(benchmarks)} benchmarks · {len(touched)} companies")
+    print(f"\n{pages} pages with data · {len(touched)} companies")
     if touched:
         print(f"\n{ATTRIBUTION}")
         print("TOTAL COMPENSATION across all levels, converted to EUR. Not base salary.")
