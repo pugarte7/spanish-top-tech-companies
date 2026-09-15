@@ -10,7 +10,7 @@ Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or 
 
 ## 2. Open a pull request
 
-All the data is one file, [`companies.csv`](companies.csv): one row per salary, with the company's own columns repeated on each of its rows. A company with no salary has a single row with the salary columns empty. The README tables are generated from it.
+All the data is one file, [`companies.csv`](companies.csv): one row per salary, with the company's own columns repeated on each of its rows. A company with no salary has a single row with the salary columns empty. The README is generated from it, and shows each company's average of those salaries.
 
 Every row is **one software engineer in Spain with 5 or more years of experience and a base salary of 60.000 € or more**. Nothing else goes in: no other job families, nobody under five years or under 60k, and no averages. What their company calls the level does not matter. [METHODOLOGY.md](METHODOLOGY.md#who-counts) explains why.
 

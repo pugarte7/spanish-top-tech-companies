@@ -6,22 +6,24 @@ twice, and one put every figure on the front page 16% over the truth.
 
 ## What this repository is
 
-A list of software engineers in Spain with 5 or more years of experience who
-earn 60.000 € a year or more in base salary, company by company. Three things
-follow from that and all are load bearing:
+What companies in Spain pay software engineers with 5 or more years of
+experience, on average, counting only salaries of 60.000 € or more in base.
+Three things follow from that and all are load bearing:
 
 - **Spain only.** A German salary in this list is worse than no salary, because
   the whole point is that other sources mix countries.
-- **Individual salaries.** Every row is one engineer. Nothing is averaged: an
-  all-levels median, a ladder mean or an upper quartile mixes juniors in with
-  everyone else and answers a different question.
+- **Averages of qualifying salaries only.** `companies.csv` keeps one row per
+  engineer; the README shows one row per company, the mean of that company's
+  salaries on file. Nothing else goes into the mean: an all-levels median, a
+  ladder mean or an engineer under 5 years or under 60k answers a different
+  question.
 - **Seniority is years of experience.** 5 or more (`lib.SENIOR_YEARS`),
   whatever the company calls the level.
 
-### How that rule was reached, 2026-09-15
+### How that rule was reached, 2026-09-15 and 16
 
-In one day the list went through three definitions of "senior", and the
-maintainer rejected the first two:
+Over two days the list went through four versions, and the maintainer rejected
+the first three:
 
 1. The best rung at senior or above per company, falling back to an
    all-levels figure and to other job families. Rejected: "we just need to
@@ -31,8 +33,13 @@ maintainer rejected the first two:
    doesnt matter if its not marked as senior. If it has more than 5 years we
    consider it senior." It had thrown away all 21 of Glovo's qualifying
    engineers because Glovo's ladder runs L1 to L5.
-3. Every Spanish software engineer submission with 5+ years and a 60k+ base.
-   This one stands.
+3. Every Spanish software engineer submission with 5+ years and a 60k+ base,
+   each as its own README row. Kept as the data, but the maintainer wanted one
+   row per company: "One entrie per company".
+4. That company's mean over those same salaries. A mean over every 5+ year
+   engineer, including those under 60k, was proposed and rejected: "you just
+   need to calculate the avg for each company, with all the data entries for
+   that company with 60k+ 5 years +". This one stands.
 
 The entries come from the `samples` and `median` records on each company's
 Spain page (trap 2). CONTEXT used to say individual submissions were not
@@ -86,8 +93,9 @@ needs a `source_url`. Then `python3 scripts/validate.py && python3 scripts/build
 - 157 companies have none: 43 whose Spanish engineers all fall short of the
   years or the pay, 95 with no Spanish data at all, and 19 the resolver never
   found a Levels.fyi page for.
-- The README has two sections: every qualifying salary grouped by company,
-  best-paid first, and the companies with nothing qualifying.
+- The README has two sections: one row per company with the average of its
+  qualifying salaries, best average first, and the companies with nothing
+  qualifying.
 - Every company links to LinkedIn and to its open roles in Spain, and every
   salary to the Spain-scoped page it was read from.
 - All entries were read from Levels.fyi on 2026-09-15.
