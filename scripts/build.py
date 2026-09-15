@@ -116,37 +116,67 @@ def status_cell(company: dict) -> str:
 # --------------------------------------------------------------------------- tables
 
 
-ENTRY_HEADER = [
-    "| Company | Base | Total comp | Years | Level | City | Reported | Source | Jobs |",
-    "| --- | ---: | ---: | ---: | --- | --- | --- | --- | --- |",
+AVERAGE_HEADER = [
+    "| Company | Avg base | Avg total comp | Engineers | Reported | Source | Jobs |",
+    "| --- | ---: | ---: | ---: | --- | --- | --- |",
 ]
 
 
-def entry_rows(company: dict) -> list[str]:
-    rows = []
-    for index, entry in enumerate(sorted(company["entries"], key=lib.entry_order)):
-        cells = [
-            company_cell(company) if index == 0 else "",
-            k(entry.get("base")),
-            k(entry.get("total")),
-            escape(entry.get("years_experience")),
-            escape(entry.get("level")),
-            escape(entry.get("city")),
-            escape(entry.get("reported")),
-            source_cell(entry),
-            jobs_cell(company) if index == 0 else "",
-        ]
-        rows.append("| " + " | ".join(cells) + " |")
-    return rows
+def mean(amounts: list) -> int | None:
+    amounts = [amount for amount in amounts if amount is not None]
+    return round(sum(amounts) / len(amounts)) if amounts else None
+
+
+def average(company: dict) -> dict:
+    """What a company pays, on average, the engineers on file for it.
+
+    Every entry already has 5+ years and a 60k+ base, so this is the mean of
+    exactly those, and nothing else: no one under the bar pulls it down, and no
+    level name decides who is in it.
+    """
+    entries = company["entries"]
+    months = sorted(entry["reported"] for entry in entries if entry.get("reported"))
+    return {
+        "base": mean([entry.get("base") for entry in entries]),
+        "total": mean([entry.get("total") for entry in entries]),
+        "engineers": len(entries),
+        "reported": (months[0] if months[0] == months[-1] else f"{months[0]} to {months[-1]}")
+                    if months else None,
+        "first_hand": any(entry.get("source") in lib.VOUCHED for entry in entries),
+    }
+
+
+def sources_cell(company: dict) -> str:
+    """Every source the average draws on, each linked once."""
+    cells = []
+    for entry in sorted(company["entries"], key=lib.entry_order):
+        cell = source_cell(entry)
+        if cell not in cells:
+            cells.append(cell)
+    return ", ".join(cells)
+
+
+def average_row(company: dict) -> str:
+    found = average(company)
+    cells = [
+        company_cell(company),
+        k(found["base"]),
+        k(found["total"]),
+        str(found["engineers"]),
+        escape(found["reported"]),
+        sources_cell(company),
+        jobs_cell(company),
+    ]
+    return "| " + " | ".join(cells) + " |"
 
 
 def render_stats(companies: list[dict]) -> str:
     entries = [entry for company in companies for entry in company["entries"]]
     parts = [
         f"**{len(companies)} companies**",
-        f"**{sum(1 for c in companies if c['entries'])} with 60k+ salaries at "
-        f"{lib.SENIOR_YEARS}+ years**",
-        f"{len(entries)} salaries",
+        f"**{sum(1 for c in companies if c['entries'])} paying {lib.SENIOR_YEARS}+ year "
+        "engineers 60k+**",
+        f"{len(entries)} salaries averaged",
     ]
     stale = sum(1 for entry in entries if lib.is_stale(entry.get("date")))
     if stale:
@@ -158,19 +188,20 @@ def render_stats(companies: list[dict]) -> str:
 
 
 def render_companies(companies: list[dict]) -> str:
-    # First-hand before crowdsourced, then best-paying. A salary someone in
-    # Spain reported directly is worth more than any number scraped from a
-    # submission site, so it sorts above one however large that number is.
+    # A company with a salary someone in Spain reported directly sorts above
+    # the crowdsourced ones, then the best average first.
+    averages = {id(c): average(c) for c in companies if c["entries"]}
     paid = sorted((c for c in companies if c["entries"]),
-                  key=lambda c: (lib.entry_order(lib.headline(c)), c["company"].casefold()))
+                  key=lambda c: (not averages[id(c)]["first_hand"], -averages[id(c)]["base"],
+                                 c["company"].casefold()))
     unpaid = sorted((c for c in companies if not c["entries"]),
                     key=lambda c: c["company"].casefold())
 
     out: list[str] = []
     if paid:
-        out += [f"## Engineers with {lib.SENIOR_YEARS}+ years at 60k+", "", *ENTRY_HEADER]
-        for company in paid:
-            out += entry_rows(company)
+        out += [f"## Average pay, engineers with {lib.SENIOR_YEARS}+ years at 60k+", "",
+                *AVERAGE_HEADER]
+        out += [average_row(company) for company in paid]
         out.append("")
     if unpaid:
         out += ["## Nothing qualifying", "", "| Company | Levels.fyi | Jobs |", "| --- | --- | --- |"]

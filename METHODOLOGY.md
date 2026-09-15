@@ -2,16 +2,18 @@
 
 ## Who counts
 
-The list is made of **individual salaries**: one software engineer in Spain, what they are paid, and how many years of experience they have. An entry is on it when all of these hold:
+The list shows **what each company pays, on average**, the software engineers on file for it. The data underneath is individual salaries: one software engineer in Spain, what they are paid, and how many years of experience they have. A salary is on file when all of these hold:
 
 - **A software engineer.** Levels.fyi's software-engineer family only: engineering managers, data scientists, product managers and every other job family are out.
 - **In Spain.** The submission names a Spanish city.
 - **Senior, meaning 5 or more years of experience.** The level name does not matter. Companies call the same job L4, SDE II, IC3 or Senior, and an L4 with eight years is as senior as anyone; a "Senior" with two years is not. A bucket like `5-10` counts from its low end, so it qualifies, and `2-4` does not.
 - **60.000 € or more in base salary.** Gross annual base, not total compensation.
 
-Nothing is averaged. An all-levels median, a company's ladder mean or an upper quartile would mix juniors in with seniors, so none of them appear. A company with no qualifying entry is still listed, with the reason it has none.
+The README then shows one row per company: the mean base salary and mean total compensation of its salaries on file, and how many salaries that is. Only qualifying salaries go into the mean. Nobody under 5 years or under 60k pulls it down, and Levels.fyi's own figures, an all-levels median or a ladder mean, are never used, because they mix juniors in with everyone else. A company with no qualifying salary is still listed, with the reason it has none.
 
-This rule was set on 2026-09-15. Earlier versions of the list published per-company averages, every job family, and, for a few hours, only rungs whose names said senior. All of those were removed.
+An average of one salary is one person's pay, so read the Engineers column before the number.
+
+This rule was set on 2026-09-16. Earlier versions of the list published Levels.fyi's per-company averages across levels, every job family, only rungs whose names said senior, and every qualifying salary as its own row. All of those were replaced.
 
 ## What "gross annual" means here
 
