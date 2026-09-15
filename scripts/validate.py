@@ -13,102 +13,105 @@ warnings: list[str] = []
 SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 URL = re.compile(r"^https?://\S+$")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# The only Levels.fyi page that carries a software engineer's own submission in
+# Spain: one company, the software-engineer family, a named location.
+ENTRY_PAGE = re.compile(r"levels\.fyi/companies/[^/]+/salaries/software-engineer/locations/")
 STATUSES = ("resolved", "review", "unmatched")
 MAX_EUR = 2_000_000
 
 
-def check_date(where: str, label: str, value) -> None:
-    if value is None:
+def check_date(where: str, label: str, raw) -> None:
+    if raw is None:
         return
-    if not DATE.match(str(value)) or lib.parse_date(value) is None:
-        errors.append(f"{where}: {label} {value!r} is not a YYYY-MM-DD date")
-    elif lib.parse_date(value) > lib.today_utc():
+    if not DATE.match(str(raw)) or lib.parse_date(raw) is None:
+        errors.append(f"{where}: {label} {raw!r} is not a YYYY-MM-DD date")
+    elif lib.parse_date(raw) > lib.today_utc():
         errors.append(f"{where}: {label} is in the future")
 
 
-def check_band(where: str, band: dict) -> None:
-    role, level = band.get("role"), band.get("level")
-    label = f"{role}/{level}"
-    if not role or not SLUG.match(role):
-        errors.append(f"{where}: role {role!r} must be a kebab-case slug")
-    if level not in lib.LEVEL_ORDER:
-        errors.append(f"{where}: level {level!r} must be one of {', '.join(lib.LEVEL_ORDER)}")
+def check_entry(where: str, entry: dict) -> None:
+    base, total = entry.get("base"), entry.get("total")
+    if base is None:
+        errors.append(f"{where}: no base salary")
+    elif base < lib.THRESHOLD_EUR:
+        errors.append(f"{where}: base {base} is under {lib.fmt_eur(lib.THRESHOLD_EUR)}, "
+                      "so it does not belong on the list")
+    for column, amount in (("base", base), ("total", total)):
+        if amount is not None and amount > MAX_EUR:
+            errors.append(f"{where}: {column} {amount} is not a salary")
 
-    figures = 0
-    for block in ("base", "total"):
-        ordered = [(part, band.get(f"{block}_{part}")) for part in ("min", "p50", "max")]
-        ordered = [(part, value) for part, value in ordered if value is not None]
-        figures += len(ordered)
-        for (n1, v1), (n2, v2) in zip(ordered, ordered[1:]):
-            if v1 > v2:
-                errors.append(f"{where}: {label} has {block}_{n1} {v1} > {block}_{n2} {v2}")
-        for part, value in ordered:
-            if value > MAX_EUR:
-                errors.append(f"{where}: {label} {block}_{part} {value} is not a salary")
-    if not figures:
-        errors.append(f"{where}: {label} has no base or total figure")
-    if band.get("sample_size") == 0:
-        errors.append(f"{where}: {label} sample_size must be at least 1, or blank")
+    experience = entry.get("years_experience")
+    if lib.years(experience) is None:
+        errors.append(f"{where}: years_experience {experience!r} must be a number of years, "
+                      "or a range like 5-10 or 11+")
+    elif lib.years(experience) < lib.SENIOR_YEARS:
+        errors.append(f"{where}: {experience} years of experience is under "
+                      f"{lib.SENIOR_YEARS}, so it does not belong on the list")
+    if entry.get("reported") and not re.fullmatch(r"\d{4}-\d{2}", entry["reported"]):
+        errors.append(f"{where}: reported {entry['reported']!r} must be YYYY-MM")
 
-    if band.get("source") not in lib.SOURCES:
-        errors.append(f"{where}: {label} source {band.get('source')!r} must be one of "
+    if entry.get("source") not in lib.SOURCES:
+        errors.append(f"{where}: source {entry.get('source')!r} must be one of "
                       f"{', '.join(lib.SOURCES)}")
-    url = band.get("source_url") or ""
+    url = entry.get("source_url") or ""
     if url and not URL.match(url):
-        errors.append(f"{where}: {label} source_url {url!r} is not a URL")
-    check_date(where, f"{label} date", band.get("date"))
+        errors.append(f"{where}: source_url {url!r} is not a URL")
+    check_date(where, "date", entry.get("date"))
 
     # A Levels.fyi company page is NOT filtered to Spain: it shows the
-    # company's global figures in the reader's currency. Bands sourced from
+    # company's global figures in the reader's currency. Entries sourced from
     # one are somebody else's country's pay. Only URLs that name a location
     # are trustworthy here.
     if "levels.fyi" in url and "/locations/" not in url:
         errors.append(
-            f"{where}: {label} cites a Levels.fyi URL with no location in it ({url}) "
+            f"{where}: cites a Levels.fyi URL with no location in it ({url}) "
             "- that data is not Spain-scoped"
         )
+    # Every other Levels.fyi page publishes a figure pooled across people, or
+    # another job family's pay. Neither is one software engineer's salary.
+    elif "levels.fyi" in url and not ENTRY_PAGE.search(url):
+        errors.append(
+            f"{where}: cites a Levels.fyi page that is not a company's software-engineer "
+            f"page ({url}) - it cannot hold one engineer's salary"
+        )
 
-    if role and role not in lib.CANONICAL_ROLES:
-        warnings.append(f"{where}: '{role}' is not a canonical role slug (see METHODOLOGY.md)")
-    if lib.is_stale(band.get("date")):
-        warnings.append(f"{where}: {label} not verified in over a year")
+    if lib.is_stale(entry.get("date")):
+        warnings.append(f"{where}: not verified in over a year")
 
 
 def check_spain_check(where: str, company: dict) -> None:
-    """`spain_check` says Levels.fyi had nothing. Hold it to that.
+    """`spain_check` says Levels.fyi had nothing qualifying. Hold it to that.
 
-    A role cannot both be on file as having no Spanish pay and carry a Spanish
-    band, and a company that claims both is one the fetcher failed to clean up.
+    A company cannot both be on file as having nothing qualifying on Levels.fyi
+    and carry an entry read from Levels.fyi, and one that claims both is one the
+    fetcher failed to clean up. A first-hand entry is no contradiction: it is
+    how a company Levels.fyi knows nothing about gets a number at all.
+
     The front page reads these columns to decide whether a blank row says
     "asked, nothing published" or "nobody has looked", so a wrong one is a false
     statement on the front page rather than a tidiness problem.
     """
-    checked = company.get("spain_check_roles") or []
+    checked = company.get("spain_check_date")
     if not checked:
-        if company.get("spain_check_date") or company.get("spain_check_served"):
-            errors.append(f"{where}: spain_check_date or spain_check_served without "
-                          "spain_check_roles")
+        if company.get("spain_check_served"):
+            errors.append(f"{where}: spain_check_served without a spain_check_date")
         return
-    check_date(where, "spain_check_date", company.get("spain_check_date"))
-    documented = {band.get("role") for band in company.get("bands") or []}
-    for role in checked:
-        if not SLUG.match(role):
-            errors.append(f"{where}: spain_check_roles has {role!r}, not a role slug")
-        if role in documented:
-            errors.append(
-                f"{where}: spain_check says '{role}' has no Spanish pay, but a "
-                f"{role} band is on file"
-            )
+    check_date(where, "spain_check_date", checked)
+    if any(entry.get("source") == "levels.fyi" for entry in company.get("entries") or []):
+        errors.append(
+            f"{where}: spain_check says Levels.fyi has nothing qualifying, but a "
+            "levels.fyi entry is on file"
+        )
 
 
 def check_company(where: str, company: dict) -> None:
     for column in ("linkedin_url", "website", "careers_url"):
-        value = company.get(column)
-        if value and not URL.match(value):
-            errors.append(f"{where}: {column} {value!r} is not a URL")
-    for value in company.get("linkedin_ids") or []:
-        if not value.isdigit():
-            errors.append(f"{where}: linkedin_ids has {value!r}, not a numeric LinkedIn id")
+        found = company.get(column)
+        if found and not URL.match(found):
+            errors.append(f"{where}: {column} {found!r} is not a URL")
+    for linkedin_id in company.get("linkedin_ids") or []:
+        if not linkedin_id.isdigit():
+            errors.append(f"{where}: linkedin_ids has {linkedin_id!r}, not a numeric LinkedIn id")
     if not company.get("linkedin_ids") and not company.get("linkedin_url"):
         warnings.append(f"{where}: no LinkedIn id or URL, so no link to open roles")
 
@@ -130,11 +133,12 @@ def check_company(where: str, company: dict) -> None:
             errors.append(f"{where}: sector {sector!r} must be a kebab-case slug")
 
     seen = set()
-    for band in company.get("bands") or []:
-        key = tuple(band.get(c) for c in ("role", "level", "source", "source_url"))
+    for entry in company.get("entries") or []:
+        key = tuple(entry.get(column) for column in lib.ENTRY_COLUMNS)
         if key in seen:
-            errors.append(f"line {band['_line']} ({company['company']}): the same "
-                          f"{band.get('role')}/{band.get('level')} figure from the same source twice")
+            # Two engineers can match on every column, so this is only a warning.
+            warnings.append(f"line {entry['_line']} ({company['company']}): the same "
+                            "entry twice")
         seen.add(key)
 
 
@@ -152,8 +156,8 @@ def main() -> int:
         where = f"line {company['_lines'][0]} ({name})"
         check_company(where, company)
         check_spain_check(where, company)
-        for band in company["bands"]:
-            check_band(f"line {band['_line']} ({name})", band)
+        for entry in company["entries"]:
+            check_entry(f"line {entry['_line']} ({name})", entry)
 
         slug = company.get("levels_slug")
         if slug in seen_slugs:
@@ -172,8 +176,8 @@ def main() -> int:
     for error in errors:
         print(f"ERROR {error}")
 
-    bands = sum(len(c["bands"]) for c in companies)
-    print(f"\n{len(companies)} companies, {bands} salary figures, "
+    entries = sum(len(c["entries"]) for c in companies)
+    print(f"\n{len(companies)} companies, {entries} entries, "
           f"{len(errors)} errors, {len(warnings)} warnings")
     return 1 if errors else 0
 

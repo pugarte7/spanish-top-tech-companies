@@ -26,7 +26,8 @@ import lib  # noqa: E402
 UNSCOPED = "https://www.levels.fyi/companies/adyen/salaries"
 PER_LOCATION = ("https://www.levels.fyi/companies/adyen/salaries"
                 "/software-engineer/locations/spain")
-COUNTRY = "https://www.levels.fyi/t/data-scientist/locations/spain"
+COUNTRY = "https://www.levels.fyi/t/software-engineer/locations/spain"
+OTHER_FAMILY = "https://www.levels.fyi/companies/bcg/salaries/data-scientist/locations/spain"
 
 failures: list[str] = []
 
@@ -39,12 +40,9 @@ def check(label: str, got, want) -> None:
         failures.append(label)
 
 
-def band(url: str, level: str = "all", notes: str = "",
-         role: str = "software-engineer") -> dict:
-    return {
-        "role": role, "level": level, "base_p50": 80000, "notes": notes,
-        "source": "levels.fyi", "source_url": url, "date": "2026-08-31",
-    }
+def entry(url: str | None, notes: str = "", source: str = "levels.fyi", **fields) -> dict:
+    return {"base": 80000, "years_experience": "8", "notes": notes, "source": source,
+            "source_url": url, "date": "2026-08-31", **fields}
 
 
 @contextlib.contextmanager
@@ -60,9 +58,9 @@ def temp_data(*companies: dict):
             lib.DATA = original
 
 
-def acme(*bands: dict, **fields) -> dict:
+def acme(*entries: dict, **fields) -> dict:
     return lib.blank_company("Acme", levels_slug="acme", levels_status="resolved",
-                             **fields) | {"bands": list(bands)}
+                             **fields) | {"entries": list(entries)}
 
 
 def stored(slug: str = "acme") -> dict | None:
@@ -70,36 +68,40 @@ def stored(slug: str = "acme") -> dict | None:
 
 
 def test_location_guard() -> None:
-    """A band must cite a URL that names a location, or validate.py fails."""
-    print("validate.py rejects data that cannot prove it is Spanish")
+    """An entry must cite a URL that names a location, or validate.py fails.
+
+    It also has to be a company's software-engineer page: the country pages
+    publish one median pooled across everyone, and another family's page is
+    another job.
+    """
+    print("validate.py rejects data that cannot prove it is a Spanish engineer's")
     import validate
 
-    for label, url, rejected in (
-        ("unscoped company page is rejected", UNSCOPED, True),
-        ("per-location company page is accepted", PER_LOCATION, False),
-        ("country job-family page is accepted", COUNTRY, False),
+    for label, url, message in (
+        ("unscoped company page is rejected", UNSCOPED, "not Spain-scoped"),
+        ("country job-family page is rejected", COUNTRY, "cannot hold one engineer"),
+        ("another job family is rejected", OTHER_FAMILY, "cannot hold one engineer"),
     ):
         validate.errors.clear()
-        validate.check_band("test", band(url))
-        check(label, any("not Spain-scoped" in e for e in validate.errors), rejected)
+        validate.check_entry("test", entry(url))
+        check(label, any(message in e for e in validate.errors), True)
 
-    # Someone reporting their own salary has no Levels.fyi URL to name.
-    validate.errors.clear()
-    validate.check_band("test", {
-        "role": "software-engineer", "level": "senior", "base_p50": 78000,
-        "source": "offer-letter", "date": "2026-08-31",
-    })
-    check("first-hand source needs no location",
-          any("not Spain-scoped" in e for e in validate.errors), False)
+    for label, found in (
+        ("per-location software-engineer page is accepted", entry(PER_LOCATION)),
+        # Someone reporting their own salary has no Levels.fyi URL to name.
+        ("first-hand source needs no location", entry(None, source="offer-letter")),
+    ):
+        validate.errors.clear()
+        validate.check_entry("test", found)
+        check(label, validate.errors, [])
 
 
 def test_unscoped_classifier() -> None:
     print("fetch_spain.unscoped() reads the URL, not the notes")
     import fetch_spain
 
-    check("unscoped company page", fetch_spain.unscoped(band(UNSCOPED)), True)
-    check("per-location page", fetch_spain.unscoped(band(PER_LOCATION)), False)
-    check("country page", fetch_spain.unscoped(band(COUNTRY)), False)
+    check("unscoped company page", fetch_spain.unscoped(entry(UNSCOPED)), True)
+    check("per-location page", fetch_spain.unscoped(entry(PER_LOCATION)), False)
 
     # The wording of `notes` is not evidence of anything. Matching on it is
     # what let 173 of the 205 stale bands through: the purge looked for
@@ -107,7 +109,7 @@ def test_unscoped_classifier() -> None:
     for notes in ("Median across all levels.",
                   "Common Range Average across all levels."):
         check(f"unscoped despite notes {notes!r}",
-              fetch_spain.unscoped(band(UNSCOPED, notes=notes)), True)
+              fetch_spain.unscoped(entry(UNSCOPED, notes=notes)), True)
 
 
 def test_purge_runs_even_when_spain_data_exists() -> None:
@@ -115,25 +117,22 @@ def test_purge_runs_even_when_spain_data_exists() -> None:
 
     The purge used to run only for companies with no Spanish figure, so any
     company that did have one kept its foreign bands sitting beside it. Adyen
-    kept a Dutch product-designer band next to a Spanish software-engineer one.
+    kept a Dutch band next to a Spanish one.
     """
-    print("fetch_spain.write() drops foreign bands beside a Spanish one")
+    print("fetch_spain.write() drops foreign entries beside a Spanish one")
     import fetch_spain
 
-    with temp_data(acme(
-        band(UNSCOPED, "senior", "reports this as 'L3'."),
-        band(UNSCOPED, "all", "Common Range Average across all levels.", "product-designer"),
-    )):
-        fetch_spain.write("acme", [band(PER_LOCATION, "all", "Spain only.")], "Acme", "2026-09-02")
-        urls = {}
-        for b in stored()["bands"]:
-            urls.setdefault(b["role"], []).append(b["source_url"])
-        check("only the Spanish band survives", urls, {"software-engineer": [PER_LOCATION]})
+    with temp_data(acme(entry(UNSCOPED, "reports this as 'L3'."),
+                        entry(UNSCOPED, "Common Range Average across all levels."))):
+        fetch_spain.write("acme", [entry(PER_LOCATION)], "Acme", "2026-09-02",
+                          served="Spain (ladder)")
+        check("only the Spanish entry survives",
+              [e["source_url"] for e in stored()["entries"]], [PER_LOCATION])
 
-    with temp_data(acme(band(COUNTRY, "all", "Spain.", "data-scientist"))):
-        fetch_spain.write("acme", [], "Acme", "2026-09-02")
-        check("a Spain country-page band is left alone",
-              [b["role"] for b in stored()["bands"]], ["data-scientist"])
+    with temp_data(acme(entry(None, source="community"))):
+        fetch_spain.write("acme", [], "Acme", "2026-09-02", served="no data")
+        check("a first-hand entry is left alone",
+              [e["source"] for e in stored()["entries"]], ["community"])
 
 
 def props(**overrides) -> dict:
@@ -146,222 +145,188 @@ def props(**overrides) -> dict:
         "median": None,
         "averages": [],
         "company": {},
-        "generatedOccupationSchema": {"sampleSize": 429},
     }
     page.update(overrides)
     return page
 
 
-def rung(level: str, titles: list[str], base: float, total: float, count: int,
-         where: str = "Madrid, MD, Spain") -> dict:
-    return {"level": level, "primaryLevelName": titles[0], "titles": titles,
-            "base": base, "total": total, "count": count,
-            "samples": [{"location": where}]}
+def sample(base: float, years, level: str = "L4", where: str = "Madrid, MD, Spain",
+           uuid: str | None = None, **extra) -> dict:
+    return {"uuid": uuid or f"{base}-{years}-{where}", "level": level, "location": where,
+            "yearsOfExperience": years, "baseSalary": base, "totalCompensation": base,
+            "offerDate": "2026-06-30T21:59:59.999+00:00", **extra}
+
+
+def ladder(*samples: dict) -> dict:
+    return props(averages=[{"primaryLevelName": "L4", "count": len(samples),
+                            "samples": list(samples)}])
+
+
+def read(page: dict, slug: str = "acme") -> list[dict]:
+    import fetch_spain
+    with contextlib.redirect_stderr(io.StringIO()):
+        _, parsed, _ = fetch_spain.interpret(page, slug, PER_LOCATION)
+    return fetch_spain.entries(parsed, "2026-09-15")
 
 
 def test_figures_are_converted_to_euros() -> None:
-    """The payload is USD. Writing it into a EUR file overstated 141 bands.
+    """The payload is USD. Writing it as euros overstated 141 bands.
 
     Levels.fyi stores every figure in USD and multiplies by
     locationExchangeRate to print euros - its own FAQ text on Glovo's Spanish
     page says the median total of 79710.65 is EUR 68.551. This script wrote the
     raw number as euros, so every figure it produced was about 16% high.
+
+    The median record's own exchangeRate converts to the currency its author was
+    paid in, which is not always euros. Smile.io's was 105.000 USD at a rate of 1,
+    and it went on the list as 105.000 EUR.
     """
     print("fetch_spain converts USD to EUR")
     import fetch_spain
 
-    page = props(percentiles={
-        "locationName": "Spain",
-        "base_salary": {"p25": 62796.1, "p50": 73431.04, "p75": 84228.1},
-        "tc": {"p25": 62796.1, "p50": 79710.65, "p75": 91621.8},
-    })
-    _, parsed, _ = fetch_spain.interpret(page, "glovo", PER_LOCATION)
-    [aggregate] = fetch_spain.bands(parsed, "2026-09-10")
-    check("aggregate base is euros", aggregate["base_p50"], 63151)
-    check("aggregate total is euros", aggregate["total_p50"], 68551)
+    check("Glovo's published euro figure", fetch_spain.eur(79710.65, 0.86), 68551)
 
-    # A submission carries its own unrounded rate, and it round-trips to the
-    # figure the person actually typed: exactly 55.000 EUR, not 55.099.
-    page = props(median={"location": "Barcelona, CT, Spain", "level": "L2",
-                         "exchangeRate": 0.85845, "baseSalary": 64068.9615,
-                         "totalCompensation": 69893.4125, "yearsOfExperience": 6})
-    _, parsed, _ = fetch_spain.interpret(page, "glovo", PER_LOCATION)
-    [single] = fetch_spain.bands(parsed, "2026-09-10")
-    check("submission uses its own rate", single["base_p50"], 55000)
+    [found] = read(ladder(sample(100000, 8)))
+    check("a sample goes through the page's rate", found["base"], 86000)
+
+    # A euro submission round-trips to the figure its author typed: exactly
+    # 70.000 EUR at its own rate, not 70.211 at the page's.
+    [found] = read(props(median=sample(81641.1, 6, baseSalaryCurrency="EUR",
+                                       exchangeRate=0.857413)))
+    check("a euro submission uses its own rate", found["base"], 70000)
+
+    [found] = read(props(median=sample(105000, 8, baseSalaryCurrency="USD", exchangeRate=1)))
+    check("a dollar submission goes through the page's rate", found["base"], 90300)
 
 
-def test_sample_size_is_not_a_spanish_count() -> None:
-    """`sampleSize` is the global count when the Spanish ladder is empty.
+def test_seniority_is_years_not_titles() -> None:
+    """Five years of experience makes an engineer senior, whatever the level says.
 
-    Amadeus serves sampleSize 429 next to an empty `averages` and a page that
-    reads "Not enough data". Only the ladder counts are Spanish, so a band
-    built from anything else carries no sample size at all.
+    On 2026-09-15 the list briefly counted only rungs and submissions whose names
+    said senior. That threw away an L4 with eight years at 90k and would have
+    kept a "Senior" with two, and the maintainer ruled it out the same day:
+    seniority is five or more years, and the level name does not matter.
     """
-    print("fetch_spain ignores generatedOccupationSchema.sampleSize")
+    print("fetch_spain keeps 5+ years at 60k+, and nothing else")
+
+    found = read(ladder(
+        sample(100000, 8, level="SDE I"),
+        sample(100000, 4, level="Senior Software Engineer"),
+        sample(100000, "5-10", level=None),
+        sample(100000, "2-4"),
+        sample(69766, 12),
+        sample(69768, 12),
+    ))
+    check("years decide, level names do not",
+          sorted((e["years_experience"], e["base"], e["level"]) for e in found),
+          [("12", 60000, "L4"), ("5-10", 86000, None), ("8", 86000, "SDE I")])
+    check("a bucket counts from its low end", lib.years("5-10"), 5)
+    check("an open bucket counts from its number", lib.years("11+"), 11)
+
+    import validate
+    for label, bad in (("under 60k", entry(PER_LOCATION, base=59999)),
+                       ("under five years", entry(PER_LOCATION, years_experience="4")),
+                       ("no years", entry(PER_LOCATION, years_experience=None))):
+        validate.errors.clear()
+        validate.check_entry("test", bad)
+        check(f"validate.py rejects an entry {label}", bool(validate.errors), True)
+
+
+def test_one_submission_is_one_entry() -> None:
+    """The median record is usually one of the ladder's samples too.
+
+    Read naively, Amazon's median would be listed twice, once at the page's rate
+    and once at its own.
+    """
+    print("fetch_spain lists a submission once")
+
+    shared = sample(81641.1, 6, uuid="same", baseSalaryCurrency="EUR", exchangeRate=0.857413)
+    found = read(props(median=shared, averages=[{"samples": [dict(shared)]}]))
+    check("one entry, at the submission's own rate", [e["base"] for e in found], [70000])
+
+
+def test_foreign_samples_are_skipped() -> None:
+    """The page is location-scoped, but every submission is checked anyway.
+
+    This is the same guard that has had to be enforced twice elsewhere: a Berlin
+    submission on a Spanish page is still a German salary.
+    """
+    print("fetch_spain skips a submission from outside Spain")
+
+    found = read(ladder(sample(100000, 8, where="Berlin, BE, Germany"),
+                        sample(90000, 7)))
+    check("only the Spanish submission survives", [e["city"] for e in found], ["Madrid"])
+
+
+def test_an_unread_page_changes_nothing() -> None:
+    """A page that failed to load is not a page with no entries.
+
+    write() used to replace the company's Levels.fyi figures with whatever the
+    run found, and an unreachable page found nothing, so one network error was
+    enough to empty a company.
+    """
+    print("fetch_spain.write() leaves a company alone when its page was not read")
     import fetch_spain
 
-    page = props(median={"location": "Madrid, MD, Spain", "level": "G8",
-                         "baseSalary": 46638.5281, "totalCompensation": 46638.5281})
-    _, parsed, _ = fetch_spain.interpret(page, "amadeus", PER_LOCATION)
-    [single] = fetch_spain.bands(parsed, "2026-09-10")
-    check("one submission is one data point", single.get("sample_size"), 1)
-
-    page = props(percentiles={"locationName": "Spain",
-                              "base_salary": {"p25": 1000, "p50": 2000, "p75": 3000},
-                              "tc": {"p25": 1000, "p50": 2000, "p75": 3000}})
-    _, parsed, _ = fetch_spain.interpret(page, "aily-labs", PER_LOCATION)
-    [aggregate] = fetch_spain.bands(parsed, "2026-09-10")
-    check("an aggregate with no ladder claims no count",
-          aggregate.get("sample_size"), None)
-
-
-def test_rung_names_decide_seniority() -> None:
-    """A rung is senior when it says so, and only then.
-
-    Amazon files its senior rung as `sde-iii` and only the third of its titles,
-    "Senior SDE", names it - so every title is searched, not just the slug.
-    Glovo's ladder runs L1 to L5 and says nothing, so none of it is senior:
-    guessing there is how a list of Spanish salaries fills up with claims
-    nobody can check.
-    """
-    print("fetch_spain maps rungs by name, and refuses to guess")
-    import fetch_spain
-
-    check("a third title still counts",
-          fetch_spain.rung_level(rung("sde-iii", ["SDE III", "L6", "Senior SDE"],
-                                      1, 1, 1))[0], "senior")
-    check("manager beats senior",
-          fetch_spain.rung_level(rung("sm", ["Senior Manager", "SM"],
-                                      1, 1, 1))[0], "manager")
-    check("principal beats senior",
-          fetch_spain.rung_level(rung("l8", ["Senior Principal SDE", "L8"],
-                                      1, 1, 1))[0], "principal")
-    check("an opaque rung maps to nothing",
-          fetch_spain.rung_level(rung("l3", ["L3", "Software Engineer III"],
-                                      1, 1, 1))[0], None)
-
-    page = props(averages=[rung("l1", ["L1"], 44025, 44025, 10),
-                           rung("l3", ["L3"], 91281, 103880, 12)])
-    _, parsed, _ = fetch_spain.interpret(page, "glovo", PER_LOCATION)
-    bands = fetch_spain.bands(parsed, "2026-09-10")
-    check("an unnamed ladder produces one pooled band",
-          [b["level"] for b in bands], ["all"])
-    check("pooled band counts every submission", bands[0]["sample_size"], 22)
-
-
-def test_foreign_samples_drop_the_rung() -> None:
-    """`averages` is location-scoped, but the samples are checked anyway.
-
-    This is the same guard that has had to be enforced twice elsewhere: the
-    count behind a rung listing a Berlin submission is not a Spanish count.
-    """
-    print("fetch_spain drops a ladder rung with a foreign sample")
-    import fetch_spain
-
-    page = props(averages=[
-        rung("senior-software-engineer", ["Senior Software Engineer"],
-             80000, 90000, 4, where="Berlin, BE, Germany"),
-        rung("staff-software-engineer", ["Staff Software Engineer"],
-             100000, 120000, 2),
-    ])
-    with contextlib.redirect_stderr(io.StringIO()):
-        _, parsed, _ = fetch_spain.interpret(page, "acme", PER_LOCATION)
-    bands = fetch_spain.bands(parsed, "2026-09-10")
-    check("only the Spanish rung survives",
-          sorted(b["level"] for b in bands), ["all", "staff"])
-
-
-def test_a_country_page_band_gives_way() -> None:
-    """One role, one band per level.
-
-    The country page publishes a single median per company across every level;
-    the company's Spain page publishes a range for the same role. Both landed
-    at level `all` under one role, so eight companies carried two bands that
-    disagreed. A first-hand figure at that level is never displaced.
-    """
-    print("fetch_spain.write() replaces a country-page band it supersedes")
-    import fetch_spain
-
-    first_hand = {"role": "data-scientist", "level": "all", "base_p50": 70000,
-                  "source": "community", "date": "2026-08-31"}
-    with temp_data(acme(band(COUNTRY, role="data-scientist"), first_hand)):
-        fresh = band(PER_LOCATION, "all", "Spain only.")
-        fetch_spain.write("acme", [fresh], "Acme", "2026-09-10", role="data-scientist",
-                          served="Spain (aggregate)")
-        bands = stored()["bands"]
-        check("the country-page band is gone",
-              [b["source"] for b in bands], ["community", "levels.fyi"])
-        check("and the survivor is the Spain-scoped one",
-              [b["source_url"] for b in bands], [None, PER_LOCATION])
-        check("filed under the role that was fetched",
-              {b["role"] for b in bands}, {"data-scientist"})
+    with temp_data(acme(entry(PER_LOCATION))):
+        outcome = fetch_spain.write("acme", [], "Acme", "2026-09-15", served=None)
+        check("nothing is written", outcome, "skipped")
+        check("the entry is still there",
+              [e["source_url"] for e in stored()["entries"]], [PER_LOCATION])
 
 
 def test_a_checked_company_says_so() -> None:
     """A blank row must distinguish "asked, nothing there" from "nobody looked".
 
     The front page reads the spain_check columns for that, so the fetcher has
-    to write a row even when it finds no pay, and has to take the role back out
-    the day that role does produce a band.
+    to write a row even when nothing qualifies, and has to clear it the day an
+    entry turns up.
     """
     print("fetch_spain records that Levels.fyi was asked and had nothing")
     import fetch_spain
 
     def recorded(company: dict) -> tuple:
-        return (company["spain_check_date"], company["spain_check_roles"],
-                company["spain_check_served"])
+        return company["spain_check_date"], company["spain_check_served"]
 
     company = lib.blank_company("Acme")
-    fetch_spain.note_check(company, "software-engineer", False, "United States", "2026-09-10")
-    check("a miss is recorded", recorded(company),
-          ("2026-09-10", ["software-engineer"], "United States"))
-
-    fetch_spain.note_check(company, "data-scientist", False, "no data", "2026-09-11")
-    check("a second miss joins the first", company["spain_check_roles"],
-          ["data-scientist", "software-engineer"])
-
-    fetch_spain.note_check(company, "software-engineer", True, "Spain (ladder)", "2026-09-12")
-    check("a hit takes its role back out", company["spain_check_roles"], ["data-scientist"])
-    check("and does not re-date the roles it says nothing about",
-          company["spain_check_date"], "2026-09-11")
-
-    fetch_spain.note_check(company, "data-scientist", True, "Spain (ladder)", "2026-09-12")
-    check("the last hit clears the record", recorded(company), (None, [], None))
+    fetch_spain.note_check(company, False, "Spain (ladder)", "2026-09-15")
+    check("a miss is recorded with what the page had", recorded(company),
+          ("2026-09-15", "Spain (ladder)"))
+    fetch_spain.note_check(company, True, "Spain (ladder)", "2026-09-16")
+    check("a hit clears it", recorded(company), (None, None))
 
     with temp_data():
-        fetch_spain.write("acme", [], "Acme", "2026-09-10", role="software-engineer",
-                          served="United States")
+        fetch_spain.write("acme", [], "Acme", "2026-09-15", served="United States")
         written = stored()
-        check("a company with no pay still gets a row",
-              written and written["spain_check_roles"], ["software-engineer"])
+        check("a company with nothing qualifying still gets a row",
+              written and recorded(written), ("2026-09-15", "United States"))
 
 
 def test_a_file_cannot_claim_both() -> None:
-    """`spain_check` and a band for the same role contradict each other."""
-    print("validate.py rejects a spain_check the bands disprove")
+    """`spain_check` and a Levels.fyi entry contradict each other."""
+    print("validate.py rejects a spain_check the entries disprove")
     import validate
 
-    company = acme(band(PER_LOCATION), spain_check_date="2026-09-10",
-                   spain_check_roles=["software-engineer"])
-    validate.errors.clear()
-    validate.check_spain_check("acme", company)
-    check("a contradicted check is an error",
-          any("but a software-engineer band is on file" in e for e in validate.errors), True)
-
-    company["bands"] = []
-    validate.errors.clear()
-    validate.check_spain_check("acme", company)
-    check("an uncontradicted one is fine", validate.errors, [])
+    for label, entries, contradicted in (
+        ("a Levels.fyi entry contradicts it", [entry(PER_LOCATION)], True),
+        ("a first-hand entry does not", [entry(None, source="community")], False),
+        ("no entry does not", [], False),
+    ):
+        validate.errors.clear()
+        validate.check_spain_check("acme", acme(*entries, spain_check_date="2026-09-10",
+                                                spain_check_served="no data"))
+        check(label, any("levels.fyi entry is on file" in e for e in validate.errors),
+              contradicted)
 
 
 def main() -> int:
     for test in (test_location_guard, test_unscoped_classifier,
                  test_purge_runs_even_when_spain_data_exists,
                  test_figures_are_converted_to_euros,
-                 test_sample_size_is_not_a_spanish_count,
-                 test_rung_names_decide_seniority,
-                 test_foreign_samples_drop_the_rung,
-                 test_a_country_page_band_gives_way,
+                 test_seniority_is_years_not_titles,
+                 test_one_submission_is_one_entry,
+                 test_foreign_samples_are_skipped,
+                 test_an_unread_page_changes_nothing,
                  test_a_checked_company_says_so,
                  test_a_file_cannot_claim_both):
         test()

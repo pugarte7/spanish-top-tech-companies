@@ -13,8 +13,8 @@ The scripts and workflows are MIT — see LICENSE.
 
 ## Third-party data
 
-Some bands cite external aggregators such as levels.fyi. This repository stores
-its own aggregate figures and a link back to the source page; it does not
-redistribute those services' datasets, and their terms still apply to them. If
-you believe something here goes beyond that, open an issue and it will be
-removed.
+Most salary entries are individual submissions read from levels.fyi's public
+pages, each with a link back to the page it came from. This license does not
+cover that data: levels.fyi's own terms apply to it, and nothing here grants
+rights they do not. If you believe something here goes beyond them, open an
+issue and it will be removed.

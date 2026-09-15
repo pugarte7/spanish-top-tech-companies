@@ -1,12 +1,12 @@
-name: Add or update a salary band
-description: New numbers for a company that's already listed, or re-verifying an old band.
+name: Add or update a salary
+description: A new salary for a company that's already listed, or re-verifying one on file.
 title: "Update: "
 labels: ["salary data"]
 body:
   - type: markdown
     attributes:
       value: |
-        Re-verifying a stale band counts just as much as adding a new one.
+        Re-verifying a stale salary counts just as much as adding a new one.
         Never include names, teams, or anything that identifies a person.
 
   - type: input
@@ -18,31 +18,20 @@ body:
     validations: { required: true }
 
   - type: input
-    id: role
-    attributes:
-      label: Role
-      placeholder: data-engineer
-    validations: { required: true }
-
-  - type: dropdown
-    id: level
-    attributes:
-      label: Level
-      options: [intern, junior, mid, senior, staff, principal, lead, manager, director]
-    validations: { required: true }
-
-  - type: input
     id: band
     attributes:
       label: Base salary, gross annual, EUR
-      placeholder: "60000-80000, median 70000"
+      description: One software engineer's base salary, 60000 or more.
+      placeholder: "72000"
     validations: { required: true }
 
   - type: input
-    id: sample
+    id: years
     attributes:
-      label: How many data points?
-      placeholder: "1 (my own offer)"
+      label: Years of experience
+      description: 5 or more. What the company calls the level does not matter.
+      placeholder: "8"
+    validations: { required: true }
 
   - type: textarea
     id: source
@@ -63,7 +52,7 @@ body:
     attributes:
       label: Is this new data or a re-check?
       options:
-        - New band
-        - Confirming the existing band is still accurate
-        - The existing band is wrong
+        - New salary
+        - Confirming a salary on file is still accurate
+        - A salary on file is wrong
     validations: { required: true }
