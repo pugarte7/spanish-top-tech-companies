@@ -1,5 +1,5 @@
 name: Add a company
-description: An employer paying 60k+ gross to someone working from Spain that isn't listed yet.
+description: An employer paying a software engineer with 5+ years 60k+ gross in Spain that isn't listed yet.
 title: "Add: "
 labels: ["new company"]
 body:
@@ -61,26 +61,19 @@ body:
     validations: { required: true }
 
   - type: input
-    id: role
-    attributes:
-      label: Role
-      description: "Use a slug from METHODOLOGY.md if you can, e.g. data-engineer"
-      placeholder: data-engineer
-    validations: { required: true }
-
-  - type: dropdown
-    id: level
-    attributes:
-      label: Level
-      options: [intern, junior, mid, senior, staff, principal, lead, manager, director]
-    validations: { required: true }
-
-  - type: input
     id: band
     attributes:
       label: Base salary, gross annual, EUR
-      description: A median if you know it, otherwise a range. Base only — bonus and equity below.
-      placeholder: "55000-75000, median around 65000"
+      description: One software engineer's base salary, 60000 or more. Bonus and equity below.
+      placeholder: "72000"
+    validations: { required: true }
+
+  - type: input
+    id: years
+    attributes:
+      label: Years of experience
+      description: 5 or more. What the company calls the level does not matter.
+      placeholder: "8"
     validations: { required: true }
 
   - type: input
@@ -108,7 +101,7 @@ body:
     attributes:
       label: Before submitting
       options:
-        - label: This is base salary, gross, before IRPF, in euros.
+        - label: This is one software engineer's base salary, gross, before IRPF, in euros.
           required: true
         - label: Nothing here identifies a specific person.
           required: true

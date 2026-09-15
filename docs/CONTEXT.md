@@ -6,62 +6,91 @@ twice, and one put every figure on the front page 16% over the truth.
 
 ## What this repository is
 
-A list of tech companies that pay senior software engineers 60.000 € a year or
-more to work **from Spain**. Two things follow from that and both are load
-bearing:
+A list of software engineers in Spain with 5 or more years of experience who
+earn 60.000 € a year or more in base salary, company by company. Three things
+follow from that and all are load bearing:
 
 - **Spain only.** A German salary in this list is worse than no salary, because
   the whole point is that other sources mix countries.
-- **Senior and above.** An all-seniority median includes juniors and answers a
-  different question.
+- **Individual salaries.** Every row is one engineer. Nothing is averaged: an
+  all-levels median, a ladder mean or an upper quartile mixes juniors in with
+  everyone else and answers a different question.
+- **Seniority is years of experience.** 5 or more (`lib.SENIOR_YEARS`),
+  whatever the company calls the level.
+
+### How that rule was reached, 2026-09-15
+
+In one day the list went through three definitions of "senior", and the
+maintainer rejected the first two:
+
+1. The best rung at senior or above per company, falling back to an
+   all-levels figure and to other job families. Rejected: "we just need to
+   track the software engineer roles" and "we cannot just do the average with
+   many people".
+2. Only ladder rungs or submissions whose names said senior. Rejected: "it
+   doesnt matter if its not marked as senior. If it has more than 5 years we
+   consider it senior." It had thrown away all 21 of Glovo's qualifying
+   engineers because Glovo's ladder runs L1 to L5.
+3. Every Spanish software engineer submission with 5+ years and a 60k+ base.
+   This one stands.
+
+The entries come from the `samples` and `median` records on each company's
+Spain page (trap 2). CONTEXT used to say individual submissions were not
+reachable from the server HTML; the samples inside `averages` are.
+
+The list publishes individual submissions, so to keep entries from pointing at
+a person the fetcher stores no submission id, exact day, job title,
+specialisation or years at company.
 
 ### The README is the product
 
 The maintainer's words: the product is the repo's front page, not the CSV and
-not the code. Every company, every salary figure and every link is in
-`README.md`. Nothing a reader would want lives only in a side file.
+not the code. Every company, every salary and every link is in `README.md`.
+Nothing a reader would want lives only in a side file.
 
 This was learned the hard way. On 2026-09-11 the table was slimmed to one
 figure per company with "the full data is in `exports/`", beside 243 YAML
 files, a backlog CSV, a benchmarks JSON and two exports. On 2026-09-14 the
 maintainer called that wrong, and it was rebuilt the other way round:
 
-- `README.md`: every figure for every company, generated.
-- `companies.csv`: the only data file. One row per salary figure, the
-  company's own columns repeated on each of its rows, and a single row with
-  the salary columns empty for a company with none.
+- `README.md`: every salary for every company, generated.
+- `companies.csv`: the only data file. One row per salary, the company's own
+  columns repeated on each of its rows, and a single row with the salary
+  columns empty for a company with none.
 
-Do not move figures out of the README to make it shorter, and do not split the
+Do not move salaries out of the README to make it shorter, and do not split the
 CSV into per-company files or add a second data file.
 
 ### The standard the maintainer wants
 
 A row should eventually mean: *I know someone in Spain doing this job and what
 they earn, or they offered me the position.* Nothing on the list meets that yet:
-every figure is crowdsourced from Levels.fyi. First-hand entries sort above
+every salary is crowdsourced from Levels.fyi. First-hand entries sort above
 everything else, so the list visibly converges on the standard as they are
 added, and the Source column names them.
 
 Recording one: copy one of the company's rows in `companies.csv` (or add a row
-with `company` and `linkedin_ids` for a new one), set `role`, `level`,
-`base_p50`, `source` and `date`, and put the contract type in `notes`.
+with `company` and `linkedin_ids` for a new one), set `base`,
+`years_experience`, `source` and `date`, and put the contract type in `notes`.
 `community` = someone told you. `offer-letter` = you were offered it. Neither
 needs a `source_url`. Then `python3 scripts/validate.py && python3 scripts/build.py`.
 
 ## Current state
 
 ```
-261 companies · 117 paying 60k+ · 159 with pay on file · 298 salary figures
+261 companies · 104 with a qualifying salary · 452 salaries
 ```
 
-- `companies.csv`: 400 rows. 298 are figures across 159 companies, 102 are
-  companies with none: 83 that Levels.fyi was asked about and published nothing
-  Spanish for, and 19 the resolver never found a Levels.fyi page for.
-- The README has three sections: *60k and above* (117 companies), *Under 60k*
-  (42) and *No pay on file* (102). Each paid company lists every figure it has,
-  its best job family first, and the one it is ranked by is bold.
+- `companies.csv`: 609 rows. 452 salaries across 104 companies, reported
+  between 2020-09 and 2026-09; 183 of them in the last twelve months.
+- 157 companies have none: 43 whose Spanish engineers all fall short of the
+  years or the pay, 95 with no Spanish data at all, and 19 the resolver never
+  found a Levels.fyi page for.
+- The README has two sections: every qualifying salary grouped by company,
+  best-paid first, and the companies with nothing qualifying.
 - Every company links to LinkedIn and to its open roles in Spain, and every
-  figure to the Spain-scoped page it was read from.
+  salary to the Spain-scoped page it was read from.
+- All entries were read from Levels.fyi on 2026-09-15.
 
 How the move to one CSV was checked, 2026-09-14: all 299 YAML figures, all 242
 backlog LinkedIn ids and every company field were compared with the CSV, and
@@ -70,21 +99,7 @@ the old README exactly. Two things changed on purpose. `meta.yml` was a
 duplicate of `facebook.yml`, figure for figure, and was folded into it. Six
 employers filed under two LinkedIn ids (Amazon and AWS, Google and DeepMind,
 Adevinta and Adevinta Spain, Allianz and Allianz Technology, Meta, Compound)
-now keep both, and their jobs link searches both. The resolver's "matched as"
-notes and `benchmarks.json`, neither of which reached the page, were dropped.
-
-On 2026-09-11 the ranked figure became the **highest** rung at senior or above
-rather than the first one that counts as senior, and a company with no
-software-engineer figure at all started falling back to its best other job
-family. That took 103 companies over 60k to 117. It also moved Amazon from its
-senior rung (88.9k, 10 submissions) to its principal one (125.3k, 2): the bold
-figure answers "the best senior-or-above rung pays this", not "you get this on
-reaching senior".
-
-The senior rungs and the sample counts arrived on 2026-09-09, when `averages`
-was finally read (trap 2 below). The count of companies over 60k **fell** from
-112 to 103 in the same pass, because every figure until then was USD wearing a
-euro sign (trap 4).
+now keep both, and their jobs link searches both.
 
 ## The four traps in Levels.fyi data
 
@@ -118,36 +133,31 @@ rather than validate's and stayed green no matter what validate found. The
 workflow now sets `shell: bash`, which turns `pipefail` on. Worth remembering
 before piping anything else in that file.
 
-**2. The per-location page answers in three voices, and they disagree.**
+**2. The per-location page answers in three voices.**
 On `/companies/<slug>/salaries/software-engineer/locations/spain`:
 
 - `averages` — the company's own ladder, scoped to the location asked for. One
-  entry per rung with a **mean** base and total, a submission count, and every
-  name that rung answers to. **This is the richest source on the page and it
-  went unread for the first month of this project.** It is the only one that
-  says which rung a figure belongs to, so the only one that can produce a
-  senior salary. Amazon serves a *United States* aggregate next to 50 Spanish
-  submissions filed here across four rungs.
-- `percentiles` — an aggregate. Falls back to another country when the Spanish
-  sample is below their publication threshold. `percentiles.locationName` names
-  the country **actually served**, which is the only reliable guard.
+  entry per rung with a **mean** base and total, a submission count, and up to
+  twenty `samples`: individual submissions, each with a city, years of
+  experience, level, offer date and pay. **The samples are where the list's
+  entries come from**, and they went unread for the first month of this
+  project. A rung's `count` is usually higher than its samples; the rest are
+  not published. Amazon's SDE I lists 20 samples against a count of 27.
+- `percentiles` — an aggregate across every level. Falls back to another
+  country when the Spanish sample is below their publication threshold.
+  `percentiles.locationName` names the country **actually served**. Never an
+  entry.
 - `median` — one real submission for the location requested. **Stays Spanish
-  even when the aggregate has given up.**
+  even when the aggregate has given up**, and is often the only submission a
+  small company has. It is frequently also one of the samples, so entries are
+  deduplicated on `uuid`.
 
-Each covers companies the others miss, so read all three. The aggregate alone
-was 43 companies; adding `median` took it to 140; adding `averages` took it to
-149 and turned 49 of those from an all-seniority blur into a measured senior
-rung.
+Every submission names its city, which is the guard that matters: a sample
+outside Spain is skipped whatever page it came from. `locationMeta` is useless
+as a guard — it just echoes the URL back.
 
-`averages` rungs are named by the company, not by seniority: `sde-iii`, `L3`,
-`Grade 10`, `VS 2`. Each rung carries several titles and only one of them may
-say what it is — Amazon's senior rung is `sde-iii`, `L6` **and** `Senior SDE` —
-so search all of them. A rung whose names say nothing stays unmapped; there is
-no fallback to ladder position, because "Glovo's L3 is probably senior" is a
-guess and guesses are indistinguishable from measurements once they are in the
-file.
-
-`locationMeta` is useless as a guard — it just echoes the URL back.
+`yearsOfExperience` is a number on samples and sometimes a bucket on the median
+(`5-10`, `11+`). A bucket counts from its low end.
 
 **3. A sample count does not mean a published figure.**
 Some companies return `sampleSize > 0` with `locationName: null`, every
@@ -157,22 +167,22 @@ number attached to any of them. Levels.fyi has the data and does not publish
 it. The individual submissions table on the site renders client-side and is not
 reachable from the server HTML — only that one `median` record is.
 
-So "the site shows salaries for this company" and "the pipeline can read a
-figure" are different claims, and the second is often false.
+So "the site shows salaries for this company" and "the pipeline can read an
+entry" are different claims, and the second is often false.
 
 `generatedOccupationSchema.sampleSize` looks like the Spanish submission count
 and is not one. It equals the sum of the `averages` counts when there are
 averages, and the **company's global count** when there are none: Amadeus
 reports 429 next to an empty `averages` and a page that reads "Not enough
-data". Only the `averages` counts are a Spanish sample size, which is why a
-band built from anything else carries none.
+data". Only the `averages` counts are Spanish, and the list stores no counts
+at all now.
 
 **4. Every money field in the payload is USD.**
 The page prints euros by multiplying by `locationExchangeRate`, and its own FAQ
 text proves it: Glovo's Spanish median total of `79710.65` appears there as
 "€68,551", which is `79710.65 x 0.86`.
 
-METHODOLOGY.md had said this from the beginning and `fetch_levels_public.py`
+METHODOLOGY.md had said this from the beginning and the country-page fetcher
 had always done it. `fetch_spain.py` was written afterwards and did not, so all
 141 bands it wrote went into files that said EUR at roughly 116% of the truth —
 Glovo's headline read 84.2k where the site says 72.4k. Nothing caught it: the
@@ -184,22 +194,25 @@ The lesson is narrower than the last two and worth stating anyway: a rule that
 lives only in prose is not enforced. This one is now a case in
 `tests/test_pipeline.py`, which asserts the two published euro figures above.
 
-A submission record also carries its own unrounded `exchangeRate`, and it
+The median record also carries its own unrounded `exchangeRate`, and it
 round-trips to the figure the person actually typed: Glovo's median base of
 `64068.9615` at `0.85845` is exactly 55.000 €, where the page-wide rate rounded
-to two places says 55.099 €. Use the record's rate for a single submission and
-the page's for an aggregate.
+to two places says 55.099 €. But that rate converts to the currency the person
+was paid in, named in `baseSalaryCurrency`. Smile.io's was USD at a rate of 1,
+and until 2026-09-15 its 105.000 USD was listed as 105.000 €; at the page's
+rate it is 91.455 €. Use the record's rate only when its currency is EUR.
+Samples carry no rate, so they use the page's, and an old euro salary can
+drift a percent or two.
 
 ## Scripts
 
 | Script | What it does | Safe? |
 | --- | --- | --- |
-| `fetch_spain.py` | Per-company Spain pay. Verifies Spain, converts USD to EUR, writes a figure per named ladder rung plus one `all` figure, records LinkedIn, deletes any figure whose source URL names no location. `--role` reads any other job family. | **Use this** |
-| `fetch_levels_public.py` | Spain country pages (`/t/<role>/locations/spain`). Genuinely Spain-scoped but lists only ~10 companies per role/location, so it is mostly for finding companies. Never overwrites a company-page or first-hand figure. | Yes |
+| `fetch_spain.py` | Qualifying salaries in Spain, per company. Reads every sample and the median record, keeps Spanish ones with 5+ years and a 60k+ base, converts USD to EUR, records LinkedIn, deletes any entry whose source URL names no location, and leaves a company alone when its page cannot be read. | **Use this** |
 | `fetch_company.py` | Company details only: website, HQ, headcount, sector, vesting. Writes no salary at all, by design. Only fills companies already in the CSV. | Yes |
 | `resolve_slugs.py` | Company name → Levels.fyi slug, with verification and an alias table. Folds a company into the one already holding its slug. | Yes |
 | `build.py` | Regenerates the README and rewrites `companies.csv` in canonical order. | Yes |
-| `validate.py` | Column checks and sanity checks, including the location guard and the `spain_check` contradiction guard. | Yes |
+| `validate.py` | Column checks and sanity checks, including the location guard, the software-engineer page guard and the `spain_check` contradiction guard. | Yes |
 
 `lib.py` is the only code that reads or writes `companies.csv`. Writes go to a
 temporary file first, because an interrupted fetch must not truncate the only
@@ -213,31 +226,21 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 
 ## Known gaps
 
-- **102 companies have no figure.** For 83 of them Levels.fyi publishes nothing
-  Spanish under `software-engineer`, no ladder, no aggregate, not even one
-  submission. That is a fact about Levels.fyi's coverage of Spain, not about
-  whether the company pays well here. The other 19 have no Levels.fyi page.
-
-  The 93 companies with no software-engineer figure on 2026-09-10 were then
-  asked for up to six other job families (`software-engineering-manager`,
-  `data-scientist`, `product-manager`, `solution-architect`,
-  `hardware-engineer`, `data-analyst`). **Nine answered**: Analog Devices and
-  BCG with a small ladder, D-EDGE, HP, NovaKid, TransPerfect and Vestas with an
-  aggregate, McKinsey and PepsiCo with one submission. Those nine, plus NCC
-  Group through a country page, are ranked by that other family. The other 83
-  have nothing Spanish under any family asked, and `spain_check_roles` lists
-  every family that was, so the row can say so. Do not re-run that sweep
-  hoping for a different answer; run it again in six months, or go at these
-  companies through job ads, which is source #3 in METHODOLOGY.md and the only
-  way to reach them. A figure from an ad goes in as a row with `source`
-  `job-posting`.
-- **No first-hand data yet.** Every figure is crowdsourced. The repository's own
+- **157 companies have no qualifying salary.** 43 have Spanish submissions,
+  but nobody with both 5 years and a 60k base. 95 have nothing Spanish at all,
+  which is a fact about Levels.fyi's coverage of Spain, not about whether the
+  company pays well here; a first-hand entry or a job ad (source #3 in
+  METHODOLOGY.md) is the only way to reach them. 19 have no Levels.fyi page.
+- **Not every submission is published.** A rung's samples stop short of its
+  count, so a company can have more qualifying engineers than the list shows.
+- **Old salaries.** Entries go back to 2020-09. The README shows the month, but
+  nothing is dropped for age.
+- **No first-hand data yet.** Every salary is crowdsourced. The repository's own
   standard is not met by a single row, which is the biggest gap on this list.
 - **Duplicate slugs.** Levels.fyi files some employers twice (`meta` and
   `facebook` serve the same data). `companies.csv` holds one row group per
   employer and `validate.py` rejects a slug used twice; the list uses
   `facebook` for Meta.
-- **Warnings.** 0 errors, 0 warnings as of 2026-09-14.
 
 ## Commands
 

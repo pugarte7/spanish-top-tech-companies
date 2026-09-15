@@ -277,7 +277,7 @@ def exists(slug: str, delay: float) -> bool:
 def fold(company: dict, into: dict) -> None:
     """Merge a company into the one already filed under the same slug."""
     into["linkedin_ids"] += [i for i in company["linkedin_ids"] if i not in into["linkedin_ids"]]
-    into["bands"] += company["bands"]
+    into["entries"] += company["entries"]
     for column in lib.COMPANY_COLUMNS:
         if into.get(column) in (None, []) and company.get(column) not in (None, []):
             into[column] = company[column]

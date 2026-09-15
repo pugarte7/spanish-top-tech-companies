@@ -16,9 +16,8 @@ reader is in the eurozone. Booking.com's page reads EUR while its figures are
 Dutch; Adidas reads EUR over United States figures; Revolut over British ones.
 Trusting that once put 682 foreign salary bands into this repository.
 
-Spain-scoped compensation comes from pages that name the country in the URL
-instead - scripts/fetch_spain.py per company, scripts/fetch_levels_public.py
-for the country job-family pages.
+Salaries in Spain come from each company's Spain-scoped software-engineer page
+instead: see scripts/fetch_spain.py.
 """
 from __future__ import annotations
 

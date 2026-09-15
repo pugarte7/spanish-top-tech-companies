@@ -11,61 +11,49 @@ import re
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DATA = ROOT / "companies.csv"
 
-# A company makes the list if any documented role/level reaches this in base salary.
+# An entry is on the list when a software engineer in Spain with this much
+# experience is paid at least this in base salary. Seniority is the years, not
+# whatever the company calls the level: an L4 with eight years counts, a
+# "Senior" with two does not.
 THRESHOLD_EUR = 60_000
+SENIOR_YEARS = 5
 
 # Compensation older than this is shown as stale rather than quietly trusted.
 STALE_DAYS = 365
 
-LEVEL_ORDER = [
-    "intern", "junior", "mid", "senior", "staff",
-    "principal", "lead", "manager", "director",
-    "all",  # aggregate across every level; sorts last
-]
-
-# Canonical role slugs. Anything else validates but gets a warning, so the
-# table doesn't end up with data-engineer, data_engineer and dataengineer.
-# The last six are Levels.fyi's own job families, which the fetchers write.
-CANONICAL_ROLES = [
-    "data-engineer", "analytics-engineer", "data-scientist", "data-analyst",
-    "machine-learning-engineer", "ai-engineer", "software-engineer",
-    "backend-engineer", "frontend-engineer", "fullstack-engineer",
-    "mobile-engineer", "platform-engineer", "devops-engineer", "sre",
-    "security-engineer", "qa-engineer", "engineering-manager",
-    "product-manager", "product-designer", "data-engineering-manager",
-    "software-engineering-manager", "solution-architect", "hardware-engineer",
-    "business-analyst", "security-analyst", "information-technologist",
-]
-
 SOURCES = ["levels.fyi", "company-published", "offer-letter", "community",
            "job-posting", "glassdoor", "other"]
 
-# One row per salary figure, the company's own columns repeated on each of its
-# rows. A company with no figure still gets a row with the band columns empty:
-# that row is what carries spain_check, so "asked, nothing published" has
-# somewhere to live.
+# A salary someone in Spain told the maintainer directly outranks anything
+# crowdsourced, so it sorts above it however large the crowdsourced one is.
+VOUCHED = ("offer-letter", "community")
+
+# One row per salary entry: one software engineer in Spain, their years of
+# experience and what they are paid. The company's own columns are repeated on
+# each of its rows.
+#
+# A company with no entry still gets a row with the entry columns empty. That
+# row is what carries spain_check, so "asked, nothing published" has somewhere
+# to live.
 #
 # Identity comes first so a company can be added by hand as `Name,linkedin_id`.
 IDENTITY_COLUMNS = ["company", "linkedin_ids", "linkedin_url", "levels_slug", "levels_status"]
-BAND_COLUMNS = [
-    "role", "level", "base_min", "base_p50", "base_max", "total_min", "total_p50",
-    "total_max", "sample_size", "source", "source_url", "date", "notes",
-]
-CHECK_COLUMNS = ["spain_check_date", "spain_check_roles", "spain_check_served"]
+ENTRY_COLUMNS = ["base", "total", "years_experience", "level", "city", "reported",
+                 "source", "source_url", "date", "notes"]
+CHECK_COLUMNS = ["spain_check_date", "spain_check_served"]
 PROFILE_COLUMNS = ["website", "careers_url", "hq_city", "hq_country", "employees",
                    "sector", "year_founded", "about"]
-COLUMNS = IDENTITY_COLUMNS + BAND_COLUMNS + CHECK_COLUMNS + PROFILE_COLUMNS
+COLUMNS = IDENTITY_COLUMNS + ENTRY_COLUMNS + CHECK_COLUMNS + PROFILE_COLUMNS
 COMPANY_COLUMNS = IDENTITY_COLUMNS + CHECK_COLUMNS + PROFILE_COLUMNS
 
-INTEGER_COLUMNS = {"base_min", "base_p50", "base_max", "total_min", "total_p50",
-                   "total_max", "sample_size", "year_founded"}
+INTEGER_COLUMNS = {"base", "total", "year_founded"}
 # Pipe-separated inside one cell.
-LIST_COLUMNS = {"linkedin_ids", "spain_check_roles", "sector"}
+LIST_COLUMNS = {"linkedin_ids", "sector"}
 
 
 def blank_company(name: str, **fields) -> dict:
     company = {column: [] if column in LIST_COLUMNS else None for column in COMPANY_COLUMNS}
-    company.update(company=name, bands=[], **fields)
+    company.update(company=name, entries=[], **fields)
     return company
 
 
@@ -78,17 +66,21 @@ def by_name(companies: list[dict], name: str) -> dict | None:
     return next((c for c in companies if c["company"].casefold() == key), None)
 
 
-def add_company(companies: list[dict], name: str, **fields) -> dict:
-    """Append a new company, refusing a name already taken.
+def years(raw) -> int | None:
+    """Years of experience as a number, the low end of a range.
 
-    Rows are grouped by name, so a second "Meta" would not be a second company:
-    it would merge into the first one on the next read and fail on its slug.
+    Levels.fyi records it as a number or as a bucket like "5-10" or "11+".
+    "5-10" is at least five years, so it counts as five: rounding a bucket up
+    would call someone senior on years they may not have.
     """
-    if by_name(companies, name):
-        raise ValueError(f"{name!r} is already in {DATA.name}")
-    company = blank_company(name, **fields)
-    companies.append(company)
-    return company
+    found = re.fullmatch(r"\s*(\d+)\s*(?:[-–]\s*\d+|\+)?\s*", str(raw)) if raw is not None else None
+    return int(found.group(1)) if found else None
+
+
+def qualifies(entry: dict) -> bool:
+    experience = years(entry.get("years_experience"))
+    return (entry.get("base") or 0) >= THRESHOLD_EUR and experience is not None \
+        and experience >= SENIOR_YEARS
 
 
 def _parse(column: str, raw: str | None):
@@ -134,7 +126,7 @@ def read(path: pathlib.Path | None = None) -> tuple[list[dict], list[str]]:
                 problems.append(f"line {line}: more cells than the header has columns")
             name = (row.get("company") or "").strip()
             if not name:
-                if any((v or "").strip() for k, v in row.items() if isinstance(v, str)):
+                if any((v or "").strip() for v in row.values() if isinstance(v, str)):
                     problems.append(f"line {line}: no company name")
                 continue
             company = companies.get(name.casefold())
@@ -162,10 +154,10 @@ def read(path: pathlib.Path | None = None) -> tuple[list[dict], list[str]]:
                     problems.append(f"line {line}: {name} has {column} {_format(column, value)!r} "
                                     f"here and {_format(column, company[column])!r} above")
 
-            if any(values[column] not in (None, []) for column in BAND_COLUMNS):
-                band = {column: values[column] for column in BAND_COLUMNS}
-                band["_line"] = line
-                company["bands"].append(band)
+            if any(values[column] is not None for column in ENTRY_COLUMNS):
+                entry = {column: values[column] for column in ENTRY_COLUMNS}
+                entry["_line"] = line
+                company["entries"].append(entry)
     return list(companies.values()), problems
 
 
@@ -178,12 +170,18 @@ def load_companies(path: pathlib.Path | None = None) -> list[dict]:
     return companies
 
 
-def band_order(band: dict):
-    """Software engineering first, then most senior first, `all` last."""
-    role = band.get("role") or ""
-    level = band.get("level") or ""
-    return (role != "software-engineer", role, level == "all", -level_rank(level),
-            band.get("source") or "", band.get("source_url") or "")
+def month(raw) -> int:
+    """A YYYY-MM as a number that sorts, 0 when there is none."""
+    found = re.fullmatch(r"(\d{4})-(\d{2})", raw or "")
+    return int(found.group(1)) * 12 + int(found.group(2)) if found else 0
+
+
+def entry_order(entry: dict):
+    """First-hand before crowdsourced, then best-paid, then most recent."""
+    return (entry.get("source") not in VOUCHED, -(entry.get("base") or 0),
+            -(entry.get("total") or 0), -(years(entry.get("years_experience")) or 0),
+            -month(entry.get("reported")), entry.get("level") or "", entry.get("city") or "",
+            entry.get("source_url") or "")
 
 
 def save_companies(companies: list[dict], path: pathlib.Path | None = None) -> None:
@@ -198,70 +196,28 @@ def save_companies(companies: list[dict], path: pathlib.Path | None = None) -> N
     writer.writeheader()
     for company in sorted(companies, key=lambda c: c["company"].casefold()):
         shared = {column: _format(column, company.get(column)) for column in COMPANY_COLUMNS}
-        bands = sorted(company.get("bands") or [], key=band_order)
-        for band in bands or [{}]:
-            writer.writerow({**shared, **{column: _format(column, band.get(column))
-                                          for column in BAND_COLUMNS}})
+        entries = sorted(company.get("entries") or [], key=entry_order)
+        for entry in entries or [{}]:
+            writer.writerow({**shared, **{column: _format(column, entry.get(column))
+                                          for column in ENTRY_COLUMNS}})
     temporary = path.with_name(path.name + ".tmp")
     temporary.write_text(buffer.getvalue(), encoding="utf-8")
     os.replace(temporary, path)
 
 
-def reference(low, mid, high) -> int | None:
-    """The single number a range is judged on.
-
-    Median first. Falling back to the midpoint rather than the max keeps one
-    outlier offer from dragging a company onto the list.
-    """
-    if mid is not None:
-        return mid
-    if low is not None and high is not None:
-        return (low + high) // 2
-    return high if high is not None else low
+def headline(company: dict) -> dict | None:
+    """The entry a company is ranked by: first-hand first, then the best-paid."""
+    entries = company.get("entries") or []
+    return min(entries, key=entry_order) if entries else None
 
 
-def figure(band: dict) -> tuple[int | None, str | None]:
-    """(value, "base" or "total") a band is judged on.
-
-    Base salary when we have it. Country-level aggregates only publish total
-    compensation, and a company we only know through one of those is still
-    worth listing, so fall back to it. The table prints base and total comp in
-    separate columns, so which one a row rests on stays visible.
-    """
-    for block in ("base", "total"):
-        value = reference(band.get(f"{block}_min"), band.get(f"{block}_p50"),
-                          band.get(f"{block}_max"))
-        if value is not None:
-            return value, block
-    return None, None
-
-
-def level_value(band: dict) -> int | None:
-    return figure(band)[0]
-
-
-def top_band(company: dict) -> tuple[dict, int] | None:
-    """Highest documented band, as (band, value)."""
-    best = None
-    for band in company.get("bands") or []:
-        value = level_value(band)
-        if value is not None and (best is None or value > best[1]):
-            best = (band, value)
-    return best
-
-
-def qualifies(company: dict) -> bool:
-    best = top_band(company)
-    return best is not None and best[1] >= THRESHOLD_EUR
-
-
-def parse_date(value) -> dt.date | None:
-    if not value:
+def parse_date(raw) -> dt.date | None:
+    if not raw:
         return None
-    if isinstance(value, dt.date):
-        return value
+    if isinstance(raw, dt.date):
+        return raw
     try:
-        return dt.date.fromisoformat(str(value))
+        return dt.date.fromisoformat(str(raw))
     except ValueError:
         return None
 
@@ -277,22 +233,18 @@ def today_utc() -> dt.date:
     return dt.datetime.now(dt.timezone.utc).date()
 
 
-def is_stale(value, today: dt.date | None = None) -> bool:
-    day = parse_date(value)
+def is_stale(raw, today: dt.date | None = None) -> bool:
+    day = parse_date(raw)
     if day is None:
         return True
     today = today or today_utc()
     return (today - day).days > STALE_DAYS
 
 
-def fmt_eur(value) -> str:
-    if value is None:
+def fmt_eur(amount) -> str:
+    if amount is None:
         return "?"
-    return f"{value // 1000}k" if value >= 1000 else str(value)
-
-
-def level_rank(name: str) -> int:
-    return LEVEL_ORDER.index(name) if name in LEVEL_ORDER else len(LEVEL_ORDER)
+    return f"{amount // 1000}k" if amount >= 1000 else str(amount)
 
 
 def slugify(name: str) -> str:
