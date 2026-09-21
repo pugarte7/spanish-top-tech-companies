@@ -52,17 +52,25 @@ The id is the `f_C` number in a LinkedIn job search filtered to that company. [`
 
 ### Fetching from Levels.fyi
 
-**Qualifying salaries in Spain, per company** (no key, but must run from Spain):
+**Qualifying salaries in Spain, per company** (must run from Spain, and needs your Levels.fyi session to see everything):
 
 ```bash
-python3 scripts/fetch_spain.py --delay 3.0     # every resolved company, ~14 min
+python3 scripts/fetch_spain.py --delay 3.0     # every resolved company, ~25 min
 python3 scripts/fetch_spain.py --company glovo
 python3 scripts/fetch_spain.py --audit         # report only, writes nothing
 ```
 
-This is the only route for crowdsourced salaries. It reads `/companies/<slug>/salaries/software-engineer/locations/spain` and writes every submission on it from a Spanish city with 5 or more years of experience and a base of 60k or more. See [METHODOLOGY.md](METHODOLOGY.md#an-entry-must-prove-it-is-spanish) for why the city check is not optional. It also deletes any entry already on file whose source URL names no location, and leaves a company untouched when its page cannot be read.
+This is the only route for crowdsourced salaries. It reads `/companies/<slug>/salaries/software-engineer/locations/spain` and the "Latest Salary Submissions" table under it, and writes every submission from a Spanish city with 5 or more years of experience and a base of 60k or more. See [METHODOLOGY.md](METHODOLOGY.md#an-entry-must-prove-it-is-spanish) for why the city check is not optional. It also deletes any entry already on file whose source URL names no location, and leaves a company untouched when its page or table cannot be read.
 
-Keep `--delay` at 2.5s or more. Levels.fyi answers 403, 405, 429 and 503 when it decides you are a bot, and all four mean *slow down*, not *no such company*.
+The table is where most submissions are, and the browser only loads it for a signed-in visitor who has added a salary. Without a session the script reads the public page alone, which for most companies is a single record, and says so. To give it your session: sign in on levels.fyi, open the browser console and run `copy(localStorage.getItem("auth"))`, then
+
+```bash
+mkdir -p ~/.config/levels && pbpaste > ~/.config/levels/token && chmod 600 ~/.config/levels/token
+```
+
+or export it as `LEVELS_TOKEN`. The token is a login: it lives outside the repository, nothing prints it, and it expires after a day, so copy a fresh one before a run. Reading the table this way is not something Levels.fyi's terms allow, and the account could be closed for it; that risk is the maintainer's to take, not a contributor's.
+
+Keep `--delay` at 2.5s or more. Levels.fyi answers 402, 403, 405, 429 and 503 when it decides you are a bot, and all five mean *slow down*, not *no such company*. A 401 means the token has expired.
 
 **Company details**: website, HQ, headcount, sector, vesting (no key):
 

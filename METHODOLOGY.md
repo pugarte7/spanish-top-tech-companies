@@ -50,12 +50,15 @@ A first-hand entry (`offer-letter`, `community`) sorts above any crowdsourced on
 
 Only one page carries a software engineer's own submission in Spain: a company's software-engineer page for the location, `/companies/<slug>/salaries/software-engineer/locations/spain`. [`scripts/fetch_spain.py`](scripts/fetch_spain.py) reads it, and `validate.py` rejects a Levels.fyi entry citing any other page.
 
-The page carries submissions in two places:
+The page carries submissions in three places:
 
-- `averages`, the company's ladder, lists up to twenty `samples` per level, each with a city, years of experience and pay. Almost every entry comes from here.
-- `median` is one more submission, and often the only one a small company has.
+- The **"Latest Salary Submissions" table** under the figures: every submission for that company, job family and country. The browser fills it from Levels.fyi's API using the visitor's own session, and shows an anonymous visitor a wall of asterisks instead. Since 2026-09-21 the fetcher reads this table with the maintainer's session, and it is where most entries come from.
+- `averages`, the company's ladder embedded in the public page, lists up to twenty `samples` per level, each with a city, years of experience and pay. Only some companies get one.
+- `median` is one more submission embedded in the page, and for most companies the only one an anonymous visitor can read.
 
-A level's `count` is often higher than its samples: the page does not publish every submission, so "every entry" means every entry Levels.fyi shows. `percentiles`, an aggregate across every level, is never an entry.
+Fever is the case that showed the difference. Its public page embedded one record, an L3 with six years at 48.7k, and the README said "none with 5+ years at 60k+"; the table had 29 Spanish software engineers, ten of them qualifying, with a Staff engineer at 90k base. Twenty-two companies were in the same state.
+
+The API caps the table at 250 rows, newest first, so for the very largest employers a few old submissions are out of reach. `percentiles`, an aggregate across every level, is never an entry.
 
 Each entry keeps the company, base, total compensation, years of experience, the level as its author filed it, the city and the month it was submitted. It deliberately leaves out the submission id, the exact day, the job title, the specialisation and the years at the company: together with a company and a city, those start to point at a person.
 
@@ -76,7 +79,7 @@ spain_check_date,spain_check_served
 2026-09-15,Spain (ladder)
 ```
 
-`spain_check_served` is what the page had instead. `Spain (ladder)`, `Spain (aggregate)` or `Spain (submission)` mean Spanish data where nobody reaches both 5 years and 60k, and the README says so. `no data`, or another country's name, means nothing Spanish at all, and the README reads **no Spain data**. Both link to the page, so a reader can see the gap for themselves.
+`spain_check_served` is what the page had instead. `Spain (table)` means the signed-in table was read in full and nobody in it reaches both 5 years and 60k; the README reads **none with 5+ years at 60k+**. `Spain (ladder)`, `Spain (aggregate)` or `Spain (submission)` mean the public page alone was read, which shows a subset, so the README says only **none published with 5+ years at 60k+**: the verdict is about what an anonymous visitor can see, not about the company. `no data`, or another country's name, means nothing Spanish at all, and the README reads **no Spain data**. All of them link to the page, so a reader can see the gap for themselves.
 
 The check clears the moment an entry turns up, and `validate.py` fails the build if a company ever carries both a check and a Levels.fyi entry. These are structural columns precisely so the table never has to guess from the wording of a note.
 
@@ -94,7 +97,7 @@ Levels.fyi publishes figures in **USD**; each page carries a `locationExchangeRa
 
 The median record also carries the currency its author was paid in and the rate they typed it at, which round-trips to their exact figure: Glovo's median base of `64068.9615` at `0.85845` is exactly 55.000 €. That rate converts to *their* currency, so it is only used when that currency is EUR. Smile.io's submission was 105.000 USD at a rate of 1, and was listed as 105.000 € until 2026-09-15; it is 91.455 € at the page's rate.
 
-Samples carry no currency or rate of their own, so they go through the page's current rate. An entry typed in euros years ago can therefore drift a percent or two from what its author wrote.
+Table rows carry their own currency and rate too and are converted the same way. Samples carry neither, so they go through the page's current rate, and an entry typed in euros years ago can drift a percent or two from what its author wrote.
 
 ## Why no salary data comes from company pages
 

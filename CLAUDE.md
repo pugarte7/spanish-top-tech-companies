@@ -23,7 +23,7 @@ only data file: one row per salary, company columns repeated. Never slim the
 README by moving data into side files, and never go back to one file per
 company. Both were tried and the maintainer rejected them.
 
-The four things that will bite you:
+The five things that will bite you:
 
 1. **Levels.fyi serves another country's salaries when it has no Spanish data**,
    and the page currency stays EUR for Germany, the Netherlands, France and
@@ -51,10 +51,22 @@ The four things that will bite you:
    was paid in, so use it only when `baseSalaryCurrency` is EUR. Missing the
    conversion once put all 141 bands on the front page 16% high; using the
    record's rate for a dollar salary listed Smile.io's 105k USD as 105k EUR.
+5. **The public page is a subset; the submissions table needs a sign-in.**
+   The browser fills "Latest Salary Submissions" from `api.levels.fyi` with the
+   visitor's session token and shows anonymous visitors asterisks. Fever's page
+   embedded one record and the README said "none with 5+ years at 60k+" while
+   its table had 29 Spanish engineers, ten qualifying. `fetch_spain.py` reads
+   the table when `LEVELS_TOKEN` or `~/.config/levels/token` holds the
+   maintainer's token (`localStorage.auth` on levels.fyi, lasts a day). Only a
+   full table read (`Spain (table)`) may say nobody qualifies; page-only labels
+   render as "none published". The token is a live login: never commit it,
+   never print it, never put it in a tool call's visible output. Reading the
+   table is against Levels.fyi's terms; the maintainer chose that on
+   2026-09-21 knowing the account may be closed.
 
 All Levels.fyi fetching must run from Spain; the pages are IP-scoped. Keep
-`--delay` at 2.5s or more, and treat 403/405/429/503 as throttling rather than
-as "not found".
+`--delay` at 2.5s or more, and treat 402/403/405/429/503 as throttling rather
+than as "not found". 401 is an expired token.
 
 Entries are individual Levels.fyi submissions. Keep the stored fields to what
 the README shows (no submission ids, exact days, titles or years at company),

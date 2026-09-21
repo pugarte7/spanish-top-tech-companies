@@ -10,6 +10,16 @@ experience and a base salary of at least lib.THRESHOLD_EUR. The level name does
 not matter: companies call the same job L4, SDE II or Senior, and years are the
 one thing every submission states the same way.
 
+Most submissions are behind a sign-in. The public page embeds a handful (see
+below); the "Latest Salary Submissions" table under it holds every one, and is
+loaded by the browser from api.levels.fyi with the visitor's session token,
+which an anonymous visitor does not have (the rows render as asterisks). Fever
+is the case that exposed this: 29 Spanish software engineers in the table, one
+on the public page. With a token in LEVELS_TOKEN or ~/.config/levels/token this
+script reads the table too; without one it reads the public page and says so.
+The token is a session credential: it is never written anywhere, and the run
+report never prints it.
+
 Why this exists instead of fetch_company.py: that script reads
 /companies/<slug>/salaries, which is scoped by the caller's IP and silently
 falls back to another country when Levels.fyi has no Spanish submissions. Its
@@ -49,24 +59,40 @@ submission was 105.000 USD at a rate of 1, and was listed as 105.000 EUR until
 from __future__ import annotations
 
 import argparse
+import base64
 import copy
 import gzip
+import hashlib
 import json
+import os
+import pathlib
 import re
+import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
+import zlib
 
 import lib
 
 BASE = "https://www.levels.fyi"
+API = "https://api.levels.fyi/v3/salary/search"
 ROLE = "software-engineer"
 ATTRIBUTION = "Data source: Levels.fyi (https://www.levels.fyi)"
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/128.0 Safari/537.36")
 MONTHS = {name: number for number, name in enumerate(
     ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 1)}
+
+# The signed-in table. Levels.fyi's own id for Spain, the API's page-size
+# ceiling (it answers 400 above it), and where the maintainer leaves a token.
+SPAIN_COUNTRY_ID = 226
+TABLE_PAGE = 50
+TOKEN_FILE = pathlib.Path.home() / ".config" / "levels" / "token"
+# Level names the API sends where the author left the field blank.
+NO_LEVEL = {"", "false", "none", "null"}
 
 
 def unscoped(entry: dict) -> bool:
@@ -98,19 +124,24 @@ def ours(entry: dict) -> bool:
 
 
 class Blocked(RuntimeError):
-    """Levels.fyi's WAF returned a bot challenge."""
+    """Levels.fyi's WAF returned a bot challenge, or the API refused the token."""
 
 
-def get(url: str, delay: float, attempts: int = 3) -> str | None:
+def get(url: str, delay: float, attempts: int = 3, headers: dict | None = None) -> str | None:
     """Fetch one page, retrying transient network faults.
 
     A dropped connection mid-read raises ConnectionResetError, which is an
     OSError and not wrapped by urllib.error, so catching URLError alone lets it
     kill a 243-page run. One reset is not a verdict about the company: retry.
+
+    401 and 402 come from the API only. 401 is a token that has expired or was
+    pasted wrong; 402 is what it answers a request it takes for a bot (a bare
+    User-Agent got one). Neither says anything about the company, so both stop
+    the run rather than write "no data".
     """
     request = urllib.request.Request(
         url, headers={"User-Agent": UA, "Accept-Encoding": "gzip",
-                      "Accept": "text/html,application/xhtml+xml"})
+                      "Accept": "text/html,application/xhtml+xml", **(headers or {})})
     last: Exception | None = None
     for attempt in range(attempts):
         try:
@@ -126,7 +157,10 @@ def get(url: str, delay: float, attempts: int = 3) -> str | None:
             return body
         except urllib.error.HTTPError as exc:
             time.sleep(delay)
-            if exc.code in (403, 405, 429, 503):
+            if exc.code == 401:
+                raise Blocked("Levels.fyi rejected the token (HTTP 401). Sign in again "
+                              f"and copy a fresh one to {TOKEN_FILE}.") from exc
+            if exc.code in (402, 403, 405, 429, 503):
                 raise Blocked(f"Levels.fyi answered HTTP {exc.code}. Wait, then retry "
                               f"with a larger --delay.") from exc
             return None
@@ -136,6 +170,73 @@ def get(url: str, delay: float, attempts: int = 3) -> str | None:
             time.sleep(delay * (attempt + 1))
     print(f"  network: {last} for {url}", file=sys.stderr)
     return None
+
+
+def token() -> str | None:
+    """The maintainer's Levels.fyi session, if one has been left for this run.
+
+    Read from LEVELS_TOKEN, then ~/.config/levels/token. Nothing here or in the
+    repository stores it, and nothing prints it: a run report that echoed the
+    token would put a live login into the terminal scrollback.
+    """
+    found = os.environ.get("LEVELS_TOKEN", "").strip()
+    if not found and TOKEN_FILE.exists():
+        found = TOKEN_FILE.read_text(encoding="utf-8").strip()
+    return found or None
+
+
+def decrypt(payload: str) -> dict:
+    """Decode an API answer of the form {"payload": "<base64>"}.
+
+    The browser does exactly this in the page's own JavaScript: AES-128-ECB
+    with a key that is the first sixteen characters of the base64 MD5 of a fixed
+    string, then zlib-inflate, then JSON. It is obfuscation of a response the
+    signed-in user is already allowed to read, not access control - the token
+    is the access control. openssl does the AES because the standard library
+    has none.
+    """
+    key = base64.b64encode(hashlib.md5(b"levelstothemoon!!").digest())[:16]
+    plain = subprocess.run(["openssl", "enc", "-d", "-aes-128-ecb", "-K", key.hex()],
+                           input=base64.b64decode(payload), capture_output=True, check=True).stdout
+    return json.loads(zlib.decompress(plain))
+
+
+def table(slug: str, bearer: str, delay: float) -> list[dict] | None:
+    """Every Spanish software-engineer submission in the company's signed-in table.
+
+    Fifty per page, newest first, until the API's own total is reached. The
+    total tops out at 250 for the largest employers, so for those this is the
+    250 most recent. Each row has the same shape as the page's `median`
+    record, its own exchange rate and currency included, so entries() reads
+    both the same way.
+
+    Returns None when a page could not be read, and the caller then leaves the
+    company alone: a table that half-loaded is not a smaller table.
+    """
+    rows: list[dict] = []
+    headers = {"Authorization": f"Bearer {bearer}", "x-agent": "levelsfyi_website",
+               "Accept": "application/json", "Origin": BASE,
+               "Referer": f"{BASE}/companies/{slug}/salaries/{ROLE}/locations/spain"}
+    while True:
+        query = urllib.parse.urlencode([
+            ("companySlug", slug), ("jobFamilySlug", ROLE), ("countryIds[0]", SPAIN_COUNTRY_ID),
+            ("offset", len(rows)), ("limit", TABLE_PAGE), ("sortBy", "offer_date"),
+            ("sortOrder", "DESC")])
+        body = get(f"{API}?{query}", delay, headers=headers)
+        if body is None:
+            return None
+        try:
+            data = json.loads(body)
+            if isinstance(data, dict) and "payload" in data:
+                data = decrypt(data["payload"])
+            page = data["rows"]
+        except (json.JSONDecodeError, ValueError, TypeError, KeyError, zlib.error,
+                subprocess.CalledProcessError) as exc:
+            print(f"  {slug}: table answer unreadable ({exc.__class__.__name__})", file=sys.stderr)
+            return None
+        rows += page
+        if not page or len(rows) >= (data.get("total") or 0):
+            return rows
 
 
 def eur(amount, rate) -> int | None:
@@ -172,12 +273,16 @@ def reported(raw) -> str | None:
     return None
 
 
-def spain_data(slug: str, delay: float):
+def spain_data(slug: str, delay: float, bearer: str | None = None):
     """Everything Spanish this company's page will give up.
 
     Returns (label, page, company). `page` is None when the page could not be
     read at all, and `label` says what it served, for the run report and for
     spain_check_served.
+
+    With a token, the signed-in table is read as well, and a table that could
+    not be read makes the whole company unread: writing the public page's
+    handful in its place would delete the table entries from the last run.
     """
     url = f"{BASE}/companies/{slug}/salaries/{ROLE}/locations/spain"
     body = get(url, delay)
@@ -190,11 +295,17 @@ def spain_data(slug: str, delay: float):
         props = json.loads(found.group(1))["props"]["pageProps"]
     except (KeyError, json.JSONDecodeError):
         return "unreadable", None, {}
-    return interpret(props, slug, url)
+    rows = None
+    if bearer:
+        rows = table(slug, bearer, delay)
+        if rows is None:
+            return "table unreadable", None, props.get("company") or {}
+    return interpret(props, slug, url, rows)
 
 
-def interpret(props: dict, slug: str, url: str):
-    """Split one page's props into the Spanish submissions worth reading.
+def interpret(props: dict, slug: str, url: str, rows: list[dict] | None = None):
+    """Split one page's props, and the signed-in table if it was read, into the
+    Spanish submissions worth reading.
 
     Separate from the fetch so the regression tests can hand it a saved page.
     """
@@ -210,9 +321,11 @@ def interpret(props: dict, slug: str, url: str):
     samples = [sample for rung in props.get("averages") or [] for sample in rung.get("samples") or []]
 
     # The median record goes first: it can also be one of the samples, and it
-    # carries the rate its author typed it at.
+    # carries the rate its author typed it at. The table's rows carry theirs
+    # too and usually include the median and every sample, so they go last
+    # and the uuid check drops the repeats.
     records, seen, foreign = [], set(), 0
-    for record in ([median] if median else []) + samples:
+    for record in ([median] if median else []) + samples + (rows or []):
         if not in_spain(record.get("location")):
             foreign += bool(record.get("location"))
             continue
@@ -225,8 +338,13 @@ def interpret(props: dict, slug: str, url: str):
         print(f"  {slug}: skipped {foreign} submission{'s' if foreign != 1 else ''} "
               "from outside Spain", file=sys.stderr)
 
+    # "Spain (table)" is the one label that means every Spanish submission was
+    # read. The others mean the public page's subset, which for most companies
+    # is the median record alone, so the README words them differently.
     percentiles = props.get("percentiles") or {}
-    if any(in_spain(sample.get("location")) for sample in samples):
+    if rows:
+        label = "Spain (table)"
+    elif any(in_spain(sample.get("location")) for sample in samples):
         label = "Spain (ladder)"
     elif percentiles.get("locationName") == "Spain":
         label = "Spain (aggregate)"
@@ -251,11 +369,12 @@ def entries(page: dict, today: str) -> list[dict]:
         rate = page["rate"]
         if record.get("baseSalaryCurrency") == "EUR" and record.get("exchangeRate"):
             rate = record["exchangeRate"]
+        level = str(record.get("level") or "").strip()
         entry = {
             "base": eur(record.get("baseSalary"), rate),
             "total": eur(record.get("totalCompensation"), rate),
             "years_experience": None if experience is None else str(experience),
-            "level": (record.get("level") or "").strip() or None,
+            "level": None if level.lower() in NO_LEVEL else level,
             "city": (record.get("location") or "").split(",")[0].strip() or None,
             "reported": reported(record.get("offerDate")),
             "source": "levels.fyi",
@@ -361,9 +480,14 @@ def main(argv: list[str]) -> int:
     tally: dict[str, int] = {}
     found = 0
 
+    bearer = token()
+    print("signed in: reading each company's submissions table" if bearer else
+          f"no token in LEVELS_TOKEN or {TOKEN_FILE}: reading the public page only, "
+          "which hides most submissions", file=sys.stderr)
+
     try:
         for slug, name in pending:
-            label, page, record = spain_data(slug, args.delay)
+            label, page, record = spain_data(slug, args.delay, bearer)
             served[label] = served.get(label, 0) + 1
             new_entries = entries(page, today) if page else []
             found += len(new_entries)

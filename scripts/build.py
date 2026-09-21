@@ -98,12 +98,19 @@ def status_cell(company: dict) -> str:
     Spanish submissions that all fall short of the years or the pay are a
     different gap from no Spanish submissions at all: the first is an answer,
     the second is Levels.fyi's coverage.
+
+    Only a read of the signed-in table ("Spain (table)") saw every Spanish
+    submission, so only it may say nobody qualifies. The public page shows a
+    subset, for most companies one record, and Fever's read "none" off that one
+    record while its table held ten who qualified.
     """
     page = spain_page(company)
     if page:
         served = company.get("spain_check_served") or ""
-        if served.startswith("Spain"):
+        if served == "Spain (table)":
             return f"[none with {lib.SENIOR_YEARS}+ years at 60k+]({page})"
+        if served.startswith("Spain"):
+            return f"[none published with {lib.SENIOR_YEARS}+ years at 60k+]({page})"
         shown = f" (shows {served} pay)" if served and served != "no data" else ""
         return f"[no Spain data]({page}){shown}"
     if company.get("levels_slug"):

@@ -41,9 +41,11 @@ the first three:
    need to calculate the avg for each company, with all the data entries for
    that company with 60k+ 5 years +". This one stands.
 
-The entries come from the `samples` and `median` records on each company's
-Spain page (trap 2). CONTEXT used to say individual submissions were not
-reachable from the server HTML; the samples inside `averages` are.
+The entries come from the signed-in submissions table (trap 5) and from the
+`samples` and `median` records embedded in each company's Spain page (trap 2).
+CONTEXT used to say individual submissions were not reachable from the server
+HTML; the samples inside `averages` are, and the table is reachable with a
+session token.
 
 The list publishes individual submissions, so to keep entries from pointing at
 a person the fetcher stores no submission id, exact day, job title,
@@ -85,20 +87,22 @@ needs a `source_url`. Then `python3 scripts/validate.py && python3 scripts/build
 ## Current state
 
 ```
-261 companies · 104 with a qualifying salary · 452 salaries
+261 companies · 149 with a qualifying salary · 1468 salaries
 ```
 
-- `companies.csv`: 609 rows. 452 salaries across 104 companies, reported
-  between 2020-09 and 2026-09; 183 of them in the last twelve months.
-- 157 companies have none: 43 whose Spanish engineers all fall short of the
-  years or the pay, 95 with no Spanish data at all, and 19 the resolver never
+- `companies.csv`: 1580 rows. 1468 salaries across 149 companies, reported
+  between 2020-01 and 2026-09; 392 of them in the last twelve months.
+- 112 companies have none: 21 whose Spanish engineers all fall short of the
+  years or the pay, 72 with no Spanish data at all, and 19 the resolver never
   found a Levels.fyi page for.
 - The README has two sections: one row per company with the average of its
   qualifying salaries, best average first, and the companies with nothing
   qualifying.
 - Every company links to LinkedIn and to its open roles in Spain, and every
   salary to the Spain-scoped page it was read from.
-- All entries were read from Levels.fyi on 2026-09-15.
+- All entries were read from Levels.fyi on 2026-09-21, signed in (trap 5).
+  The signed-in read took the list from 452 salaries at 104 companies to
+  these figures in one run.
 
 How the move to one CSV was checked, 2026-09-14: all 299 YAML figures, all 242
 backlog LinkedIn ids and every company field were compared with the CSV, and
@@ -109,7 +113,7 @@ employers filed under two LinkedIn ids (Amazon and AWS, Google and DeepMind,
 Adevinta and Adevinta Spain, Allianz and Allianz Technology, Meta, Compound)
 now keep both, and their jobs link searches both.
 
-## The four traps in Levels.fyi data
+## The five traps in Levels.fyi data
 
 **1. A company page silently serves another country.**
 `/companies/<slug>/salaries` is scoped by the caller's IP and falls back to the
@@ -172,11 +176,12 @@ Some companies return `sampleSize > 0` with `locationName: null`, every
 percentile `0`, and `estimatedSalary` all `null`. Alan is one: 2 submissions
 each for engineering-manager, data-scientist and product-designer, and no
 number attached to any of them. Levels.fyi has the data and does not publish
-it. The individual submissions table on the site renders client-side and is not
-reachable from the server HTML — only that one `median` record is.
+it on the page. The individual submissions table renders client-side and is not
+in the server HTML — only that one `median` record is. The table is reachable
+another way (trap 5).
 
 So "the site shows salaries for this company" and "the pipeline can read an
-entry" are different claims, and the second is often false.
+entry" are different claims, and without a session the second is often false.
 
 `generatedOccupationSchema.sampleSize` looks like the Spanish submission count
 and is not one. It equals the sum of the `averages` counts when there are
@@ -210,13 +215,65 @@ was paid in, named in `baseSalaryCurrency`. Smile.io's was USD at a rate of 1,
 and until 2026-09-15 its 105.000 USD was listed as 105.000 €; at the page's
 rate it is 91.455 €. Use the record's rate only when its currency is EUR.
 Samples carry no rate, so they use the page's, and an old euro salary can
-drift a percent or two.
+drift a percent or two. Table rows (trap 5) carry a rate and currency like the
+median does.
+
+**5. The public page is a subset. The table is behind a sign-in.**
+Under the figures on every company page sits "Latest Salary Submissions", a
+table of every submission for that company, job family and country. It is not
+in the server HTML: the browser loads it from
+`api.levels.fyi/v3/salary/search` with the visitor's Cognito id token as a
+Bearer, and answers an anonymous request with 401. A fresh headless Chrome
+confirmed what the anonymous visitor sees: `****** *****, ** | ****/**/**`
+and "Unlock by Adding Your Salary!".
+
+The maintainer, who works at Fever and had added a salary, could see 29
+Spanish software engineers there. The page embedded one, an L3 with six years
+at 48.7k, so the README said "none with 5+ years at 60k+" about a company with
+ten who qualified and a Staff engineer at 90k. Twenty-two companies were in
+that state (`Spain (aggregate)`), with Levels.fyi's own aggregate showing 60k+
+bases existed at Aily Labs, Manychat, Perk, Factorial, Clarity AI, Fever,
+Exoticca and Cabify.
+
+Since 2026-09-21 `fetch_spain.py` reads the table when a token is in
+`LEVELS_TOKEN` or `~/.config/levels/token`. The token is `localStorage.auth`
+on levels.fyi while signed in, a Cognito id token good for about a day. What
+the API does:
+
+- Query: `companySlug`, `jobFamilySlug=software-engineer`,
+  `countryIds[0]=226` (Spain), `offset`, `limit` (max 50, 400 above it),
+  `sortBy=offer_date`, `sortOrder=DESC`. `total` caps at 250.
+- Answer: `{"payload": "<base64>"}`. AES-128-ECB, key = first 16 characters
+  of base64(MD5("levelstothemoon!!")), then zlib, then JSON with `total`,
+  `hidden`, `rows`. The site's own JavaScript does the same unwrapping; it is
+  obfuscation, and the token is the actual access control. openssl does the
+  AES because the standard library has none.
+- Each row looks like the `median` record: `uuid`, `location`, `level`,
+  `yearsOfExperience` (number or bucket), `baseSalary` in USD, `exchangeRate`,
+  `baseSalaryCurrency`, `offerDate`. Rows repeat the page's median and samples,
+  so the uuid dedupe matters. `level` is sometimes the string `"False"`.
+- Headers that work: `Authorization: Bearer`, `x-agent: levelsfyi_website`, the
+  browser User-Agent. A bare `Mozilla/5.0` got HTTP 402. 401 is an expired
+  token. `X-RateLimit-Limit: 25` over a short window; 2.5s between requests
+  never came close.
+
+A company whose table could not be read is left untouched, page and all:
+writing the page's one record in its place would delete last run's table
+entries. The label for a full table read is `Spain (table)`, and it is the only
+label the README renders as "none with 5+ years at 60k+"; the page-only labels
+render as "none published", because they are a statement about what an
+anonymous visitor sees, not about the company.
+
+Two things to know before running it. This is against Levels.fyi's terms and
+the account used can be closed; the maintainer chose it knowingly. And the
+token is a live login: never commit it, never print it, and rotate it (sign
+out and in) if it has been pasted anywhere it should not have been.
 
 ## Scripts
 
 | Script | What it does | Safe? |
 | --- | --- | --- |
-| `fetch_spain.py` | Qualifying salaries in Spain, per company. Reads every sample and the median record, keeps Spanish ones with 5+ years and a 60k+ base, converts USD to EUR, records LinkedIn, deletes any entry whose source URL names no location, and leaves a company alone when its page cannot be read. | **Use this** |
+| `fetch_spain.py` | Qualifying salaries in Spain, per company. Reads the signed-in submissions table when a token is present, plus every sample and the median record on the page; keeps Spanish ones with 5+ years and a 60k+ base, converts USD to EUR, records LinkedIn, deletes any entry whose source URL names no location, and leaves a company alone when its page or table cannot be read. | **Use this** |
 | `fetch_company.py` | Company details only: website, HQ, headcount, sector, vesting. Writes no salary at all, by design. Only fills companies already in the CSV. | Yes |
 | `resolve_slugs.py` | Company name → Levels.fyi slug, with verification and an alias table. Folds a company into the one already holding its slug. | Yes |
 | `build.py` | Regenerates the README and rewrites `companies.csv` in canonical order. | Yes |
@@ -234,14 +291,15 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 
 ## Known gaps
 
-- **157 companies have no qualifying salary.** 43 have Spanish submissions,
-  but nobody with both 5 years and a 60k base. 95 have nothing Spanish at all,
+- **112 companies have no qualifying salary.** 21 have Spanish submissions,
+  but nobody with both 5 years and a 60k base. 72 have nothing Spanish at all,
   which is a fact about Levels.fyi's coverage of Spain, not about whether the
   company pays well here; a first-hand entry or a job ad (source #3 in
   METHODOLOGY.md) is the only way to reach them. 19 have no Levels.fyi page.
-- **Not every submission is published.** A rung's samples stop short of its
-  count, so a company can have more qualifying engineers than the list shows.
-- **Old salaries.** Entries go back to 2020-09. The README shows the month, but
+- **The table caps at 250 rows.** Amazon and Glovo both hit it, so their
+  oldest submissions are out of reach. Without a token the fetcher is back to
+  the public page's subset and labels the result as such.
+- **Old salaries.** Entries go back to 2020-01. The README shows the month, but
   nothing is dropped for age.
 - **No first-hand data yet.** Every salary is crowdsourced. The repository's own
   standard is not met by a single row, which is the biggest gap on this list.
@@ -253,13 +311,14 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 ## Commands
 
 ```bash
-python3 scripts/fetch_spain.py --delay 3.0        # ~14 min, 242 companies
+python3 scripts/fetch_spain.py --delay 3.0        # ~25 min with a token, 242 companies
 python3 scripts/fetch_spain.py --audit            # report, write nothing
 python3 tests/test_pipeline.py
 python3 scripts/validate.py && python3 scripts/build.py
 ```
 
-No dependencies: everything is the Python standard library.
+No dependencies: everything is the Python standard library, plus the
+`openssl` binary for the table's AES (trap 5), present on macOS and Linux.
 
 `tests/test_pipeline.py` runs first in CI. Every case in it is a bug this
 repository actually shipped, so a failure there means one of them is back rather

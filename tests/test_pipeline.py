@@ -162,11 +162,17 @@ def ladder(*samples: dict) -> dict:
                             "samples": list(samples)}])
 
 
-def read(page: dict, slug: str = "acme") -> list[dict]:
+def read(page: dict, slug: str = "acme", rows: list[dict] | None = None) -> list[dict]:
     import fetch_spain
     with contextlib.redirect_stderr(io.StringIO()):
-        _, parsed, _ = fetch_spain.interpret(page, slug, PER_LOCATION)
+        _, parsed, _ = fetch_spain.interpret(page, slug, PER_LOCATION, rows)
     return fetch_spain.entries(parsed, "2026-09-15")
+
+
+def label(page: dict, rows: list[dict] | None = None) -> str:
+    import fetch_spain
+    with contextlib.redirect_stderr(io.StringIO()):
+        return fetch_spain.interpret(page, "acme", PER_LOCATION, rows)[0]
 
 
 def test_figures_are_converted_to_euros() -> None:
@@ -258,6 +264,75 @@ def test_foreign_samples_are_skipped() -> None:
     check("only the Spanish submission survives", [e["city"] for e in found], ["Madrid"])
 
 
+def test_signed_in_table_is_read() -> None:
+    """The public page hides most submissions; the signed-in table has them all.
+
+    Fever's Spain page embedded one record (L3, 6 years, 48.7k) and the README
+    said "none with 5+ years at 60k+". Its table, which the browser only loads
+    with a session token, held 29 Spanish engineers, ten of them qualifying. The
+    fetcher had never asked for it.
+    """
+    print("fetch_spain reads the signed-in table beside the page")
+    import fetch_spain
+
+    median = sample(56172.21, 6, level="L3", uuid="median", baseSalaryCurrency="EUR",
+                    exchangeRate=0.85452)
+    rows = [
+        dict(median),
+        sample(104584.28, 20, level="Staff", uuid="staff", baseSalaryCurrency="EUR",
+               exchangeRate=0.86055),
+        # The API sends the string "False" where the author left the level blank.
+        sample(79835.77, "5-10", level="False", uuid="ml", baseSalaryCurrency="EUR",
+               exchangeRate=0.8768),
+        sample(120000, 10, level="L6", uuid="abroad", where="Lisbon, Portugal"),
+    ]
+    page = props(median=median, percentiles={"locationName": "Spain", "count": 14})
+
+    found = read(page, rows=rows)
+    check("table rows become entries, at their own rate, once each, Spain only",
+          sorted((e["base"], e["years_experience"], e["level"]) for e in found),
+          [(70000, "5-10", None), (90000, "20", "Staff")])
+    check("a table read is labelled as the complete answer", label(page, rows), "Spain (table)")
+    check("without the table the label stays partial", label(page), "Spain (aggregate)")
+    check("an empty table does not claim completeness", label(page, []), "Spain (aggregate)")
+
+    import build
+    for served, wording in (("Spain (table)", "none with 5+"),
+                            ("Spain (aggregate)", "none published with 5+")):
+        company = acme(spain_check_date="2026-09-21", spain_check_served=served)
+        check(f"README words {served!r} as {wording!r}",
+              wording in build.status_cell(company), True)
+
+    # The API wraps its answer the way the site's own JavaScript unwraps it.
+    import base64, hashlib, json, subprocess, zlib
+    key = base64.b64encode(hashlib.md5(b"levelstothemoon!!").digest())[:16]
+    body = zlib.compress(json.dumps({"total": 1, "rows": [{"uuid": "x"}]}).encode())
+    sealed = subprocess.run(["openssl", "enc", "-aes-128-ecb", "-K", key.hex()],
+                            input=body, capture_output=True, check=True).stdout
+    check("an encrypted answer is decoded", fetch_spain.decrypt(base64.b64encode(sealed).decode()),
+          {"total": 1, "rows": [{"uuid": "x"}]})
+
+    # A table that failed to load must not hand the company back to the page's
+    # subset: write() would then replace last run's table entries with it.
+    html = ('<script id="__NEXT_DATA__" type="application/json">'
+            + json.dumps({"props": {"pageProps": page}}) + "</script>")
+    original = fetch_spain.get, fetch_spain.table
+    fetch_spain.get = lambda url, delay, attempts=3, headers=None: html
+    fetch_spain.table = lambda slug, bearer, delay: None
+    try:
+        with contextlib.redirect_stderr(io.StringIO()):
+            served, parsed, _ = fetch_spain.spain_data("acme", 0, "token")
+        check("an unread table makes the company unread", (served, parsed),
+              ("table unreadable", None))
+        fetch_spain.table = lambda slug, bearer, delay: rows
+        with contextlib.redirect_stderr(io.StringIO()):
+            served, parsed, _ = fetch_spain.spain_data("acme", 0, "token")
+        check("a read table is merged with the page", (served, len(parsed["records"])),
+              ("Spain (table)", 3))
+    finally:
+        fetch_spain.get, fetch_spain.table = original
+
+
 def test_an_unread_page_changes_nothing() -> None:
     """A page that failed to load is not a page with no entries.
 
@@ -326,6 +401,7 @@ def main() -> int:
                  test_seniority_is_years_not_titles,
                  test_one_submission_is_one_entry,
                  test_foreign_samples_are_skipped,
+                 test_signed_in_table_is_read,
                  test_an_unread_page_changes_nothing,
                  test_a_checked_company_says_so,
                  test_a_file_cannot_claim_both):
