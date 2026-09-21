@@ -9,7 +9,7 @@ The list shows **what each company pays, on average**, the software engineers on
 - **Senior, meaning 5 or more years of experience.** The level name does not matter. Companies call the same job L4, SDE II, IC3 or Senior, and an L4 with eight years is as senior as anyone; a "Senior" with two years is not. A bucket like `5-10` counts from its low end, so it qualifies, and `2-4` does not.
 - **60.000 € or more in base salary.** Gross annual base, not total compensation.
 
-The README then shows one row per company: the mean base salary and mean total compensation of its salaries on file, and how many salaries that is. Only qualifying salaries go into the mean. Nobody under 5 years or under 60k pulls it down, and Levels.fyi's own figures, an all-levels median or a ladder mean, are never used, because they mix juniors in with everyone else. A company with no qualifying salary is still listed, with the reason it has none.
+The README then shows one row per company: the mean base salary and mean total compensation of its salaries on file, and how many salaries that is. Only qualifying salaries go into the mean. Nobody under 5 years or under 60k pulls it down, and Levels.fyi's own figures, an all-levels median or a ladder mean, are never used, because they mix juniors in with everyone else. A company whose Spanish engineers all fall short is still listed, saying so. A company with no Spanish data on Levels.fyi and no first-hand entry is not on the list at all.
 
 An average of one salary is one person's pay, so read the Engineers column before the number.
 
@@ -79,11 +79,11 @@ spain_check_date,spain_check_served
 2026-09-15,Spain (ladder)
 ```
 
-`spain_check_served` is what the page had instead. `Spain (table)` means the signed-in table was read in full and nobody in it reaches both 5 years and 60k; the README reads **none with 5+ years at 60k+**. `Spain (ladder)`, `Spain (aggregate)` or `Spain (submission)` mean the public page alone was read, which shows a subset, so the README says only **none published with 5+ years at 60k+**: the verdict is about what an anonymous visitor can see, not about the company. `no data`, or another country's name, means nothing Spanish at all, and the README reads **no Spain data**. All of them link to the page, so a reader can see the gap for themselves.
+`spain_check_served` is what the page had instead. `Spain (table)` means the signed-in table was read in full and nobody in it reaches both 5 years and 60k; the README reads **none with 5+ years at 60k+**. `Spain (ladder)`, `Spain (aggregate)` or `Spain (submission)` mean the public page alone was read, which shows a subset, so the README says only **none published with 5+ years at 60k+**: the verdict is about what an anonymous visitor can see, not about the company. Both link to the page, so a reader can see the gap for themselves.
+
+`no data`, or another country's name, means Levels.fyi has nothing Spanish for the company. Since 2026-09-21 such a company is removed from `companies.csv` unless someone has vouched for it with a first-hand entry; 91 were dropped that day. `validate.py` warns if one comes back, and a company added by hand reads `not checked yet` until `fetch_spain.py` has run for it.
 
 The check clears the moment an entry turns up, and `validate.py` fails the build if a company ever carries both a check and a Levels.fyi entry. These are structural columns precisely so the table never has to guess from the wording of a note.
-
-A company with a Levels.fyi page but no check and no entry reads `not checked yet`, and one the resolver could not find a page for reads `not on Levels.fyi`.
 
 Never include anything that identifies a person: no names, no team, no "the guy who joined in March".
 

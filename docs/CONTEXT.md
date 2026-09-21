@@ -87,14 +87,19 @@ needs a `source_url`. Then `python3 scripts/validate.py && python3 scripts/build
 ## Current state
 
 ```
-261 companies · 149 with a qualifying salary · 1468 salaries
+170 companies · 149 with a qualifying salary · 1468 salaries
 ```
 
-- `companies.csv`: 1580 rows. 1468 salaries across 149 companies, reported
+- `companies.csv`: 1489 rows. 1468 salaries across 149 companies, reported
   between 2020-01 and 2026-09; 392 of them in the last twelve months.
-- 112 companies have none: 21 whose Spanish engineers all fall short of the
-  years or the pay, 72 with no Spanish data at all, and 19 the resolver never
-  found a Levels.fyi page for.
+- 21 companies have none: Levels.fyi has Spanish software engineers for each,
+  and all fall short of the years or the pay.
+- 91 companies were removed on 2026-09-21: 72 with nothing Spanish on
+  Levels.fyi and 19 with no Levels.fyi page, none vouched for first-hand. The
+  maintainer's rule: "get rid of the companies that don't have Spanish data
+  and I have not said that I know that they pay that". A company with no
+  Spanish data stays out until someone adds a `community` or `offer-letter`
+  entry for it; `validate.py` warns if one is on file anyway.
 - The README has two sections: one row per company with the average of its
   qualifying salaries, best average first, and the companies with nothing
   qualifying.
@@ -291,11 +296,10 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 
 ## Known gaps
 
-- **112 companies have no qualifying salary.** 21 have Spanish submissions,
-  but nobody with both 5 years and a 60k base. 72 have nothing Spanish at all,
-  which is a fact about Levels.fyi's coverage of Spain, not about whether the
-  company pays well here; a first-hand entry or a job ad (source #3 in
-  METHODOLOGY.md) is the only way to reach them. 19 have no Levels.fyi page.
+- **21 companies have no qualifying salary.** All have Spanish submissions,
+  but nobody with both 5 years and a 60k base. The 91 with nothing Spanish on
+  Levels.fyi are off the list; a first-hand entry or a job ad (source #3 in
+  METHODOLOGY.md) is the only way back on for them.
 - **The table caps at 250 rows.** Amazon and Glovo both hit it, so their
   oldest submissions are out of reach. Without a token the fetcher is back to
   the public page's subset and labels the result as such.

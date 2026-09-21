@@ -76,11 +76,13 @@ A row should ideally mean the maintainer knows someone in Spain doing that job,
 or was offered the position. Crowdsourced figures are placeholders; first-hand
 entries (`community`, `offer-letter`) sort above them.
 
-A company with no qualifying salary still gets a row. The `spain_check_*`
-columns record when Levels.fyi was asked and what its Spain page had instead,
-and the README renders that rather than a dash, so "asked, nothing published"
-never reads as "nobody has looked". Never infer that state from the wording of
-a note.
+A company is on the list only if it has a salary on file, or Levels.fyi has
+Spanish software-engineer submissions for it that all fall short (the
+`spain_check_*` columns say so, `Spain (table)`). A company with no Spanish
+data and no first-hand entry is removed, not listed as "no Spain data": the
+maintainer dropped 91 of them on 2026-09-21, and `validate.py` warns when one
+is back. The `spain_check_*` columns record when Levels.fyi was asked and what
+its Spain page had; never infer that state from the wording of a note.
 
 After any data change: `python3 scripts/validate.py && python3 scripts/build.py`,
 and commit the regenerated `README.md` and `companies.csv` — CI fails otherwise.

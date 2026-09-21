@@ -102,6 +102,12 @@ def check_spain_check(where: str, company: dict) -> None:
             f"{where}: spain_check says Levels.fyi has nothing qualifying, but a "
             "levels.fyi entry is on file"
         )
+    # Since 2026-09-21 a company is listed only with a salary on file or with
+    # Spanish submissions that fell short. One Levels.fyi knows nothing Spanish
+    # about, and nobody has vouched for, is not on the list.
+    if not company.get("entries") and not (company.get("spain_check_served") or "").startswith("Spain"):
+        warnings.append(f"{where}: no salary and no Spanish data on Levels.fyi, so it does "
+                        "not belong on the list")
 
 
 def check_company(where: str, company: dict) -> None:
