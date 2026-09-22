@@ -407,6 +407,46 @@ def test_a_company_with_nothing_is_not_listed() -> None:
               refused)
 
 
+def test_share_of_submissions() -> None:
+    """The average alone puts BBVA beside companies where everyone qualifies.
+
+    BBVA has 63 software engineers in Spain on Levels.fyi and two of them at
+    both 5 years and 60k; the maintainer wanted that visible, "possible but
+    unlikely". So the fetcher stores how many submissions it read, the README
+    shows the qualifying share of them, and validate.py holds the two together.
+    """
+    print("the README shows what share of a company's submissions qualify")
+    import build
+    import fetch_spain
+    import validate
+
+    with temp_data(acme(entry(PER_LOCATION), spain_submissions=5)):
+        fetch_spain.write("acme", [entry(PER_LOCATION), entry(PER_LOCATION, base=70000)], "Acme",
+                          "2026-09-22", served="Spain (table)", submissions=63)
+        written = stored()
+        check("the count read is stored with the entries",
+              (written["spain_submissions"], len(written["entries"])), (63, 2))
+        check("and rendered as a share", build.share_cell(written), "3% of 63")
+
+    check("a first-hand entry is not one of the submissions",
+          build.share_cell(acme(entry(None, source="community"), entry(PER_LOCATION),
+                                spain_submissions=4)), "25% of 4")
+    check("no count, no share", build.share_cell(acme(entry(None, source="community"))), "—")
+    check("one in a thousand is not 0%",
+          build.share_cell(acme(entry(PER_LOCATION), spain_submissions=250)), "<1% of 250")
+
+    for label, company, bad in (
+        ("a Levels.fyi entry without a count", acme(entry(PER_LOCATION)), True),
+        ("more entries than submissions", acme(entry(PER_LOCATION), entry(PER_LOCATION, base=70000),
+                                               spain_submissions=1), True),
+        ("a first-hand entry without a count", acme(entry(None, source="community")), False),
+    ):
+        validate.errors.clear()
+        validate.check_company("acme", company)
+        check(f"validate.py rejects {label}" if bad else f"validate.py allows {label}",
+              any("submissions" in e for e in validate.errors), bad)
+
+
 def main() -> int:
     for test in (test_location_guard, test_unscoped_classifier,
                  test_purge_runs_even_when_spain_data_exists,
@@ -416,7 +456,7 @@ def main() -> int:
                  test_foreign_samples_are_skipped,
                  test_signed_in_table_is_read,
                  test_an_unread_page_changes_nothing,
-                 test_a_company_with_nothing_is_not_listed):
+                 test_a_company_with_nothing_is_not_listed, test_share_of_submissions):
         test()
     if failures:
         print(f"\n{len(failures)} failed: {', '.join(failures)}")

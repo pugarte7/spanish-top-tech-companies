@@ -35,15 +35,20 @@ VOUCHED = ("offer-letter", "community")
 # A company is on the list only while it has at least one entry. A row with
 # the entry columns empty is how a company is added by hand, `Name,linkedin_id`,
 # and it lasts until the fetcher has asked Levels.fyi about it.
+#
+# `spain_submissions` is how many Spanish software-engineer submissions the
+# fetcher read for the company, qualifying or not. The README divides the
+# qualifying ones by it: 2 of 63 at BBVA says 60k+ happens there, rarely.
 IDENTITY_COLUMNS = ["company", "linkedin_ids", "linkedin_url", "levels_slug", "levels_status"]
 ENTRY_COLUMNS = ["base", "total", "years_experience", "level", "city", "reported",
                  "source", "source_url", "date", "notes"]
+COUNT_COLUMNS = ["spain_submissions"]
 PROFILE_COLUMNS = ["website", "careers_url", "hq_city", "hq_country", "employees",
                    "sector", "year_founded", "about"]
-COLUMNS = IDENTITY_COLUMNS + ENTRY_COLUMNS + PROFILE_COLUMNS
-COMPANY_COLUMNS = IDENTITY_COLUMNS + PROFILE_COLUMNS
+COLUMNS = IDENTITY_COLUMNS + ENTRY_COLUMNS + COUNT_COLUMNS + PROFILE_COLUMNS
+COMPANY_COLUMNS = IDENTITY_COLUMNS + COUNT_COLUMNS + PROFILE_COLUMNS
 
-INTEGER_COLUMNS = {"base", "total", "year_founded"}
+INTEGER_COLUMNS = {"base", "total", "spain_submissions", "year_founded"}
 # Pipe-separated inside one cell.
 LIST_COLUMNS = {"linkedin_ids", "sector"}
 

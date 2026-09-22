@@ -408,11 +408,16 @@ def entries(page: dict, today: str) -> list[dict]:
 
 
 def write(slug: str, new_entries: list[dict], name_hint: str, today: str,
-          record: dict | None = None, served: str | None = None) -> str:
+          record: dict | None = None, served: str | None = None,
+          submissions: int | None = None) -> str:
     """Update one company in companies.csv. Returns what happened, for the run report.
 
     The whole file is read and written for each company, so a run that gets
     blocked halfway keeps everything it fetched before that.
+
+    `submissions` is how many Spanish submissions were read, qualifying or not,
+    and is stored beside the entries so the README can say what share of a
+    company's engineers reach the bar.
 
     A company is on the list only while it has a salary on file. One that
     Levels.fyi was asked about and that ends up with nothing, and that nobody
@@ -449,6 +454,7 @@ def write(slug: str, new_entries: list[dict], name_hint: str, today: str,
     if served is not None:
         company["entries"] = [entry for entry in company["entries"] if not ours(entry)] \
             + new_entries
+        company["spain_submissions"] = submissions
 
     # Nothing is created empty, whatever else the page gave (an unread table
     # once created two companies from their LinkedIn handle alone), and a
@@ -532,13 +538,14 @@ def main(argv: list[str]) -> int:
             new_entries = entries(page, today) if page else []
             found += len(new_entries)
             if new_entries:
-                print(f"  {slug}: {label} - {len(new_entries)} qualifying, top "
-                      f"{lib.fmt_eur(new_entries[0]['base'])}")
+                print(f"  {slug}: {label} - {len(new_entries)} of {len(page['records'])} "
+                      f"qualifying, top {lib.fmt_eur(new_entries[0]['base'])}")
             else:
                 print(f"  {slug}: {label}, nothing qualifies")
             if not args.audit:
                 outcome = write(slug, new_entries, name, today, record,
-                                label if page else None)
+                                label if page else None,
+                                len(page["records"]) if page else None)
                 tally[outcome] = tally.get(outcome, 0) + 1
     except Blocked as exc:
         print(f"\n{exc}", file=sys.stderr)

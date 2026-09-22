@@ -51,6 +51,7 @@ The id is the `f_C` number in a LinkedIn job search filtered to that company. [`
 | `city`, `reported` | Where in Spain, and the month the salary was reported, `YYYY-MM`. |
 | `source`, `source_url`, `date` | Where the salary came from and when it was read, `YYYY-MM-DD`. |
 | `notes` | Anything a reader of the CSV needs to trust it, such as the contract type. |
+| `spain_submissions` | How many software-engineer submissions from Spain `fetch_spain.py` read for the company, qualifying or not. The README's Share column divides the Levels.fyi rows by it. Written by the fetcher; leave it empty on a hand-added company. |
 | `website`, `careers_url`, `hq_city`, `hq_country`, `employees`, `sector`, `year_founded`, `about` | Company details from Levels.fyi. Written by `fetch_company.py`. |
 
 ### Fetching from Levels.fyi

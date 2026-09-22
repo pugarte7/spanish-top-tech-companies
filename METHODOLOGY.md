@@ -13,6 +13,8 @@ The README then shows one row per company: the mean base salary and mean total c
 
 An average of one salary is one person's pay, so read the Engineers column before the number.
 
+The Share column puts the average in proportion: how many of the company's software engineers in Spain on Levels.fyi are the ones averaged. The fetcher stores how many Spanish submissions it read for each company (`spain_submissions`), qualifying or not, and the README divides the qualifying ones by it. "3% of 63" at BBVA says 63 engineers reported and two reach the bar, so 60k+ with 5 years is possible there and unlikely; "100% of 4" says everyone who reported does. Only Levels.fyi entries count towards the share, since the denominator is Levels.fyi's; a first-hand entry belongs to no submission set. For the largest employers the denominator is the 250 most recent submissions, the most the API returns.
+
 This rule was set on 2026-09-16. Earlier versions of the list published Levels.fyi's per-company averages across levels, every job family, only rungs whose names said senior, and every qualifying salary as its own row. All of those were replaced.
 
 ## What "gross annual" means here

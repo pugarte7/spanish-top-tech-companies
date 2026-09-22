@@ -87,6 +87,16 @@ def check_company(where: str, company: dict) -> None:
         errors.append(f"{where}: no salary on file, so it is not on the list. Run "
                       "fetch_spain.py for it, add a first-hand entry, or remove the row")
 
+    # The README divides the Levels.fyi entries by spain_submissions, so the
+    # count has to exist whenever there are such entries and cover all of them.
+    crowd = sum(1 for e in company.get("entries") or [] if e.get("source") == "levels.fyi")
+    read = company.get("spain_submissions")
+    if crowd and read is None:
+        errors.append(f"{where}: levels.fyi entries but no spain_submissions count; "
+                      "re-run fetch_spain.py for it")
+    elif read is not None and read < crowd:
+        errors.append(f"{where}: {crowd} levels.fyi entries out of {read} submissions read")
+
     for column in ("linkedin_url", "website", "careers_url"):
         found = company.get(column)
         if found and not URL.match(found):

@@ -88,5 +88,12 @@ country-wide feed of recent Spanish submissions and fetches every employer not
 yet on file, so "add your salary on Levels.fyi and it gets picked up" holds
 without anyone editing the CSV.
 
+`spain_submissions`, one per company, is how many Spanish submissions the
+fetcher read, qualifying or not. The README's Share column divides the
+Levels.fyi entries by it ("3% of 63" at BBVA) so a company where 60k+ is rare
+does not sit unqualified beside one where it is the norm; the maintainer asked
+for it on 2026-09-22. It is the one count stored, and it is a count of records
+actually read, never Levels.fyi's `sampleSize` or a rung's `count`.
+
 After any data change: `python3 scripts/validate.py && python3 scripts/build.py`,
 and commit the regenerated `README.md` and `companies.csv` — CI fails otherwise.

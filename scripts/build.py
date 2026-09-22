@@ -84,8 +84,8 @@ def source_cell(entry: dict) -> str:
 
 
 AVERAGE_HEADER = [
-    "| Company | Avg base | Avg total comp | Engineers | Reported | Source | Jobs |",
-    "| --- | ---: | ---: | ---: | --- | --- | --- |",
+    "| Company | Avg base | Avg total comp | Engineers | Share | Reported | Source | Jobs |",
+    "| --- | ---: | ---: | ---: | ---: | --- | --- | --- |",
 ]
 
 
@@ -123,6 +123,23 @@ def sources_cell(company: dict) -> str:
     return ", ".join(cells)
 
 
+def share_cell(company: dict) -> str:
+    """How many of the company's Spanish submissions the average is drawn from.
+
+    "3% of 63" at BBVA reads: 63 software engineers in Spain reported, and two
+    of them had both 5 years and a 60k base. The average alone would put BBVA
+    beside companies where everyone does. Only Levels.fyi entries count towards
+    the share, because the denominator is Levels.fyi's; a first-hand entry
+    belongs to no submission set.
+    """
+    read = company.get("spain_submissions")
+    if not read:
+        return "—"
+    crowd = sum(1 for entry in company["entries"] if entry.get("source") == "levels.fyi")
+    percent = 100 * crowd / read
+    return f"{'<1' if 0 < percent < 1 else round(percent)}% of {read}"
+
+
 def average_row(company: dict) -> str:
     found = average(company)
     cells = [
@@ -130,6 +147,7 @@ def average_row(company: dict) -> str:
         k(found["base"]),
         k(found["total"]),
         str(found["engineers"]),
+        share_cell(company),
         escape(found["reported"]),
         sources_cell(company),
         jobs_cell(company),

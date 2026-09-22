@@ -103,7 +103,11 @@ The README's stats line is the authoritative count; this is the run behind it.
   107 employers with a recent Spanish submission that had never been on file,
   43 of which had someone qualifying.
 - The README is one table: one row per company with the average of its
-  qualifying salaries, best average first. Every salary links to the
+  qualifying salaries, best average first, and beside the count a Share
+  column: those qualifying over every Spanish submission read for the company
+  (`spain_submissions`), added 2026-09-22 so BBVA's two out of 63 read as
+  "possible but unlikely" rather than as a peer of companies where everyone
+  qualifies. Every salary links to the
   Spain-scoped page it was read from; companies link to LinkedIn and to their
   open roles in Spain when a LinkedIn id or URL is known, which the
   discovered ones mostly are not yet.
@@ -191,8 +195,9 @@ entry" are different claims, and without a session the second is often false.
 and is not one. It equals the sum of the `averages` counts when there are
 averages, and the **company's global count** when there are none: Amadeus
 reports 429 next to an empty `averages` and a page that reads "Not enough
-data". Only the `averages` counts are Spanish, and the list stores no counts
-at all now.
+data". Only the `averages` counts are Spanish. The one count the list stores,
+`spain_submissions`, is the number of Spanish records the fetcher actually
+read and deduplicated, never a figure Levels.fyi reports.
 
 **4. Every money field in the payload is USD.**
 The page prints euros by multiplying by `locationExchangeRate`, and its own FAQ
