@@ -103,11 +103,12 @@ The README's stats line is the authoritative count; this is the run behind it.
   107 employers with a recent Spanish submission that had never been on file,
   43 of which had someone qualifying.
 - The README is one table: one row per company with the average of its
-  qualifying salaries, best average first, and beside the count a Share
+  qualifying salaries, and beside the count a Share
   column: those qualifying over every Spanish submission read for the company
   (`spain_submissions`), added 2026-09-22 so BBVA's two out of 63 read as
   "possible but unlikely" rather than as a peer of companies where everyone
-  qualifies. Every salary links to the
+  qualifies. Rows sort by that share first, then by average base ("sorted
+  first by ratio, then by salary", same day); first-hand rows still come first. Every salary links to the
   Spain-scoped page it was read from; companies link to LinkedIn and to their
   open roles in Spain when a LinkedIn id or URL is known, which the
   discovered ones mostly are not yet.

@@ -123,21 +123,28 @@ def sources_cell(company: dict) -> str:
     return ", ".join(cells)
 
 
-def share_cell(company: dict) -> str:
-    """How many of the company's Spanish submissions the average is drawn from.
+def share(company: dict) -> float | None:
+    """What fraction of the company's Spanish submissions the average is drawn from.
 
-    "3% of 63" at BBVA reads: 63 software engineers in Spain reported, and two
+    Two of 63 at BBVA is 0.03: 63 software engineers in Spain reported, and two
     of them had both 5 years and a 60k base. The average alone would put BBVA
     beside companies where everyone does. Only Levels.fyi entries count towards
     the share, because the denominator is Levels.fyi's; a first-hand entry
-    belongs to no submission set.
+    belongs to no submission set. None when nothing was read.
     """
     read = company.get("spain_submissions")
     if not read:
-        return "—"
+        return None
     crowd = sum(1 for entry in company["entries"] if entry.get("source") == "levels.fyi")
-    percent = 100 * crowd / read
-    return f"{'<1' if 0 < percent < 1 else round(percent)}% of {read}"
+    return crowd / read
+
+
+def share_cell(company: dict) -> str:
+    fraction = share(company)
+    if fraction is None:
+        return "—"
+    percent = 100 * fraction
+    return f"{'<1' if 0 < percent < 1 else round(percent)}% of {company['spain_submissions']}"
 
 
 def average_row(company: dict) -> str:
@@ -176,11 +183,14 @@ def render_stats(companies: list[dict]) -> str:
 
 def render_companies(companies: list[dict]) -> str:
     # A company with a salary someone in Spain reported directly sorts above
-    # the crowdsourced ones, then the best average first. validate.py has
-    # already refused any company without an entry.
+    # the crowdsourced ones. Then the share of engineers who reach the bar,
+    # then the average: a company where everyone reporting is at 60k+ ranks
+    # above one where 60k+ is a rare high (maintainer, 2026-09-22).
+    # validate.py has already refused any company without an entry.
     averages = {id(c): average(c) for c in companies}
     ranked = sorted(companies, key=lambda c: (not averages[id(c)]["first_hand"],
-                                              -(averages[id(c)]["base"] or 0), c["company"].casefold()))
+                                              -(share(c) or 0), -(averages[id(c)]["base"] or 0),
+                                              c["company"].casefold()))
     out = [f"## Average pay, engineers with {lib.SENIOR_YEARS}+ years at 60k+", "", *AVERAGE_HEADER]
     out += [average_row(company) for company in ranked]
     return "\n".join(out)

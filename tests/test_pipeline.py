@@ -435,6 +435,18 @@ def test_share_of_submissions() -> None:
     check("one in a thousand is not 0%",
           build.share_cell(acme(entry(PER_LOCATION), spain_submissions=250)), "<1% of 250")
 
+    def named(name: str, *entries: dict, **fields) -> dict:
+        return lib.blank_company(name, **fields) | {"entries": list(entries)}
+    table = build.render_companies([
+        named("Rare High", entry(PER_LOCATION, base=120000), spain_submissions=30),
+        named("Everyone", entry(PER_LOCATION, base=70000), spain_submissions=1),
+        named("Everyone Paid More", entry(PER_LOCATION, base=90000), spain_submissions=1),
+        named("Vouched", entry(None, source="community", base=65000)),
+    ])
+    check("rows sort by share, then base, first-hand first",
+          [line.split(" | ")[0].lstrip("| ") for line in table.splitlines()[4:]],
+          ["Vouched", "Everyone Paid More", "Everyone", "Rare High"])
+
     for label, company, bad in (
         ("a Levels.fyi entry without a count", acme(entry(PER_LOCATION)), True),
         ("more entries than submissions", acme(entry(PER_LOCATION), entry(PER_LOCATION, base=70000),
