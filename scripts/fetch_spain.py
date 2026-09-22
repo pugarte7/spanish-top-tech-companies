@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Fetch every software engineer salary in Spain that qualifies, per company, from Levels.fyi.
+"""Fetch every senior software engineer salary in Spain, per company, from Levels.fyi.
 
     python3 scripts/fetch_spain.py                 # every resolved company in companies.csv
     python3 scripts/fetch_spain.py --company glovo
     python3 scripts/fetch_spain.py --audit         # report, write nothing
 
-An entry qualifies when the engineer has at least lib.SENIOR_YEARS years of
-experience and a base salary of at least lib.THRESHOLD_EUR. The level name does
-not matter: companies call the same job L4, SDE II or Senior, and years are the
-one thing every submission states the same way.
+Every engineer with at least lib.SENIOR_YEARS years of experience is a row,
+whatever they are paid: the README shows the median over all of them. The level
+name does not matter: companies call the same job L4, SDE II or Senior, and
+years are the one thing every submission states the same way. A company stays
+on the list while at least one of those rows is at lib.THRESHOLD_EUR or more.
 
 Most submissions are behind a sign-in. The public page embeds a handful (see
 below); the "Latest Salary Submissions" table under it holds every one, and is
@@ -402,28 +403,23 @@ def entries(page: dict, today: str) -> list[dict]:
             "date": today,
             "notes": None,
         }
-        if lib.qualifies(entry):
+        if lib.is_senior(entry):
             out.append(entry)
     return sorted(out, key=lib.entry_order)
 
 
 def write(slug: str, new_entries: list[dict], name_hint: str, today: str,
-          record: dict | None = None, served: str | None = None,
-          submissions: int | None = None) -> str:
+          record: dict | None = None, served: str | None = None) -> str:
     """Update one company in companies.csv. Returns what happened, for the run report.
 
     The whole file is read and written for each company, so a run that gets
     blocked halfway keeps everything it fetched before that.
 
-    `submissions` is how many Spanish submissions were read, qualifying or not,
-    and is stored beside the entries so the README can say what share of a
-    company's engineers reach the bar.
-
-    A company is on the list only while it has a salary on file. One that
-    Levels.fyi was asked about and that ends up with nothing, and that nobody
-    has vouched for with a first-hand entry, is removed; the maintainer dropped
-    112 such rows on 2026-09-21 rather than list them as "no data". A page that
-    could not be read removes nothing.
+    A company is on the list only while one of its rows is at the bar. One that
+    Levels.fyi was asked about and that ends up without such a row, and that
+    nobody has vouched for with a first-hand entry, is removed; the maintainer
+    dropped 112 rows with nothing on 2026-09-21 rather than list them as "no
+    data". A page that could not be read removes nothing.
     """
     companies = lib.load_companies()
     company = lib.by_slug(companies, slug)
@@ -454,12 +450,11 @@ def write(slug: str, new_entries: list[dict], name_hint: str, today: str,
     if served is not None:
         company["entries"] = [entry for entry in company["entries"] if not ours(entry)] \
             + new_entries
-        company["spain_submissions"] = submissions
 
-    # Nothing is created empty, whatever else the page gave (an unread table
-    # once created two companies from their LinkedIn handle alone), and a
-    # company that came back empty is removed. An unread page removes nothing.
-    if not company["entries"]:
+    # Nothing is created below the bar, whatever else the page gave (an unread
+    # table once created two companies from their LinkedIn handle alone), and a
+    # company that came back below it is removed. An unread page removes nothing.
+    if not lib.listed(company):
         if created:
             return "not listed"
         if served is None:
@@ -495,7 +490,7 @@ def discover(bearer: str, delay: float, known: set[str]) -> list[tuple[str, str]
     submissions, about three months' worth. Reading it each run is what makes
     "add your salary on Levels.fyi and it gets picked up" true for a company
     nobody has added by hand: it is fetched like the rest, and gets a row the
-    first time one of its engineers qualifies. The API sends `False` for both
+    first time one of its engineers is at the bar. The API sends `False` for both
     company fields on a few rows; those name no employer to look up.
     """
     rows = table(bearer, delay) or []
@@ -536,16 +531,17 @@ def main(argv: list[str]) -> int:
             label, page, record = spain_data(slug, args.delay, bearer)
             served[label] = served.get(label, 0) + 1
             new_entries = entries(page, today) if page else []
-            found += len(new_entries)
+            at_bar = sum(1 for entry in new_entries if lib.at_bar(entry))
+            found += at_bar
             if new_entries:
                 print(f"  {slug}: {label} - {len(new_entries)} of {len(page['records'])} "
-                      f"qualifying, top {lib.fmt_eur(new_entries[0]['base'])}")
+                      f"with {lib.SENIOR_YEARS}+ years, {at_bar} at 60k+, top "
+                      f"{lib.fmt_eur(new_entries[0]['base'])}")
             else:
-                print(f"  {slug}: {label}, nothing qualifies")
+                print(f"  {slug}: {label}, nobody with {lib.SENIOR_YEARS}+ years")
             if not args.audit:
                 outcome = write(slug, new_entries, name, today, record,
-                                label if page else None,
-                                len(page["records"]) if page else None)
+                                label if page else None)
                 tally[outcome] = tally.get(outcome, 0) + 1
     except Blocked as exc:
         print(f"\n{exc}", file=sys.stderr)
@@ -553,7 +549,7 @@ def main(argv: list[str]) -> int:
 
     print("\nserved: " + ", ".join(
         f"{k} {v}" for k, v in sorted(served.items(), key=lambda kv: -kv[1])))
-    print(f"qualifying entries: {found}")
+    print(f"engineers at 60k+: {found}")
     if not args.audit:
         print("companies: " + ", ".join(f"{k} {v}" for k, v in sorted(tally.items())))
         print(f"\n{ATTRIBUTION}")

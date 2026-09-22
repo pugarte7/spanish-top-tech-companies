@@ -7,23 +7,26 @@ twice, and one put every figure on the front page 16% over the truth.
 ## What this repository is
 
 What companies in Spain pay software engineers with 5 or more years of
-experience, on average, counting only salaries of 60.000 € or more in base.
-Three things follow from that and all are load bearing:
+experience: the median over every such engineer on file, and the share of them
+at 60.000 € or more in base, at companies where at least one is. Three things
+follow from that and all are load bearing:
 
 - **Spain only.** A German salary in this list is worse than no salary, because
   the whole point is that other sources mix countries.
-- **Averages of qualifying salaries only.** `companies.csv` keeps one row per
-  engineer; the README shows one row per company, the mean of that company's
-  salaries on file. Nothing else goes into the mean: an all-levels median, a
-  ladder mean or an engineer under 5 years or under 60k answers a different
-  question.
+- **The median over every senior; the bar picks companies and is measured.**
+  `companies.csv` keeps one row per engineer with 5+ years, paid whatever they
+  are paid; the README shows one row per company, the median of those rows
+  and the share of them at 60k+. Nothing else goes into the median: an
+  all-levels figure, a ladder mean or an engineer under 5 years answers a
+  different question. And nothing is trimmed from it: the 60k-filtered mean was
+  tried and is why readers called the list cherry-picked.
 - **Seniority is years of experience.** 5 or more (`lib.SENIOR_YEARS`),
-  whatever the company calls the level.
+  whatever the company calls the level, and with no upper limit.
 
-### How that rule was reached, 2026-09-15 and 16
+### How that rule was reached, 2026-09-15, 16 and 22
 
-Over two days the list went through four versions, and the maintainer rejected
-the first three:
+Over two days the list went through four versions, the maintainer rejected the
+first three, and a week later readers overturned the fourth:
 
 1. The best rung at senior or above per company, falling back to an
    all-levels figure and to other job families. Rejected: "we just need to
@@ -39,7 +42,19 @@ the first three:
 4. That company's mean over those same salaries. A mean over every 5+ year
    engineer, including those under 60k, was proposed and rejected: "you just
    need to calculate the avg for each company, with all the data entries for
-   that company with 60k+ 5 years +". This one stands.
+   that company with 60k+ 5 years +".
+5. The median over every 5+ year engineer, with the 60k bar deciding which
+   companies are listed and shown as the share at 60k+. The maintainer posted
+   the list on Reddit on 2026-09-22 and was told "use all the data and cut
+   outliers" and that "si cortas los salarios por debajo de 60, todas las
+   empresas donde al menos una persona cobre más de 60 van a parecer
+   competitivas". Both correct: Minsait read 90k off two engineers while its
+   fourteen seniors under 60k were not on file. The maintainer proposed a
+   median and a 15-year cap; the numbers showed the cap changed no company's
+   median by more than 2k, and the median over all seniors (Minsait 43.5k,
+   BBVA 55k, Fever 66k, Glovo 75k, Revolut 87k) was the honest figure. The
+   maintainer chose it, kept "only competitive companies" as the listing rule,
+   and declined a minimum number of data points. This one stands.
 
 The entries come from the signed-in submissions table (trap 5) and from the
 `samples` and `median` records embedded in each company's Spain page (trap 2).
@@ -90,10 +105,12 @@ The list has no fixed size: it is whatever the last signed-in run found.
 The README's stats line is the authoritative count; this is the run behind it.
 
 - 2026-09-22, signed in (trap 5), every company on file plus discovery (trap
-  6): 257 employers read, none unreachable. Found 197 companies with a
-  qualifying salary and 1575 salaries, reported between 2020-01 and
-  2026-09, 462 of them in the last twelve months. `companies.csv` has one
-  row per salary and nothing else, every row dated that day.
+  6): 259 employers read, none unreachable. Found 197 companies with a
+  senior at 60k+, 2236 engineers with 5+ years on file at them, 1571 of
+  those at 60k+, reported between 2018-11 and 2026-09, 559 in the last
+  twelve months. `companies.csv` has one row per senior and nothing else,
+  every row dated that day. The same run earlier in the day, under the
+  60k-filtered rule, had 1575 rows at the same 197 companies.
 - The day before, 2026-09-21, the list went from 452 salaries at 104 companies
   (public pages only) to 1468 at 149, and 112 companies with nothing on file
   were removed: 72 with nothing Spanish on Levels.fyi, 19 with no Levels.fyi
@@ -102,16 +119,16 @@ The README's stats line is the authoritative count; this is the run behind it.
   that", then "remove the nothing qualifies part". Discovery then turned up
   107 employers with a recent Spanish submission that had never been on file,
   43 of which had someone qualifying.
-- The README is one table: one row per company with the average of its
-  qualifying salaries, and beside the count a Share
-  column: those qualifying over every Spanish submission read for the company
-  (`spain_submissions`), added 2026-09-22 so BBVA's two out of 63 read as
-  "possible but unlikely" rather than as a peer of companies where everyone
-  qualifies. Rows sort by that share first, then by average base ("sorted
-  first by ratio, then by salary", same day); first-hand rows still come first. Every salary links to the
-  Spain-scoped page it was read from; companies link to LinkedIn and to their
-  open roles in Spain when a LinkedIn id or URL is known, which the
-  discovered ones mostly are not yet.
+- The README is one table: one row per company with the median over its
+  seniors, how many there are, and "At 60k+", the share of them at the bar.
+  The share was added 2026-09-22 (first over every submission, juniors
+  included, then over seniors only once the median rule landed) so BBVA's six
+  of thirteen read as "happens, not the norm" rather than as a peer of
+  companies where everyone is at the bar. Rows sort by that share first, then
+  by median base ("sorted first by ratio, then by salary"); first-hand rows
+  still come first. Every salary links to the Spain-scoped page it was read
+  from; companies link to LinkedIn and to their open roles in Spain when a
+  LinkedIn id or URL is known, which the discovered ones mostly are not yet.
 
 How the move to one CSV was checked, 2026-09-14: all 299 YAML figures, all 242
 backlog LinkedIn ids and every company field were compared with the CSV, and
@@ -196,9 +213,9 @@ entry" are different claims, and without a session the second is often false.
 and is not one. It equals the sum of the `averages` counts when there are
 averages, and the **company's global count** when there are none: Amadeus
 reports 429 next to an empty `averages` and a page that reads "Not enough
-data". Only the `averages` counts are Spanish. The one count the list stores,
-`spain_submissions`, is the number of Spanish records the fetcher actually
-read and deduplicated, never a figure Levels.fyi reports.
+data". Only the `averages` counts are Spanish, and the list stores no count
+at all: the share at 60k+ is computed from the rows, which since 2026-09-22
+are every senior read.
 
 **4. Every money field in the payload is USD.**
 The page prints euros by multiplying by `locationExchangeRate`, and its own FAQ
@@ -240,7 +257,7 @@ and "Unlock by Adding Your Salary!".
 The maintainer, who works at Fever and had added a salary, could see 29
 Spanish software engineers there. The page embedded one, an L3 with six years
 at 48.7k, so the README said "none with 5+ years at 60k+" about a company with
-ten who qualified and a Staff engineer at 90k. Twenty-two companies were in
+ten at 60k+ and a Staff engineer at 90k. Twenty-two companies were in
 that state (`Spain (aggregate)`), with Levels.fyi's own aggregate showing 60k+
 bases existed at Aily Labs, Manychat, Perk, Factorial, Clarity AI, Fever,
 Exoticca and Cabify.
@@ -301,7 +318,7 @@ for both company fields; they name nothing and are skipped.
 
 | Script | What it does | Safe? |
 | --- | --- | --- |
-| `fetch_spain.py` | Qualifying salaries in Spain, per company. With a token, reads the country-wide feed for employers not yet on file, then each company's signed-in submissions table plus every sample and the median record on its page; keeps Spanish ones with 5+ years and a 60k+ base, converts USD to EUR, records LinkedIn, deletes any entry whose source URL names no location, removes a company that comes back empty unless a first-hand entry vouches for it, and leaves a company alone when its page or table cannot be read. | **Use this** |
+| `fetch_spain.py` | Senior salaries in Spain, per company. With a token, reads the country-wide feed for employers not yet on file, then each company's signed-in submissions table plus every sample and the median record on its page; keeps Spanish ones with 5+ years whatever the pay, converts USD to EUR, records LinkedIn, deletes any entry whose source URL names no location, removes a company that comes back with nobody at 60k+ unless a first-hand entry vouches for it, and leaves a company alone when its page or table cannot be read. | **Use this** |
 | `fetch_company.py` | Company details only: website, HQ, headcount, sector, vesting. Writes no salary at all, by design. Only fills companies already in the CSV. | Yes |
 | `resolve_slugs.py` | Company name → Levels.fyi slug, with verification and an alias table. Folds a company into the one already holding its slug. | Yes |
 | `build.py` | Regenerates the README and rewrites `companies.csv` in canonical order. | Yes |
@@ -319,11 +336,14 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 
 ## Known gaps
 
-- **A company with nothing qualifying is invisible.** Indra, Minsait, BBVA
-  and Capgemini have dozens of Spanish engineers on Levels.fyi and nobody at
-  both 5 years and 60k, and the list says nothing about them; the maintainer
-  preferred that to a second table. A first-hand entry or a job ad (source #3
-  in METHODOLOGY.md) is the way on for such a company.
+- **A company with nobody at the bar is invisible.** Indra and Capgemini have
+  dozens of Spanish seniors on Levels.fyi and none at 60k, and the list says
+  nothing about them; the maintainer preferred that to a second table. A
+  first-hand entry or a job ad (source #3 in METHODOLOGY.md) is the way on
+  for such a company.
+- **One-person medians.** Nothing stops a company with a single senior on
+  file from topping the table at "100% (1)". A minimum of three was offered
+  and declined on 2026-09-22; the Engineers column is the reader's guard.
 - **Discovery reaches three months back.** The feed caps at 250 rows. An
   employer whose only Spanish submission is older than that, and that was
   never on file, stays unknown until someone there submits again or adds it
@@ -340,7 +360,7 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
   employer and `validate.py` rejects a slug used twice; the list uses
   `facebook` for Meta. The table API knows only `meta`, so Meta is the one
   company still read from the page's samples (`Spain (ladder)` in the run
-  report), 11 qualifying out of a count the page does not publish in full.
+  report), 11 seniors out of a count the page does not publish in full.
 
 ## Commands
 

@@ -4,7 +4,7 @@ Two ways in. Pick whichever you're comfortable with.
 
 ## 0. Add your salary on Levels.fyi
 
-The easiest way, and anonymous. Add it at [levels.fyi/salaries/add](https://www.levels.fyi/salaries/add) with your city in Spain and your years of experience. The list is rebuilt from Levels.fyi's Spanish submissions, so a software engineer with 5 or more years and 60k or more in base is picked up on the next run, and a company that is not here yet gets its row the first time one of its engineers qualifies.
+The easiest way, and anonymous. Add it at [levels.fyi/salaries/add](https://www.levels.fyi/salaries/add) with your city in Spain and your years of experience. The list is rebuilt from Levels.fyi's Spanish submissions, so a software engineer with 5 or more years is picked up on the next run, and a company that is not here yet gets its row the first time one of its seniors reports 60k or more.
 
 ## 1. Open an issue (no CSV)
 
@@ -14,9 +14,9 @@ Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or 
 
 ## 2. Open a pull request
 
-All the data is one file, [`companies.csv`](companies.csv): one row per salary, with the company's own columns repeated on each of its rows. A company is on the list only while it has at least one salary; a `Name,linkedin_id` row with the salary columns empty is how one is added by hand, and it stays only if the fetch finds something. The README is generated from it, and shows each company's average of those salaries.
+All the data is one file, [`companies.csv`](companies.csv): one row per salary, with the company's own columns repeated on each of its rows. A company is on the list only while one of its rows is at 60k+; a `Name,linkedin_id` row with the salary columns empty is how one is added by hand, and it stays only if the fetch finds someone at the bar. The README is generated from it, and shows each company's median over those salaries and the share at 60k+.
 
-Every row is **one software engineer in Spain with 5 or more years of experience and a base salary of 60.000 € or more**. Nothing else goes in: no other job families, nobody under five years or under 60k, and no averages. What their company calls the level does not matter. [METHODOLOGY.md](METHODOLOGY.md#who-counts) explains why.
+Every row is **one software engineer in Spain with 5 or more years of experience**, paid whatever they are paid. Nothing else goes in: no other job families, nobody under five years, and no averages. What their company calls the level does not matter. A company stays listed while at least one of its rows is at 60.000 € or more in base. [METHODOLOGY.md](METHODOLOGY.md#who-counts) explains why.
 
 ```bash
 git clone https://github.com/pugarte7/spanish-top-tech-companies
@@ -31,7 +31,7 @@ Nothing to install. The scripts use plain Python 3.9 or newer.
 
 ```bash
 python3 scripts/resolve_slugs.py                 # finds its Levels.fyi page
-python3 scripts/fetch_spain.py --company acme    # reads its qualifying salaries in Spain
+python3 scripts/fetch_spain.py --company acme    # reads its senior salaries in Spain
 ```
 
 The id is the `f_C` number in a LinkedIn job search filtered to that company. [`scripts/resolve_linkedin_ids.js`](scripts/resolve_linkedin_ids.js) turns a whole search's Company filter into these lines at once.
@@ -44,14 +44,13 @@ The id is the `f_C` number in a LinkedIn job search filtered to that company. [`
 | `linkedin_ids` | LinkedIn company ids, `\|`-separated when an employer has several (Amazon and AWS). |
 | `linkedin_url` | The company's LinkedIn page, if it has a vanity URL. |
 | `levels_slug`, `levels_status` | Its Levels.fyi page, and `resolved`, `review` or `unmatched` (not on Levels.fyi). Written by `resolve_slugs.py`. |
-| `base` | Gross annual base salary in euros. 60000 or more. |
+| `base` | Gross annual base salary in euros. A first-hand row must be 60000 or more; a Levels.fyi row is whatever was reported. |
 | `total` | Total compensation in euros, if known. |
 | `years_experience` | Years of experience: a number, or a bucket like `5-10` or `11+`. 5 or more. |
 | `level` | The level as the company names it (`L4`, `SDE II`, `Senior`). Informational only. |
 | `city`, `reported` | Where in Spain, and the month the salary was reported, `YYYY-MM`. |
 | `source`, `source_url`, `date` | Where the salary came from and when it was read, `YYYY-MM-DD`. |
 | `notes` | Anything a reader of the CSV needs to trust it, such as the contract type. |
-| `spain_submissions` | How many software-engineer submissions from Spain `fetch_spain.py` read for the company, qualifying or not. The README's Share column divides the Levels.fyi rows by it. Written by the fetcher; leave it empty on a hand-added company. |
 | `website`, `careers_url`, `hq_city`, `hq_country`, `employees`, `sector`, `year_founded`, `about` | Company details from Levels.fyi. Written by `fetch_company.py`. |
 
 ### Fetching from Levels.fyi
@@ -64,7 +63,7 @@ python3 scripts/fetch_spain.py --company glovo
 python3 scripts/fetch_spain.py --audit         # report only, writes nothing
 ```
 
-This is the only route for crowdsourced salaries. It reads `/companies/<slug>/salaries/software-engineer/locations/spain` and the "Latest Salary Submissions" table under it, and writes every submission from a Spanish city with 5 or more years of experience and a base of 60k or more. See [METHODOLOGY.md](METHODOLOGY.md#an-entry-must-prove-it-is-spanish) for why the city check is not optional. It also deletes any entry already on file whose source URL names no location, removes a company that comes back with nothing (unless a first-hand entry vouches for it), and leaves a company untouched when its page or table cannot be read. With a session it also reads Levels.fyi's feed of recent Spanish submissions and fetches every employer in it that is not on file yet, which is how new companies arrive.
+This is the only route for crowdsourced salaries. It reads `/companies/<slug>/salaries/software-engineer/locations/spain` and the "Latest Salary Submissions" table under it, and writes every submission from a Spanish city with 5 or more years of experience, whatever the pay. See [METHODOLOGY.md](METHODOLOGY.md#an-entry-must-prove-it-is-spanish) for why the city check is not optional. It also deletes any entry already on file whose source URL names no location, removes a company that comes back with nobody at 60k+ (unless a first-hand entry vouches for it), and leaves a company untouched when its page or table cannot be read. With a session it also reads Levels.fyi's feed of recent Spanish submissions and fetches every employer in it that is not on file yet, which is how new companies arrive.
 
 The table is where most submissions are, and the browser only loads it for a signed-in visitor who has added a salary. Without a session the script reads the public page alone, which for most companies is a single record, and says so. To give it your session: sign in on levels.fyi, open the browser console and run `copy(localStorage.getItem("auth"))`, then
 

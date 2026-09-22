@@ -33,9 +33,12 @@ def check_entry(where: str, entry: dict) -> None:
     base, total = entry.get("base"), entry.get("total")
     if base is None:
         errors.append(f"{where}: no base salary")
-    elif base < lib.THRESHOLD_EUR:
-        errors.append(f"{where}: base {base} is under {lib.fmt_eur(lib.THRESHOLD_EUR)}, "
-                      "so it does not belong on the list")
+    # Levels.fyi rows are every senior, paid whatever they are paid; the median
+    # needs the ones under the bar. A first-hand row is the maintainer saying
+    # "I know they pay that", and "that" means the bar.
+    elif base < lib.THRESHOLD_EUR and entry.get("source") in lib.VOUCHED:
+        errors.append(f"{where}: a first-hand entry under {lib.fmt_eur(lib.THRESHOLD_EUR)} "
+                      "vouches for nothing this list is about")
     for column, amount in (("base", base), ("total", total)):
         if amount is not None and amount > MAX_EUR:
             errors.append(f"{where}: {column} {amount} is not a salary")
@@ -80,22 +83,13 @@ def check_entry(where: str, entry: dict) -> None:
 
 
 def check_company(where: str, company: dict) -> None:
-    # A company is on the list only with a salary on file (2026-09-21). A bare
+    # A company is on the list only with an engineer at the bar on file. A bare
     # `Name,linkedin_id` row is how one is added by hand, and it is gone the
-    # moment fetch_spain.py finds nothing for it, so a lasting one is a mistake.
-    if not company.get("entries"):
-        errors.append(f"{where}: no salary on file, so it is not on the list. Run "
-                      "fetch_spain.py for it, add a first-hand entry, or remove the row")
-
-    # The README divides the Levels.fyi entries by spain_submissions, so the
-    # count has to exist whenever there are such entries and cover all of them.
-    crowd = sum(1 for e in company.get("entries") or [] if e.get("source") == "levels.fyi")
-    read = company.get("spain_submissions")
-    if crowd and read is None:
-        errors.append(f"{where}: levels.fyi entries but no spain_submissions count; "
-                      "re-run fetch_spain.py for it")
-    elif read is not None and read < crowd:
-        errors.append(f"{where}: {crowd} levels.fyi entries out of {read} submissions read")
+    # moment fetch_spain.py finds nobody there, so a lasting one is a mistake.
+    if not lib.listed(company):
+        errors.append(f"{where}: nobody at {lib.fmt_eur(lib.THRESHOLD_EUR)} on file, so it is "
+                      "not on the list. Run fetch_spain.py for it, add a first-hand entry, "
+                      "or remove the rows")
 
     for column in ("linkedin_url", "website", "careers_url"):
         found = company.get(column)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import statistics
 import sys
 
 import lib
@@ -83,30 +84,37 @@ def source_cell(entry: dict) -> str:
 # --------------------------------------------------------------------------- tables
 
 
-AVERAGE_HEADER = [
-    "| Company | Avg base | Avg total comp | Engineers | Share | Reported | Source | Jobs |",
+TABLE_HEADER = [
+    "| Company | Median base | Median total comp | Engineers | At 60k+ | Reported | Source | Jobs |",
     "| --- | ---: | ---: | ---: | ---: | --- | --- | --- |",
 ]
 
 
-def mean(amounts: list) -> int | None:
+def median(amounts: list) -> int | None:
     amounts = [amount for amount in amounts if amount is not None]
-    return round(sum(amounts) / len(amounts)) if amounts else None
+    return round(statistics.median(amounts)) if amounts else None
 
 
-def average(company: dict) -> dict:
-    """What a company pays, on average, the engineers on file for it.
+def summary(company: dict) -> dict:
+    """What a company pays a senior, and how often that is 60k+.
 
-    Every entry already has 5+ years and a 60k+ base, so this is the mean of
-    exactly those, and nothing else: no one under the bar pulls it down, and no
-    level name decides who is in it.
+    Every entry is a software engineer in Spain with 5+ years, paid whatever
+    they are paid. The median is over all of them, so one well-paid engineer
+    cannot make a company look competitive: Minsait's two at 90k next to
+    fourteen under 60k reads 43.5k, 12% at 60k+. Until 2026-09-22 the table
+    showed the mean of the 60k+ ones only, which is what critics called
+    cherry-picking, rightly. The share is the chance a senior there is at the
+    bar; first-hand entries count in it like any other row.
     """
     entries = company["entries"]
     months = sorted(entry["reported"] for entry in entries if entry.get("reported"))
+    reached = sum(1 for entry in entries if lib.at_bar(entry))
     return {
-        "base": mean([entry.get("base") for entry in entries]),
-        "total": mean([entry.get("total") for entry in entries]),
+        "base": median([entry.get("base") for entry in entries]),
+        "total": median([entry.get("total") for entry in entries]),
         "engineers": len(entries),
+        "at_bar": reached,
+        "share": reached / len(entries) if entries else 0,
         "reported": (months[0] if months[0] == months[-1] else f"{months[0]} to {months[-1]}")
                     if months else None,
         "first_hand": any(entry.get("source") in lib.VOUCHED for entry in entries),
@@ -114,7 +122,7 @@ def average(company: dict) -> dict:
 
 
 def sources_cell(company: dict) -> str:
-    """Every source the average draws on, each linked once."""
+    """Every source the median draws on, each linked once."""
     cells = []
     for entry in sorted(company["entries"], key=lib.entry_order):
         cell = source_cell(entry)
@@ -123,38 +131,20 @@ def sources_cell(company: dict) -> str:
     return ", ".join(cells)
 
 
-def share(company: dict) -> float | None:
-    """What fraction of the company's Spanish submissions the average is drawn from.
-
-    Two of 63 at BBVA is 0.03: 63 software engineers in Spain reported, and two
-    of them had both 5 years and a 60k base. The average alone would put BBVA
-    beside companies where everyone does. Only Levels.fyi entries count towards
-    the share, because the denominator is Levels.fyi's; a first-hand entry
-    belongs to no submission set. None when nothing was read.
-    """
-    read = company.get("spain_submissions")
-    if not read:
-        return None
-    crowd = sum(1 for entry in company["entries"] if entry.get("source") == "levels.fyi")
-    return crowd / read
+def share_cell(found: dict) -> str:
+    """"46% (6)": six of the thirteen engineers on file are at 60k+."""
+    percent = 100 * found["share"]
+    return f"{'<1' if 0 < percent < 1 else round(percent)}% ({found['at_bar']})"
 
 
-def share_cell(company: dict) -> str:
-    fraction = share(company)
-    if fraction is None:
-        return "—"
-    percent = 100 * fraction
-    return f"{'<1' if 0 < percent < 1 else round(percent)}% of {company['spain_submissions']}"
-
-
-def average_row(company: dict) -> str:
-    found = average(company)
+def company_row(company: dict) -> str:
+    found = summary(company)
     cells = [
         company_cell(company),
         k(found["base"]),
         k(found["total"]),
         str(found["engineers"]),
-        share_cell(company),
+        share_cell(found),
         escape(found["reported"]),
         sources_cell(company),
         jobs_cell(company),
@@ -165,9 +155,11 @@ def average_row(company: dict) -> str:
 def render_stats(companies: list[dict]) -> str:
     """The list is whatever the last run found, so the line says when that was."""
     entries = [entry for company in companies for entry in company["entries"]]
+    reached = sum(1 for entry in entries if lib.at_bar(entry))
     parts = [
-        f"**{len(companies)} companies paying {lib.SENIOR_YEARS}+ year engineers 60k+**",
-        f"{len(entries)} salaries averaged",
+        f"**{len(companies)} companies**",
+        f"{len(entries)} engineers with {lib.SENIOR_YEARS}+ years",
+        f"{reached} of them at 60k+",
     ]
     stale = sum(1 for entry in entries if lib.is_stale(entry.get("date")))
     if stale:
@@ -183,16 +175,15 @@ def render_stats(companies: list[dict]) -> str:
 
 def render_companies(companies: list[dict]) -> str:
     # A company with a salary someone in Spain reported directly sorts above
-    # the crowdsourced ones. Then the share of engineers who reach the bar,
-    # then the average: a company where everyone reporting is at 60k+ ranks
-    # above one where 60k+ is a rare high (maintainer, 2026-09-22).
-    # validate.py has already refused any company without an entry.
-    averages = {id(c): average(c) for c in companies}
-    ranked = sorted(companies, key=lambda c: (not averages[id(c)]["first_hand"],
-                                              -(share(c) or 0), -(averages[id(c)]["base"] or 0),
-                                              c["company"].casefold()))
-    out = [f"## Average pay, engineers with {lib.SENIOR_YEARS}+ years at 60k+", "", *AVERAGE_HEADER]
-    out += [average_row(company) for company in ranked]
+    # the crowdsourced ones. Then the share of engineers at the bar, then the
+    # median: a company where every senior is at 60k+ ranks above one where
+    # 60k+ is a rare high (maintainer, 2026-09-22). validate.py has already
+    # refused any company with nobody at the bar.
+    found = {id(c): summary(c) for c in companies}
+    ranked = sorted(companies, key=lambda c: (not found[id(c)]["first_hand"], -found[id(c)]["share"],
+                                              -(found[id(c)]["base"] or 0), c["company"].casefold()))
+    out = [f"## Median pay, software engineers with {lib.SENIOR_YEARS}+ years", "", *TABLE_HEADER]
+    out += [company_row(company) for company in ranked]
     return "\n".join(out)
 
 

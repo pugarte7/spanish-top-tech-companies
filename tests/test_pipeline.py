@@ -212,30 +212,37 @@ def test_seniority_is_years_not_titles() -> None:
     said senior. That threw away an L4 with eight years at 90k and would have
     kept a "Senior" with two, and the maintainer ruled it out the same day:
     seniority is five or more years, and the level name does not matter.
+
+    Pay does not decide who is a row either. Until 2026-09-22 only seniors at
+    60k+ were kept and averaged, so two 90k engineers made Minsait read 90k
+    while fourteen seniors under 60k went unrecorded; the median now needs
+    every one of them. A first-hand row is different: it vouches for 60k+.
     """
-    print("fetch_spain keeps 5+ years at 60k+, and nothing else")
+    print("fetch_spain keeps every engineer with 5+ years, whatever the pay")
 
     found = read(ladder(
         sample(100000, 8, level="SDE I"),
         sample(100000, 4, level="Senior Software Engineer"),
         sample(100000, "5-10", level=None),
         sample(100000, "2-4"),
-        sample(69766, 12),
-        sample(69768, 12),
+        sample(50000, 12),
     ))
-    check("years decide, level names do not",
+    check("years decide, level names and pay do not",
           sorted((e["years_experience"], e["base"], e["level"]) for e in found),
-          [("12", 60000, "L4"), ("5-10", 86000, None), ("8", 86000, "SDE I")])
+          [("12", 43000, "L4"), ("5-10", 86000, None), ("8", 86000, "SDE I")])
     check("a bucket counts from its low end", lib.years("5-10"), 5)
     check("an open bucket counts from its number", lib.years("11+"), 11)
 
     import validate
-    for label, bad in (("under 60k", entry(PER_LOCATION, base=59999)),
-                       ("under five years", entry(PER_LOCATION, years_experience="4")),
-                       ("no years", entry(PER_LOCATION, years_experience=None))):
+    for label, row, bad in (
+        ("under five years", entry(PER_LOCATION, years_experience="4"), True),
+        ("no years", entry(PER_LOCATION, years_experience=None), True),
+        ("a first-hand entry under 60k", entry(None, source="community", base=55000), True),
+        ("a Levels.fyi entry under 60k", entry(PER_LOCATION, base=55000), False),
+    ):
         validate.errors.clear()
-        validate.check_entry("test", bad)
-        check(f"validate.py rejects an entry {label}", bool(validate.errors), True)
+        validate.check_entry("test", row)
+        check(f"validate.py {'rejects' if bad else 'keeps'} {label}", bool(validate.errors), bad)
 
 
 def test_one_submission_is_one_entry() -> None:
@@ -291,7 +298,7 @@ def test_signed_in_table_is_read() -> None:
     found = read(page, rows=rows)
     check("table rows become entries, at their own rate, once each, Spain only",
           sorted((e["base"], e["years_experience"], e["level"]) for e in found),
-          [(70000, "5-10", None), (90000, "20", "Staff")])
+          [(48000, "6", "L3"), (70000, "5-10", None), (90000, "20", "Staff")])
     check("a table read is labelled as the complete answer", label(page, rows), "Spain (table)")
     check("without the table the label stays partial", label(page), "Spain (aggregate)")
     check("an empty table does not claim completeness", label(page, []), "Spain (aggregate)")
@@ -333,7 +340,7 @@ def test_signed_in_table_is_read() -> None:
             served, parsed, _ = fetch_spain.spain_data("acme", 0, "token")
         check("no page but a table is still read",
               (served, sorted(e["base"] for e in fetch_spain.entries(parsed, "2026-09-21"))),
-              ("Spain (table)", [70000, 90000]))
+              ("Spain (table)", [48000, 70000, 90000]))
         fetch_spain.table = lambda bearer, delay, slug=None: []
         with contextlib.redirect_stderr(io.StringIO()):
             check("no page and an empty table is unreachable",
@@ -368,23 +375,28 @@ def test_an_unread_page_changes_nothing() -> None:
               [e["source_url"] for e in stored()["entries"]], [PER_LOCATION])
 
 
-def test_a_company_with_nothing_is_not_listed() -> None:
-    """A company is on the list only with a salary on file.
+def test_a_company_with_nobody_at_the_bar_is_not_listed() -> None:
+    """A company is on the list only with an engineer at 60k+ on file.
 
     Until 2026-09-21 a company Levels.fyi had nothing Spanish for kept a row
     reading "no Spain data", and 112 of them sat under the table. The
     maintainer's rule: get rid of the companies that don't have Spanish data and
     that nobody has vouched for. So the fetcher removes one that comes back
-    empty, keeps one a first-hand entry vouches for, and validate.py refuses
-    a lasting empty row.
+    with nobody at the bar, keeps one a first-hand entry vouches for, and
+    validate.py refuses lasting rows with nobody at the bar.
     """
-    print("a company with no salary on file is removed, not listed")
+    print("a company with nobody at 60k+ on file is removed, not listed")
     import fetch_spain
     import validate
 
     with temp_data(acme(entry(PER_LOCATION))):
         outcome = fetch_spain.write("acme", [], "Acme", "2026-09-21", served="Spain (table)")
         check("a company that comes back empty is removed", (outcome, stored()), ("removed", None))
+
+    with temp_data(acme(entry(PER_LOCATION))):
+        outcome = fetch_spain.write("acme", [entry(PER_LOCATION, base=45000)], "Acme", "2026-09-21",
+                                    served="Spain (table)")
+        check("so is one whose seniors are all under 60k", (outcome, stored()), ("removed", None))
 
     with temp_data(acme(entry(None, source="community"))):
         outcome = fetch_spain.write("acme", [], "Acme", "2026-09-21", served="no data")
@@ -399,64 +411,50 @@ def test_a_company_with_nothing_is_not_listed() -> None:
                                     record={"linkedin": "company/acme"}, served=None)
         check("not even from a LinkedIn handle", (outcome, stored()), ("not listed", None))
 
-    for label, company, refused in (("an empty row", acme(), True),
-                                    ("a row with a salary", acme(entry(PER_LOCATION)), False)):
+    for label, company, refused in (
+        ("an empty row", acme(), True),
+        ("rows all under 60k", acme(entry(PER_LOCATION, base=45000)), True),
+        ("a row at 60k+", acme(entry(PER_LOCATION, base=45000), entry(PER_LOCATION)), False),
+    ):
         validate.errors.clear()
         validate.check_company("acme", company)
         check(f"validate.py refuses {label}", any("not on the list" in e for e in validate.errors),
               refused)
 
 
-def test_share_of_submissions() -> None:
-    """The average alone puts BBVA beside companies where everyone qualifies.
+def test_median_and_share_over_every_senior() -> None:
+    """The statistic is the median over every senior, and the share at 60k+.
 
-    BBVA has 63 software engineers in Spain on Levels.fyi and two of them at
-    both 5 years and 60k; the maintainer wanted that visible, "possible but
-    unlikely". So the fetcher stores how many submissions it read, the README
-    shows the qualifying share of them, and validate.py holds the two together.
+    Two of Minsait's sixteen seniors are at 90k. The mean of those two, which
+    the table showed until 2026-09-22, said Minsait pays 90k; the median over
+    all sixteen says 43.5k, and the share says 60k+ happens to 12% of them.
+    "Use all the data" was the criticism, and the maintainer took it, keeping
+    the 60k bar for which companies are listed and for the share only.
     """
-    print("the README shows what share of a company's submissions qualify")
+    print("the README shows the median over every senior and the share at 60k+")
     import build
-    import fetch_spain
-    import validate
 
-    with temp_data(acme(entry(PER_LOCATION), spain_submissions=5)):
-        fetch_spain.write("acme", [entry(PER_LOCATION), entry(PER_LOCATION, base=70000)], "Acme",
-                          "2026-09-22", served="Spain (table)", submissions=63)
-        written = stored()
-        check("the count read is stored with the entries",
-              (written["spain_submissions"], len(written["entries"])), (63, 2))
-        check("and rendered as a share", build.share_cell(written), "3% of 63")
+    company = acme(entry(PER_LOCATION, base=90000, total=95000), entry(PER_LOCATION, base=90000),
+                   *[entry(PER_LOCATION, base=40000 + 1000 * i) for i in range(6)])
+    found = build.summary(company)
+    check("median over all seniors, not the mean of the 60k+ ones",
+          (found["base"], found["engineers"], found["at_bar"]), (43500, 8, 2))
+    check("the share is at 60k+ over all seniors", build.share_cell(found), "25% (2)")
+    check("total has its own median", found["total"], 95000)
+    check("a share under 1% is not 0%",
+          build.share_cell({"share": 1 / 250, "at_bar": 1}), "<1% (1)")
 
-    check("a first-hand entry is not one of the submissions",
-          build.share_cell(acme(entry(None, source="community"), entry(PER_LOCATION),
-                                spain_submissions=4)), "25% of 4")
-    check("no count, no share", build.share_cell(acme(entry(None, source="community"))), "—")
-    check("one in a thousand is not 0%",
-          build.share_cell(acme(entry(PER_LOCATION), spain_submissions=250)), "<1% of 250")
-
-    def named(name: str, *entries: dict, **fields) -> dict:
-        return lib.blank_company(name, **fields) | {"entries": list(entries)}
+    def named(name: str, *entries: dict) -> dict:
+        return lib.blank_company(name) | {"entries": list(entries)}
     table = build.render_companies([
-        named("Rare High", entry(PER_LOCATION, base=120000), spain_submissions=30),
-        named("Everyone", entry(PER_LOCATION, base=70000), spain_submissions=1),
-        named("Everyone Paid More", entry(PER_LOCATION, base=90000), spain_submissions=1),
+        named("Rare High", entry(PER_LOCATION, base=120000), entry(PER_LOCATION, base=40000)),
+        named("Everyone", entry(PER_LOCATION, base=70000)),
+        named("Everyone Paid More", entry(PER_LOCATION, base=90000)),
         named("Vouched", entry(None, source="community", base=65000)),
     ])
-    check("rows sort by share, then base, first-hand first",
+    check("rows sort by share, then median, first-hand first",
           [line.split(" | ")[0].lstrip("| ") for line in table.splitlines()[4:]],
           ["Vouched", "Everyone Paid More", "Everyone", "Rare High"])
-
-    for label, company, bad in (
-        ("a Levels.fyi entry without a count", acme(entry(PER_LOCATION)), True),
-        ("more entries than submissions", acme(entry(PER_LOCATION), entry(PER_LOCATION, base=70000),
-                                               spain_submissions=1), True),
-        ("a first-hand entry without a count", acme(entry(None, source="community")), False),
-    ):
-        validate.errors.clear()
-        validate.check_company("acme", company)
-        check(f"validate.py rejects {label}" if bad else f"validate.py allows {label}",
-              any("submissions" in e for e in validate.errors), bad)
 
 
 def main() -> int:
@@ -468,7 +466,8 @@ def main() -> int:
                  test_foreign_samples_are_skipped,
                  test_signed_in_table_is_read,
                  test_an_unread_page_changes_nothing,
-                 test_a_company_with_nothing_is_not_listed, test_share_of_submissions):
+                 test_a_company_with_nobody_at_the_bar_is_not_listed,
+                 test_median_and_share_over_every_senior):
         test()
     if failures:
         print(f"\n{len(failures)} failed: {', '.join(failures)}")

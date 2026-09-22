@@ -11,12 +11,15 @@ import re
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DATA = ROOT / "companies.csv"
 
-# An entry is on the list when a software engineer in Spain with this much
-# experience is paid at least this in base salary. Seniority is the years, not
-# whatever the company calls the level: an L4 with eight years counts, a
-# "Senior" with two does not.
-THRESHOLD_EUR = 60_000
+# Every software engineer in Spain with this much experience is a row,
+# whatever they are paid; the median over them is what a company pays a senior.
+# Seniority is the years, not whatever the company calls the level: an L4 with
+# eight years counts, a "Senior" with two does not.
 SENIOR_YEARS = 5
+# A company is on the list while at least one of its rows reaches this base,
+# and the share of its rows that do is shown beside the median. The bar picks
+# companies and measures them; it never trims the salaries the median is of.
+THRESHOLD_EUR = 60_000
 
 # Compensation older than this is shown as stale rather than quietly trusted.
 STALE_DAYS = 365
@@ -32,23 +35,18 @@ VOUCHED = ("offer-letter", "community")
 # experience and what they are paid. The company's own columns are repeated on
 # each of its rows.
 #
-# A company is on the list only while it has at least one entry. A row with
-# the entry columns empty is how a company is added by hand, `Name,linkedin_id`,
-# and it lasts until the fetcher has asked Levels.fyi about it.
-#
-# `spain_submissions` is how many Spanish software-engineer submissions the
-# fetcher read for the company, qualifying or not. The README divides the
-# qualifying ones by it: 2 of 63 at BBVA says 60k+ happens there, rarely.
+# A company is on the list only while one of its entries is at the bar. A row
+# with the entry columns empty is how a company is added by hand,
+# `Name,linkedin_id`, and it lasts until the fetcher has asked Levels.fyi.
 IDENTITY_COLUMNS = ["company", "linkedin_ids", "linkedin_url", "levels_slug", "levels_status"]
 ENTRY_COLUMNS = ["base", "total", "years_experience", "level", "city", "reported",
                  "source", "source_url", "date", "notes"]
-COUNT_COLUMNS = ["spain_submissions"]
 PROFILE_COLUMNS = ["website", "careers_url", "hq_city", "hq_country", "employees",
                    "sector", "year_founded", "about"]
-COLUMNS = IDENTITY_COLUMNS + ENTRY_COLUMNS + COUNT_COLUMNS + PROFILE_COLUMNS
-COMPANY_COLUMNS = IDENTITY_COLUMNS + COUNT_COLUMNS + PROFILE_COLUMNS
+COLUMNS = IDENTITY_COLUMNS + ENTRY_COLUMNS + PROFILE_COLUMNS
+COMPANY_COLUMNS = IDENTITY_COLUMNS + PROFILE_COLUMNS
 
-INTEGER_COLUMNS = {"base", "total", "spain_submissions", "year_founded"}
+INTEGER_COLUMNS = {"base", "total", "year_founded"}
 # Pipe-separated inside one cell.
 LIST_COLUMNS = {"linkedin_ids", "sector"}
 
@@ -79,10 +77,19 @@ def years(raw) -> int | None:
     return int(found.group(1)) if found else None
 
 
-def qualifies(entry: dict) -> bool:
+def is_senior(entry: dict) -> bool:
+    """A row: a software engineer with SENIOR_YEARS or more and a known base."""
     experience = years(entry.get("years_experience"))
-    return (entry.get("base") or 0) >= THRESHOLD_EUR and experience is not None \
-        and experience >= SENIOR_YEARS
+    return experience is not None and experience >= SENIOR_YEARS and bool(entry.get("base"))
+
+
+def at_bar(entry: dict) -> bool:
+    return (entry.get("base") or 0) >= THRESHOLD_EUR
+
+
+def listed(company: dict) -> bool:
+    """On the list: at least one engineer on file at the bar."""
+    return any(at_bar(entry) for entry in company.get("entries") or [])
 
 
 def _parse(column: str, raw: str | None):

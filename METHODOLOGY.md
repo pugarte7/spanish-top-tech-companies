@@ -2,22 +2,25 @@
 
 ## Who counts
 
-The list shows **what each company pays, on average**, the software engineers on file for it. The data underneath is individual salaries: one software engineer in Spain, what they are paid, and how many years of experience they have. A salary is on file when all of these hold:
+The list shows **what each company pays a senior software engineer**: the median over every one on file for it, and how many of them are at 60.000 € or more. The data underneath is individual salaries: one software engineer in Spain, what they are paid, and how many years of experience they have. A salary is on file when all of these hold:
 
 - **A software engineer.** Levels.fyi's software-engineer family only: engineering managers, data scientists, product managers and every other job family are out.
 - **In Spain.** The submission names a Spanish city.
-- **Senior, meaning 5 or more years of experience.** The level name does not matter. Companies call the same job L4, SDE II, IC3 or Senior, and an L4 with eight years is as senior as anyone; a "Senior" with two years is not. A bucket like `5-10` counts from its low end, so it qualifies, and `2-4` does not.
-- **60.000 € or more in base salary.** Gross annual base, not total compensation.
+- **Senior, meaning 5 or more years of experience.** The level name does not matter. Companies call the same job L4, SDE II, IC3 or Senior, and an L4 with eight years is as senior as anyone; a "Senior" with two years is not. A bucket like `5-10` counts from its low end, so it counts, and `2-4` does not. There is no upper limit: a staff engineer with twenty years is a software engineer.
 
-The README then shows one row per company: the mean base salary and mean total compensation of its salaries on file, and how many salaries that is. Only qualifying salaries go into the mean. Nobody under 5 years or under 60k pulls it down, and Levels.fyi's own figures, an all-levels median or a ladder mean, are never used, because they mix juniors in with everyone else. A company is on the list only while it has at least one qualifying salary on file, or a first-hand one; one whose Spanish engineers all fall short, or that Levels.fyi has nothing Spanish for, is not listed at all.
+Pay does not decide who is on file. Every senior is a row, at 40k or at 140k.
 
-An average of one salary is one person's pay, so read the Engineers column before the number.
+The README then shows one row per company: the **median** base salary and median total compensation over all of its seniors on file, how many that is, and **At 60k+**, the share of them with a base of 60.000 € or more. "46% (6)" at BBVA says thirteen seniors reported and six are at 60k+, so 60k+ with 5 years happens there and is not the norm; "100% (4)" says everyone who reported is. Levels.fyi's own figures, an all-levels median or a ladder mean, are never used, because they mix juniors in with everyone else.
 
-The Share column puts the average in proportion: how many of the company's software engineers in Spain on Levels.fyi are the ones averaged. The fetcher stores how many Spanish submissions it read for each company (`spain_submissions`), qualifying or not, and the README divides the qualifying ones by it. "3% of 63" at BBVA says 63 engineers reported and two reach the bar, so 60k+ with 5 years is possible there and unlikely; "100% of 4" says everyone who reported does. Only Levels.fyi entries count towards the share, since the denominator is Levels.fyi's; a first-hand entry belongs to no submission set. For the largest employers the denominator is the 250 most recent submissions, the most the API returns.
+A company is on the list only while at least one of its seniors on file is at 60k+. One whose seniors are all under it, or that Levels.fyi has nothing Spanish for, is not listed at all. The bar picks companies and is measured; it never trims the salaries the median is of.
 
-The table is sorted by Share first and average base second, after any first-hand rows. A company where 4 of 4 reported engineers reach the bar ranks above one where 6 of 30 do, whatever the two averages say.
+A median of one salary is one person's pay, so read the Engineers column before the number.
 
-This rule was set on 2026-09-16. Earlier versions of the list published Levels.fyi's per-company averages across levels, every job family, only rungs whose names said senior, and every qualifying salary as its own row. All of those were replaced.
+The table is sorted by At 60k+ first and median base second, after any first-hand rows. A company where 4 of 4 seniors are at the bar ranks above one where 6 of 13 are, whatever the two medians say.
+
+### How the rule was reached
+
+On 2026-09-16 the list became the **mean of each company's seniors at 60k+**, and only those. Readers pointed out, correctly, that filtering to 60k+ before averaging makes any company with one well-paid senior look competitive: Minsait showed 90k off two engineers while its fourteen other seniors, all under 60k, were not even on file. On 2026-09-22 the maintainer replaced it with the median over every senior, kept the 60k bar for which companies are listed and as the share column, and declined a 15-year cap on experience, which changed no company's median by more than 2k. Earlier versions had published Levels.fyi's per-company averages across levels, every job family, only rungs whose names said senior, and every salary as its own row. All of those were replaced.
 
 ## What "gross annual" means here
 
@@ -60,7 +63,7 @@ The page carries submissions in three places:
 - `averages`, the company's ladder embedded in the public page, lists up to twenty `samples` per level, each with a city, years of experience and pay. Only some companies get one.
 - `median` is one more submission embedded in the page, and for most companies the only one an anonymous visitor can read.
 
-Fever is the case that showed the difference. Its public page embedded one record, an L3 with six years at 48.7k, and the README said "none with 5+ years at 60k+"; the table had 29 Spanish software engineers, ten of them qualifying, with a Staff engineer at 90k base. Twenty-two companies were in the same state.
+Fever is the case that showed the difference. Its public page embedded one record, an L3 with six years at 48.7k, and the README said "none with 5+ years at 60k+"; the table had 29 Spanish software engineers, sixteen with 5+ years, ten of those at 60k+, with a Staff engineer at 90k base. Twenty-two companies were in the same state.
 
 The API caps the table at 250 rows, newest first, so for the very largest employers a few old submissions are out of reach. `percentiles`, an aggregate across every level, is never an entry.
 
@@ -72,19 +75,19 @@ Levels.fyi does not refuse a location it has no data for. Ask a company page for
 
 Every submission names its city, and [`scripts/fetch_spain.py`](scripts/fetch_spain.py) skips any outside Spain, whatever page it came from. It also deletes any entry whose source URL names no location. `locationMeta` is not a substitute: it only echoes the URL back.
 
-A company with nothing Spanish that qualifies is not listed. Listing another country's pay under its name would be worse than the gap, and that is the one thing this repository exists to get right.
+A company with no Spanish senior at 60k+ is not listed. Listing another country's pay under its name would be worse than the gap, and that is the one thing this repository exists to get right.
 
 ### Which companies are on the list
 
-A company is on the list only while it has a salary on file. Until 2026-09-21 a company with nothing sat under the table as "no Spain data" or "none with 5+ years at 60k+", 112 of them; the maintainer removed the section and the rows. The fetcher now removes a company that comes back empty unless a `community` or `offer-letter` entry vouches for it, and `validate.py` fails the build on an empty row that has stayed.
+A company is on the list only while one of its seniors on file is at 60k+. Until 2026-09-21 a company with nothing sat under the table as "no Spain data" or "none with 5+ years at 60k+", 112 of them; the maintainer removed the section and the rows. The fetcher now removes a company that comes back with nobody at the bar unless a `community` or `offer-letter` entry vouches for it, and `validate.py` fails the build on rows that have stayed with nobody at it.
 
-Companies get on the list by discovery. Each signed-in run reads Levels.fyi's country-wide feed, the newest 250 Spanish software-engineer submissions, about three months' worth, and fetches every employer in it that is not on file yet. So adding a salary on Levels.fyi is the whole submission process: a company nobody has heard of here gets its row the first time one of its engineers in Spain qualifies. A company can also be added by hand as a `Name,linkedin_id` row and fetched with `--company`; the row lasts only if something qualifies.
+Companies get on the list by discovery. Each signed-in run reads Levels.fyi's country-wide feed, the newest 250 Spanish software-engineer submissions, about three months' worth, and fetches every employer in it that is not on file yet. So adding a salary on Levels.fyi is the whole submission process: a company nobody has heard of here gets its row the first time one of its seniors in Spain reports 60k+. A company can also be added by hand as a `Name,linkedin_id` row and fetched with `--company`; the row lasts only if someone there is at the bar.
 
 Never include anything that identifies a person: no names, no team, no "the guy who joined in March".
 
 ## Base salary versus total compensation
 
-The 60k threshold is base salary. Total compensation is base plus bonus plus annualised equity: a bigger number than base for the same job, shown beside it and never used to qualify an entry.
+The 60k bar is base salary. Total compensation is base plus bonus plus annualised equity: a bigger number than base for the same job, shown beside it and never used against the bar.
 
 ## Currency
 
