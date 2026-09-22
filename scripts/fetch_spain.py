@@ -201,25 +201,28 @@ def decrypt(payload: str) -> dict:
     return json.loads(zlib.decompress(plain))
 
 
-def table(slug: str, bearer: str, delay: float) -> list[dict] | None:
-    """Every Spanish software-engineer submission in the company's signed-in table.
+def table(bearer: str, delay: float, slug: str | None = None) -> list[dict] | None:
+    """Every Spanish software-engineer submission in the signed-in table.
 
-    Fifty per page, newest first, until the API's own total is reached. The
-    total tops out at 250 for the largest employers, so for those this is the
-    250 most recent. Each row has the same shape as the page's `median`
-    record, its own exchange rate and currency included, so entries() reads
-    both the same way.
+    With a slug, the company's own table; without one, the newest submissions
+    across every employer in Spain. Fifty per page, newest first, until the
+    API's own total is reached. The total tops out at 250, so for the largest
+    employers, and always for the country-wide feed, this is the 250 most
+    recent. Each row has the same shape as the page's `median` record, its own
+    exchange rate and currency included, so entries() reads both the same way.
 
     Returns None when a page could not be read, and the caller then leaves the
     company alone: a table that half-loaded is not a smaller table.
     """
     rows: list[dict] = []
+    scope = f"/companies/{slug}/salaries/{ROLE}" if slug else f"/t/{ROLE}"
     headers = {"Authorization": f"Bearer {bearer}", "x-agent": "levelsfyi_website",
                "Accept": "application/json", "Origin": BASE,
-               "Referer": f"{BASE}/companies/{slug}/salaries/{ROLE}/locations/spain"}
+               "Referer": f"{BASE}{scope}/locations/spain"}
     while True:
         query = urllib.parse.urlencode([
-            ("companySlug", slug), ("jobFamilySlug", ROLE), ("countryIds[0]", SPAIN_COUNTRY_ID),
+            *([("companySlug", slug)] if slug else []),
+            ("jobFamilySlug", ROLE), ("countryIds[0]", SPAIN_COUNTRY_ID),
             ("offset", len(rows)), ("limit", TABLE_PAGE), ("sortBy", "offer_date"),
             ("sortOrder", "DESC")])
         body = get(f"{API}?{query}", delay, headers=headers)
@@ -232,7 +235,8 @@ def table(slug: str, bearer: str, delay: float) -> list[dict] | None:
             page = data["rows"]
         except (json.JSONDecodeError, ValueError, TypeError, KeyError, zlib.error,
                 subprocess.CalledProcessError) as exc:
-            print(f"  {slug}: table answer unreadable ({exc.__class__.__name__})", file=sys.stderr)
+            print(f"  {slug or 'spain'}: table answer unreadable ({exc.__class__.__name__})",
+                  file=sys.stderr)
             return None
         rows += page
         if not page or len(rows) >= (data.get("total") or 0):
@@ -277,30 +281,42 @@ def spain_data(slug: str, delay: float, bearer: str | None = None):
     """Everything Spanish this company's page will give up.
 
     Returns (label, page, company). `page` is None when the page could not be
-    read at all, and `label` says what it served, for the run report and for
-    spain_check_served.
+    read at all, and `label` says what it served, for the run report.
 
     With a token, the signed-in table is read as well, and a table that could
     not be read makes the whole company unread: writing the public page's
     handful in its place would delete the table entries from the last run.
+
+    Levels.fyi answers 404 for the page of an employer with only a submission
+    or two, while the table still has them: 42 of the 107 employers discovery
+    turned up on 2026-09-21 were like that. So with a token, no page and a
+    table is still an answer, read from the rows alone.
     """
     url = f"{BASE}/companies/{slug}/salaries/{ROLE}/locations/spain"
     body = get(url, delay)
-    if not body:
-        return "unreachable", None, {}
-    found = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', body, re.S)
-    if not found:
-        return "unreadable", None, {}
-    try:
-        props = json.loads(found.group(1))["props"]["pageProps"]
-    except (KeyError, json.JSONDecodeError):
+    props = page_props(body) if body else None
+    if body and props is None:
         return "unreadable", None, {}
     rows = None
     if bearer:
-        rows = table(slug, bearer, delay)
+        rows = table(bearer, delay, slug)
         if rows is None:
-            return "table unreadable", None, props.get("company") or {}
+            return "table unreadable", None, (props or {}).get("company") or {}
+    if props is None:
+        if not rows:
+            return "unreachable", None, {}
+        props = {"locationCurrency": "EUR"}
     return interpret(props, slug, url, rows)
+
+
+def page_props(body: str) -> dict | None:
+    found = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', body, re.S)
+    if not found:
+        return None
+    try:
+        return json.loads(found.group(1))["props"]["pageProps"]
+    except (KeyError, TypeError, json.JSONDecodeError):
+        return None
 
 
 def interpret(props: dict, slug: str, url: str, rows: list[dict] | None = None):
@@ -311,11 +327,15 @@ def interpret(props: dict, slug: str, url: str, rows: list[dict] | None = None):
     """
     company = props.get("company") or {}
 
-    # Without a rate the figures cannot be denominated, and a Spanish page that
-    # is not quoting euros is a page that is not about Spain.
+    # A Spanish page that is not quoting euros is a page that is not about
+    # Spain, and without a rate its figures cannot be denominated. Table rows
+    # carry their own euro rate, so with rows on hand a missing page rate only
+    # costs the records that have none; entries() leaves those out.
     rate = props.get("locationExchangeRate")
-    if props.get("locationCurrency") != "EUR" or not isinstance(rate, (int, float)):
+    if props.get("locationCurrency") != "EUR" or not (isinstance(rate, (int, float)) or rows):
         return "not priced in EUR", None, company
+    if not isinstance(rate, (int, float)):
+        rate = None
 
     median = props.get("median") or {}
     samples = [sample for rung in props.get("averages") or [] for sample in rung.get("samples") or []]
@@ -340,7 +360,7 @@ def interpret(props: dict, slug: str, url: str, rows: list[dict] | None = None):
 
     # "Spain (table)" is the one label that means every Spanish submission was
     # read. The others mean the public page's subset, which for most companies
-    # is the median record alone, so the README words them differently.
+    # is the median record alone.
     percentiles = props.get("percentiles") or {}
     if rows:
         label = "Spain (table)"
@@ -387,32 +407,18 @@ def entries(page: dict, today: str) -> list[dict]:
     return sorted(out, key=lib.entry_order)
 
 
-def note_check(company: dict, found: bool, served: str, today: str) -> None:
-    """Record that Levels.fyi was asked and had no qualifying entry.
-
-    A company nobody has an entry for is still worth a row, and a row that says
-    "asked on this date, nothing published" is worth more than a bare dash: it
-    tells a reader the gap is Levels.fyi's coverage rather than somebody
-    forgetting to look. `served` keeps what the page had instead, so the README
-    can tell a company with no Spanish data from one whose Spanish engineers
-    fall short of the years or the pay.
-
-    The front page reads these columns rather than the wording of a note, which
-    is the same lesson as the location purge - prose is not a machine-readable
-    fact, and matching on it is what let 173 stale bands through.
-    """
-    if found:
-        company.update(spain_check_date=None, spain_check_served=None)
-    else:
-        company.update(spain_check_date=today, spain_check_served=served or None)
-
-
 def write(slug: str, new_entries: list[dict], name_hint: str, today: str,
           record: dict | None = None, served: str | None = None) -> str:
     """Update one company in companies.csv. Returns what happened, for the run report.
 
     The whole file is read and written for each company, so a run that gets
     blocked halfway keeps everything it fetched before that.
+
+    A company is on the list only while it has a salary on file. One that
+    Levels.fyi was asked about and that ends up with nothing, and that nobody
+    has vouched for with a first-hand entry, is removed; the maintainer dropped
+    112 such rows on 2026-09-21 rather than list them as "no data". A page that
+    could not be read removes nothing.
     """
     companies = lib.load_companies()
     company = lib.by_slug(companies, slug)
@@ -425,9 +431,11 @@ def write(slug: str, new_entries: list[dict], name_hint: str, today: str,
     # The employer's own LinkedIn page, which the front page links company
     # names to. Never overwrite one already on file: a hand-entered URL was
     # put there deliberately and is better than anything guessed here.
-    handle = (record or {}).get("linkedin")
+    handle = ((record or {}).get("linkedin") or "").strip().strip("/")
     if handle and not company.get("linkedin_url"):
-        company["linkedin_url"] = f"https://www.linkedin.com/{handle.strip('/')}"
+        # Usually `company/<name>`, sometimes already a full URL.
+        company["linkedin_url"] = handle if handle.startswith("http") \
+            else f"https://www.linkedin.com/{handle}"
 
     # Anything read off the unscoped company page is another country's pay.
     # Drop it whether or not this company also turns out to have a Spanish
@@ -439,9 +447,20 @@ def write(slug: str, new_entries: list[dict], name_hint: str, today: str,
     # a page with no figures and delete the ones already on file, so a network
     # error could empty a company; only an answer actually read changes them.
     if served is not None:
-        note_check(company, bool(new_entries), served, today)
         company["entries"] = [entry for entry in company["entries"] if not ours(entry)] \
             + new_entries
+
+    # Nothing is created empty, whatever else the page gave (an unread table
+    # once created two companies from their LinkedIn handle alone), and a
+    # company that came back empty is removed. An unread page removes nothing.
+    if not company["entries"]:
+        if created:
+            return "not listed"
+        if served is None:
+            return "skipped"
+        companies.remove(company)
+        lib.save_companies(companies)
+        return "removed"
 
     if company == before:
         return "skipped"
@@ -461,6 +480,22 @@ def targets() -> list[tuple[str, str]]:
     """(slug, name) for every company with a confirmed Levels.fyi page."""
     return sorted((c["levels_slug"], c["company"]) for c in lib.load_companies()
                   if c.get("levels_slug") and c.get("levels_status") == "resolved")
+
+
+def discover(bearer: str, delay: float, known: set[str]) -> list[tuple[str, str]]:
+    """(slug, name) for every employer with a recent Spanish submission not yet on file.
+
+    The country-wide feed is the newest 250 Spanish software-engineer
+    submissions, about three months' worth. Reading it each run is what makes
+    "add your salary on Levels.fyi and it gets picked up" true for a company
+    nobody has added by hand: it is fetched like the rest, and gets a row the
+    first time one of its engineers qualifies. The API sends `False` for both
+    company fields on a few rows; those name no employer to look up.
+    """
+    rows = table(bearer, delay) or []
+    found = {row["companySlug"]: row.get("company") or row["companySlug"] for row in rows
+             if isinstance(row.get("companySlug"), str) and row["companySlug"] not in known}
+    return sorted(found.items())
 
 
 def main(argv: list[str]) -> int:
@@ -486,6 +521,11 @@ def main(argv: list[str]) -> int:
           "which hides most submissions", file=sys.stderr)
 
     try:
+        if bearer and not args.company:
+            new = discover(bearer, args.delay, {slug for slug, _ in pending})
+            print(f"  {len(new)} employers with recent Spanish submissions are not on file: "
+                  + ", ".join(slug for slug, _ in new), file=sys.stderr)
+            pending += new
         for slug, name in pending:
             label, page, record = spain_data(slug, args.delay, bearer)
             served[label] = served.get(label, 0) + 1

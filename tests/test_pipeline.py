@@ -296,13 +296,6 @@ def test_signed_in_table_is_read() -> None:
     check("without the table the label stays partial", label(page), "Spain (aggregate)")
     check("an empty table does not claim completeness", label(page, []), "Spain (aggregate)")
 
-    import build
-    for served, wording in (("Spain (table)", "none with 5+"),
-                            ("Spain (aggregate)", "none published with 5+")):
-        company = acme(spain_check_date="2026-09-21", spain_check_served=served)
-        check(f"README words {served!r} as {wording!r}",
-              wording in build.status_cell(company), True)
-
     # The API wraps its answer the way the site's own JavaScript unwraps it.
     import base64, hashlib, json, subprocess, zlib
     key = base64.b64encode(hashlib.md5(b"levelstothemoon!!").digest())[:16]
@@ -318,17 +311,42 @@ def test_signed_in_table_is_read() -> None:
             + json.dumps({"props": {"pageProps": page}}) + "</script>")
     original = fetch_spain.get, fetch_spain.table
     fetch_spain.get = lambda url, delay, attempts=3, headers=None: html
-    fetch_spain.table = lambda slug, bearer, delay: None
+    fetch_spain.table = lambda bearer, delay, slug=None: None
     try:
         with contextlib.redirect_stderr(io.StringIO()):
             served, parsed, _ = fetch_spain.spain_data("acme", 0, "token")
         check("an unread table makes the company unread", (served, parsed),
               ("table unreadable", None))
-        fetch_spain.table = lambda slug, bearer, delay: rows
+        fetch_spain.table = lambda bearer, delay, slug=None: rows
         with contextlib.redirect_stderr(io.StringIO()):
             served, parsed, _ = fetch_spain.spain_data("acme", 0, "token")
         check("a read table is merged with the page", (served, len(parsed["records"])),
               ("Spain (table)", 3))
+        # Levels.fyi 404s the page of an employer with a submission or two. The
+        # table still has them, and its rows carry their own euro rate, so a
+        # dollar row is the only thing the missing page rate costs.
+        fetch_spain.get = lambda url, delay, attempts=3, headers=None: (
+            None if "levels.fyi/companies/" in url else "{}")
+        fetch_spain.table = lambda bearer, delay, slug=None: rows + [
+            sample(100000, 8, uuid="usd", baseSalaryCurrency="USD", exchangeRate=1)]
+        with contextlib.redirect_stderr(io.StringIO()):
+            served, parsed, _ = fetch_spain.spain_data("acme", 0, "token")
+        check("no page but a table is still read",
+              (served, sorted(e["base"] for e in fetch_spain.entries(parsed, "2026-09-21"))),
+              ("Spain (table)", [70000, 90000]))
+        fetch_spain.table = lambda bearer, delay, slug=None: []
+        with contextlib.redirect_stderr(io.StringIO()):
+            check("no page and an empty table is unreachable",
+                  fetch_spain.spain_data("acme", 0, "token")[:2], ("unreachable", None))
+        fetch_spain.get = lambda url, delay, attempts=3, headers=None: html
+        # The country-wide feed names employers nobody has added by hand. A
+        # few of its rows carry False for the company; they name nothing.
+        feed = [dict(r, companySlug="acme", company="Acme") for r in rows[:2]] + [
+            dict(rows[2], companySlug="newco", company="NewCo"),
+            dict(rows[3], companySlug=False, company=False)]
+        fetch_spain.table = lambda bearer, delay, slug=None: feed
+        check("discovery lists only employers not on file",
+              fetch_spain.discover("token", 0, {"acme"}), [("newco", "NewCo")])
     finally:
         fetch_spain.get, fetch_spain.table = original
 
@@ -350,48 +368,43 @@ def test_an_unread_page_changes_nothing() -> None:
               [e["source_url"] for e in stored()["entries"]], [PER_LOCATION])
 
 
-def test_a_checked_company_says_so() -> None:
-    """A blank row must distinguish "asked, nothing there" from "nobody looked".
+def test_a_company_with_nothing_is_not_listed() -> None:
+    """A company is on the list only with a salary on file.
 
-    The front page reads the spain_check columns for that, so the fetcher has
-    to write a row even when nothing qualifies, and has to clear it the day an
-    entry turns up.
+    Until 2026-09-21 a company Levels.fyi had nothing Spanish for kept a row
+    reading "no Spain data", and 112 of them sat under the table. The
+    maintainer's rule: get rid of the companies that don't have Spanish data and
+    that nobody has vouched for. So the fetcher removes one that comes back
+    empty, keeps one a first-hand entry vouches for, and validate.py refuses
+    a lasting empty row.
     """
-    print("fetch_spain records that Levels.fyi was asked and had nothing")
+    print("a company with no salary on file is removed, not listed")
     import fetch_spain
-
-    def recorded(company: dict) -> tuple:
-        return company["spain_check_date"], company["spain_check_served"]
-
-    company = lib.blank_company("Acme")
-    fetch_spain.note_check(company, False, "Spain (ladder)", "2026-09-15")
-    check("a miss is recorded with what the page had", recorded(company),
-          ("2026-09-15", "Spain (ladder)"))
-    fetch_spain.note_check(company, True, "Spain (ladder)", "2026-09-16")
-    check("a hit clears it", recorded(company), (None, None))
-
-    with temp_data():
-        fetch_spain.write("acme", [], "Acme", "2026-09-15", served="United States")
-        written = stored()
-        check("a company with nothing qualifying still gets a row",
-              written and recorded(written), ("2026-09-15", "United States"))
-
-
-def test_a_file_cannot_claim_both() -> None:
-    """`spain_check` and a Levels.fyi entry contradict each other."""
-    print("validate.py rejects a spain_check the entries disprove")
     import validate
 
-    for label, entries, contradicted in (
-        ("a Levels.fyi entry contradicts it", [entry(PER_LOCATION)], True),
-        ("a first-hand entry does not", [entry(None, source="community")], False),
-        ("no entry does not", [], False),
-    ):
+    with temp_data(acme(entry(PER_LOCATION))):
+        outcome = fetch_spain.write("acme", [], "Acme", "2026-09-21", served="Spain (table)")
+        check("a company that comes back empty is removed", (outcome, stored()), ("removed", None))
+
+    with temp_data(acme(entry(None, source="community"))):
+        outcome = fetch_spain.write("acme", [], "Acme", "2026-09-21", served="no data")
+        check("a first-hand entry keeps it", (outcome, len(stored()["entries"])), ("skipped", 1))
+
+    with temp_data():
+        outcome = fetch_spain.write("acme", [], "Acme", "2026-09-21", served="United States")
+        check("a new company with nothing is never added", (outcome, stored()), ("not listed", None))
+        # An unread table used to create the company anyway, from the LinkedIn
+        # handle the page had given: two empty rows, removed on the next run.
+        outcome = fetch_spain.write("acme", [], "Acme", "2026-09-21",
+                                    record={"linkedin": "company/acme"}, served=None)
+        check("not even from a LinkedIn handle", (outcome, stored()), ("not listed", None))
+
+    for label, company, refused in (("an empty row", acme(), True),
+                                    ("a row with a salary", acme(entry(PER_LOCATION)), False)):
         validate.errors.clear()
-        validate.check_spain_check("acme", acme(*entries, spain_check_date="2026-09-10",
-                                                spain_check_served="no data"))
-        check(label, any("levels.fyi entry is on file" in e for e in validate.errors),
-              contradicted)
+        validate.check_company("acme", company)
+        check(f"validate.py refuses {label}", any("not on the list" in e for e in validate.errors),
+              refused)
 
 
 def main() -> int:
@@ -403,8 +416,7 @@ def main() -> int:
                  test_foreign_samples_are_skipped,
                  test_signed_in_table_is_read,
                  test_an_unread_page_changes_nothing,
-                 test_a_checked_company_says_so,
-                 test_a_file_cannot_claim_both):
+                 test_a_company_with_nothing_is_not_listed):
         test()
     if failures:
         print(f"\n{len(failures)} failed: {', '.join(failures)}")

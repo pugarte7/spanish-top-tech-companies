@@ -9,7 +9,7 @@ The list shows **what each company pays, on average**, the software engineers on
 - **Senior, meaning 5 or more years of experience.** The level name does not matter. Companies call the same job L4, SDE II, IC3 or Senior, and an L4 with eight years is as senior as anyone; a "Senior" with two years is not. A bucket like `5-10` counts from its low end, so it qualifies, and `2-4` does not.
 - **60.000 € or more in base salary.** Gross annual base, not total compensation.
 
-The README then shows one row per company: the mean base salary and mean total compensation of its salaries on file, and how many salaries that is. Only qualifying salaries go into the mean. Nobody under 5 years or under 60k pulls it down, and Levels.fyi's own figures, an all-levels median or a ladder mean, are never used, because they mix juniors in with everyone else. A company whose Spanish engineers all fall short is still listed, saying so. A company with no Spanish data on Levels.fyi and no first-hand entry is not on the list at all.
+The README then shows one row per company: the mean base salary and mean total compensation of its salaries on file, and how many salaries that is. Only qualifying salaries go into the mean. Nobody under 5 years or under 60k pulls it down, and Levels.fyi's own figures, an all-levels median or a ladder mean, are never used, because they mix juniors in with everyone else. A company is on the list only while it has at least one qualifying salary on file, or a first-hand one; one whose Spanish engineers all fall short, or that Levels.fyi has nothing Spanish for, is not listed at all.
 
 An average of one salary is one person's pay, so read the Engineers column before the number.
 
@@ -68,22 +68,13 @@ Levels.fyi does not refuse a location it has no data for. Ask a company page for
 
 Every submission names its city, and [`scripts/fetch_spain.py`](scripts/fetch_spain.py) skips any outside Spain, whatever page it came from. It also deletes any entry whose source URL names no location. `locationMeta` is not a substitute: it only echoes the URL back.
 
-A company with nothing Spanish that qualifies is listed with no entry. That is the honest answer, and it is the one thing this repository exists to get right.
+A company with nothing Spanish that qualifies is not listed. Listing another country's pay under its name would be worse than the gap, and that is the one thing this repository exists to get right.
 
-### Recording that there was nothing to find
+### Which companies are on the list
 
-"Nothing qualifies" and "nobody has looked" are different facts and the table says which. When Levels.fyi's Spain page has no qualifying entry, the fetcher records it in the company's `spain_check` columns:
+A company is on the list only while it has a salary on file. Until 2026-09-21 a company with nothing sat under the table as "no Spain data" or "none with 5+ years at 60k+", 112 of them; the maintainer removed the section and the rows. The fetcher now removes a company that comes back empty unless a `community` or `offer-letter` entry vouches for it, and `validate.py` fails the build on an empty row that has stayed.
 
-```csv
-spain_check_date,spain_check_served
-2026-09-15,Spain (ladder)
-```
-
-`spain_check_served` is what the page had instead. `Spain (table)` means the signed-in table was read in full and nobody in it reaches both 5 years and 60k; the README reads **none with 5+ years at 60k+**. `Spain (ladder)`, `Spain (aggregate)` or `Spain (submission)` mean the public page alone was read, which shows a subset, so the README says only **none published with 5+ years at 60k+**: the verdict is about what an anonymous visitor can see, not about the company. Both link to the page, so a reader can see the gap for themselves.
-
-`no data`, or another country's name, means Levels.fyi has nothing Spanish for the company. Since 2026-09-21 such a company is removed from `companies.csv` unless someone has vouched for it with a first-hand entry; 91 were dropped that day. `validate.py` warns if one comes back, and a company added by hand reads `not checked yet` until `fetch_spain.py` has run for it.
-
-The check clears the moment an entry turns up, and `validate.py` fails the build if a company ever carries both a check and a Levels.fyi entry. These are structural columns precisely so the table never has to guess from the wording of a note.
+Companies get on the list by discovery. Each signed-in run reads Levels.fyi's country-wide feed, the newest 250 Spanish software-engineer submissions, about three months' worth, and fetches every employer in it that is not on file yet. So adding a salary on Levels.fyi is the whole submission process: a company nobody has heard of here gets its row the first time one of its engineers in Spain qualifies. A company can also be added by hand as a `Name,linkedin_id` row and fetched with `--company`; the row lasts only if something qualifies.
 
 Never include anything that identifies a person: no names, no team, no "the guy who joined in March".
 

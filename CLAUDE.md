@@ -58,8 +58,9 @@ The five things that will bite you:
    its table had 29 Spanish engineers, ten qualifying. `fetch_spain.py` reads
    the table when `LEVELS_TOKEN` or `~/.config/levels/token` holds the
    maintainer's token (`localStorage.auth` on levels.fyi, lasts a day). Only a
-   full table read (`Spain (table)`) may say nobody qualifies; page-only labels
-   render as "none published". The token is a live login: never commit it,
+   full table read (`Spain (table)` in the run report) has seen every
+   submission; the other labels mean the page's subset. The token is a live
+   login: never commit it,
    never print it, never put it in a tool call's visible output. Reading the
    table is against Levels.fyi's terms; the maintainer chose that on
    2026-09-21 knowing the account may be closed.
@@ -76,13 +77,16 @@ A row should ideally mean the maintainer knows someone in Spain doing that job,
 or was offered the position. Crowdsourced figures are placeholders; first-hand
 entries (`community`, `offer-letter`) sort above them.
 
-A company is on the list only if it has a salary on file, or Levels.fyi has
-Spanish software-engineer submissions for it that all fall short (the
-`spain_check_*` columns say so, `Spain (table)`). A company with no Spanish
-data and no first-hand entry is removed, not listed as "no Spain data": the
-maintainer dropped 91 of them on 2026-09-21, and `validate.py` warns when one
-is back. The `spain_check_*` columns record when Levels.fyi was asked and what
-its Spain page had; never infer that state from the wording of a note.
+A company is on the list only while it has a salary on file. There is no
+"nothing qualifying" section and no `spain_check` columns any more: the
+maintainer dropped 112 empty rows on 2026-09-21 ("get rid of the companies
+that don't have Spanish data", then "remove the nothing qualifies part").
+`fetch_spain.write()` removes a company that comes back empty unless a
+first-hand entry vouches for it, and `validate.py` fails on a lasting empty
+row. New companies arrive by discovery: each signed-in run reads the
+country-wide feed of recent Spanish submissions and fetches every employer not
+yet on file, so "add your salary on Levels.fyi and it gets picked up" holds
+without anyone editing the CSV.
 
 After any data change: `python3 scripts/validate.py && python3 scripts/build.py`,
 and commit the regenerated `README.md` and `companies.csv` — CI fails otherwise.

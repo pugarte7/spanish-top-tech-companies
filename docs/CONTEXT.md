@@ -84,30 +84,28 @@ with `company` and `linkedin_ids` for a new one), set `base`,
 `community` = someone told you. `offer-letter` = you were offered it. Neither
 needs a `source_url`. Then `python3 scripts/validate.py && python3 scripts/build.py`.
 
-## Current state
+## Last run
 
-```
-170 companies · 149 with a qualifying salary · 1468 salaries
-```
+The list has no fixed size: it is whatever the last signed-in run found.
+The README's stats line is the authoritative count; this is the run behind it.
 
-- `companies.csv`: 1489 rows. 1468 salaries across 149 companies, reported
-  between 2020-01 and 2026-09; 392 of them in the last twelve months.
-- 21 companies have none: Levels.fyi has Spanish software engineers for each,
-  and all fall short of the years or the pay.
-- 91 companies were removed on 2026-09-21: 72 with nothing Spanish on
-  Levels.fyi and 19 with no Levels.fyi page, none vouched for first-hand. The
-  maintainer's rule: "get rid of the companies that don't have Spanish data
-  and I have not said that I know that they pay that". A company with no
-  Spanish data stays out until someone adds a `community` or `offer-letter`
-  entry for it; `validate.py` warns if one is on file anyway.
-- The README has two sections: one row per company with the average of its
-  qualifying salaries, best average first, and the companies with nothing
-  qualifying.
-- Every company links to LinkedIn and to its open roles in Spain, and every
-  salary to the Spain-scoped page it was read from.
-- All entries were read from Levels.fyi on 2026-09-21, signed in (trap 5).
-  The signed-in read took the list from 452 salaries at 104 companies to
-  these figures in one run.
+- 2026-09-21 and 22 (UTC), signed in (trap 5), every company on file plus
+  discovery (trap 6). Found 192 companies with a qualifying salary and 1562 salaries, reported
+  between 2020-01 and 2026-09, 454 of them in the last twelve months.
+  `companies.csv` has one row per salary and nothing else.
+- The same day the list went from 452 salaries at 104 companies (public pages
+  only) to this, and 112 companies with nothing on file were removed: 72 with
+  nothing Spanish on Levels.fyi, 19 with no Levels.fyi page, 21 whose Spanish
+  engineers all fall short. The maintainer's rule: "get rid of the companies
+  that don't have Spanish data and I have not said that I know that they pay
+  that", then "remove the nothing qualifies part". Discovery then turned up
+  107 employers with a recent Spanish submission that had never been on file,
+  43 of which had someone qualifying.
+- The README is one table: one row per company with the average of its
+  qualifying salaries, best average first. Every salary links to the
+  Spain-scoped page it was read from; companies link to LinkedIn and to their
+  open roles in Spain when a LinkedIn id or URL is known, which the
+  discovered ones mostly are not yet.
 
 How the move to one CSV was checked, 2026-09-14: all 299 YAML figures, all 242
 backlog LinkedIn ids and every company field were compared with the CSV, and
@@ -118,7 +116,7 @@ employers filed under two LinkedIn ids (Amazon and AWS, Google and DeepMind,
 Adevinta and Adevinta Spain, Allianz and Allianz Technology, Meta, Compound)
 now keep both, and their jobs link searches both.
 
-## The five traps in Levels.fyi data
+## The six traps in Levels.fyi data
 
 **1. A company page silently serves another country.**
 `/companies/<slug>/salaries` is scoped by the caller's IP and falls back to the
@@ -264,25 +262,43 @@ the API does:
 
 A company whose table could not be read is left untouched, page and all:
 writing the page's one record in its place would delete last run's table
-entries. The label for a full table read is `Spain (table)`, and it is the only
-label the README renders as "none with 5+ years at 60k+"; the page-only labels
-render as "none published", because they are a statement about what an
-anonymous visitor sees, not about the company.
+entries. The label for a full table read is `Spain (table)`; the other labels
+in the run report mean the page's subset was all that could be read.
 
 Two things to know before running it. This is against Levels.fyi's terms and
 the account used can be closed; the maintainer chose it knowingly. And the
 token is a live login: never commit it, never print it, and rotate it (sign
 out and in) if it has been pasted anywhere it should not have been.
 
+**6. The list only knows the companies it already has. Discovery fixes that.**
+`targets()` reads slugs from `companies.csv`, so once the empty rows were
+removed, a Netflix engineer in Spain adding a salary would never have been
+seen. The same API without `companySlug` is a country-wide feed: the newest
+250 Spanish software-engineer submissions, about three months' worth (July to
+September 2026 on the day it was first read). Every signed-in full run reads
+it and fetches each employer not on file; on 2026-09-21 that was 107
+employers, most of them Spanish consultancies and small shops the hand-made
+list had never heard of. That is what makes the README's "add your salary on
+Levels.fyi and it gets picked up" true.
+
+Two things about those employers. Levels.fyi answers 404 for the *page* of an
+employer with a submission or two (42 of the 107), while the table still
+returns them, so `spain_data()` reads the table alone when the page is gone;
+rows carry their own euro rate, and a row in another currency is the only
+thing the missing page rate costs. And they arrive with no LinkedIn id, so
+their company name is plain text and the jobs cell is a dash until someone
+fills `linkedin_ids` or `linkedin_url` by hand. A few feed rows carry `False`
+for both company fields; they name nothing and are skipped.
+
 ## Scripts
 
 | Script | What it does | Safe? |
 | --- | --- | --- |
-| `fetch_spain.py` | Qualifying salaries in Spain, per company. Reads the signed-in submissions table when a token is present, plus every sample and the median record on the page; keeps Spanish ones with 5+ years and a 60k+ base, converts USD to EUR, records LinkedIn, deletes any entry whose source URL names no location, and leaves a company alone when its page or table cannot be read. | **Use this** |
+| `fetch_spain.py` | Qualifying salaries in Spain, per company. With a token, reads the country-wide feed for employers not yet on file, then each company's signed-in submissions table plus every sample and the median record on its page; keeps Spanish ones with 5+ years and a 60k+ base, converts USD to EUR, records LinkedIn, deletes any entry whose source URL names no location, removes a company that comes back empty unless a first-hand entry vouches for it, and leaves a company alone when its page or table cannot be read. | **Use this** |
 | `fetch_company.py` | Company details only: website, HQ, headcount, sector, vesting. Writes no salary at all, by design. Only fills companies already in the CSV. | Yes |
 | `resolve_slugs.py` | Company name → Levels.fyi slug, with verification and an alias table. Folds a company into the one already holding its slug. | Yes |
 | `build.py` | Regenerates the README and rewrites `companies.csv` in canonical order. | Yes |
-| `validate.py` | Column checks and sanity checks, including the location guard, the software-engineer page guard and the `spain_check` contradiction guard. | Yes |
+| `validate.py` | Column checks and sanity checks, including the location guard, the software-engineer page guard, and that every company has a salary on file. | Yes |
 
 `lib.py` is the only code that reads or writes `companies.csv`. Writes go to a
 temporary file first, because an interrupted fetch must not truncate the only
@@ -296,10 +312,15 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 
 ## Known gaps
 
-- **21 companies have no qualifying salary.** All have Spanish submissions,
-  but nobody with both 5 years and a 60k base. The 91 with nothing Spanish on
-  Levels.fyi are off the list; a first-hand entry or a job ad (source #3 in
-  METHODOLOGY.md) is the only way back on for them.
+- **A company with nothing qualifying is invisible.** Indra, Minsait, BBVA
+  and Capgemini have dozens of Spanish engineers on Levels.fyi and nobody at
+  both 5 years and 60k, and the list says nothing about them; the maintainer
+  preferred that to a second table. A first-hand entry or a job ad (source #3
+  in METHODOLOGY.md) is the way on for such a company.
+- **Discovery reaches three months back.** The feed caps at 250 rows. An
+  employer whose only Spanish submission is older than that, and that was
+  never on file, stays unknown until someone there submits again or adds it
+  by hand.
 - **The table caps at 250 rows.** Amazon and Glovo both hit it, so their
   oldest submissions are out of reach. Without a token the fetcher is back to
   the public page's subset and labels the result as such.
@@ -315,7 +336,7 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 ## Commands
 
 ```bash
-python3 scripts/fetch_spain.py --delay 3.0        # ~25 min with a token, 242 companies
+python3 scripts/fetch_spain.py --delay 3.0        # ~30 min with a token: every company on file, plus discovery
 python3 scripts/fetch_spain.py --audit            # report, write nothing
 python3 tests/test_pipeline.py
 python3 scripts/validate.py && python3 scripts/build.py

@@ -32,19 +32,16 @@ VOUCHED = ("offer-letter", "community")
 # experience and what they are paid. The company's own columns are repeated on
 # each of its rows.
 #
-# A company with no entry still gets a row with the entry columns empty. That
-# row is what carries spain_check, so "asked, nothing published" has somewhere
-# to live.
-#
-# Identity comes first so a company can be added by hand as `Name,linkedin_id`.
+# A company is on the list only while it has at least one entry. A row with
+# the entry columns empty is how a company is added by hand, `Name,linkedin_id`,
+# and it lasts until the fetcher has asked Levels.fyi about it.
 IDENTITY_COLUMNS = ["company", "linkedin_ids", "linkedin_url", "levels_slug", "levels_status"]
 ENTRY_COLUMNS = ["base", "total", "years_experience", "level", "city", "reported",
                  "source", "source_url", "date", "notes"]
-CHECK_COLUMNS = ["spain_check_date", "spain_check_served"]
 PROFILE_COLUMNS = ["website", "careers_url", "hq_city", "hq_country", "employees",
                    "sector", "year_founded", "about"]
-COLUMNS = IDENTITY_COLUMNS + ENTRY_COLUMNS + CHECK_COLUMNS + PROFILE_COLUMNS
-COMPANY_COLUMNS = IDENTITY_COLUMNS + CHECK_COLUMNS + PROFILE_COLUMNS
+COLUMNS = IDENTITY_COLUMNS + ENTRY_COLUMNS + PROFILE_COLUMNS
+COMPANY_COLUMNS = IDENTITY_COLUMNS + PROFILE_COLUMNS
 
 INTEGER_COLUMNS = {"base", "total", "year_founded"}
 # Pipe-separated inside one cell.

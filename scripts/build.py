@@ -65,18 +65,6 @@ def jobs_url(company: dict) -> str | None:
     return None
 
 
-def spain_page(company: dict) -> str | None:
-    """The Spain-scoped page that had nothing qualifying.
-
-    Worth linking: a reader who doubts a blank row can open the same page the
-    fetcher read and see the gap for themselves.
-    """
-    slug = company.get("levels_slug")
-    if not slug or not company.get("spain_check_date"):
-        return None
-    return f"https://www.levels.fyi/companies/{slug}/salaries/software-engineer/locations/spain"
-
-
 def company_cell(company: dict) -> str:
     url = linkedin_url(company)
     return f"[{escape(company['company'])}]({url})" if url else escape(company["company"])
@@ -90,34 +78,6 @@ def jobs_cell(company: dict) -> str:
 def source_cell(entry: dict) -> str:
     label = (entry.get("source") or "—").replace("-", " ")
     return f"[{label}]({entry['source_url']})" if entry.get("source_url") else label
-
-
-def status_cell(company: dict) -> str:
-    """Why a company has no entry. Each kind of blank says which it is.
-
-    Spanish submissions that all fall short of the years or the pay are a
-    different gap from no Spanish submissions at all: the first is an answer,
-    the second is Levels.fyi's coverage.
-
-    Only a read of the signed-in table ("Spain (table)") saw every Spanish
-    submission, so only it may say nobody qualifies. The public page shows a
-    subset, for most companies one record, and Fever's read "none" off that one
-    record while its table held ten who qualified.
-    """
-    page = spain_page(company)
-    if page:
-        served = company.get("spain_check_served") or ""
-        if served == "Spain (table)":
-            return f"[none with {lib.SENIOR_YEARS}+ years at 60k+]({page})"
-        if served.startswith("Spain"):
-            return f"[none published with {lib.SENIOR_YEARS}+ years at 60k+]({page})"
-        shown = f" (shows {served} pay)" if served and served != "no data" else ""
-        return f"[no Spain data]({page}){shown}"
-    if company.get("levels_slug"):
-        return "not checked yet"
-    if company.get("levels_status") == "unmatched":
-        return "not on Levels.fyi"
-    return "not looked up yet"
 
 
 # --------------------------------------------------------------------------- tables
@@ -178,11 +138,10 @@ def average_row(company: dict) -> str:
 
 
 def render_stats(companies: list[dict]) -> str:
+    """The list is whatever the last run found, so the line says when that was."""
     entries = [entry for company in companies for entry in company["entries"]]
     parts = [
-        f"**{len(companies)} companies**",
-        f"**{sum(1 for c in companies if c['entries'])} paying {lib.SENIOR_YEARS}+ year "
-        "engineers 60k+**",
+        f"**{len(companies)} companies paying {lib.SENIOR_YEARS}+ year engineers 60k+**",
         f"{len(entries)} salaries averaged",
     ]
     stale = sum(1 for entry in entries if lib.is_stale(entry.get("date")))
@@ -191,29 +150,22 @@ def render_stats(companies: list[dict]) -> str:
     months = sorted(e["reported"] for e in entries if e.get("reported"))
     if months:
         parts.append(f"reported {months[0]} to {months[-1]}")
+    read = [e["date"] for e in entries if e.get("date")]
+    if read:
+        parts.append(f"last run {max(read)}")
     return " · ".join(parts)
 
 
 def render_companies(companies: list[dict]) -> str:
     # A company with a salary someone in Spain reported directly sorts above
-    # the crowdsourced ones, then the best average first.
-    averages = {id(c): average(c) for c in companies if c["entries"]}
-    paid = sorted((c for c in companies if c["entries"]),
-                  key=lambda c: (not averages[id(c)]["first_hand"], -averages[id(c)]["base"],
-                                 c["company"].casefold()))
-    unpaid = sorted((c for c in companies if not c["entries"]),
-                    key=lambda c: c["company"].casefold())
-
-    out: list[str] = []
-    if paid:
-        out += [f"## Average pay, engineers with {lib.SENIOR_YEARS}+ years at 60k+", "",
-                *AVERAGE_HEADER]
-        out += [average_row(company) for company in paid]
-        out.append("")
-    if unpaid:
-        out += ["## Nothing qualifying", "", "| Company | Levels.fyi | Jobs |", "| --- | --- | --- |"]
-        out += [f"| {company_cell(c)} | {status_cell(c)} | {jobs_cell(c)} |" for c in unpaid]
-    return "\n".join(out).rstrip()
+    # the crowdsourced ones, then the best average first. validate.py has
+    # already refused any company without an entry.
+    averages = {id(c): average(c) for c in companies}
+    ranked = sorted(companies, key=lambda c: (not averages[id(c)]["first_hand"],
+                                              -(averages[id(c)]["base"] or 0), c["company"].casefold()))
+    out = [f"## Average pay, engineers with {lib.SENIOR_YEARS}+ years at 60k+", "", *AVERAGE_HEADER]
+    out += [average_row(company) for company in ranked]
+    return "\n".join(out)
 
 
 def main() -> int:

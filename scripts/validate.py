@@ -79,38 +79,14 @@ def check_entry(where: str, entry: dict) -> None:
         warnings.append(f"{where}: not verified in over a year")
 
 
-def check_spain_check(where: str, company: dict) -> None:
-    """`spain_check` says Levels.fyi had nothing qualifying. Hold it to that.
-
-    A company cannot both be on file as having nothing qualifying on Levels.fyi
-    and carry an entry read from Levels.fyi, and one that claims both is one the
-    fetcher failed to clean up. A first-hand entry is no contradiction: it is
-    how a company Levels.fyi knows nothing about gets a number at all.
-
-    The front page reads these columns to decide whether a blank row says
-    "asked, nothing published" or "nobody has looked", so a wrong one is a false
-    statement on the front page rather than a tidiness problem.
-    """
-    checked = company.get("spain_check_date")
-    if not checked:
-        if company.get("spain_check_served"):
-            errors.append(f"{where}: spain_check_served without a spain_check_date")
-        return
-    check_date(where, "spain_check_date", checked)
-    if any(entry.get("source") == "levels.fyi" for entry in company.get("entries") or []):
-        errors.append(
-            f"{where}: spain_check says Levels.fyi has nothing qualifying, but a "
-            "levels.fyi entry is on file"
-        )
-    # Since 2026-09-21 a company is listed only with a salary on file or with
-    # Spanish submissions that fell short. One Levels.fyi knows nothing Spanish
-    # about, and nobody has vouched for, is not on the list.
-    if not company.get("entries") and not (company.get("spain_check_served") or "").startswith("Spain"):
-        warnings.append(f"{where}: no salary and no Spanish data on Levels.fyi, so it does "
-                        "not belong on the list")
-
-
 def check_company(where: str, company: dict) -> None:
+    # A company is on the list only with a salary on file (2026-09-21). A bare
+    # `Name,linkedin_id` row is how one is added by hand, and it is gone the
+    # moment fetch_spain.py finds nothing for it, so a lasting one is a mistake.
+    if not company.get("entries"):
+        errors.append(f"{where}: no salary on file, so it is not on the list. Run "
+                      "fetch_spain.py for it, add a first-hand entry, or remove the row")
+
     for column in ("linkedin_url", "website", "careers_url"):
         found = company.get(column)
         if found and not URL.match(found):
@@ -161,7 +137,6 @@ def main() -> int:
         name = company["company"]
         where = f"line {company['_lines'][0]} ({name})"
         check_company(where, company)
-        check_spain_check(where, company)
         for entry in company["entries"]:
             check_entry(f"line {entry['_line']} ({name})", entry)
 
