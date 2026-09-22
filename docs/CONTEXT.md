@@ -89,14 +89,15 @@ needs a `source_url`. Then `python3 scripts/validate.py && python3 scripts/build
 The list has no fixed size: it is whatever the last signed-in run found.
 The README's stats line is the authoritative count; this is the run behind it.
 
-- 2026-09-21 and 22 (UTC), signed in (trap 5), every company on file plus
-  discovery (trap 6). Found 192 companies with a qualifying salary and 1562 salaries, reported
-  between 2020-01 and 2026-09, 454 of them in the last twelve months.
-  `companies.csv` has one row per salary and nothing else.
-- The same day the list went from 452 salaries at 104 companies (public pages
-  only) to this, and 112 companies with nothing on file were removed: 72 with
-  nothing Spanish on Levels.fyi, 19 with no Levels.fyi page, 21 whose Spanish
-  engineers all fall short. The maintainer's rule: "get rid of the companies
+- 2026-09-22, signed in (trap 5), every company on file plus discovery (trap
+  6): 257 employers read, none unreachable. Found 197 companies with a
+  qualifying salary and 1575 salaries, reported between 2020-01 and
+  2026-09, 462 of them in the last twelve months. `companies.csv` has one
+  row per salary and nothing else, every row dated that day.
+- The day before, 2026-09-21, the list went from 452 salaries at 104 companies
+  (public pages only) to 1468 at 149, and 112 companies with nothing on file
+  were removed: 72 with nothing Spanish on Levels.fyi, 19 with no Levels.fyi
+  page, 21 whose Spanish engineers all fall short. The maintainer's rule: "get rid of the companies
   that don't have Spanish data and I have not said that I know that they pay
   that", then "remove the nothing qualifies part". Discovery then turned up
   107 employers with a recent Spanish submission that had never been on file,
@@ -329,9 +330,11 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 - **No first-hand data yet.** Every salary is crowdsourced. The repository's own
   standard is not met by a single row, which is the biggest gap on this list.
 - **Duplicate slugs.** Levels.fyi files some employers twice (`meta` and
-  `facebook` serve the same data). `companies.csv` holds one row group per
+  `facebook` serve the same page). `companies.csv` holds one row group per
   employer and `validate.py` rejects a slug used twice; the list uses
-  `facebook` for Meta.
+  `facebook` for Meta. The table API knows only `meta`, so Meta is the one
+  company still read from the page's samples (`Spain (ladder)` in the run
+  report), 11 qualifying out of a count the page does not publish in full.
 
 ## Commands
 
