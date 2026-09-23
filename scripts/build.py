@@ -157,8 +157,10 @@ def render_stats(companies: list[dict]) -> str:
     """The list is whatever the last run found, so the line says when that was."""
     entries = [entry for company in companies for entry in company["entries"]]
     reached = sum(1 for entry in entries if lib.at_bar(entry))
+    competitive = sum(1 for company in companies if lib.competitive(company))
     parts = [
-        f"**{len(companies)} companies**",
+        f"**{competitive} companies at 60k+**",
+        f"{len(companies) - competitive} need to improve",
         f"{len(entries)} engineers with {lib.SENIOR_YEARS}+ years",
         f"{reached} of them at 60k+",
     ]
@@ -174,17 +176,30 @@ def render_stats(companies: list[dict]) -> str:
     return " · ".join(parts)
 
 
-def render_companies(companies: list[dict]) -> str:
+def ranked(companies: list[dict]) -> list[dict]:
     # A company with a salary someone in Spain reported directly sorts above
     # the crowdsourced ones. Then the share of engineers at the bar, then the
     # median: a company where every senior is at 60k+ ranks above one where
-    # half are (maintainer, 2026-09-22). validate.py has already refused any
-    # company whose median is under the bar.
+    # half are (maintainer, 2026-09-22).
     found = {id(c): summary(c) for c in companies}
-    ranked = sorted(companies, key=lambda c: (not found[id(c)]["first_hand"], -found[id(c)]["share"],
-                                              -(found[id(c)]["base"] or 0), c["company"].casefold()))
+    return sorted(companies, key=lambda c: (not found[id(c)]["first_hand"], -found[id(c)]["share"],
+                                            -(found[id(c)]["base"] or 0), c["company"].casefold()))
+
+
+def render_companies(companies: list[dict]) -> str:
+    """Two tables: median at the bar, and median between the floor and the bar.
+
+    The second exists so a company under 60k is still visible, and visibly
+    under: "I don't wanna lose all those companies" (maintainer, 2026-09-23).
+    validate.py has already refused any company under the floor.
+    """
     out = [f"## Median pay, software engineers with {lib.SENIOR_YEARS}+ years", "", *TABLE_HEADER]
-    out += [company_row(company) for company in ranked]
+    out += [company_row(c) for c in ranked([c for c in companies if lib.competitive(c)])]
+    behind = ranked([c for c in companies if not lib.competitive(c)])
+    if behind:
+        out += ["", f"## Need to improve: median between {k(lib.FLOOR_EUR)} and {k(lib.THRESHOLD_EUR)}",
+                "", *TABLE_HEADER]
+        out += [company_row(c) for c in behind]
     return "\n".join(out)
 
 

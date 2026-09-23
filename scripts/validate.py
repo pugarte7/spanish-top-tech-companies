@@ -83,14 +83,21 @@ def check_entry(where: str, entry: dict) -> None:
 
 
 def check_company(where: str, company: dict) -> None:
-    # A company is on the list only while its seniors' median base is at the
-    # bar. A bare `Name,linkedin_id` row is how one is added by hand, and it is
-    # gone the moment fetch_spain.py finds the median below, so a lasting one
-    # is a mistake.
+    # A company is on file only while its seniors' median base is at the
+    # floor. A bare `Name,linkedin_id` row is how one is added by hand, and it
+    # is gone the moment fetch_spain.py finds the median below, so a lasting
+    # one is a mistake.
     if not lib.listed(company):
         errors.append(f"{where}: median base {lib.fmt_eur(lib.median_base(company))} is under "
-                      f"{lib.fmt_eur(lib.THRESHOLD_EUR)}, so it is not on the list. Run "
+                      f"{lib.fmt_eur(lib.FLOOR_EUR)}, so it is not on the list. Run "
                       "fetch_spain.py for it, add a first-hand entry, or remove the rows")
+
+    slug = company.get("levels_slug")
+    if slug in lib.EXCLUDED_SLUGS:
+        errors.append(f"{where}: {slug} was struck off ({lib.EXCLUDED_SLUGS[slug]}); remove the rows")
+    if slug in lib.SLUG_ALIASES:
+        errors.append(f"{where}: {slug} is an alias of {lib.SLUG_ALIASES[slug]}; file the rows "
+                      "under that company")
 
     for column in ("linkedin_url", "website", "careers_url"):
         found = company.get(column)

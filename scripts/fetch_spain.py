@@ -279,10 +279,36 @@ def reported(raw) -> str | None:
 
 
 def spain_data(slug: str, delay: float, bearer: str | None = None):
-    """Everything Spanish this company's page will give up.
+    """Everything Spanish this company will give up, under every slug it has.
 
     Returns (label, page, company). `page` is None when the page could not be
     read at all, and `label` says what it served, for the run report.
+
+    An employer Levels.fyi files under two slugs (lib.SLUG_ALIASES) is read
+    under both and filed under the canonical one; each row keeps the URL of
+    the page it was read from. An alias whose page is gone and whose table is
+    empty adds nothing; an alias whose table could not be read makes the whole
+    company unread, like the canonical slug's would.
+    """
+    label, page, company = read_slug(slug, delay, bearer)
+    if page is None:
+        return label, page, company
+    seen = {record.get("uuid") for record in page["records"]}
+    for alias in lib.aliases_of(slug):
+        alias_label, alias_page, _ = read_slug(alias, delay, bearer)
+        if alias_page is None:
+            if alias_label == "table unreadable":
+                return alias_label, None, company
+            continue
+        for record in alias_page["records"]:
+            if record.get("uuid") not in seen:
+                seen.add(record.get("uuid"))
+                page["records"].append({**record, "_url": alias_page["url"]})
+    return label, page, company
+
+
+def read_slug(slug: str, delay: float, bearer: str | None = None):
+    """One slug's page and table.
 
     With a token, the signed-in table is read as well, and a table that could
     not be read makes the whole company unread: writing the public page's
@@ -399,7 +425,7 @@ def entries(page: dict, today: str) -> list[dict]:
             "city": (record.get("location") or "").split(",")[0].strip() or None,
             "reported": reported(record.get("offerDate")),
             "source": "levels.fyi",
-            "source_url": page["url"],
+            "source_url": record.get("_url") or page["url"],
             "date": today,
             "notes": None,
         }
@@ -415,12 +441,16 @@ def write(slug: str, new_entries: list[dict], name_hint: str, today: str,
     The whole file is read and written for each company, so a run that gets
     blocked halfway keeps everything it fetched before that.
 
-    A company is on the list only while the median of its rows is at the bar.
-    One that Levels.fyi was asked about and that ends up below it, and that
-    nobody has vouched for with a first-hand entry, is removed; the maintainer
-    dropped 112 rows with nothing on 2026-09-21 rather than list them as "no
-    data". A page that could not be read removes nothing.
+    A company is on file only while the median of its rows is at the floor
+    (lib.FLOOR_EUR); under the bar it sits in "Need to improve". One that
+    Levels.fyi was asked about and that ends up below the floor, and that nobody
+    has vouched for with a first-hand entry, is removed; the maintainer dropped
+    112 rows with nothing on 2026-09-21 rather than list them as "no data". A
+    page that could not be read removes nothing. A slug struck off by hand is
+    never written.
     """
+    if slug in lib.EXCLUDED_SLUGS:
+        return "excluded"
     companies = lib.load_companies()
     company = lib.by_slug(companies, slug)
     created = company is None
@@ -451,7 +481,7 @@ def write(slug: str, new_entries: list[dict], name_hint: str, today: str,
         company["entries"] = [entry for entry in company["entries"] if not ours(entry)] \
             + new_entries
 
-    # Nothing is created below the bar, whatever else the page gave (an unread
+    # Nothing is created below the floor, whatever else the page gave (an unread
     # table once created two companies from their LinkedIn handle alone), and a
     # company that came back below it is removed. An unread page removes nothing.
     if not lib.listed(company):
@@ -480,7 +510,8 @@ def write(slug: str, new_entries: list[dict], name_hint: str, today: str,
 def targets() -> list[tuple[str, str]]:
     """(slug, name) for every company with a confirmed Levels.fyi page."""
     return sorted((c["levels_slug"], c["company"]) for c in lib.load_companies()
-                  if c.get("levels_slug") and c.get("levels_status") == "resolved")
+                  if c.get("levels_slug") and c.get("levels_status") == "resolved"
+                  and c["levels_slug"] not in lib.EXCLUDED_SLUGS)
 
 
 def discover(bearer: str, delay: float, known: set[str]) -> list[tuple[str, str]]:
@@ -493,9 +524,10 @@ def discover(bearer: str, delay: float, known: set[str]) -> list[tuple[str, str]
     first time its seniors' median is at the bar. The API sends `False` for both
     company fields on a few rows; those name no employer to look up.
     """
+    skip = known | set(lib.SLUG_ALIASES) | set(lib.EXCLUDED_SLUGS)
     rows = table(bearer, delay) or []
     found = {row["companySlug"]: row.get("company") or row["companySlug"] for row in rows
-             if isinstance(row.get("companySlug"), str) and row["companySlug"] not in known}
+             if isinstance(row.get("companySlug"), str) and row["companySlug"] not in skip}
     return sorted(found.items())
 
 
@@ -510,7 +542,7 @@ def main(argv: list[str]) -> int:
                         help="Report what each company serves, write nothing.")
     args = parser.parse_args(argv)
 
-    pending = [(s, "") for s in args.company] if args.company else targets()
+    pending = [(lib.canonical(s), "") for s in args.company] if args.company else targets()
     today = lib.today_utc().isoformat()
     served: dict[str, int] = {}
     tally: dict[str, int] = {}

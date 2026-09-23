@@ -17,11 +17,28 @@ DATA = ROOT / "companies.csv"
 # Seniority is the years, not whatever the company calls the level: an L4 with
 # eight years counts, a "Senior" with two does not.
 SENIOR_YEARS = 5
-# A company is on the list while the median of its rows reaches this base, and
-# the share of its rows that do is shown beside the median. The bar is applied
-# to the aggregate, never to the rows the aggregate is of: filter positions by
-# years first, compute the median, then filter companies by the median.
+# A company is on the main list while the median of its rows reaches this
+# base, and the share of its rows that do is shown beside the median. The bar
+# is applied to the aggregate, never to the rows the aggregate is of: filter
+# positions by years first, compute the median, then filter companies by it.
 THRESHOLD_EUR = 60_000
+# A company whose median lands between the floor and the bar is kept on file
+# and shown under "Need to improve": visible, and visibly under 60k. Below the
+# floor it is not on the list at all (maintainer, 2026-09-23).
+FLOOR_EUR = 50_000
+
+# Two Levels.fyi slugs, one employer. The alias's page and table are read
+# together with the canonical slug's and filed under its company; discovery
+# never lists an alias on its own, and validate.py refuses a row group for one.
+SLUG_ALIASES = {
+    "tiger-data": "timescale",   # Timescale renamed itself Tiger Data in 2025
+    "meta": "facebook",          # same page; only `meta` has a table in the API
+}
+# Slugs struck off by hand, with why. Never fetched, never discovered.
+EXCLUDED_SLUGS = {
+    "abracadabra": "nobody could say what company this is",
+    "data-native-systems-sl": "nobody could say what company this is",
+}
 
 # Compensation older than this is shown as stale rather than quietly trusted.
 STALE_DAYS = 365
@@ -94,8 +111,8 @@ def median_base(company: dict) -> int | None:
     return round(statistics.median(bases)) if bases else None
 
 
-def listed(company: dict) -> bool:
-    """On the list: the median base of the engineers on file is at the bar.
+def competitive(company: dict) -> bool:
+    """On the main list: the median base of the engineers on file is at the bar.
 
     The bar is a property of the company, not of a row, so it is applied after
     aggregating: "solo aquellas empresas donde el salario medio de las personas
@@ -105,6 +122,19 @@ def listed(company: dict) -> bool:
     removed, and lasted a day.
     """
     return (median_base(company) or 0) >= THRESHOLD_EUR
+
+
+def listed(company: dict) -> bool:
+    """On file at all: the median is at least the floor."""
+    return (median_base(company) or 0) >= FLOOR_EUR
+
+
+def canonical(slug: str) -> str:
+    return SLUG_ALIASES.get(slug, slug)
+
+
+def aliases_of(slug: str) -> list[str]:
+    return [alias for alias, target in SLUG_ALIASES.items() if target == slug]
 
 
 def _parse(column: str, raw: str | None):

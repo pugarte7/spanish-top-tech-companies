@@ -469,6 +469,96 @@ def test_median_and_share_over_every_senior() -> None:
           ["Vouched", "Everyone Paid More", "Everyone", "Rare High"])
 
 
+def test_floor_aliases_and_exclusions() -> None:
+    """The maintainer's hand on the data, 2026-09-23.
+
+    "I don't wanna lose all those companies": a median between 50k and 60k is
+    kept and shown under "Need to improve", below 50k is gone. "Timescale and
+    Tiger Data are the same": an alias slug is read into the canonical company,
+    each row keeping the page it came from. "Remove Abracadabra as we don't know
+    what company it is": a struck-off slug is never written or discovered.
+    """
+    print("floor, alias slugs and struck-off slugs")
+    import build
+    import fetch_spain
+    import validate
+
+    def named(name: str, *entries: dict, **fields) -> dict:
+        return lib.blank_company(name, **fields) | {"entries": list(entries)}
+    table = build.render_companies([
+        named("At Bar", entry(PER_LOCATION, base=70000)),
+        named("Nearly", entry(PER_LOCATION, base=55000), entry(PER_LOCATION, base=58000)),
+    ])
+    rows = [line.split(" | ")[0].lstrip("| ") for line in table.splitlines()
+            if line.startswith("| ") and not line.startswith(("| Company", "| ---"))]
+    check("a median under 60k lands in the second table", rows, ["At Bar", "Nearly"])
+    check("and the first table ends before it",
+          table.index("At Bar") < table.index("## Need to improve") < table.index("Nearly"), True)
+    check("the second table says what it is", "## Need to improve: median between 50k and 60k" in table, True)
+    check("under the floor is not listed", lib.listed(named("Low", entry(PER_LOCATION, base=49000))), False)
+    check("at the floor is listed but not competitive",
+          (lib.listed(named("Mid", entry(PER_LOCATION, base=55000))),
+           lib.competitive(named("Mid", entry(PER_LOCATION, base=55000)))), (True, False))
+
+    with temp_data(acme(entry(PER_LOCATION))):
+        outcome = fetch_spain.write("acme", [entry(PER_LOCATION, base=55000)], "Acme", "2026-09-23",
+                                    served="Spain (table)")
+        check("a median of 55k stays on file", (outcome, [e["base"] for e in stored()["entries"]]),
+              ("updated", [55000]))
+        outcome = fetch_spain.write("acme", [entry(PER_LOCATION, base=45000)], "Acme", "2026-09-23",
+                                    served="Spain (table)")
+        check("a median of 45k is removed", (outcome, stored()), ("removed", None))
+
+    # An alias is read with the canonical slug and filed under it.
+    original = fetch_spain.read_slug
+    pages = {
+        "timescale": ("Spain (table)", {"rate": 0.86, "url": PER_LOCATION.replace("adyen", "timescale"),
+                                        "records": [sample(120000, 8, uuid="a")]}, {}),
+        "tiger-data": ("Spain (table)", {"rate": 0.86, "url": PER_LOCATION.replace("adyen", "tiger-data"),
+                                         "records": [sample(120000, 8, uuid="a"), sample(150000, 9, uuid="b")]}, {}),
+    }
+    fetch_spain.read_slug = lambda slug, delay, bearer=None: pages[slug]
+    try:
+        with contextlib.redirect_stderr(io.StringIO()):
+            _, page, _ = fetch_spain.spain_data("timescale", 0, "token")
+        found = fetch_spain.entries(page, "2026-09-23")
+        check("alias rows join the canonical company, once each, with their own page",
+              sorted((e["base"], e["source_url"].split("/companies/")[1].split("/")[0]) for e in found),
+              [(103200, "timescale"), (129000, "tiger-data")])
+        fetch_spain.read_slug = lambda slug, delay, bearer=None: (
+            pages[slug] if slug == "timescale" else ("table unreadable", None, {}))
+        with contextlib.redirect_stderr(io.StringIO()):
+            check("an alias whose table failed makes the company unread",
+                  fetch_spain.spain_data("timescale", 0, "token")[:2], ("table unreadable", None))
+    finally:
+        fetch_spain.read_slug = original
+
+    with temp_data():
+        check("a struck-off slug is never written",
+              (fetch_spain.write("abracadabra", [entry(PER_LOCATION)], "Abracadabra", "2026-09-23",
+                                 served="Spain (table)"), stored("abracadabra")), ("excluded", None))
+    original = fetch_spain.table
+    fetch_spain.table = lambda bearer, delay, slug=None: [
+        dict(sample(1, 1), companySlug="tiger-data", company="Tiger Data"),
+        dict(sample(1, 1), companySlug="abracadabra", company="Abracadabra"),
+        dict(sample(1, 1), companySlug="newco", company="NewCo")]
+    try:
+        check("discovery skips aliases and struck-off slugs",
+              fetch_spain.discover("token", 0, set()), [("newco", "NewCo")])
+    finally:
+        fetch_spain.table = original
+
+    for label, company, message in (
+        ("an alias slug's own row group", named("Tiger", entry(PER_LOCATION), levels_slug="tiger-data"),
+         "is an alias of"),
+        ("a struck-off slug", named("Abracadabra", entry(PER_LOCATION), levels_slug="abracadabra"),
+         "struck off"),
+    ):
+        validate.errors.clear()
+        validate.check_company("test", company)
+        check(f"validate.py refuses {label}", any(message in e for e in validate.errors), True)
+
+
 def main() -> int:
     for test in (test_location_guard, test_unscoped_classifier,
                  test_purge_runs_even_when_spain_data_exists,
@@ -479,7 +569,7 @@ def main() -> int:
                  test_signed_in_table_is_read,
                  test_an_unread_page_changes_nothing,
                  test_a_company_with_its_median_under_the_bar_is_not_listed,
-                 test_median_and_share_over_every_senior):
+                 test_median_and_share_over_every_senior, test_floor_aliases_and_exclusions):
         test()
     if failures:
         print(f"\n{len(failures)} failed: {', '.join(failures)}")

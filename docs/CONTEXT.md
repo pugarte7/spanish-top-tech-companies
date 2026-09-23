@@ -8,7 +8,8 @@ twice, and one put every figure on the front page 16% over the truth.
 
 What companies in Spain pay software engineers with 5 or more years of
 experience: the median over every such engineer on file, and the share of them
-at 60.000 € or more in base, at companies where the median is. Three things
+at 60.000 € or more in base, at companies where the median is; companies with
+a median between 50k and 60k are shown apart, under "Need to improve". Three things
 follow from that and all are load bearing:
 
 - **Spain only.** A German salary in this list is worse than no salary, because
@@ -64,8 +65,14 @@ first three, and a week later readers overturned the fourth:
    The maintainer agreed the same day: a company is listed while its seniors'
    median base is at 60k+. 33 companies left (EPAM 53k, eDreams 52k,
    Thoughtworks 53.7k, adidas 48.9k, Ocado 57.9k, Freenow 59.8k, BBVA, Minsait,
-   Accenture, Inditex...), 164 stayed, and "At 60k+" is now always 50% or
-   more. This one stands.
+   Accenture, Inditex...), 164 stayed, and "At 60k+" is 50% or more on the
+   main table.
+7. A second table. "I don't wanna lose all those companies": on 2026-09-23 the
+   24 of the 33 with a median of 50k or more came back under "Need to
+   improve", same columns, so a reader sees them and sees they are under 60k.
+   `lib.FLOOR_EUR` = 50k decides what is on file at all; the nine under it
+   (Accenture, Minsait, Inditex, NTT DATA, adidas, GFT, Ericsson, Atos, BSC)
+   are gone. This one stands.
 
 The entries come from the signed-in submissions table (trap 5) and from the
 `samples` and `median` records embedded in each company's Spain page (trap 2).
@@ -116,14 +123,16 @@ The list has no fixed size: it is whatever the last signed-in run found.
 The README's stats line is the authoritative count; this is the run behind it.
 
 - 2026-09-22, signed in (trap 5), every company on file plus discovery (trap
-  6): 259 employers read, none unreachable. 164 companies with a median at
-  60k+, 1710 engineers with 5+ years on file at them, 1433 of those at 60k+,
-  reported between 2019-02 and 2026-09. `companies.csv` has one row per
-  senior and nothing else, every row dated that day. The same run read 197
-  companies with at least one senior at 60k+ (2236 rows); the 33 with a
-  median under the bar were dropped when the listing rule changed that
-  evening. Earlier in the day, under the 60k-filtered rule, the same 197
-  companies had 1575 rows.
+  6): 259 employers read, none unreachable. 161 companies with a median at
+  60k+ and 24 under "Need to improve" (50k to 60k), 2112 engineers with 5+
+  years on file at them, 1551 of those at 60k+, reported between 2018-11 and
+  2026-09. `companies.csv` has one row per senior and nothing else. The run
+  read 197 companies with at least one senior at 60k+ (2236 rows); the 33
+  with a median under the bar were dropped when the listing rule changed that
+  evening, and on 2026-09-23 the 24 at 50k+ came back as the second table,
+  Tiger Data was folded into Timescale, and Abracadabra and Data Native
+  Systems were struck off. Earlier on the 22nd, under the 60k-filtered rule,
+  the same 197 companies had 1575 rows.
 - The day before, 2026-09-21, the list went from 452 salaries at 104 companies
   (public pages only) to 1468 at 149, and 112 companies with nothing on file
   were removed: 72 with nothing Spanish on Levels.fyi, 19 with no Levels.fyi
@@ -349,11 +358,11 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 
 ## Known gaps
 
-- **A company with its median under the bar is invisible.** EPAM has 129
-  Spanish seniors on Levels.fyi at a median of 53k, BBVA 13 at 55k, and the
-  list says nothing about them; the maintainer preferred that to a second
-  table. A first-hand entry or a job ad (source #3 in METHODOLOGY.md) does not
-  change that unless it moves the median.
+- **A company with its median under 50k is invisible.** Accenture has 16
+  Spanish seniors on Levels.fyi at a median of 43k, Minsait 16 at 43.5k, and
+  the list says nothing about them. Between 50k and 60k a company is shown
+  under "Need to improve". A first-hand entry or a job ad (source #3 in
+  METHODOLOGY.md) does not change that unless it moves the median.
 - **One-person medians.** Nothing stops a company with a single senior on
   file from topping the table at "100% (1)". A minimum of three was offered
   and declined on 2026-09-22; the Engineers column is the reader's guard.
@@ -369,11 +378,19 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 - **No first-hand data yet.** Every salary is crowdsourced. The repository's own
   standard is not met by a single row, which is the biggest gap on this list.
 - **Duplicate slugs.** Levels.fyi files some employers twice (`meta` and
-  `facebook` serve the same page). `companies.csv` holds one row group per
-  employer and `validate.py` rejects a slug used twice; the list uses
-  `facebook` for Meta. The table API knows only `meta`, so Meta is the one
-  company still read from the page's samples (`Spain (ladder)` in the run
-  report), 11 seniors out of a count the page does not publish in full.
+  `facebook` serve the same page; Timescale renamed itself Tiger Data and
+  got a second slug). `lib.SLUG_ALIASES` maps the alias to the canonical
+  slug; `spain_data()` reads both, dedupes on uuid, files everything under
+  the canonical company and keeps each row's own page URL. `validate.py`
+  rejects a row group filed under an alias. Added 2026-09-23 when the
+  maintainer asked for Timescale and Tiger Data to be one row; it also fixed
+  Meta, whose `facebook` table is empty while `meta`'s is not.
+- **Struck-off slugs.** `lib.EXCLUDED_SLUGS` holds slugs the maintainer
+  removed with a reason (`abracadabra`, `data-native-systems-sl`: nobody could
+  say what company they are). Never fetched, never discovered, refused by
+  `validate.py`. Discovered employers also arrive without LinkedIn; ten were
+  typed into the CSV by hand on 2026-09-23 and the fetcher never overwrites a
+  `linkedin_url` on file.
 
 ## Commands
 
