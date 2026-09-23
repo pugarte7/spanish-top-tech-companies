@@ -390,7 +390,7 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
   say what company they are). Never fetched, never discovered, refused by
   `validate.py`. Discovered employers also arrive without LinkedIn; ten were
   typed into the CSV by hand on 2026-09-23 and the fetcher never overwrites a
-  `linkedin_url` on file.
+  `linkedin_url` on file. Paradigma Digital followed, and every company on file now links somewhere.
 
 ## Commands
 
