@@ -375,17 +375,20 @@ def test_an_unread_page_changes_nothing() -> None:
               [e["source_url"] for e in stored()["entries"]], [PER_LOCATION])
 
 
-def test_a_company_with_nobody_at_the_bar_is_not_listed() -> None:
-    """A company is on the list only with an engineer at 60k+ on file.
+def test_a_company_with_its_median_under_the_bar_is_not_listed() -> None:
+    """A company is on the list only while its seniors' median base is 60k+.
 
     Until 2026-09-21 a company Levels.fyi had nothing Spanish for kept a row
     reading "no Spain data", and 112 of them sat under the table. The
     maintainer's rule: get rid of the companies that don't have Spanish data and
-    that nobody has vouched for. So the fetcher removes one that comes back
-    with nobody at the bar, keeps one a first-hand entry vouches for, and
-    validate.py refuses lasting rows with nobody at the bar.
+    that nobody has vouched for. For a day the rule was then "at least one
+    senior at 60k+", which listed BBVA at a median of 55k; a reader pointed out
+    that the company filter has to be on the aggregate, and on 2026-09-22 it
+    became the median. So the fetcher removes a company whose median comes back
+    under the bar, keeps one a first-hand entry vouches for, and validate.py
+    refuses lasting rows with a median under it.
     """
-    print("a company with nobody at 60k+ on file is removed, not listed")
+    print("a company whose median is under 60k is removed, not listed")
     import fetch_spain
     import validate
 
@@ -397,6 +400,13 @@ def test_a_company_with_nobody_at_the_bar_is_not_listed() -> None:
         outcome = fetch_spain.write("acme", [entry(PER_LOCATION, base=45000)], "Acme", "2026-09-21",
                                     served="Spain (table)")
         check("so is one whose seniors are all under 60k", (outcome, stored()), ("removed", None))
+
+    with temp_data(acme(entry(PER_LOCATION))):
+        outcome = fetch_spain.write("acme", [entry(PER_LOCATION, base=45000), entry(PER_LOCATION, base=45000),
+                                             entry(PER_LOCATION, base=120000)], "Acme", "2026-09-21",
+                                    served="Spain (table)")
+        check("and one with a well-paid senior but a median under 60k",
+              (outcome, stored()), ("removed", None))
 
     with temp_data(acme(entry(None, source="community"))):
         outcome = fetch_spain.write("acme", [], "Acme", "2026-09-21", served="no data")
@@ -414,7 +424,9 @@ def test_a_company_with_nobody_at_the_bar_is_not_listed() -> None:
     for label, company, refused in (
         ("an empty row", acme(), True),
         ("rows all under 60k", acme(entry(PER_LOCATION, base=45000)), True),
-        ("a row at 60k+", acme(entry(PER_LOCATION, base=45000), entry(PER_LOCATION)), False),
+        ("one row at 60k+ among three", acme(entry(PER_LOCATION, base=45000),
+                                             entry(PER_LOCATION, base=46000), entry(PER_LOCATION)), True),
+        ("a median at 60k+", acme(entry(PER_LOCATION, base=45000), entry(PER_LOCATION)), False),
     ):
         validate.errors.clear()
         validate.check_company("acme", company)
@@ -466,7 +478,7 @@ def main() -> int:
                  test_foreign_samples_are_skipped,
                  test_signed_in_table_is_read,
                  test_an_unread_page_changes_nothing,
-                 test_a_company_with_nobody_at_the_bar_is_not_listed,
+                 test_a_company_with_its_median_under_the_bar_is_not_listed,
                  test_median_and_share_over_every_senior):
         test()
     if failures:

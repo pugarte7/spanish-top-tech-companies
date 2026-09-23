@@ -7,6 +7,7 @@ import io
 import os
 import pathlib
 import re
+import statistics
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DATA = ROOT / "companies.csv"
@@ -16,9 +17,10 @@ DATA = ROOT / "companies.csv"
 # Seniority is the years, not whatever the company calls the level: an L4 with
 # eight years counts, a "Senior" with two does not.
 SENIOR_YEARS = 5
-# A company is on the list while at least one of its rows reaches this base,
-# and the share of its rows that do is shown beside the median. The bar picks
-# companies and measures them; it never trims the salaries the median is of.
+# A company is on the list while the median of its rows reaches this base, and
+# the share of its rows that do is shown beside the median. The bar is applied
+# to the aggregate, never to the rows the aggregate is of: filter positions by
+# years first, compute the median, then filter companies by the median.
 THRESHOLD_EUR = 60_000
 
 # Compensation older than this is shown as stale rather than quietly trusted.
@@ -35,8 +37,8 @@ VOUCHED = ("offer-letter", "community")
 # experience and what they are paid. The company's own columns are repeated on
 # each of its rows.
 #
-# A company is on the list only while one of its entries is at the bar. A row
-# with the entry columns empty is how a company is added by hand,
+# A company is on the list only while the median of its entries is at the bar.
+# A row with the entry columns empty is how a company is added by hand,
 # `Name,linkedin_id`, and it lasts until the fetcher has asked Levels.fyi.
 IDENTITY_COLUMNS = ["company", "linkedin_ids", "linkedin_url", "levels_slug", "levels_status"]
 ENTRY_COLUMNS = ["base", "total", "years_experience", "level", "city", "reported",
@@ -87,9 +89,22 @@ def at_bar(entry: dict) -> bool:
     return (entry.get("base") or 0) >= THRESHOLD_EUR
 
 
+def median_base(company: dict) -> int | None:
+    bases = [entry["base"] for entry in company.get("entries") or [] if entry.get("base")]
+    return round(statistics.median(bases)) if bases else None
+
+
 def listed(company: dict) -> bool:
-    """On the list: at least one engineer on file at the bar."""
-    return any(at_bar(entry) for entry in company.get("entries") or [])
+    """On the list: the median base of the engineers on file is at the bar.
+
+    The bar is a property of the company, not of a row, so it is applied after
+    aggregating: "solo aquellas empresas donde el salario medio de las personas
+    con 5+ años es superior a 60k". Filtering rows by pay first was the
+    2026-09-16 rule, and it made any company with one well-paid senior look
+    competitive; "at least one row at the bar" was the same mistake one step
+    removed, and lasted a day.
+    """
+    return (median_base(company) or 0) >= THRESHOLD_EUR
 
 
 def _parse(column: str, raw: str | None):

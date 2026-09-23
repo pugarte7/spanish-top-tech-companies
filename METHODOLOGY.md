@@ -12,15 +12,15 @@ Pay does not decide who is on file. Every senior is a row, at 40k or at 140k.
 
 The README then shows one row per company: the **median** base salary and median total compensation over all of its seniors on file, how many that is, and **At 60k+**, the share of them with a base of 60.000 € or more. "46% (6)" at BBVA says thirteen seniors reported and six are at 60k+, so 60k+ with 5 years happens there and is not the norm; "100% (4)" says everyone who reported is. Levels.fyi's own figures, an all-levels median or a ladder mean, are never used, because they mix juniors in with everyone else.
 
-A company is on the list only while at least one of its seniors on file is at 60k+. One whose seniors are all under it, or that Levels.fyi has nothing Spanish for, is not listed at all. The bar picks companies and is measured; it never trims the salaries the median is of.
+A company is on the list only while the median base of its seniors on file is 60k or more. One whose median is under it, however well it pays its best, or that Levels.fyi has nothing Spanish for, is not listed at all. The order is: filter positions by years, compute the median, filter companies by the median. The bar is a property of a company, not of a salary, so it is applied after aggregating and never to the rows the median is of.
 
 A median of one salary is one person's pay, so read the Engineers column before the number.
 
-The table is sorted by At 60k+ first and median base second, after any first-hand rows. A company where 4 of 4 seniors are at the bar ranks above one where 6 of 13 are, whatever the two medians say.
+The table is sorted by At 60k+ first and median base second, after any first-hand rows. A company where 4 of 4 seniors are at the bar ranks above one where 7 of 13 are, whatever the two medians say. Since the median is at the bar, At 60k+ is always 50% or more.
 
 ### How the rule was reached
 
-On 2026-09-16 the list became the **mean of each company's seniors at 60k+**, and only those. Readers pointed out, correctly, that filtering to 60k+ before averaging makes any company with one well-paid senior look competitive: Minsait showed 90k off two engineers while its fourteen other seniors, all under 60k, were not even on file. On 2026-09-22 the maintainer replaced it with the median over every senior, kept the 60k bar for which companies are listed and as the share column, and declined a 15-year cap on experience, which changed no company's median by more than 2k. Earlier versions had published Levels.fyi's per-company averages across levels, every job family, only rungs whose names said senior, and every salary as its own row. All of those were replaced.
+On 2026-09-16 the list became the **mean of each company's seniors at 60k+**, and only those. Readers pointed out, correctly, that filtering to 60k+ before averaging makes any company with one well-paid senior look competitive: Minsait showed 90k off two engineers while its fourteen other seniors, all under 60k, were not even on file. On 2026-09-22 the maintainer replaced it with the median over every senior, declined a 15-year cap on experience (it changed no company's median by more than 2k), and kept the 60k bar as the share column. For a day the listing rule was "at least one senior at 60k+", which still listed BBVA at a median of 55k; a reader put it plainly, the company filter has to be on the aggregate, and the rule became median ≥ 60k. Thirty-three companies left the list that way, EPAM, Accenture, eDreams, BBVA, Minsait and Inditex among them. Earlier versions had published Levels.fyi's per-company averages across levels, every job family, only rungs whose names said senior, and every salary as its own row. All of those were replaced.
 
 ## What "gross annual" means here
 
@@ -75,13 +75,13 @@ Levels.fyi does not refuse a location it has no data for. Ask a company page for
 
 Every submission names its city, and [`scripts/fetch_spain.py`](scripts/fetch_spain.py) skips any outside Spain, whatever page it came from. It also deletes any entry whose source URL names no location. `locationMeta` is not a substitute: it only echoes the URL back.
 
-A company with no Spanish senior at 60k+ is not listed. Listing another country's pay under its name would be worse than the gap, and that is the one thing this repository exists to get right.
+A company whose Spanish seniors' median is under 60k is not listed. Listing another country's pay under its name would be worse than the gap, and that is the one thing this repository exists to get right.
 
 ### Which companies are on the list
 
-A company is on the list only while one of its seniors on file is at 60k+. Until 2026-09-21 a company with nothing sat under the table as "no Spain data" or "none with 5+ years at 60k+", 112 of them; the maintainer removed the section and the rows. The fetcher now removes a company that comes back with nobody at the bar unless a `community` or `offer-letter` entry vouches for it, and `validate.py` fails the build on rows that have stayed with nobody at it.
+A company is on the list only while its seniors' median base is 60k or more. Until 2026-09-21 a company with nothing sat under the table as "no Spain data" or "none with 5+ years at 60k+", 112 of them; the maintainer removed the section and the rows. The fetcher now removes a company whose median comes back under the bar unless a `community` or `offer-letter` entry vouches for it, and `validate.py` fails the build on rows that have stayed with a median under it.
 
-Companies get on the list by discovery. Each signed-in run reads Levels.fyi's country-wide feed, the newest 250 Spanish software-engineer submissions, about three months' worth, and fetches every employer in it that is not on file yet. So adding a salary on Levels.fyi is the whole submission process: a company nobody has heard of here gets its row the first time one of its seniors in Spain reports 60k+. A company can also be added by hand as a `Name,linkedin_id` row and fetched with `--company`; the row lasts only if someone there is at the bar.
+Companies get on the list by discovery. Each signed-in run reads Levels.fyi's country-wide feed, the newest 250 Spanish software-engineer submissions, about three months' worth, and fetches every employer in it that is not on file yet. So adding a salary on Levels.fyi is the whole submission process: a company nobody has heard of here gets its row once its seniors' median in Spain is at 60k+. A company can also be added by hand as a `Name,linkedin_id` row and fetched with `--company`; the row lasts only if the median is at the bar.
 
 Never include anything that identifies a person: no names, no team, no "the guy who joined in March".
 

@@ -101,10 +101,11 @@ def summary(company: dict) -> dict:
     Every entry is a software engineer in Spain with 5+ years, paid whatever
     they are paid. The median is over all of them, so one well-paid engineer
     cannot make a company look competitive: Minsait's two at 90k next to
-    fourteen under 60k reads 43.5k, 12% at 60k+. Until 2026-09-22 the table
-    showed the mean of the 60k+ ones only, which is what critics called
-    cherry-picking, rightly. The share is the chance a senior there is at the
-    bar; first-hand entries count in it like any other row.
+    fourteen under 60k reads 43.5k, and a median under the bar keeps the
+    company off the list altogether. Until 2026-09-22 the table showed the
+    mean of the 60k+ ones only, which is what critics called cherry-picking,
+    rightly. The share is the chance a senior there is at the bar; first-hand
+    entries count in it like any other row.
     """
     entries = company["entries"]
     months = sorted(entry["reported"] for entry in entries if entry.get("reported"))
@@ -177,8 +178,8 @@ def render_companies(companies: list[dict]) -> str:
     # A company with a salary someone in Spain reported directly sorts above
     # the crowdsourced ones. Then the share of engineers at the bar, then the
     # median: a company where every senior is at 60k+ ranks above one where
-    # 60k+ is a rare high (maintainer, 2026-09-22). validate.py has already
-    # refused any company with nobody at the bar.
+    # half are (maintainer, 2026-09-22). validate.py has already refused any
+    # company whose median is under the bar.
     found = {id(c): summary(c) for c in companies}
     ranked = sorted(companies, key=lambda c: (not found[id(c)]["first_hand"], -found[id(c)]["share"],
                                               -(found[id(c)]["base"] or 0), c["company"].casefold()))

@@ -8,12 +8,12 @@ twice, and one put every figure on the front page 16% over the truth.
 
 What companies in Spain pay software engineers with 5 or more years of
 experience: the median over every such engineer on file, and the share of them
-at 60.000 € or more in base, at companies where at least one is. Three things
+at 60.000 € or more in base, at companies where the median is. Three things
 follow from that and all are load bearing:
 
 - **Spain only.** A German salary in this list is worse than no salary, because
   the whole point is that other sources mix countries.
-- **The median over every senior; the bar picks companies and is measured.**
+- **The median over every senior; the bar is applied to the median.**
   `companies.csv` keeps one row per engineer with 5+ years, paid whatever they
   are paid; the README shows one row per company, the median of those rows
   and the share of them at 60k+. Nothing else goes into the median: an
@@ -54,7 +54,18 @@ first three, and a week later readers overturned the fourth:
    median by more than 2k, and the median over all seniors (Minsait 43.5k,
    BBVA 55k, Fever 66k, Glovo 75k, Revolut 87k) was the honest figure. The
    maintainer chose it, kept "only competitive companies" as the listing rule,
-   and declined a minimum number of data points. This one stands.
+   and declined a minimum number of data points.
+6. The listing rule itself. Version 5 listed a company if *any* senior was at
+   60k+, which kept BBVA (median 55k) and Minsait (43.5k) on the list, at the
+   bottom. The same reader: "el filtro de posiciones lo haces antes de
+   calcular el promedio, pero el filtro de empresas lo tenés que hacer
+   después", with the pseudocode
+   `companies.map(|d| d.filter(yoe >= 5).median()).filter(|m| m >= 60k)`.
+   The maintainer agreed the same day: a company is listed while its seniors'
+   median base is at 60k+. 33 companies left (EPAM 53k, eDreams 52k,
+   Thoughtworks 53.7k, adidas 48.9k, Ocado 57.9k, Freenow 59.8k, BBVA, Minsait,
+   Accenture, Inditex...), 164 stayed, and "At 60k+" is now always 50% or
+   more. This one stands.
 
 The entries come from the signed-in submissions table (trap 5) and from the
 `samples` and `median` records embedded in each company's Spain page (trap 2).
@@ -105,12 +116,14 @@ The list has no fixed size: it is whatever the last signed-in run found.
 The README's stats line is the authoritative count; this is the run behind it.
 
 - 2026-09-22, signed in (trap 5), every company on file plus discovery (trap
-  6): 259 employers read, none unreachable. Found 197 companies with a
-  senior at 60k+, 2236 engineers with 5+ years on file at them, 1571 of
-  those at 60k+, reported between 2018-11 and 2026-09, 559 in the last
-  twelve months. `companies.csv` has one row per senior and nothing else,
-  every row dated that day. The same run earlier in the day, under the
-  60k-filtered rule, had 1575 rows at the same 197 companies.
+  6): 259 employers read, none unreachable. 164 companies with a median at
+  60k+, 1710 engineers with 5+ years on file at them, 1433 of those at 60k+,
+  reported between 2019-02 and 2026-09. `companies.csv` has one row per
+  senior and nothing else, every row dated that day. The same run read 197
+  companies with at least one senior at 60k+ (2236 rows); the 33 with a
+  median under the bar were dropped when the listing rule changed that
+  evening. Earlier in the day, under the 60k-filtered rule, the same 197
+  companies had 1575 rows.
 - The day before, 2026-09-21, the list went from 452 salaries at 104 companies
   (public pages only) to 1468 at 149, and 112 companies with nothing on file
   were removed: 72 with nothing Spanish on Levels.fyi, 19 with no Levels.fyi
@@ -318,7 +331,7 @@ for both company fields; they name nothing and are skipped.
 
 | Script | What it does | Safe? |
 | --- | --- | --- |
-| `fetch_spain.py` | Senior salaries in Spain, per company. With a token, reads the country-wide feed for employers not yet on file, then each company's signed-in submissions table plus every sample and the median record on its page; keeps Spanish ones with 5+ years whatever the pay, converts USD to EUR, records LinkedIn, deletes any entry whose source URL names no location, removes a company that comes back with nobody at 60k+ unless a first-hand entry vouches for it, and leaves a company alone when its page or table cannot be read. | **Use this** |
+| `fetch_spain.py` | Senior salaries in Spain, per company. With a token, reads the country-wide feed for employers not yet on file, then each company's signed-in submissions table plus every sample and the median record on its page; keeps Spanish ones with 5+ years whatever the pay, converts USD to EUR, records LinkedIn, deletes any entry whose source URL names no location, removes a company whose median comes back under 60k unless a first-hand entry vouches for it, and leaves a company alone when its page or table cannot be read. | **Use this** |
 | `fetch_company.py` | Company details only: website, HQ, headcount, sector, vesting. Writes no salary at all, by design. Only fills companies already in the CSV. | Yes |
 | `resolve_slugs.py` | Company name → Levels.fyi slug, with verification and an alias table. Folds a company into the one already holding its slug. | Yes |
 | `build.py` | Regenerates the README and rewrites `companies.csv` in canonical order. | Yes |
@@ -336,11 +349,11 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 
 ## Known gaps
 
-- **A company with nobody at the bar is invisible.** Indra and Capgemini have
-  dozens of Spanish seniors on Levels.fyi and none at 60k, and the list says
-  nothing about them; the maintainer preferred that to a second table. A
-  first-hand entry or a job ad (source #3 in METHODOLOGY.md) is the way on
-  for such a company.
+- **A company with its median under the bar is invisible.** EPAM has 129
+  Spanish seniors on Levels.fyi at a median of 53k, BBVA 13 at 55k, and the
+  list says nothing about them; the maintainer preferred that to a second
+  table. A first-hand entry or a job ad (source #3 in METHODOLOGY.md) does not
+  change that unless it moves the median.
 - **One-person medians.** Nothing stops a company with a single senior on
   file from topping the table at "100% (1)". A minimum of three was offered
   and declined on 2026-09-22; the Engineers column is the reader's guard.

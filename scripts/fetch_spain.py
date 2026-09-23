@@ -9,7 +9,7 @@ Every engineer with at least lib.SENIOR_YEARS years of experience is a row,
 whatever they are paid: the README shows the median over all of them. The level
 name does not matter: companies call the same job L4, SDE II or Senior, and
 years are the one thing every submission states the same way. A company stays
-on the list while at least one of those rows is at lib.THRESHOLD_EUR or more.
+on the list while the median of those rows is at lib.THRESHOLD_EUR or more.
 
 Most submissions are behind a sign-in. The public page embeds a handful (see
 below); the "Latest Salary Submissions" table under it holds every one, and is
@@ -415,8 +415,8 @@ def write(slug: str, new_entries: list[dict], name_hint: str, today: str,
     The whole file is read and written for each company, so a run that gets
     blocked halfway keeps everything it fetched before that.
 
-    A company is on the list only while one of its rows is at the bar. One that
-    Levels.fyi was asked about and that ends up without such a row, and that
+    A company is on the list only while the median of its rows is at the bar.
+    One that Levels.fyi was asked about and that ends up below it, and that
     nobody has vouched for with a first-hand entry, is removed; the maintainer
     dropped 112 rows with nothing on 2026-09-21 rather than list them as "no
     data". A page that could not be read removes nothing.
@@ -490,7 +490,7 @@ def discover(bearer: str, delay: float, known: set[str]) -> list[tuple[str, str]
     submissions, about three months' worth. Reading it each run is what makes
     "add your salary on Levels.fyi and it gets picked up" true for a company
     nobody has added by hand: it is fetched like the rest, and gets a row the
-    first time one of its engineers is at the bar. The API sends `False` for both
+    first time its seniors' median is at the bar. The API sends `False` for both
     company fields on a few rows; those name no employer to look up.
     """
     rows = table(bearer, delay) or []

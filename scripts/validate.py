@@ -83,13 +83,14 @@ def check_entry(where: str, entry: dict) -> None:
 
 
 def check_company(where: str, company: dict) -> None:
-    # A company is on the list only with an engineer at the bar on file. A bare
-    # `Name,linkedin_id` row is how one is added by hand, and it is gone the
-    # moment fetch_spain.py finds nobody there, so a lasting one is a mistake.
+    # A company is on the list only while its seniors' median base is at the
+    # bar. A bare `Name,linkedin_id` row is how one is added by hand, and it is
+    # gone the moment fetch_spain.py finds the median below, so a lasting one
+    # is a mistake.
     if not lib.listed(company):
-        errors.append(f"{where}: nobody at {lib.fmt_eur(lib.THRESHOLD_EUR)} on file, so it is "
-                      "not on the list. Run fetch_spain.py for it, add a first-hand entry, "
-                      "or remove the rows")
+        errors.append(f"{where}: median base {lib.fmt_eur(lib.median_base(company))} is under "
+                      f"{lib.fmt_eur(lib.THRESHOLD_EUR)}, so it is not on the list. Run "
+                      "fetch_spain.py for it, add a first-hand entry, or remove the rows")
 
     for column in ("linkedin_url", "website", "careers_url"):
         found = company.get(column)

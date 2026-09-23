@@ -4,7 +4,7 @@ Two ways in. Pick whichever you're comfortable with.
 
 ## 0. Add your salary on Levels.fyi
 
-The easiest way, and anonymous. Add it at [levels.fyi/salaries/add](https://www.levels.fyi/salaries/add) with your city in Spain and your years of experience. The list is rebuilt from Levels.fyi's Spanish submissions, so a software engineer with 5 or more years is picked up on the next run, and a company that is not here yet gets its row the first time one of its seniors reports 60k or more.
+The easiest way, and anonymous. Add it at [levels.fyi/salaries/add](https://www.levels.fyi/salaries/add) with your city in Spain and your years of experience. The list is rebuilt from Levels.fyi's Spanish submissions, so a software engineer with 5 or more years is picked up on the next run, and a company that is not here yet gets its row once its seniors' median is 60k or more.
 
 ## 1. Open an issue (no CSV)
 
@@ -14,9 +14,9 @@ Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or 
 
 ## 2. Open a pull request
 
-All the data is one file, [`companies.csv`](companies.csv): one row per salary, with the company's own columns repeated on each of its rows. A company is on the list only while one of its rows is at 60k+; a `Name,linkedin_id` row with the salary columns empty is how one is added by hand, and it stays only if the fetch finds someone at the bar. The README is generated from it, and shows each company's median over those salaries and the share at 60k+.
+All the data is one file, [`companies.csv`](companies.csv): one row per salary, with the company's own columns repeated on each of its rows. A company is on the list only while the median of its rows is at 60k+; a `Name,linkedin_id` row with the salary columns empty is how one is added by hand, and it stays only if the fetch finds a median at the bar. The README is generated from it, and shows each company's median over those salaries and the share at 60k+.
 
-Every row is **one software engineer in Spain with 5 or more years of experience**, paid whatever they are paid. Nothing else goes in: no other job families, nobody under five years, and no averages. What their company calls the level does not matter. A company stays listed while at least one of its rows is at 60.000 € or more in base. [METHODOLOGY.md](METHODOLOGY.md#who-counts) explains why.
+Every row is **one software engineer in Spain with 5 or more years of experience**, paid whatever they are paid. Nothing else goes in: no other job families, nobody under five years, and no averages. What their company calls the level does not matter. A company stays listed while the median base of its rows is 60.000 € or more. [METHODOLOGY.md](METHODOLOGY.md#who-counts) explains why.
 
 ```bash
 git clone https://github.com/pugarte7/spanish-top-tech-companies
@@ -63,7 +63,7 @@ python3 scripts/fetch_spain.py --company glovo
 python3 scripts/fetch_spain.py --audit         # report only, writes nothing
 ```
 
-This is the only route for crowdsourced salaries. It reads `/companies/<slug>/salaries/software-engineer/locations/spain` and the "Latest Salary Submissions" table under it, and writes every submission from a Spanish city with 5 or more years of experience, whatever the pay. See [METHODOLOGY.md](METHODOLOGY.md#an-entry-must-prove-it-is-spanish) for why the city check is not optional. It also deletes any entry already on file whose source URL names no location, removes a company that comes back with nobody at 60k+ (unless a first-hand entry vouches for it), and leaves a company untouched when its page or table cannot be read. With a session it also reads Levels.fyi's feed of recent Spanish submissions and fetches every employer in it that is not on file yet, which is how new companies arrive.
+This is the only route for crowdsourced salaries. It reads `/companies/<slug>/salaries/software-engineer/locations/spain` and the "Latest Salary Submissions" table under it, and writes every submission from a Spanish city with 5 or more years of experience, whatever the pay. See [METHODOLOGY.md](METHODOLOGY.md#an-entry-must-prove-it-is-spanish) for why the city check is not optional. It also deletes any entry already on file whose source URL names no location, removes a company whose median comes back under 60k (unless a first-hand entry vouches for it), and leaves a company untouched when its page or table cannot be read. With a session it also reads Levels.fyi's feed of recent Spanish submissions and fetches every employer in it that is not on file yet, which is how new companies arrive.
 
 The table is where most submissions are, and the browser only loads it for a signed-in visitor who has added a salary. Without a session the script reads the public page alone, which for most companies is a single record, and says so. To give it your session: sign in on levels.fyi, open the browser console and run `copy(localStorage.getItem("auth"))`, then
 
