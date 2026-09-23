@@ -24,7 +24,7 @@ levels, a filter on titles that said senior, and set "the mean of the 60k+
 seniors only". On 2026-09-22, after readers called that cherry-picking
 (Minsait read 90k off two engineers while fourteen seniors under 60k went
 unrecorded), the maintainer chose the median over every senior, the share at
-60k+ as the second column and sort key, and no 15-year cap (it changed
+60k+ as the second column, and no 15-year cap (it changed
 nothing). "At least one senior at 60k+" as the listing rule lasted a day: a
 reader pointed out that a company filter belongs on the aggregate, and it
 became median >= 60k, dropping 33 companies. On 2026-09-23 the maintainer
@@ -113,8 +113,9 @@ without anyone editing the CSV.
 
 The "At 60k+" column is the share of a company's rows at the bar, computed
 from the rows, no stored count: "46% (6)" at BBVA is six of its thirteen
-seniors. The table sorts by that share first, then by median base; first-hand
-rows come first. A first-hand row must itself be at 60k+, since it is the
+seniors. Tables sort by median base first, then by that share (share first lasted a
+day: once the median decided the table, it put one-person 60k rows above N26 at
+76.6k); first-hand rows come first. A first-hand row must itself be at 60k+, since it is the
 maintainer vouching that the company pays that.
 
 After any data change: `python3 scripts/validate.py && python3 scripts/build.py`,

@@ -16,7 +16,7 @@ A company is on the main table while the median base of its seniors on file is 6
 
 A median of one salary is one person's pay, so read the Engineers column before the number.
 
-The table is sorted by At 60k+ first and median base second, after any first-hand rows. A company where 4 of 4 seniors are at the bar ranks above one where 7 of 13 are, whatever the two medians say. Since the median is at the bar, At 60k+ is always 50% or more.
+Each table is sorted by median base first and At 60k+ second, after any first-hand rows. Share first was the rule for a day, when shares ran from 4% to 100%; with the median deciding the table, every main-table share is 50% or more and the median is the number that separates rows. At 60k+ still tells one-person rows and lopsided companies apart.
 
 ### How the rule was reached
 

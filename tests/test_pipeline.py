@@ -464,9 +464,9 @@ def test_median_and_share_over_every_senior() -> None:
         named("Everyone Paid More", entry(PER_LOCATION, base=90000)),
         named("Vouched", entry(None, source="community", base=65000)),
     ])
-    check("rows sort by share, then median, first-hand first",
+    check("rows sort by median, then share, first-hand first",
           [line.split(" | ")[0].lstrip("| ") for line in table.splitlines()[4:]],
-          ["Vouched", "Everyone Paid More", "Everyone", "Rare High"])
+          ["Vouched", "Everyone Paid More", "Rare High", "Everyone"])
 
 
 def test_floor_aliases_and_exclusions() -> None:

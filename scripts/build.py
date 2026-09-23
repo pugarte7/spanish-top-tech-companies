@@ -178,12 +178,14 @@ def render_stats(companies: list[dict]) -> str:
 
 def ranked(companies: list[dict]) -> list[dict]:
     # A company with a salary someone in Spain reported directly sorts above
-    # the crowdsourced ones. Then the share of engineers at the bar, then the
-    # median: a company where every senior is at 60k+ ranks above one where
-    # half are (maintainer, 2026-09-22).
+    # the crowdsourced ones. Then the median, then the share at the bar. Share
+    # first was tried on 2026-09-22, when it ran from 4% to 100%; once the
+    # listing rule became the median, every main-table share is 50%+ and
+    # share-first put one-person 60k rows above N26 at 76.6k with 47
+    # engineers. Median first since 2026-09-23.
     found = {id(c): summary(c) for c in companies}
-    return sorted(companies, key=lambda c: (not found[id(c)]["first_hand"], -found[id(c)]["share"],
-                                            -(found[id(c)]["base"] or 0), c["company"].casefold()))
+    return sorted(companies, key=lambda c: (not found[id(c)]["first_hand"], -(found[id(c)]["base"] or 0),
+                                            -found[id(c)]["share"], c["company"].casefold()))
 
 
 def render_companies(companies: list[dict]) -> str:

@@ -146,8 +146,11 @@ The README's stats line is the authoritative count; this is the run behind it.
   The share was added 2026-09-22 (first over every submission, juniors
   included, then over seniors only once the median rule landed) so BBVA's six
   of thirteen read as "happens, not the norm" rather than as a peer of
-  companies where everyone is at the bar. Rows sort by that share first, then
-  by median base ("sorted first by ratio, then by salary"); first-hand rows
+  companies where everyone is at the bar. Rows sorted by that share first for
+  a day ("sorted first by ratio, then by salary", 2026-09-22); once the median
+  decided the table and every main-table share was 50%+, that put one-person
+  60k rows above N26 at 76.6k with 47 engineers ("the sorting is wrong"), so
+  since 2026-09-23 they sort by median base first, then share; first-hand rows
   still come first. Every salary links to the Spain-scoped page it was read
   from; companies link to LinkedIn and to their open roles in Spain when a
   LinkedIn id or URL is known, which the discovered ones mostly are not yet.
