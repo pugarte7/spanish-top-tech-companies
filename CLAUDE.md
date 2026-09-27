@@ -87,11 +87,14 @@ The five things that will bite you:
 All Levels.fyi fetching must run from Spain; the pages are IP-scoped. Keep
 `--delay` at 2.5s or more, and treat 402/403/405/429/503 as throttling rather
 than as "not found". 401 is an expired token. Without a token the fetcher
-refuses to write (`--audit` only), and a blocked run exits 1.
+refuses to write (`--audit` only), and a blocked run, or one that could read
+no company at all, exits 1.
 
-`.github/workflows/refresh.yml` runs the fetcher every Monday on a GitHub
-runner with the `LEVELS_REFRESH_TOKEN` secret and commits the result. Those
-runners are not in Spain; see docs/CONTEXT.md before trusting a run of it.
+The weekly refresh runs on the maintainer's Mac, not on GitHub: Levels.fyi
+serves GitHub's runners pages without data. `scripts/weekly.sh` runs from
+launchd every Monday at 08:00 and pushes a "Refresh salaries" commit;
+`.github/workflows/weekly.yml` turns that push into an issue with
+`scripts/digest.py`'s summary of what changed. See docs/CONTEXT.md.
 
 Entries are individual Levels.fyi submissions. Keep the stored fields to what
 the README shows (no submission ids, exact days, titles or years at company),

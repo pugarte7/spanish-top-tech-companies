@@ -1,0 +1,57 @@
+name: weekly
+
+on:
+  push:
+    branches: [main]
+    paths: [companies.csv]
+  schedule:
+    - cron: "0 12 * * 2"   # Tuesdays 12:00 UTC: did Monday's refresh land?
+  workflow_dispatch:
+
+# Issues come from github-actions[bot] because GitHub does not notify anyone
+# of their own activity: an issue the maintainer's Mac opened as them would
+# never reach their inbox.
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  digest:
+    if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'Refresh salaries')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Open this week's issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          python3 scripts/digest.py "$BEFORE" > digest.md
+          cat digest.md >> "$GITHUB_STEP_SUMMARY"
+          gh issue create --title "Week of $(date -u +%F)" --body-file digest.md
+
+  missed:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Open an issue if no refresh landed this week
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -n "$(git log --since='3 days ago' --grep='^Refresh salaries' --format=%h -1)" ]; then
+            echo "This week's refresh is in."
+            exit 0
+          fi
+          gh issue create --title "No salary refresh this week" --body \
+            "Monday's refresh never pushed. On the Mac, check ~/Library/Logs/spanish-top-tech-companies/weekly.log, or run ~/.local/share/spanish-top-tech-companies/scripts/weekly.sh by hand."

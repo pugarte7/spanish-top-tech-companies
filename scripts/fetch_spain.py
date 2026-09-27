@@ -101,6 +101,8 @@ COGNITO = "https://cognito-idp.us-west-2.amazonaws.com/"
 COGNITO_CLIENT = "76of0ich18hd8uehju7fniv2u1"
 # Level names the API sends where the author left the field blank.
 NO_LEVEL = {"", "false", "none", "null"}
+# Run-report labels for a company nothing could be read about.
+UNREAD = {"unreadable", "unreachable", "table unreadable"}
 
 
 def unscoped(entry: dict) -> bool:
@@ -629,7 +631,11 @@ def main(argv: list[str]) -> int:
         print("companies: " + ", ".join(f"{k} {v}" for k, v in sorted(tally.items())))
         print(f"\n{ATTRIBUTION}")
         print("Next: python3 scripts/validate.py && python3 scripts/build.py")
-    return 1 if blocked else 0
+    unread = bool(served) and set(served) <= UNREAD
+    if unread:
+        print("\nNo company could be read: Levels.fyi is refusing this machine "
+              "(GitHub's runners get exactly this).", file=sys.stderr)
+    return 1 if blocked or unread else 0
 
 
 if __name__ == "__main__":

@@ -362,6 +362,8 @@ for both company fields; they name nothing and are skipped.
 | `resolve_slugs.py` | Company name → Levels.fyi slug, with verification and an alias table. Folds a company into the one already holding its slug. | Yes |
 | `build.py` | Regenerates the README and rewrites `companies.csv` in canonical order. | Yes |
 | `validate.py` | Column checks and sanity checks, including the location guard, the software-engineer page guard, and that every company has a salary on file. | Yes |
+| `digest.py` | Markdown summary of what changed in `companies.csv` since a git revision (default `HEAD`), for the weekly issue. Rows have no submission id, so a new salary is a row that, minus its run date, was not there before. | Yes |
+| `weekly.sh` | The Monday refresh launchd runs on the maintainer's Mac: fetch, test, validate, build, push. | Pushes to `main` |
 
 `lib.py` is the only code that reads or writes `companies.csv`. Writes go to a
 temporary file first, because an interrupted fetch must not truncate the only
@@ -369,14 +371,26 @@ copy of the data.
 
 All Levels.fyi fetching **must run from Spain** — the pages are IP-scoped.
 
-`.github/workflows/refresh.yml` runs `fetch_spain.py` every Monday at 06:00
-UTC on a GitHub-hosted runner, validates, rebuilds and commits `README.md` and
-`companies.csv`. It mints its token from the `LEVELS_REFRESH_TOKEN` secret.
-Those runners are Azure machines outside Spain, and as of 2026-09-27 nobody
-has checked what Levels.fyi serves them: run it by hand with `audit` on and a
-couple of `companies` first, and compare with the same `--audit` from Spain.
-Commits it pushes do not trigger `ci.yml`, which is why it runs the tests and
-`validate.py` itself.
+### The weekly refresh
+
+It runs on the maintainer's Mac. On 2026-09-27 a GitHub-hosted runner minted
+a token fine and got `unreadable` for both glovo and fever: HTML without the
+page data, most likely Levels.fyi's bot protection answering Azure addresses.
+So:
+
+- launchd agent `com.pugarte7.spanish-top-tech-companies.weekly`
+  (`~/Library/LaunchAgents/`) runs `scripts/weekly.sh` from its own clone in
+  `~/.local/share/spanish-top-tech-companies` every Monday at 08:00 local.
+  launchd runs a missed slot when the Mac wakes, not when it was off.
+- `weekly.sh` resets that clone to `origin/main`, fetches, runs the tests,
+  `validate.py` and `build.py`, and pushes "Refresh salaries YYYY-MM-DD".
+  Its log is `~/Library/Logs/spanish-top-tech-companies/weekly.log`; a failure
+  also raises a macOS notification.
+- `.github/workflows/weekly.yml` opens an issue from that push with
+  `scripts/digest.py` (companies in and out, table moves, median changes,
+  every new salary, a draft post). It runs as github-actions[bot] because
+  GitHub never notifies people of their own activity. On Tuesdays at 12:00
+  UTC it opens "No salary refresh this week" if no refresh commit landed.
 
 Rate limiting: 403/405/429/503 all mean throttled. Treating them as "not found"
 is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
