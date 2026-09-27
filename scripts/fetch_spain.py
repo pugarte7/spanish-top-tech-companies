@@ -16,8 +16,9 @@ below); the "Latest Salary Submissions" table under it holds every one, and is
 loaded by the browser from api.levels.fyi with the visitor's session token,
 which an anonymous visitor does not have (the rows render as asterisks). Fever
 is the case that exposed this: 29 Spanish software engineers in the table, one
-on the public page. With a token in LEVELS_TOKEN or ~/.config/levels/token this
-script reads the table too; without one it reads the public page and says so.
+on the public page. With a token in LEVELS_TOKEN or ~/.config/levels/token, or
+a refresh token in ~/.config/levels/refresh_token that mints one each run, this
+script reads the table too; without one it can only --audit the public page.
 The token is a session credential: it is never written anywhere, and the run
 report never prints it.
 
@@ -92,6 +93,12 @@ MONTHS = {name: number for number, name in enumerate(
 SPAIN_COUNTRY_ID = 226
 TABLE_PAGE = 50
 TOKEN_FILE = pathlib.Path.home() / ".config" / "levels" / "token"
+# A Cognito refresh token for the same login mints a fresh id token each run,
+# so an unattended run needs nobody to paste one daily. The pool's region and
+# the site's web client are the `iss` and `aud` of Levels.fyi's id tokens.
+REFRESH_FILE = TOKEN_FILE.with_name("refresh_token")
+COGNITO = "https://cognito-idp.us-west-2.amazonaws.com/"
+COGNITO_CLIENT = "76of0ich18hd8uehju7fniv2u1"
 # Level names the API sends where the author left the field blank.
 NO_LEVEL = {"", "false", "none", "null"}
 
@@ -176,14 +183,44 @@ def get(url: str, delay: float, attempts: int = 3, headers: dict | None = None) 
 def token() -> str | None:
     """The maintainer's Levels.fyi session, if one has been left for this run.
 
-    Read from LEVELS_TOKEN, then ~/.config/levels/token. Nothing here or in the
-    repository stores it, and nothing prints it: a run report that echoed the
-    token would put a live login into the terminal scrollback.
+    Minted from ~/.config/levels/refresh_token when that exists, else read from
+    LEVELS_TOKEN, then ~/.config/levels/token. Nothing in the repository stores
+    it, and nothing prints it: a run report that echoed the token would put a
+    live login into the terminal scrollback.
     """
+    if REFRESH_FILE.exists():
+        return refreshed(REFRESH_FILE)
     found = os.environ.get("LEVELS_TOKEN", "").strip()
     if not found and TOKEN_FILE.exists():
         found = TOKEN_FILE.read_text(encoding="utf-8").strip()
     return found or None
+
+
+def refreshed(path: pathlib.Path) -> str:
+    """A fresh id token from the Cognito refresh token in `path`.
+
+    The same call the site's own Amplify client makes when its id token runs
+    out. A pool that rotates refresh tokens answers with a new one and retires
+    the old, so a new one is written back over the file. A refused refresh
+    token stops the run: falling back to the public page would replace every
+    table entry on file with the page's handful.
+    """
+    request = urllib.request.Request(COGNITO, data=json.dumps({
+        "ClientId": COGNITO_CLIENT, "RefreshToken": path.read_text(encoding="utf-8").strip(),
+    }).encode(), headers={
+        "Content-Type": "application/x-amz-json-1.1",
+        "X-Amz-Target": "AWSCognitoIdentityProviderService.GetTokensFromRefreshToken"})
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            result = json.load(response)["AuthenticationResult"]
+    except urllib.error.HTTPError as exc:
+        reason = re.search(r'"message"\s*:\s*"([^"]*)"', exc.read().decode("utf-8", "replace"))
+        raise SystemExit(f"Cognito refused the refresh token in {path} (HTTP {exc.code}"
+                         f"{': ' + reason.group(1) if reason else ''}). Sign in to levels.fyi "
+                         "again and copy a fresh one there.") from exc
+    if result.get("RefreshToken"):
+        path.write_text(result["RefreshToken"], encoding="utf-8")
+    return result["IdToken"]
 
 
 def decrypt(payload: str) -> dict:
@@ -549,10 +586,15 @@ def main(argv: list[str]) -> int:
     found = 0
 
     bearer = token()
+    if not bearer and not args.audit:
+        raise SystemExit(f"No token in LEVELS_TOKEN, {TOKEN_FILE} or {REFRESH_FILE}. Without "
+                         "one only the public page can be read, which would overwrite the "
+                         "table entries on file; --audit reads it without writing.")
     print("signed in: reading each company's submissions table" if bearer else
-          f"no token in LEVELS_TOKEN or {TOKEN_FILE}: reading the public page only, "
-          "which hides most submissions", file=sys.stderr)
+          "no token: auditing the public page only, which hides most submissions",
+          file=sys.stderr)
 
+    blocked = None
     try:
         if bearer and not args.company:
             new = discover(bearer, args.delay, {slug for slug, _ in pending})
@@ -576,6 +618,7 @@ def main(argv: list[str]) -> int:
                                 label if page else None)
                 tally[outcome] = tally.get(outcome, 0) + 1
     except Blocked as exc:
+        blocked = exc
         print(f"\n{exc}", file=sys.stderr)
         print("Progress so far is saved.", file=sys.stderr)
 
@@ -586,7 +629,7 @@ def main(argv: list[str]) -> int:
         print("companies: " + ", ".join(f"{k} {v}" for k, v in sorted(tally.items())))
         print(f"\n{ATTRIBUTION}")
         print("Next: python3 scripts/validate.py && python3 scripts/build.py")
-    return 0
+    return 1 if blocked else 0
 
 
 if __name__ == "__main__":

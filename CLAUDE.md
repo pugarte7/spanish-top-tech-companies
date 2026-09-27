@@ -73,17 +73,25 @@ The five things that will bite you:
    embedded one record and the README said "none with 5+ years at 60k+" while
    its table had 29 Spanish engineers, ten at 60k+. `fetch_spain.py` reads
    the table when `LEVELS_TOKEN` or `~/.config/levels/token` holds the
-   maintainer's token (`localStorage.auth` on levels.fyi, lasts a day). Only a
-   full table read (`Spain (table)` in the run report) has seen every
-   submission; the other labels mean the page's subset. The token is a live
-   login: never commit it,
-   never print it, never put it in a tool call's visible output. Reading the
+   maintainer's token (`localStorage.auth` on levels.fyi, lasts a day), or
+   mints one each run from the Cognito refresh token in
+   `~/.config/levels/refresh_token`, which is what lets it run unattended. A
+   refused refresh token stops the run rather than falling back to the public
+   page. Only a full table read (`Spain (table)` in the run report) has seen every
+   submission; the other labels mean the page's subset. The token and the
+   refresh token are a live login: never commit them,
+   never print them, never put them in a tool call's visible output. Reading the
    table is against Levels.fyi's terms; the maintainer chose that on
    2026-09-21 knowing the account may be closed.
 
 All Levels.fyi fetching must run from Spain; the pages are IP-scoped. Keep
 `--delay` at 2.5s or more, and treat 402/403/405/429/503 as throttling rather
-than as "not found". 401 is an expired token.
+than as "not found". 401 is an expired token. Without a token the fetcher
+refuses to write (`--audit` only), and a blocked run exits 1.
+
+`.github/workflows/refresh.yml` runs the fetcher every Monday on a GitHub
+runner with the `LEVELS_REFRESH_TOKEN` secret and commits the result. Those
+runners are not in Spain; see docs/CONTEXT.md before trusting a run of it.
 
 Entries are individual Levels.fyi submissions. Keep the stored fields to what
 the README shows (no submission ids, exact days, titles or years at company),

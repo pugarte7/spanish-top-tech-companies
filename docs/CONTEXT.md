@@ -289,8 +289,22 @@ Exoticca and Cabify.
 
 Since 2026-09-21 `fetch_spain.py` reads the table when a token is in
 `LEVELS_TOKEN` or `~/.config/levels/token`. The token is `localStorage.auth`
-on levels.fyi while signed in, a Cognito id token good for about a day. What
-the API does:
+on levels.fyi while signed in, a Cognito id token good for about a day.
+
+Since 2026-09-27 it mints that id token itself when
+`~/.config/levels/refresh_token` exists, so a run needs nobody to paste one.
+The site is Amplify v6 over Cognito pool `us-west-2_fUcfzSGdv`, web client
+`76of0ich18hd8uehju7fniv2u1` (no client secret; both are the id token's `iss`
+and `aud`), and it keeps the refresh token in localStorage under
+`CognitoIdentityServiceProvider.76of0ich18hd8uehju7fniv2u1.<username>.refreshToken`.
+`refreshed()` makes the call Amplify makes, `GetTokensFromRefreshToken`
+against `cognito-idp.us-west-2.amazonaws.com`, and writes back a new refresh
+token if the pool rotates them (it did not on 2026-09-27, so one refresh
+token serves a laptop and CI alike). A refused refresh token (expired or revoked)
+stops the run: falling back to the public page would replace every table
+entry on file with the page's handful. Its lifetime is the pool's setting and
+cannot be read off the token; it shows up as the day it is refused.
+What the API does:
 
 - Query: `companySlug`, `jobFamilySlug=software-engineer`,
   `countryIds[0]=226` (Spain), `offset`, `limit` (max 50, 400 above it),
@@ -355,6 +369,15 @@ copy of the data.
 
 All Levels.fyi fetching **must run from Spain** — the pages are IP-scoped.
 
+`.github/workflows/refresh.yml` runs `fetch_spain.py` every Monday at 06:00
+UTC on a GitHub-hosted runner, validates, rebuilds and commits `README.md` and
+`companies.csv`. It mints its token from the `LEVELS_REFRESH_TOKEN` secret.
+Those runners are Azure machines outside Spain, and as of 2026-09-27 nobody
+has checked what Levels.fyi serves them: run it by hand with `audit` on and a
+couple of `companies` first, and compare with the same `--audit` from Spain.
+Commits it pushes do not trigger `ci.yml`, which is why it runs the tests and
+`validate.py` itself.
+
 Rate limiting: 403/405/429/503 all mean throttled. Treating them as "not found"
 is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 `--delay` at 2.5s or more.
@@ -374,8 +397,9 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
   never on file, stays unknown until someone there submits again or adds it
   by hand.
 - **The table caps at 250 rows.** Amazon and Glovo both hit it, so their
-  oldest submissions are out of reach. Without a token the fetcher is back to
-  the public page's subset and labels the result as such.
+  oldest submissions are out of reach. Without a token the fetcher only runs
+  with `--audit`: writing the public page's subset would replace the table
+  entries on file.
 - **Old salaries.** Entries go back to 2020-01. The README shows the month, but
   nothing is dropped for age.
 - **No first-hand data yet.** Every salary is crowdsourced. The repository's own
