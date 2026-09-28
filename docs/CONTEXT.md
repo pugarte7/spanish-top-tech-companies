@@ -386,6 +386,9 @@ So:
   `validate.py` and `build.py`, and pushes "Refresh salaries YYYY-MM-DD".
   Its log is `~/Library/Logs/spanish-top-tech-companies/weekly.log`; a failure
   also raises a macOS notification.
+- `sh weekly run` (repo root) starts the same launchd job by hand and follows
+  its log; `sh weekly status` shows the job's last exit and the last refresh
+  commit, `sh weekly log` the log.
 - `.github/workflows/weekly.yml` opens an issue from that push with
   `scripts/digest.py` (companies in and out, table moves, median changes,
   every new salary, a draft post). It runs as github-actions[bot] because

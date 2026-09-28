@@ -1,0 +1,43 @@
+#!/bin/sh
+# Manual handle on the Monday refresh. `run` starts the launchd job itself
+# rather than scripts/weekly.sh, so it runs from the same clone with the same
+# environment as the scheduled run.
+set -eu
+
+job="gui/$(id -u)/com.pugarte7.spanish-top-tech-companies.weekly"
+log="$HOME/Library/Logs/spanish-top-tech-companies/weekly.log"
+
+running() { launchctl print "$job" | grep -q 'state = running'; }
+last_exit() { launchctl print "$job" | sed -n 's/.*last exit code = //p'; }
+
+case "${1:-}" in
+  run)
+    if running; then echo "Already running. Follow it with: sh weekly log -f" >&2; exit 1; fi
+    mkdir -p "$(dirname "$log")"
+    touch "$log"
+    from=$(($(wc -l <"$log") + 1))
+    launchctl kickstart "$job"
+    tail -n +"$from" -f "$log" &
+    tailpid=$!
+    sleep 3
+    while running; do sleep 5; done
+    sleep 1
+    kill "$tailpid" 2>/dev/null || true
+    code=$(last_exit)
+    echo "--- exit code: $code"
+    [ "$code" = 0 ]
+    ;;
+  status)
+    launchctl print "$job" | grep -E 'state =|runs =|last exit code'
+    git -C "$(dirname "$0")" fetch -q origin main
+    last=$(git -C "$(dirname "$0")" log -1 --format='%h %ad %s' --date=short --grep='^Refresh salaries' origin/main)
+    echo "last refresh: ${last:-none yet}"
+    ;;
+  log)
+    if [ "${2:-}" = -f ]; then tail -f "$log"; else tail -n "${2:-50}" "$log"; fi
+    ;;
+  *)
+    echo "usage: sh weekly run | status | log [lines | -f]" >&2
+    exit 2
+    ;;
+esac
