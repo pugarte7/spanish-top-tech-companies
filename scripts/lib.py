@@ -38,6 +38,9 @@ SLUG_ALIASES = {
 EXCLUDED_SLUGS = {
     "abracadabra": "nobody could say what company this is",
     "data-native-systems-sl": "nobody could say what company this is",
+    "freelancer": "self-employed, not a company",
+    "openbank": "removed by the maintainer",
+    "samsung-zhilabs": "removed by the maintainer",
 }
 
 # Compensation older than this is shown as stale rather than quietly trusted.
