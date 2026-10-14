@@ -98,16 +98,16 @@ def median(amounts: list) -> int | None:
 def summary(company: dict) -> dict:
     """What a company pays a senior, and how often that is 60k+.
 
-    Every entry is a software engineer in Spain with 5+ years, paid whatever
-    they are paid. The median is over all of them, so one well-paid engineer
-    cannot make a company look competitive: Minsait's two at 90k next to
-    fourteen under 60k reads 43.5k, and a median under the bar keeps the
-    company off the list altogether. Until 2026-09-22 the table showed the
-    mean of the 60k+ ones only, which is what critics called cherry-picking,
-    rightly. The share is the chance a senior there is at the bar; first-hand
-    entries count in it like any other row.
+    Every counted entry is a software engineer in Spain with 5+ years, paid
+    whatever they are paid - the CSV holds other roles and junior rows for the
+    website, and they never reach this median. The median is over all of them,
+    so one well-paid engineer cannot make a company look competitive:
+    Minsait's two at 90k next to fourteen under 60k reads 43.5k. Until
+    2026-09-22 the table showed the mean of the 60k+ ones only, which is what
+    critics called cherry-picking, rightly. The share is the chance a senior
+    there is at the bar; first-hand entries count in it like any other row.
     """
-    entries = company["entries"]
+    entries = lib.readme_entries(company)
     months = sorted(entry["reported"] for entry in entries if entry.get("reported"))
     reached = sum(1 for entry in entries if lib.at_bar(entry))
     return {
@@ -125,7 +125,7 @@ def summary(company: dict) -> dict:
 def sources_cell(company: dict) -> str:
     """Every source the median draws on, each linked once."""
     cells = []
-    for entry in sorted(company["entries"], key=lib.entry_order):
+    for entry in sorted(lib.readme_entries(company), key=lib.entry_order):
         cell = source_cell(entry)
         if cell not in cells:
             cells.append(cell)
@@ -154,13 +154,19 @@ def company_row(company: dict) -> str:
 
 
 def render_stats(companies: list[dict]) -> str:
-    """The list is whatever the last run found, so the line says when that was."""
-    entries = [entry for company in companies for entry in company["entries"]]
+    """The list is whatever the last run found, so the line says when that was.
+
+    The CSV now holds companies and roles the README does not show; the stats
+    line is about the tables below it, so it counts only listed companies and
+    their senior software engineers.
+    """
+    listed = [company for company in companies if lib.listed(company)]
+    entries = [entry for company in listed for entry in lib.readme_entries(company)]
     reached = sum(1 for entry in entries if lib.at_bar(entry))
-    competitive = sum(1 for company in companies if lib.competitive(company))
+    competitive = sum(1 for company in listed if lib.competitive(company))
     parts = [
         f"**{competitive} companies at 60k+**",
-        f"{len(companies) - competitive} need to improve",
+        f"{len(listed) - competitive} need to improve",
         f"{len(entries)} engineers with {lib.SENIOR_YEARS}+ years",
         f"{reached} of them at 60k+",
     ]
@@ -193,11 +199,14 @@ def render_companies(companies: list[dict]) -> str:
 
     The second exists so a company under 60k is still visible, and visibly
     under: "I don't wanna lose all those companies" (maintainer, 2026-09-23).
-    validate.py has already refused any company under the floor.
+    Companies whose seniors median under the floor - and every company with
+    only other roles or junior rows - stay in the CSV for the website, so this
+    is a filter here, not a validation rule.
     """
     out = [f"## Median pay, software engineers with {lib.SENIOR_YEARS}+ years", "", *TABLE_HEADER]
-    out += [company_row(c) for c in ranked([c for c in companies if lib.competitive(c)])]
-    behind = ranked([c for c in companies if not lib.competitive(c)])
+    on_file = [c for c in companies if lib.listed(c)]
+    out += [company_row(c) for c in ranked([c for c in on_file if lib.competitive(c)])]
+    behind = ranked([c for c in on_file if not lib.competitive(c)])
     if behind:
         out += ["", f"## Need to improve: median between {k(lib.FLOOR_EUR)} and {k(lib.THRESHOLD_EUR)}",
                 "", *TABLE_HEADER]
