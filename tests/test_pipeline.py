@@ -318,9 +318,15 @@ def test_feed_is_read_to_the_end() -> None:
         pages = ['not json']
         check("a page that does not parse makes the feed unread",
               fetch_spain.feed("token", "data-scientist", 0), None)
-        pages = [json.dumps({"rows": [{"uuid": "x"}] * 50})] * fetch_spain.MAX_PAGES
-        check("a feed that never empties is incomplete, not complete",
-              fetch_spain.feed("token", "software-engineer", 0), None)
+        pages = [json.dumps({"rows": [{"uuid": "x"}] * 50})] * 40
+        try:
+            fetch_spain.feed("token", "software-engineer", 0)
+            truncated = False
+        except fetch_spain.Truncated:
+            truncated = True
+        check("a feed past the offset ceiling is truncated, not complete", truncated, True)
+        check("no offset past the ceiling is asked for",
+              any("offset=1000" in u for u in calls), False)
     finally:
         fetch_spain.get = original
 
@@ -342,6 +348,47 @@ def test_feed_is_read_to_the_end() -> None:
     check("rows naming no employer or another family are skipped",
           (len(by_slug["acme"]["entries"]), skipped["no-employer"],
            skipped["wrong-family"]), (1, 1, 1))
+
+
+def test_a_role_past_the_ceiling_is_read_per_company() -> None:
+    """One query sees at most 1,000 rows; software engineers are more.
+
+    On 2026-10-16 the all-roles run could not read software engineers: the
+    API refuses an offset past 990. Newest-first and oldest-first leave a
+    gap of years between them, so read_role() reads each employer on its own
+    and scopes the write to the companies it read.
+    """
+    print("fetch_spain reads a role past the offset ceiling company by company")
+    import fetch_spain
+
+    def fake_feed(bearer, role, delay, company=None, order="DESC"):
+        if company is None:
+            raise fetch_spain.Truncated([row("newco", uuid="n1")] if order == "DESC"
+                                        else [row("oldco", uuid="o1")])
+        if company == "broken":
+            return None
+        return [row(company, uuid=f"{company}-1"), row(company, uuid=f"{company}-2")]
+
+    original = fetch_spain.feed
+    fetch_spain.feed = fake_feed
+    try:
+        on_file = [acme(entry(PER_LOCATION)),
+                   lib.blank_company("Broken", levels_slug="broken") | {"entries": [entry(PER_LOCATION)]},
+                   lib.blank_company("Analysts", levels_slug="analysts")
+                   | {"entries": [entry(PER_LOCATION, role="data-analyst")]}]
+        rows, scope = fetch_spain.read_role("t", "software-engineer", 0, on_file)
+        check("windows' employers and companies on file are read; others are not",
+              scope, {"newco", "oldco", "acme"})
+        check("the per-company rows are kept",
+              sorted(r["uuid"] for r in rows if r["companySlug"] == "acme"), ["acme-1", "acme-2"])
+
+        def meeting(bearer, role, delay, company=None, order="DESC"):
+            raise fetch_spain.Truncated([row(uuid="same")])
+        fetch_spain.feed = meeting
+        check("windows that meet are the whole feed",
+              fetch_spain.read_role("t", "software-engineer", 0, on_file)[1], None)
+    finally:
+        fetch_spain.feed = original
 
 
 def test_an_unread_feed_changes_nothing() -> None:
@@ -636,6 +683,56 @@ def test_radar_enrichment() -> None:
           {"Acme": "domain", "Acme2": "linkedin"})
 
 
+def test_rows_compare_with_empty_cells() -> None:
+    """A role's rows mix empty and filled cells in one column.
+
+    The first all-roles run died at data-analyst on 2026-10-15: comparing the
+    stored rows with the feed's sorted tuples, and None does not sort
+    against text.
+    """
+    print("fetch_spain compares rows whose cells are empty in some, filled in others")
+    import fetch_spain
+    rows = [entry(PER_LOCATION, city=None), entry(PER_LOCATION, city="Madrid")]
+    check("same rows, any order, compare equal",
+          fetch_spain._as_rows(rows) == fetch_spain._as_rows(rows[::-1]), True)
+    with temp_data(acme(*rows)):
+        by_slug = {"acme": {"name": "Acme", "entries": stored()["entries"][::-1]}}
+        check("an unchanged role counts as unchanged",
+              write_role("software-engineer", by_slug)["unchanged"], 1)
+
+
+def test_agents_see_only_groups_of_three() -> None:
+    """The MCP server and llms-full.txt read data.json, which holds no group under MIN_GROUP."""
+    print("mcp_server answers from aggregates of three or more")
+    import importlib.util
+    import mcp_server
+    spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
+    site_build = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(site_build)
+    rows = [entry(PER_LOCATION, base=b, region="MD", city="Madrid") for b in (50000, 70000, 90000)]
+    rows += [entry(PER_LOCATION, base=b, region="CT", city="Barcelona") for b in (60000, 80000)]
+    with temp_data(acme(*rows)):
+        data = site_build.build_data(lib.load_companies())
+
+    def ask(tool, **args):
+        reply = mcp_server.handle(data, {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                                         "params": {"name": tool, "arguments": args}})
+        return reply["result"].get("structuredContent")
+
+    check("Madrid's three give a median",
+          ask("salary_stats", region="Madrid")["result"]["median_base_eur"], 70000)
+    check("Barcelona's two give nothing", ask("salary_stats", region="Cataluña")["result"], None)
+    check("years are bucketed", ask("salary_stats", years=8)["selection"]["years"], "8-11")
+    check("a company's groups leave Barcelona out",
+          sorted(g["region"] or "" for g in ask("company_salaries", name="acme")["groups"]
+                 if g["years"] is None and g["role"] is None), ["", "MD"])
+    check("an unknown role is a tool error, not a crash",
+          mcp_server.handle(data, {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {
+              "name": "salary_stats", "arguments": {"role": "astronaut"}}})["result"]["isError"],
+          True)
+    check("llms-full.txt renders", "## By region" in site_build.llms_full(data), True)
+
+
 def main() -> int:
     for test in (test_location_guard, test_unscoped_classifier,
                  test_purge_runs_even_when_spain_data_exists,
@@ -644,9 +741,12 @@ def main() -> int:
                  test_one_submission_is_one_entry,
                  test_foreign_rows_are_skipped,
                  test_feed_is_read_to_the_end,
+                 test_a_role_past_the_ceiling_is_read_per_company,
                  test_an_unread_feed_changes_nothing,
                  test_companies_are_their_salaries,
+                 test_rows_compare_with_empty_cells,
                  test_median_and_share_over_every_senior,
+                 test_agents_see_only_groups_of_three,
                  test_floor_aliases_and_exclusions,
                  test_normalization,
                  test_radar_enrichment):

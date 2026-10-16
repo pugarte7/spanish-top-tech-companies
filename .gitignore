@@ -4,3 +4,7 @@ __pycache__/
 .DS_Store
 .claude/
 *.tmp
+_site/
+.cache/
+.wrangler/
+node_modules/
