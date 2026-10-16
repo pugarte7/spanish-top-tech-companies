@@ -1,0 +1,9 @@
+# Cloudflare Worker: the static site from _site/ plus the MCP server at /mcp.
+# Deployed by .github/workflows/deploy.yml; `python3 scripts/site.py` builds _site/ first.
+name = "tech-pay-spain"
+main = "worker/index.js"
+compatibility_date = "2026-10-01"
+
+[assets]
+directory = "./_site"
+binding = "ASSETS"

@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import collections
 import hashlib
 import gzip
 import json
@@ -70,10 +71,10 @@ MONTHS = {name: number for number, name in enumerate(
 # ceiling (it answers 400 above it), and where the maintainer leaves a token.
 SPAIN_COUNTRY_ID = 226
 TABLE_PAGE = 50
-# Pages until an empty one; a role with more Spanish rows than this fits would
-# be software engineer at 50x its current size, and stopping the write is
-# safer than treating a truncated feed as complete.
-MAX_PAGES = 100
+# The API refuses an offset past 990 ("offset must not be greater than 990"),
+# so one query sees at most 1,000 rows. Software engineers in Spain are
+# several times that; read_role() works around it.
+MAX_OFFSET = 990
 TOKEN_FILE = pathlib.Path.home() / ".config" / "levels" / "token"
 # A Cognito refresh token for the same login mints a fresh id token each run,
 # so an unattended run needs nobody to paste one daily. The pool's region and
@@ -221,28 +222,39 @@ def decrypt(payload: str) -> dict:
     return json.loads(zlib.decompress(plain))
 
 
-def feed(bearer: str, role: str, delay: float) -> list[dict] | None:
-    """Every Spanish submission in one job family, newest first, to the end.
+class Truncated(Exception):
+    """A query reached the API's offset ceiling with rows still coming."""
 
-    `total` in the answer tops out at 250 but the API keeps serving rows past
-    it, so paging stops at an empty page, not at the total. Rows repeat across
-    pages when new submissions arrive mid-read; entries_by_company() dedupes
-    on uuid. Each row carries its own exchange rate and currency, so the
-    only thing the role's public page adds is the rate for rows paid in
-    another currency.
+    def __init__(self, rows: list[dict]):
+        super().__init__(f"{len(rows)} rows read before the offset ceiling")
+        self.rows = rows
+
+
+def feed(bearer: str, role: str, delay: float, company: str | None = None,
+         order: str = "DESC") -> list[dict] | None:
+    """Every Spanish submission in one job family, to the end of the query.
+
+    Without `company` it is the country-wide feed. `total` in the answer tops
+    out at 250 but the API keeps serving rows past it, so paging stops at an
+    empty page, not at the total. Rows repeat across pages when new
+    submissions arrive mid-read; entries_by_company() dedupes on uuid. Each
+    row carries its own exchange rate and currency, so the only thing the
+    role's public page adds is the rate for rows paid in another currency.
 
     Returns None when a page could not be read: half a feed is not a smaller
-    feed, and write_role() would treat the missing rows as deleted.
+    feed, and write_role() would treat the missing rows as deleted. Raises
+    Truncated when the query outgrows the offset ceiling.
     """
     rows: list[dict] = []
     headers = {"Authorization": f"Bearer {bearer}", "x-agent": "levelsfyi_website",
                "Accept": "application/json", "Origin": BASE,
                "Referer": f"{BASE}/t/{role}/locations/spain"}
-    for page_no in range(MAX_PAGES):
-        query = urllib.parse.urlencode([
-            ("jobFamilySlug", role), ("countryIds[0]", SPAIN_COUNTRY_ID),
-            ("offset", page_no * TABLE_PAGE), ("limit", TABLE_PAGE),
-            ("sortBy", "offer_date"), ("sortOrder", "DESC")])
+    for offset in range(0, MAX_OFFSET + 1, TABLE_PAGE):
+        query = urllib.parse.urlencode(
+            ([("companySlug", company)] if company else []) + [
+                ("jobFamilySlug", role), ("countryIds[0]", SPAIN_COUNTRY_ID),
+                ("offset", offset), ("limit", TABLE_PAGE),
+                ("sortBy", "offer_date"), ("sortOrder", order)])
         body = get(f"{API}?{query}", delay, headers=headers)
         if body is None:
             return None
@@ -259,9 +271,60 @@ def feed(bearer: str, role: str, delay: float) -> list[dict] | None:
         rows += page
         if not page:
             return rows
-    print(f"  {role}: still answering after {MAX_PAGES} pages; treating as unread",
-          file=sys.stderr)
-    return None
+    raise Truncated(rows)
+
+
+def read_role(bearer: str, role: str, delay: float, companies: list[dict],
+              only: set | None = None):
+    """(rows, scope) for one role, or None when it could not be read.
+
+    scope is None when the country feed was read whole. A role past the
+    offset ceiling is read newest-first and oldest-first; when the two
+    windows meet, that is the whole feed. When they do not, the rows in
+    between are only reachable per company: every employer either window
+    names and every company already on file for the role is read on its own,
+    and scope is the set of canonical slugs read whole. write_role() then
+    touches only those, because an employer that reported only in the gap
+    is invisible here and must keep what it has.
+    """
+    try:
+        rows = feed(bearer, role, delay)
+        return None if rows is None else (rows, None)
+    except Truncated as newest:
+        rows = newest.rows
+    try:
+        oldest = feed(bearer, role, delay, order="ASC")
+    except Truncated as exc:
+        oldest = exc.rows
+    if oldest is None:
+        return None
+    if {_dedupe_key(r) for r in rows} & {_dedupe_key(r) for r in oldest}:
+        return rows + oldest, None
+
+    slugs = {r["companySlug"] for r in rows + oldest
+             if isinstance(r.get("companySlug"), str) and r["companySlug"]}
+    for company in companies:
+        if company.get("levels_slug") and any(e.get("role") == role
+                                              for e in company["entries"]):
+            slugs.add(company["levels_slug"])
+            slugs.update(lib.aliases_of(company["levels_slug"]))
+    if only:
+        slugs = {slug for slug in slugs if lib.canonical(slug) in only}
+    print(f"  {role}: over {MAX_OFFSET + TABLE_PAGE} rows; reading {len(slugs)} "
+          "companies one by one")
+    read, unread = set(), set()
+    for slug in sorted(slugs):
+        try:
+            found = feed(bearer, role, delay, company=slug)
+        except Truncated:
+            found = None
+        if found is None:
+            unread.add(lib.canonical(slug))
+            print(f"    {slug}: unreadable, left untouched", file=sys.stderr)
+            continue
+        rows += found
+        read.add(lib.canonical(slug))
+    return rows + oldest, read - unread
 
 
 def page_props(body: str) -> dict | None:
@@ -414,9 +477,10 @@ def entries_by_company(rows: list[dict], role: str, page_rate, today: str):
     return by_slug, skipped
 
 
-def _as_rows(entries: list[dict]) -> list[tuple]:
-    return sorted(tuple(entry.get(column) for column in lib.ENTRY_COLUMNS)
-                  for entry in entries)
+def _as_rows(entries: list[dict]) -> collections.Counter:
+    # A multiset, not a sorted list: rows mix None and text in one column.
+    return collections.Counter(tuple(entry.get(column) for column in lib.ENTRY_COLUMNS)
+                               for entry in entries)
 
 
 def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
@@ -505,15 +569,18 @@ def main(argv: list[str]) -> int:
 
     try:
         for role in roles_from_args(args):
-            rows = feed(bearer, role, args.delay)
-            if rows is None:
+            answer = read_role(bearer, role, args.delay, lib.load_companies(), only)
+            if answer is None:
                 skipped_roles += 1
                 print(f"  {role}: feed unreadable, left untouched", file=sys.stderr)
                 continue
+            rows, scope = answer
+            if scope is not None:
+                scope = scope & only if only else scope
             if not rows:
                 print(f"  {role}: no Spanish submissions")
                 if not args.audit:
-                    write_role(role, {}, only)
+                    write_role(role, {}, only if scope is None else scope)
                 continue
             props = role_page(role, args.delay)
             by_slug, skipped = entries_by_company(rows, role,
@@ -525,7 +592,7 @@ def main(argv: list[str]) -> int:
                   + (f"  (skipped: {dropped})" if dropped else ""))
             read += 1
             if not args.audit:
-                stats = write_role(role, by_slug, only)
+                stats = write_role(role, by_slug, only if scope is None else scope)
                 print("    file: " + ", ".join(f"{v} {k}" for k, v in stats.items() if v)
                       or "    file: nothing changed")
     except Blocked as exc:

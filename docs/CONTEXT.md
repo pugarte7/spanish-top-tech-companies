@@ -411,6 +411,9 @@ priced in euros is dropped and counted, never guessed.
 | `build.py` | Regenerates the README and rewrites `companies.csv` in canonical order. | Yes |
 | `validate.py` | Column checks and sanity checks, including the location guard, the role-page guard, and that every company has a salary on file. | Yes |
 | `digest.py` | Markdown summary of what changed in `companies.csv` since a git revision (default `HEAD`), for the weekly issue. Rows have no submission id, so a new salary is a row that, minus its run date, was not there before. | Yes |
+| `site.py` | Builds `_site/`: the page in Spanish and English, `/api/v1/data.json` (every aggregate of `lib.MIN_GROUP`+ people), `/llms.txt` and `/llms-full.txt` for agents that only read URLs. `SITE_URL` makes their links absolute. | Yes |
+| `mcp_server.py` | MCP server (stdio, or stateless Streamable HTTP with `--http`) over `data.json` through `query.py`: `salary_stats`, `top_companies`, `company_salaries`, `list_filters`. Reads only the published aggregates, so it can never return a group under `MIN_GROUP`. `skills/tech-pay-spain/SKILL.md` tells agents (Hermes, any agentskills.io client) how to use it. | Yes |
+| `worker/index.js` | Cloudflare Worker: serves `_site/` as static assets and the MCP server at `/mcp`. A JS port of `query.py` and `mcp_server.py`; `worker/test.mjs` fails CI when the two answer differently. Deployed on every push to `main` by `.github/workflows/deploy.yml` (free plan; static files do not count against its request quota). | Deployed by CI |
 | `weekly.sh` | The Monday refresh launchd runs on the maintainer's Mac: taxonomy, salary feeds, company details, radar, test, validate, build, push. | Pushes to `main` |
 
 `lib.py` is the only code that reads or writes `companies.csv`. Writes go to a
