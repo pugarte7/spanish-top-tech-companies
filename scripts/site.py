@@ -85,6 +85,10 @@ CITY_REGION = {
     "melilla": "ML",
 }
 
+# The site covers companies whose median base, over every salary on file at
+# any role and seniority, reaches this. The CSV keeps the rest.
+COMPANY_FLOOR_EUR = 45_000
+
 YEAR_BUCKETS = [(0, 2), (2, 5), (5, 8), (8, 12), (12, 20), (20, None)]
 # Histogram bins of 10k; the ends are open so a lone outlier joins a crowd.
 HIST_LOW, HIST_HIGH, HIST_STEP = 20_000, 150_000, 10_000
@@ -93,6 +97,7 @@ STRINGS = {
     "en": {
         "title": "Tech salaries in Spain",
         "source": "Data: Levels.fyi",
+        "floor": "Companies with a median base of 45k+",
         "all_roles": "All roles", "all_years": "Any",
         "years_label": "Experience", "years_unit": "yrs",
         "hero_label": "Median base salary",
@@ -119,6 +124,7 @@ STRINGS = {
     "es": {
         "title": "Salarios tech en España",
         "source": "Datos: Levels.fyi",
+        "floor": "Empresas con base mediana de 45k+",
         "all_roles": "Todos los roles", "all_years": "Todas",
         "years_label": "Experiencia", "years_unit": "años",
         "hero_label": "Salario base mediano",
@@ -200,10 +206,17 @@ def aggregate(entries: list[dict], hist: bool = False) -> dict | None:
     return out
 
 
+def pays_enough(company: dict) -> bool:
+    bases = [e["base"] for e in company["entries"] if e.get("base")]
+    return bool(bases) and statistics.median(bases) >= COMPANY_FLOOR_EUR
+
+
 def build_data(companies: list[dict]) -> dict:
     """Every publishable aggregate, keyed "role|region|years" ("" = all)."""
     rows = []
     for i, company in enumerate(companies):
+        if not pays_enough(company):
+            continue
         for e in company["entries"]:
             if e.get("base"):
                 rows.append((i, e.get("role") or "", region_of(e) or "",
@@ -251,6 +264,7 @@ def build_data(companies: list[dict]) -> dict:
         "generated": lib.today_utc().isoformat(),
         "min_group": lib.MIN_GROUP,
         "threshold": lib.THRESHOLD_EUR,
+        "company_floor": COMPANY_FLOOR_EUR,
         "hist": {"low": HIST_LOW, "high": HIST_HIGH, "step": HIST_STEP},
         "roles": [role_info(r) for r, _ in role_counts.most_common() if f"{r}||" in stats],
         "years": [b for b in bucket_labels() if f"||{b}" in stats],
@@ -392,7 +406,7 @@ def page(lang: str, svg: str) -> str:
     <div><dt>{e['kpi_people']}</dt><dd id="k-people"></dd></div>
     <div><dt>{e['kpi_companies']}</dt><dd id="k-companies"></dd></div>
   </dl>
-  <p class="source">{e['source'].replace('Levels.fyi', levels)}</p>
+  <p class="source">{e['source'].replace('Levels.fyi', levels)} · {e['floor']}</p>
 </header>
 
 <main class="bento">
@@ -526,7 +540,7 @@ def llms_txt(data: dict) -> str:
 Base is gross yearly salary; total adds bonus and stock. Spain only: no
 salary from another country is ever mixed in. A selection with fewer than
 {data['min_group']} people has no figure; widen it rather than estimate.
-
+{_coverage(data)}
 ## Data
 
 - [All aggregates for agents (markdown)]({SITE}/llms-full.txt): national, per role, region, experience and the best-paying companies
@@ -544,6 +558,15 @@ salary from another country is ever mixed in. A selection with fewer than
 - [Web page, English]({SITE}/en/)
 - [Methodology]({REPO}/blob/main/METHODOLOGY.md)
 """
+
+
+def _coverage(data: dict) -> str:
+    floor = data.get("company_floor")
+    if not floor:
+        return ""
+    return (f"\nOnly companies whose median base, over all their salaries at any role and\n"
+            f"seniority, is {_k(floor)} or more are counted, so every figure here leaves\n"
+            f"out the lowest-paying employers. Say so when quoting a figure for Spain.\n")
 
 
 def llms_full(data: dict) -> str:

@@ -145,4 +145,5 @@ def filters(data: dict) -> dict:
     return {"roles": [{"slug": r["slug"], "name": r["name"]} for r in data["roles"]],
             "regions": data["regions"], "years": data["years"],
             "min_group": data["min_group"], "threshold_eur": data["threshold"],
+            "company_floor_eur": data.get("company_floor"),
             "data_as_of": data["generated"]}

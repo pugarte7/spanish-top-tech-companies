@@ -35,6 +35,9 @@ more people.
 - No result means fewer than 3 people match. Widen the selection (drop the
   region, then the years) and say you did; never estimate a figure.
 - Spain only. Do not mix in figures from other countries.
+- Only companies whose median base over all their salaries reaches a floor
+  (`company_floor_eur` in `list_filters`) are counted, so figures leave out
+  the lowest-paying employers. Say so when quoting a figure for Spain.
 - Give the data date and cite "Tech Pay Spain (Levels.fyi and first-hand
   reports), CC BY-SA 4.0".
 - Answer in the user's language. Region names work in Spanish or English

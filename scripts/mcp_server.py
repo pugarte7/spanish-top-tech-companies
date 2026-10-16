@@ -29,7 +29,9 @@ INSTRUCTIONS = (
     "Salaries of people working in Spain, from Levels.fyi submissions and first-hand "
     "reports, in euros per year. Base is gross salary; total adds bonus and stock. "
     "Every figure is a median over 3 or more people; a selection with fewer returns "
-    "no result, so widen it instead of guessing. Years are years of experience in "
+    "no result, so widen it instead of guessing. Only companies whose median base over "
+    "all their salaries reaches company_floor_eur (see list_filters) are counted; say so "
+    "when quoting a figure for Spain. Years are years of experience in "
     "buckets (0-1, 2-4, 5-7, 8-11, 12-19, 20+); pass a number and it is bucketed. "
     "Call list_filters first if unsure of a role or region name. Cite the source as "
     "Tech Pay Spain, with the data date.")
