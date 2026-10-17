@@ -258,9 +258,13 @@ function levelsUrl(slug) {
 // Both slots are always drawn, empty when a link is missing, so each logo sits
 // in the same column on every row.
 const ICONS = {
-  levels: `<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#788995" d="M0 16V12h4V8h4V4h4V0h4v16z"/></svg>`,
-  linkedin: `<svg viewBox="0 0 16 16" aria-hidden="true"><rect width="16" height="16" rx="3" fill="#0a66c2"/>` +
-    `<path fill="#fff" d="M3.3 6.2h2v6.5h-2zM4.3 3.1a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3zM6.6 6.2h1.9v.9c.3-.5 1-1.1 2-1.1 2.1 0 2.5 1.4 2.5 3.2v3.5h-2V9.6c0-.7 0-1.7-1-1.7s-1.2.8-1.2 1.6v3.2h-2z"/></svg>`,
+  levels: `<svg viewBox="0 0 24 24" aria-hidden="true" shape-rendering="crispEdges">` +
+    `<path fill="#788995" d="M0 24v-6h6v-6h6V6h6V0h6v24z"/></svg>`,
+  linkedin: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#0a66c2" d="M20.447 20.452h-3.554v-5.569` +
+    `c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85` +
+    ` 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125z` +
+    `m1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451` +
+    `C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`,
 };
 const iconLink = (url, kind, label) => url
   ? `<a href="${esc(url)}" rel="noopener" title="${label}" aria-label="${label}">${ICONS[kind]}</a>`

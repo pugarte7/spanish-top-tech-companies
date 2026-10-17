@@ -158,10 +158,10 @@ tr:last-child td { border-bottom: 0; }
 .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 td.co .name { font-weight: 600; }
 td.co .co-in { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
-td.co .links { display: grid; grid-template-columns: 16px 16px; gap: 8px; flex: none; }
-td.co .links a { display: block; width: 16px; height: 16px; opacity: .85; }
+td.co .links { display: grid; grid-template-columns: 22px 22px; gap: 10px; flex: none; }
+td.co .links a { display: block; width: 22px; height: 22px; opacity: .9; }
 td.co .links a:hover { opacity: 1; }
-td.co .links svg { display: block; width: 16px; height: 16px; }
+td.co .links svg { display: block; width: 22px; height: 22px; }
 th.sort { cursor: pointer; user-select: none; }
 th.sort:hover, th.sort.on { color: var(--text); }
 th.sort.on::after { content: " ↓"; }
