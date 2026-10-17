@@ -53,6 +53,10 @@ STALE_DAYS = 365
 SOURCES = ["levels.fyi", "company-published", "offer-letter", "community",
            "job-posting", "glassdoor", "other"]
 
+# A job ad's range is what a company offered, not what anyone is paid, so
+# it is kept beside the salaries and never counted among them.
+POSTED = ("job-posting",)
+
 # A salary someone in Spain told the maintainer directly outranks anything
 # crowdsourced, so it sorts above it however large the crowdsourced one is.
 VOUCHED = ("offer-letter", "community")
@@ -72,7 +76,7 @@ SWE = "software-engineer"
 # free text: title and specialization are the official taxonomy's slugs or
 # empty, so a row still cannot point at a person.
 IDENTITY_COLUMNS = ["company", "linkedin_ids", "linkedin_url", "levels_slug", "levels_status"]
-ENTRY_COLUMNS = ["role", "base", "total", "bonus", "stock", "currency",
+ENTRY_COLUMNS = ["role", "base", "base_max", "total", "bonus", "stock", "currency",
                  "years_experience", "level", "title", "specialization",
                  "city", "region", "work_arrangement", "employment_type",
                  "perspective", "reported", "source", "source_url", "date",
@@ -84,7 +88,7 @@ PROFILE_COLUMNS = ["website", "careers_url", "hq_city", "hq_country", "employees
 COLUMNS = IDENTITY_COLUMNS + ENTRY_COLUMNS + PROFILE_COLUMNS
 COMPANY_COLUMNS = IDENTITY_COLUMNS + PROFILE_COLUMNS
 
-INTEGER_COLUMNS = {"base", "total", "bonus", "stock", "year_founded"}
+INTEGER_COLUMNS = {"base", "base_max", "total", "bonus", "stock", "year_founded"}
 # Pipe-separated inside one cell.
 LIST_COLUMNS = {"linkedin_ids", "sector", "offices", "stack"}
 
@@ -242,6 +246,50 @@ def title_slug(role: str, raw) -> str | None:
     return None
 
 
+# Job ads have only a free-text position. These read it into a role, in
+# order (a "Tech Project Manager" is a project manager before it is tech),
+# matched against _norm_words() of the position. A position none of them
+# matches - "CTO", "Head of sales" - is not stored.
+POSTING_ROLES = [
+    (r"\b(engineering manager|head of engineering|(vp|director) of engineering)\b",
+     "software-engineering-manager"),
+    (r"\bproduct (manager|owner)\b", "product-manager"),
+    (r"\b(project|delivery) manager\b", "project-manager"),
+    (r"\bdata scientist\b", "data-scientist"),
+    (r"\bdata analyst\b", "data-analyst"),
+    (r"\b((product|ux|ui) )+designer\b|\bdisenador", "product-designer"),
+    (r"\bsolutions? architect\b", "solution-architect"),
+    (r"\bit manager\b", "it-manager"),
+    (r"\b(developer|engineer|desarrollador|programador|front ?end|back ?end|full ?stack"
+     r"|devops|sre|tech lead|qa)\b", SWE),
+]
+# The catalog's titles for the generic shapes ads use ("Senior Frontend
+# Developer"), tried when title_slug() finds no exact title.
+POSTING_TITLES = [
+    (r"\b(sre|site reliability)\b", "site-reliability-engineer"),
+    (r"\bdevops\b", "devops-engineer"),
+    (r"\b(qa|quality assurance)\b", "quality-assurance-(qa)-software-engineer"),
+    (r"\breact native\b", "react-native-engineer"),
+    (r"\bandroid\b", "android-engineer"),
+    (r"\bios\b", "ios-engineer"),
+    (r"\bfull ?stack\b", "full-stack-software-engineer"),
+    (r"\bfront ?end\b", "frontend-software-engineer"),
+    (r"\bback ?end\b", "backend-software-engineer"),
+]
+
+
+def posting_role(position) -> tuple[str, str | None] | None:
+    """A job ad's position to (role, title slug), or None if it names no role."""
+    words = _norm_words(position)
+    role = next((role for pattern, role in POSTING_ROLES if re.search(pattern, words)), None)
+    if role is None:
+        return None
+    title = title_slug(role, position)
+    if title is None and role == SWE:
+        title = next((slug for pattern, slug in POSTING_TITLES if re.search(pattern, words)), None)
+    return role, title
+
+
 def title_spec(role: str, title: str | None) -> str | None:
     """The specialization a known title implies, for rows with no focusTag."""
     return taxonomy.TITLE_TO_SPEC.get(role, {}).get(title or "")
@@ -273,6 +321,18 @@ def years(raw) -> int | None:
     return int(found.group(1)) if found else None
 
 
+def salaries(company: dict) -> list[dict]:
+    """What people at the company are paid: every row but the job ads."""
+    return [entry for entry in company.get("entries") or []
+            if entry.get("source") not in POSTED]
+
+
+def postings(company: dict) -> list[dict]:
+    """Job ads: a range from `base` to `base_max`, either end may be missing."""
+    return [entry for entry in company.get("entries") or []
+            if entry.get("source") in POSTED]
+
+
 def readme_entries(company: dict) -> list[dict]:
     """The population the README describes: software engineers with a base.
 
@@ -280,7 +340,7 @@ def readme_entries(company: dict) -> list[dict]:
     the cut once the feed carried every experience level ("I think we no
     longer need to have the 5+ exp data"). Other roles still never count.
     """
-    return [entry for entry in company.get("entries") or []
+    return [entry for entry in salaries(company)
             if entry.get("role") == SWE and entry.get("base")]
 
 

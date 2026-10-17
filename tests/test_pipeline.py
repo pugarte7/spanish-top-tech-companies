@@ -705,6 +705,38 @@ def test_rows_compare_with_empty_cells() -> None:
               write_role("software-engineer", by_slug)["unchanged"], 1)
 
 
+def test_job_ads_are_not_salaries() -> None:
+    """A Manfred ad's range sits beside the median and never in it."""
+    print("job ads are shown apart from the salaries")
+    import build
+    import fetch_manfred
+
+    ad = {"id": 7, "slug": "acme-senior-backend-developer-oct26",
+          "position": "Senior Backend Developer", "salaryFrom": 50000,
+          "salaryTo": 200000, "bonus": 0, "currency": "€", "remotePercentage": 40,
+          "isFreelance": False, "locations": ["A Coruña, España"],
+          "updatedAt": "2026-10-16T12:00:00Z", "company": {"name": "Acme"}}
+    row = fetch_manfred.entry(ad, TODAY)
+    check("an ad is a software-engineer range with its city",
+          (row["role"], row["title"], row["base"], row["base_max"], row["city"],
+           row["work_arrangement"]),
+          ("software-engineer", "backend-software-engineer", 50000, 200000,
+           "A Coruna", "hybrid"))
+    check("remote with no place, freelance and other currencies are skipped",
+          [fetch_manfred.entry(ad | change, TODAY) for change in
+           ({"locations": []}, {"isFreelance": True}, {"currency": "US$"},
+            {"position": "Head of sales"})],
+          [None, None, None, None])
+
+    company = acme(entry(PER_LOCATION, base=55000), row)
+    check("the median and the website see only the salary",
+          (build.summary(company)["base"], len(lib.salaries(company))), (55000, 1))
+    check("the ad is its own cell", build.advertised_cell(company),
+          f"[50k–200k (1)]({row['source_url']})")
+    check("an ad alone does not put a company on file",
+          fetch_manfred.match([acme(row)], [ad]), {})
+
+
 def test_agents_see_only_groups_of_three() -> None:
     """The MCP server and llms-full.txt read data.json, which holds no group under MIN_GROUP."""
     print("mcp_server answers from aggregates of three or more")
@@ -750,6 +782,7 @@ def main() -> int:
                  test_companies_are_their_salaries,
                  test_rows_compare_with_empty_cells,
                  test_median_and_share_over_every_senior,
+                 test_job_ads_are_not_salaries,
                  test_agents_see_only_groups_of_three,
                  test_floor_aliases_and_exclusions,
                  test_normalization,

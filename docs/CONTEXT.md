@@ -412,6 +412,7 @@ priced in euros is dropped and counted, never guessed.
 | `fetch_spain.py` | Every Spanish salary in every job family. With a token, reads each role's country-wide feed to the end — paging past the lying `total` — and replaces that role's stored Levels.fyi rows per company; keeps Spanish rows of any seniority whatever the pay, converts USD to EUR, normalizes role/specialization/title/location fields, deletes any entry whose source URL names no location, creates employers the feed names, drops a company left with no rows, and leaves everything untouched when a role's feed cannot be read. | **Use this** |
 | `fetch_taxonomy.py` | Regenerates `taxonomy.py` from the public `/t` index: 129 roles, categories, specializations, titles and aliases. Generated file; do not edit by hand. | Yes |
 | `fetch_radar.py` | Enriches salary-bearing companies from Spain Tech Radar's open dataset (offices, stack, careers page, type, CIF). Matches by domain, LinkedIn, then exact name; fills empty fields only. | Yes |
+| `fetch_manfred.py` | Job ads with a salary range from Manfred's public API, stored as `job-posting` rows (`base` to `base_max`) for companies already on file. Only ads naming a Spanish city. Replaces every Manfred row each run. `lib.salaries()` keeps ads out of every median; the README shows them in the Advertised column. | Yes |
 | `fetch_company.py` | Company details only: website, HQ, headcount, sector, vesting. Writes no salary at all, by design. Only fills companies already in the CSV. | Yes |
 | `resolve_slugs.py` | Company name → Levels.fyi slug, with verification and an alias table. Folds a company into the one already holding its slug. | Yes |
 | `build.py` | Regenerates the README and rewrites `companies.csv` in canonical order. | Yes |
@@ -455,6 +456,18 @@ So:
 Rate limiting: 403/405/429/503 all mean throttled. Treating them as "not found"
 is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 `--delay` at 2.5s or more.
+
+### Job ads are not salaries
+
+Since 2026-10-17 the CSV also holds job ads from Manfred, the one source found
+that publishes ranges per company without blocking scripts (Glassdoor,
+Wellfound and TechPays all sit behind Cloudflare; sueldos.dev has no company
+field). An ad is what was offered, not what anyone earns, so `lib.salaries()`
+drops them before anything is counted: README medians, the website's
+aggregates, the "on file means having salaries" rule and the radar match.
+`lib.postings()` is the other half, read only by the README's Advertised
+column. Anything new that iterates `company["entries"]` should decide which
+of the two it means.
 
 ## Known gaps
 

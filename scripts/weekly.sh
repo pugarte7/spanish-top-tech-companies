@@ -23,6 +23,7 @@ main() {
   python3 scripts/fetch_spain.py --delay 3.0
   python3 scripts/fetch_company.py --missing --delay 3.0
   python3 scripts/fetch_radar.py
+  python3 scripts/fetch_manfred.py
   python3 tests/test_pipeline.py
   python3 scripts/validate.py
   python3 scripts/build.py

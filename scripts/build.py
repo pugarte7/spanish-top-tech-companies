@@ -85,8 +85,8 @@ def source_cell(entry: dict) -> str:
 
 
 TABLE_HEADER = [
-    "| Company | Median base | Median total comp | Engineers | At 60k+ | Reported | Source | Jobs |",
-    "| --- | ---: | ---: | ---: | ---: | --- | --- | --- |",
+    "| Company | Median base | Median total comp | Engineers | At 60k+ | Advertised | Reported | Source | Jobs |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
 ]
 
 
@@ -138,6 +138,23 @@ def share_cell(found: dict) -> str:
     return f"{'<1' if 0 < percent < 1 else round(percent)}% ({found['at_bar']})"
 
 
+def advertised_cell(company: dict) -> str:
+    """"45k–70k (3)": the span of the company's software-engineer job ads.
+
+    Beside the median, never in it: a range is what was offered, not what
+    anyone is paid. Links to the newest ad; an ad with one end stated is
+    that one figure.
+    """
+    ads = [ad for ad in lib.postings(company) if ad.get("role") == lib.SWE]
+    if not ads:
+        return "—"
+    low = min(ad.get("base") or ad["base_max"] for ad in ads)
+    high = max(ad.get("base_max") or ad["base"] for ad in ads)
+    newest = max(ads, key=lambda ad: (lib.month(ad.get("reported")), ad["source_url"]))
+    span = k(low) if low == high else f"{k(low)}–{k(high)}"
+    return f"[{span} ({len(ads)})]({newest['source_url']})"
+
+
 def company_row(company: dict) -> str:
     found = summary(company)
     cells = [
@@ -146,6 +163,7 @@ def company_row(company: dict) -> str:
         k(found["total"]),
         str(found["engineers"]),
         share_cell(found),
+        advertised_cell(company),
         escape(found["reported"]),
         sources_cell(company),
         jobs_cell(company),
