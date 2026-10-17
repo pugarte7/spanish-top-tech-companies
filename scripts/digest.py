@@ -52,7 +52,7 @@ def median(company: dict) -> str:
 
 
 def post(date: str, on_main: int, change: int, arrived: list[dict], new: int) -> str:
-    head = (f"Senior software engineer pay in Spain, week of {date}: {on_main} companies "
+    head = (f"Software engineer pay in Spain, week of {date}: {on_main} companies "
             f"with a median base of 60k+ ({change:+d}).")
     tail = f"{new} new salaries. {REPO}"
     names: list[str] = []

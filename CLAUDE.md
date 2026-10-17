@@ -1,26 +1,24 @@
 # spanish-top-tech-companies
 
-What companies in Spain pay software engineers with 5+ years of experience:
-the median over every such engineer on file, at companies where that median
+What companies in Spain pay software engineers, at any experience:
+the median over every software engineer on file, at companies where that median
 is 60k+ base, with a "Need to improve" table for medians between 50k and 60k. Read [docs/CONTEXT.md](docs/CONTEXT.md) before
 changing anything in the data pipeline — it records why several
 obvious-looking approaches are wrong.
 
-**One median per company, over every senior.** `companies.csv` holds
+**One median per company, over every software engineer.** `companies.csv` holds
 individual salaries: since 2026-10-14 each row is one person in Spain in any
 of Levels.fyi's job families, at any seniority, paid whatever they are paid —
-the file feeds a website now, not just the README. The README's population is
-still exactly what it was: `lib.readme_entries()` picks the software-engineer
-rows with 5 or more years (`lib.SENIOR_YEARS`), and the README shows one row
+the file feeds a website now, not just the README. `lib.readme_entries()`
+picks the README's population, every software-engineer row with a base at
+any experience, and the README shows one row
 per company, the median base and total over those, how many there are, and
 what share are at 60k or more (`lib.THRESHOLD_EUR`). The bar decides which
 table a company is in (median at the bar: main; between `lib.FLOOR_EUR` 50k
 and the bar: "Need to improve"; under the floor: on file but unlisted) and is
 shown as the share; it never trims the rows the median is of. Filter
-positions by years, aggregate, then filter companies by the aggregate, in
-that order. Seniority is the years, never the level name: an L4 with eight
-years counts, a "Senior" with two does not. No cap on years, no mean, and
-never a role or a junior in the README's median.
+positions by role, aggregate, then filter companies by the aggregate, in
+that order. No mean, and never another role in the README's median.
 
 How this was reached: on 2026-09-16 the maintainer rejected averages across
 levels, a filter on titles that said senior, and set "the mean of the 60k+
@@ -32,8 +30,11 @@ nothing). "At least one senior at 60k+" as the listing rule lasted a day: a
 reader pointed out that a company filter belongs on the aggregate, and it
 became median >= 60k, dropping 33 companies. On 2026-09-23 the maintainer
 brought the 24 with a median of 50k+ back under "Need to improve" ("I don't
-wanna lose all those companies"); the nine under 50k stayed out. Do not bring
-back the 60k-filtered mean, the any-row rule, or juniors and other families
+wanna lose all those companies"); the nine under 50k stayed out. On
+2026-10-17 the maintainer dropped the 5-year cut, which only existed because
+the old fetcher stored seniors only: "I think we no longer need to have the
+5+ exp data. If they pay more than 60K lets count it in." Do not bring back
+the 60k-filtered mean, the any-row rule, a years filter, or other families
 in the median.
 
 **The README is the product.** Every company, its median and every link
@@ -140,8 +141,7 @@ your salary on Levels.fyi and it gets picked up" holds without anyone editing
 the CSV.
 
 The "At 60k+" column is the share of a company's rows at the bar, computed
-from the rows, no stored count: "46% (6)" at BBVA is six of its thirteen
-seniors. Tables sort by median base first, then by that share (share first lasted a
+from the rows, no stored count: "46% (6)" is six of thirteen engineers. Tables sort by median base first, then by that share (share first lasted a
 day: once the median decided the table, it put one-person 60k rows above N26 at
 76.6k); first-hand rows come first. A first-hand row must itself be at 60k+, since it is the
 maintainer vouching that the company pays that.

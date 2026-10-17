@@ -212,10 +212,10 @@ def test_every_year_is_kept_the_readme_filters() -> None:
     with eight years at 90k and would have kept a "Senior" with two. Pay never
     decided who is a row either - until 2026-09-22 only seniors at 60k+ were
     kept, so two 90k engineers made Minsait read 90k while fourteen under 60k
-    went unrecorded. Since 2026-10-14 the same is true for juniors and other
-    roles: all kept for the website, none reaching the README's median.
+    went unrecorded. Since 2026-10-14 juniors and other roles are kept for
+    the website, and since 2026-10-17 juniors reach the README's median too.
     """
-    print("fetch_spain keeps every year of experience; readme_entries filters")
+    print("fetch_spain keeps every year of experience; readme_entries filters roles")
 
     by_slug, skipped = fed([row(years=8, level="SDE I"),
                             row(years=4, level="Senior Software Engineer"),
@@ -226,8 +226,10 @@ def test_every_year_is_kept_the_readme_filters() -> None:
     check("every parseable year becomes a row, 'False' levels do not",
           sorted(e["years_experience"] for e in entries), ["2-4", "4", "5-10", "8"])
     check("a row with no years is skipped", skipped["no-years"], 1)
-    check("the README counts only the seniors",
-          len(lib.readme_entries(acme(*entries))), 2)
+    check("the README counts software engineers at any experience",
+          len(lib.readme_entries(acme(*entries))), 4)
+    check("the README counts no other role",
+          len(lib.readme_entries(acme(entry(None, role="product-manager")))), 0)
     check("a bucket counts from its low end", lib.years("5-10"), 5)
     check("an open bucket counts from its number", lib.years("11+"), 11)
 
@@ -236,6 +238,8 @@ def test_every_year_is_kept_the_readme_filters() -> None:
         ("under five years is data now", entry(PER_LOCATION, years_experience="4"), False),
         ("no years", entry(PER_LOCATION, years_experience=None), True),
         ("a first-hand senior SWE under 60k", entry(None, source="community", base=55000), True),
+        ("a first-hand junior SWE under 60k",
+         entry(None, source="community", base=40000, years_experience="2"), True),
         ("a first-hand junior PM under 60k",
          entry(None, source="community", base=30000, years_experience="2",
                role="product-manager"), False),
@@ -494,15 +498,15 @@ def test_median_and_share_over_every_senior() -> None:
     "Use all the data" was the criticism, and the maintainer took it, keeping
     the 60k bar for which companies are listed and for the share only.
     """
-    print("the README shows the median over every senior and the share at 60k+")
+    print("the README shows the median over every engineer and the share at 60k+")
     import build
 
     company = acme(entry(PER_LOCATION, base=90000, total=95000), entry(PER_LOCATION, base=90000),
                    *[entry(PER_LOCATION, base=40000 + 1000 * i) for i in range(6)])
     found = build.summary(company)
-    check("median over all seniors, not the mean of the 60k+ ones",
+    check("median over all engineers, not the mean of the 60k+ ones",
           (found["base"], found["engineers"], found["at_bar"]), (43500, 8, 2))
-    check("the share is at 60k+ over all seniors", build.share_cell(found), "25% (2)")
+    check("the share is at 60k+ over all engineers", build.share_cell(found), "25% (2)")
     check("total has its own median", found["total"], 95000)
     check("a share under 1% is not 0%",
           build.share_cell({"share": 1 / 250, "at_bar": 1}), "<1% (1)")
@@ -512,8 +516,8 @@ def test_median_and_share_over_every_senior() -> None:
         entry(PER_LOCATION, base=30000, years_experience="2"),
         entry(DS_LOCATION, role="data-scientist", base=200000))
     found = build.summary(with_junior_and_pm)
-    check("juniors and other roles never reach the README's median",
-          (found["base"], found["engineers"]), (65500, 2))
+    check("juniors reach the README's median, other roles never do",
+          (found["base"], found["engineers"]), (41000, 3))
 
     def named(name: str, *entries: dict) -> dict:
         return lib.blank_company(name) | {"entries": list(entries)}
@@ -528,7 +532,7 @@ def test_median_and_share_over_every_senior() -> None:
     check("rows sort by median, then share, first-hand first",
           [line.split(" | ")[0].lstrip("| ") for line in table.splitlines()[4:]],
           ["Vouched", "Everyone Paid More", "Rare High", "Everyone"])
-    check("companies without senior software engineers are not in the README",
+    check("companies under the floor or without software engineers are not in the README",
           "Only Juniors" in table or "Only PMs" in table, False)
 
 

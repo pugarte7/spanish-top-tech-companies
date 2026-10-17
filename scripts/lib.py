@@ -15,15 +15,10 @@ import taxonomy
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DATA = ROOT / "companies.csv"
 
-# Every software engineer in Spain with this much experience is a row,
-# whatever they are paid; the median over them is what a company pays a senior.
-# Seniority is the years, not whatever the company calls the level: an L4 with
-# eight years counts, a "Senior" with two does not.
-SENIOR_YEARS = 5
 # A company is on the main list while the median of its rows reaches this
 # base, and the share of its rows that do is shown beside the median. The bar
 # is applied to the aggregate, never to the rows the aggregate is of: filter
-# positions by years first, compute the median, then filter companies by it.
+# positions by role first, compute the median, then filter companies by it.
 THRESHOLD_EUR = 60_000
 # A company whose median lands between the floor and the bar is kept on file
 # and shown under "Need to improve": visible, and visibly under 60k. Below the
@@ -62,9 +57,9 @@ SOURCES = ["levels.fyi", "company-published", "offer-letter", "community",
 # crowdsourced, so it sorts above it however large the crowdsourced one is.
 VOUCHED = ("offer-letter", "community")
 
-# The README's question is about software engineers with SENIOR_YEARS or
-# more. The CSV holds every role and every seniority; the README population
-# is a filter over the file, not the file itself.
+# The README's question is about software engineers, at any experience since
+# 2026-10-17. The CSV holds every role; the README population is a filter over
+# the file, not the file itself.
 SWE = "software-engineer"
 
 # One row per salary entry: one person in Spain, their role, years of
@@ -278,21 +273,15 @@ def years(raw) -> int | None:
     return int(found.group(1)) if found else None
 
 
-def is_senior(entry: dict) -> bool:
-    """A row with SENIOR_YEARS or more and a known base."""
-    experience = years(entry.get("years_experience"))
-    return experience is not None and experience >= SENIOR_YEARS and bool(entry.get("base"))
-
-
 def readme_entries(company: dict) -> list[dict]:
-    """The population the README describes: senior software engineers.
+    """The population the README describes: software engineers with a base.
 
-    The CSV holds every role and every seniority since 2026-10-14, for the
-    website; the README's question never changed, so its median is still over
-    exactly these rows.
+    Until 2026-10-17 only those with 5+ years counted; the maintainer dropped
+    the cut once the feed carried every experience level ("I think we no
+    longer need to have the 5+ exp data"). Other roles still never count.
     """
     return [entry for entry in company.get("entries") or []
-            if entry.get("role") == SWE and is_senior(entry)]
+            if entry.get("role") == SWE and entry.get("base")]
 
 
 def at_bar(entry: dict) -> bool:
@@ -309,8 +298,8 @@ def competitive(company: dict) -> bool:
 
     The bar is a property of the company, not of a row, so it is applied after
     aggregating: "solo aquellas empresas donde el salario medio de las personas
-    con 5+ años es superior a 60k". Filtering rows by pay first was the
-    2026-09-16 rule, and it made any company with one well-paid senior look
+    es superior a 60k". Filtering rows by pay first was the
+    2026-09-16 rule, and it made any company with one well-paid engineer look
     competitive; "at least one row at the bar" was the same mistake one step
     removed, and lasted a day.
     """
@@ -318,7 +307,7 @@ def competitive(company: dict) -> bool:
 
 
 def listed(company: dict) -> bool:
-    """On the README at all: its senior software engineers median at the floor."""
+    """On the README at all: its software engineers median at the floor."""
     return (median_base(company) or 0) >= FLOOR_EUR
 
 

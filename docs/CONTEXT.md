@@ -7,8 +7,7 @@ twice, and one put every figure on the front page 16% over the truth.
 ## What this repository is
 
 What companies in Spain pay: the README answers it for software engineers
-with 5 or more years of experience — the median over every such engineer on
-file, and the share of them at 60.000 € or more in base, at companies where
+at any experience — the median over every such engineer on file, and the share of them at 60.000 € or more in base, at companies where
 the median is; companies with a median between 50k and 60k are shown apart,
 under "Need to improve". Since 2026-10-14 the file underneath holds every
 Spanish submission in every Levels.fyi job family at every seniority, because
@@ -18,17 +17,21 @@ load bearing:
 
 - **Spain only.** A German salary in this list is worse than no salary, because
   the whole point is that other sources mix countries.
-- **The median over every senior; the bar is applied to the median.** The
-  README reads its slice through `lib.readme_entries()` — software-engineer
-  rows with 5+ years — and shows one row per company, the median of those
-  rows and the share of them at 60k+. Nothing else goes into the median: an
-  all-levels figure, a ladder mean, an engineer under 5 years or a product
+- **The median over every software engineer; the bar is applied to the
+  median.** The README reads its slice through `lib.readme_entries()` —
+  software-engineer rows with a base, any experience — and shows one row per
+  company, the median of those rows and the share of them at 60k+. Nothing
+  else goes into the median: an all-levels figure, a ladder mean or a product
   manager answers a different question. And nothing is trimmed from it: the
   60k-filtered mean was tried and is why readers called the list
   cherry-picked.
-- **Seniority is years of experience.** 5 or more (`lib.SENIOR_YEARS`),
-  whatever the company calls the level, and with no upper limit — in the
-  README. The file keeps the juniors too.
+- **No experience cut since 2026-10-17.** Until then the README counted 5+
+  years only. That cut existed because the old fetcher stored only seniors,
+  which also made "5+ years earn 60k+" look like a finding when it was the
+  sample. Once the feed carried every experience level the maintainer
+  dropped it: "I think we no longer need to have the 5+ exp data. If they pay
+  more than 60K lets count it in." Medians now include juniors and read
+  lower than the seniors-only ones did.
 
 ### How that rule was reached, 2026-09-15, 16 and 22
 
@@ -81,6 +84,9 @@ first three, and a week later readers overturned the fourth:
    were gone. The two-table rule stands; the on-file floor was lifted on
    2026-10-14, when the CSV became the website's dataset: a company now stays
    while it has any salary, and the floor only decides the README listing.
+8. No experience cut. On 2026-10-17 the 5-year filter went: every software
+   engineer on file counts toward the median, same bars, same two tables.
+   Do not bring back a years filter without the maintainer asking for it.
 
 The entries come from Levels.fyi's signed-in submissions API, read as one
 country-wide feed per job family (traps 5 and 7). The earlier sources — the
