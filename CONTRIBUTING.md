@@ -4,7 +4,7 @@ Two ways in. Pick whichever you're comfortable with.
 
 ## 0. Add your salary on Levels.fyi
 
-The easiest way, and anonymous. Add it at [levels.fyi/salaries/add](https://www.levels.fyi/salaries/add) with your city in Spain and your years of experience, in whichever job family fits. The dataset is rebuilt from Levels.fyi's Spanish submissions, so any role and any seniority is picked up on the next run — and a company that is not here yet arrives with it. The README's tables still list senior software engineers only: 5+ years, median of 50k+ to appear, 60k+ for the main table.
+The easiest way, and anonymous. Add it at [levels.fyi/salaries/add](https://www.levels.fyi/salaries/add) with your city in Spain and your years of experience, in whichever job family fits. The dataset is rebuilt from Levels.fyi's Spanish submissions, so any role and any seniority is picked up on the next run — and a company that is not here yet arrives with it. The README's tables list software engineers only, at any experience: median of 50k+ to appear, 60k+ for the main table.
 
 ## 1. Open an issue (no CSV)
 
@@ -14,9 +14,9 @@ Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or 
 
 ## 2. Open a pull request
 
-All the data is one file, [`companies.csv`](companies.csv): one row per salary, with the company's own columns repeated on each of its rows. A company is on file while it has any salary on file; the README is generated from it and still lists senior software engineers only. A `Name,linkedin_id` row with the salary columns empty is how one is added by hand.
+All the data is one file, [`companies.csv`](companies.csv): one row per salary, with the company's own columns repeated on each of its rows. A company is on file while it has any salary on file; the README is generated from it and lists software engineers only. A `Name,linkedin_id` row with the salary columns empty is how one is added by hand.
 
-Every row is **one person in Spain, in any job family, at any seniority**, paid whatever they are paid — the file feeds the website as well as the README, so juniors and other roles belong in it now. What a company calls the level does not matter. Only the README is narrow: software engineers with 5+ years, median of 50.000 € or more to be listed, 60.000 € for the main table. [METHODOLOGY.md](METHODOLOGY.md#who-counts) explains why.
+Every row is **one person in Spain, in any job family, at any seniority**, paid whatever they are paid — the file feeds the website as well as the README, so juniors and other roles belong in it. What a company calls the level does not matter. Only the README is narrow: software engineers, median of 50.000 € or more to be listed, 60.000 € for the main table. [METHODOLOGY.md](METHODOLOGY.md#who-counts) explains why.
 
 ```bash
 git clone https://github.com/pugarte7/spanish-top-tech-companies
@@ -25,13 +25,13 @@ cd spanish-top-tech-companies
 
 Nothing to install. The scripts use plain Python 3.9 or newer.
 
-**A new salary for a company already listed:** copy one of its rows and change the entry columns below — `role` (required; `software-engineer`, `data-scientist`… the taxonomy's slug), `base`, `total`, `years_experience`, `city`, `reported`, `source`, `source_url`, `date` — and any of `title`, `specialization`, `level`, `work_arrangement`, `employment_type`, `bonus`, `stock`, `currency`, `perspective` and `notes` you actually know. Someone telling you their own salary is `source` `community`; an offer you received is `offer-letter`. Neither needs a URL. A first-hand senior software-engineer row still has to be at 60k+ — it is the maintainer vouching that the company pays that.
+**A new salary for a company already listed:** copy one of its rows and change the entry columns below — `role` (required; `software-engineer`, `data-scientist`… the taxonomy's slug), `base`, `total`, `years_experience`, `city`, `reported`, `source`, `source_url`, `date` — and any of `title`, `specialization`, `level`, `work_arrangement`, `employment_type`, `bonus`, `stock`, `currency`, `perspective` and `notes` you actually know. Someone telling you their own salary is `source` `community`; an offer you received is `offer-letter`. Neither needs a URL. A first-hand software-engineer row has to be at 60k+ — it is the maintainer vouching that the company pays that.
 
 **A new company:** add a line at the end with its name and LinkedIn company id, `Acme,1234567`, and let the scripts fill in the rest:
 
 ```bash
 python3 scripts/resolve_slugs.py                 # finds its Levels.fyi page
-python3 scripts/fetch_spain.py --company acme    # reads its senior salaries in Spain
+python3 scripts/fetch_spain.py --company acme    # reads its salaries in Spain
 ```
 
 The id is the `f_C` number in a LinkedIn job search filtered to that company. [`scripts/resolve_linkedin_ids.js`](scripts/resolve_linkedin_ids.js) turns a whole search's Company filter into these lines at once.
@@ -45,10 +45,10 @@ The id is the `f_C` number in a LinkedIn job search filtered to that company. [`
 | `linkedin_url` | The company's LinkedIn page, if it has a vanity URL. |
 | `levels_slug`, `levels_status` | Its Levels.fyi page, and `resolved`, `review` or `unmatched` (not on Levels.fyi). Written by `resolve_slugs.py`. An employer with two Levels.fyi slugs keeps the canonical one here and the other in `lib.SLUG_ALIASES`; a slug nobody can put a company to goes in `lib.EXCLUDED_SLUGS`. |
 | `role` | The taxonomy's slug for the job family: `software-engineer`, `product-manager`, `data-scientist`… Never free text; `scripts/taxonomy.py` is the catalog. |
-| `base` | Gross annual base salary in euros. A first-hand senior software-engineer row must be 60000 or more; anything else is whatever was reported. |
+| `base` | Gross annual base salary in euros. A first-hand software-engineer row must be 60000 or more; anything else is whatever was reported. |
 | `total`, `bonus`, `stock` | Total compensation, annual bonus and annualised equity in euros, if known. |
 | `currency` | The currency the person is actually paid in (`EUR`, `USD`…). Figures above are always euros; this marks, say, a remote job paid in dollars. |
-| `years_experience` | Years of experience: a number, or a bucket like `5-10` or `11+`. Any value — the 5+ rule is the README's, not the file's. |
+| `years_experience` | Years of experience: a number, or a bucket like `5-10` or `11+`. Any value. |
 | `level` | The level as the company names it (`L4`, `SDE II`, `Senior`). Informational only. |
 | `title`, `specialization` | The taxonomy's slugs, or empty: `title` only when the reported title confidently maps to an official one, `specialization` from the focus tag or a known title. Never free text. |
 | `city`, `region` | Where in Spain: the city, and the autonomous community's ISO code (`CT`, `MD`…). |

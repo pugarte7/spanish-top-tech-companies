@@ -212,10 +212,10 @@ def test_every_year_is_kept_the_readme_filters() -> None:
     with eight years at 90k and would have kept a "Senior" with two. Pay never
     decided who is a row either - until 2026-09-22 only seniors at 60k+ were
     kept, so two 90k engineers made Minsait read 90k while fourteen under 60k
-    went unrecorded. Since 2026-10-14 the same is true for juniors and other
-    roles: all kept for the website, none reaching the README's median.
+    went unrecorded. Since 2026-10-14 juniors and other roles are kept for
+    the website, and since 2026-10-17 juniors reach the README's median too.
     """
-    print("fetch_spain keeps every year of experience; readme_entries filters")
+    print("fetch_spain keeps every year of experience; readme_entries filters roles")
 
     by_slug, skipped = fed([row(years=8, level="SDE I"),
                             row(years=4, level="Senior Software Engineer"),
@@ -226,8 +226,10 @@ def test_every_year_is_kept_the_readme_filters() -> None:
     check("every parseable year becomes a row, 'False' levels do not",
           sorted(e["years_experience"] for e in entries), ["2-4", "4", "5-10", "8"])
     check("a row with no years is skipped", skipped["no-years"], 1)
-    check("the README counts only the seniors",
-          len(lib.readme_entries(acme(*entries))), 2)
+    check("the README counts software engineers at any experience",
+          len(lib.readme_entries(acme(*entries))), 4)
+    check("the README counts no other role",
+          len(lib.readme_entries(acme(entry(None, role="product-manager")))), 0)
     check("a bucket counts from its low end", lib.years("5-10"), 5)
     check("an open bucket counts from its number", lib.years("11+"), 11)
 
@@ -236,6 +238,8 @@ def test_every_year_is_kept_the_readme_filters() -> None:
         ("under five years is data now", entry(PER_LOCATION, years_experience="4"), False),
         ("no years", entry(PER_LOCATION, years_experience=None), True),
         ("a first-hand senior SWE under 60k", entry(None, source="community", base=55000), True),
+        ("a first-hand junior SWE under 60k",
+         entry(None, source="community", base=40000, years_experience="2"), True),
         ("a first-hand junior PM under 60k",
          entry(None, source="community", base=30000, years_experience="2",
                role="product-manager"), False),
@@ -318,9 +322,15 @@ def test_feed_is_read_to_the_end() -> None:
         pages = ['not json']
         check("a page that does not parse makes the feed unread",
               fetch_spain.feed("token", "data-scientist", 0), None)
-        pages = [json.dumps({"rows": [{"uuid": "x"}] * 50})] * fetch_spain.MAX_PAGES
-        check("a feed that never empties is incomplete, not complete",
-              fetch_spain.feed("token", "software-engineer", 0), None)
+        pages = [json.dumps({"rows": [{"uuid": "x"}] * 50})] * 40
+        try:
+            fetch_spain.feed("token", "software-engineer", 0)
+            truncated = False
+        except fetch_spain.Truncated:
+            truncated = True
+        check("a feed past the offset ceiling is truncated, not complete", truncated, True)
+        check("no offset past the ceiling is asked for",
+              any("offset=1000" in u for u in calls), False)
     finally:
         fetch_spain.get = original
 
@@ -342,6 +352,47 @@ def test_feed_is_read_to_the_end() -> None:
     check("rows naming no employer or another family are skipped",
           (len(by_slug["acme"]["entries"]), skipped["no-employer"],
            skipped["wrong-family"]), (1, 1, 1))
+
+
+def test_a_role_past_the_ceiling_is_read_per_company() -> None:
+    """One query sees at most 1,000 rows; software engineers are more.
+
+    On 2026-10-16 the all-roles run could not read software engineers: the
+    API refuses an offset past 990. Newest-first and oldest-first leave a
+    gap of years between them, so read_role() reads each employer on its own
+    and scopes the write to the companies it read.
+    """
+    print("fetch_spain reads a role past the offset ceiling company by company")
+    import fetch_spain
+
+    def fake_feed(bearer, role, delay, company=None, order="DESC"):
+        if company is None:
+            raise fetch_spain.Truncated([row("newco", uuid="n1")] if order == "DESC"
+                                        else [row("oldco", uuid="o1")])
+        if company == "broken":
+            return None
+        return [row(company, uuid=f"{company}-1"), row(company, uuid=f"{company}-2")]
+
+    original = fetch_spain.feed
+    fetch_spain.feed = fake_feed
+    try:
+        on_file = [acme(entry(PER_LOCATION)),
+                   lib.blank_company("Broken", levels_slug="broken") | {"entries": [entry(PER_LOCATION)]},
+                   lib.blank_company("Analysts", levels_slug="analysts")
+                   | {"entries": [entry(PER_LOCATION, role="data-analyst")]}]
+        rows, scope = fetch_spain.read_role("t", "software-engineer", 0, on_file)
+        check("windows' employers and companies on file are read; others are not",
+              scope, {"newco", "oldco", "acme"})
+        check("the per-company rows are kept",
+              sorted(r["uuid"] for r in rows if r["companySlug"] == "acme"), ["acme-1", "acme-2"])
+
+        def meeting(bearer, role, delay, company=None, order="DESC"):
+            raise fetch_spain.Truncated([row(uuid="same")])
+        fetch_spain.feed = meeting
+        check("windows that meet are the whole feed",
+              fetch_spain.read_role("t", "software-engineer", 0, on_file)[1], None)
+    finally:
+        fetch_spain.feed = original
 
 
 def test_an_unread_feed_changes_nothing() -> None:
@@ -447,15 +498,15 @@ def test_median_and_share_over_every_senior() -> None:
     "Use all the data" was the criticism, and the maintainer took it, keeping
     the 60k bar for which companies are listed and for the share only.
     """
-    print("the README shows the median over every senior and the share at 60k+")
+    print("the README shows the median over every engineer and the share at 60k+")
     import build
 
     company = acme(entry(PER_LOCATION, base=90000, total=95000), entry(PER_LOCATION, base=90000),
                    *[entry(PER_LOCATION, base=40000 + 1000 * i) for i in range(6)])
     found = build.summary(company)
-    check("median over all seniors, not the mean of the 60k+ ones",
+    check("median over all engineers, not the mean of the 60k+ ones",
           (found["base"], found["engineers"], found["at_bar"]), (43500, 8, 2))
-    check("the share is at 60k+ over all seniors", build.share_cell(found), "25% (2)")
+    check("the share is at 60k+ over all engineers", build.share_cell(found), "25% (2)")
     check("total has its own median", found["total"], 95000)
     check("a share under 1% is not 0%",
           build.share_cell({"share": 1 / 250, "at_bar": 1}), "<1% (1)")
@@ -465,8 +516,8 @@ def test_median_and_share_over_every_senior() -> None:
         entry(PER_LOCATION, base=30000, years_experience="2"),
         entry(DS_LOCATION, role="data-scientist", base=200000))
     found = build.summary(with_junior_and_pm)
-    check("juniors and other roles never reach the README's median",
-          (found["base"], found["engineers"]), (65500, 2))
+    check("juniors reach the README's median, other roles never do",
+          (found["base"], found["engineers"]), (41000, 3))
 
     def named(name: str, *entries: dict) -> dict:
         return lib.blank_company(name) | {"entries": list(entries)}
@@ -481,7 +532,7 @@ def test_median_and_share_over_every_senior() -> None:
     check("rows sort by median, then share, first-hand first",
           [line.split(" | ")[0].lstrip("| ") for line in table.splitlines()[4:]],
           ["Vouched", "Everyone Paid More", "Rare High", "Everyone"])
-    check("companies without senior software engineers are not in the README",
+    check("companies under the floor or without software engineers are not in the README",
           "Only Juniors" in table or "Only PMs" in table, False)
 
 
@@ -636,6 +687,56 @@ def test_radar_enrichment() -> None:
           {"Acme": "domain", "Acme2": "linkedin"})
 
 
+def test_rows_compare_with_empty_cells() -> None:
+    """A role's rows mix empty and filled cells in one column.
+
+    The first all-roles run died at data-analyst on 2026-10-15: comparing the
+    stored rows with the feed's sorted tuples, and None does not sort
+    against text.
+    """
+    print("fetch_spain compares rows whose cells are empty in some, filled in others")
+    import fetch_spain
+    rows = [entry(PER_LOCATION, city=None), entry(PER_LOCATION, city="Madrid")]
+    check("same rows, any order, compare equal",
+          fetch_spain._as_rows(rows) == fetch_spain._as_rows(rows[::-1]), True)
+    with temp_data(acme(*rows)):
+        by_slug = {"acme": {"name": "Acme", "entries": stored()["entries"][::-1]}}
+        check("an unchanged role counts as unchanged",
+              write_role("software-engineer", by_slug)["unchanged"], 1)
+
+
+def test_agents_see_only_groups_of_three() -> None:
+    """The MCP server and llms-full.txt read data.json, which holds no group under MIN_GROUP."""
+    print("mcp_server answers from aggregates of three or more")
+    import importlib.util
+    import mcp_server
+    spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
+    site_build = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(site_build)
+    rows = [entry(PER_LOCATION, base=b, region="MD", city="Madrid") for b in (50000, 70000, 90000)]
+    rows += [entry(PER_LOCATION, base=b, region="CT", city="Barcelona") for b in (60000, 80000)]
+    with temp_data(acme(*rows)):
+        data = site_build.build_data(lib.load_companies())
+
+    def ask(tool, **args):
+        reply = mcp_server.handle(data, {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                                         "params": {"name": tool, "arguments": args}})
+        return reply["result"].get("structuredContent")
+
+    check("Madrid's three give a median",
+          ask("salary_stats", region="Madrid")["result"]["median_base_eur"], 70000)
+    check("Barcelona's two give nothing", ask("salary_stats", region="Cataluña")["result"], None)
+    check("years are bucketed", ask("salary_stats", years=8)["selection"]["years"], "8-11")
+    check("a company's groups leave Barcelona out",
+          sorted(g["region"] or "" for g in ask("company_salaries", name="acme")["groups"]
+                 if g["years"] is None and g["role"] is None), ["", "MD"])
+    check("an unknown role is a tool error, not a crash",
+          mcp_server.handle(data, {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {
+              "name": "salary_stats", "arguments": {"role": "astronaut"}}})["result"]["isError"],
+          True)
+    check("llms-full.txt renders", "## By region" in site_build.llms_full(data), True)
+
+
 def main() -> int:
     for test in (test_location_guard, test_unscoped_classifier,
                  test_purge_runs_even_when_spain_data_exists,
@@ -644,9 +745,12 @@ def main() -> int:
                  test_one_submission_is_one_entry,
                  test_foreign_rows_are_skipped,
                  test_feed_is_read_to_the_end,
+                 test_a_role_past_the_ceiling_is_read_per_company,
                  test_an_unread_feed_changes_nothing,
                  test_companies_are_their_salaries,
+                 test_rows_compare_with_empty_cells,
                  test_median_and_share_over_every_senior,
+                 test_agents_see_only_groups_of_three,
                  test_floor_aliases_and_exclusions,
                  test_normalization,
                  test_radar_enrichment):

@@ -96,15 +96,15 @@ def median(amounts: list) -> int | None:
 
 
 def summary(company: dict) -> dict:
-    """What a company pays a senior, and how often that is 60k+.
+    """What a company pays a software engineer, and how often that is 60k+.
 
-    Every counted entry is a software engineer in Spain with 5+ years, paid
-    whatever they are paid - the CSV holds other roles and junior rows for the
-    website, and they never reach this median. The median is over all of them,
+    Every counted entry is a software engineer in Spain at any experience,
+    paid whatever they are paid - the CSV holds other roles for the website,
+    and they never reach this median. The median is over all of them,
     so one well-paid engineer cannot make a company look competitive:
-    Minsait's two at 90k next to fourteen under 60k reads 43.5k. Until
+    Minsait's two at 90k next to fourteen under 60k read 43.5k. Until
     2026-09-22 the table showed the mean of the 60k+ ones only, which is what
-    critics called cherry-picking, rightly. The share is the chance a senior
+    critics called cherry-picking, rightly. The share is the chance an engineer
     there is at the bar; first-hand entries count in it like any other row.
     """
     entries = lib.readme_entries(company)
@@ -158,7 +158,7 @@ def render_stats(companies: list[dict]) -> str:
 
     The CSV now holds companies and roles the README does not show; the stats
     line is about the tables below it, so it counts only listed companies and
-    their senior software engineers.
+    their software engineers.
     """
     listed = [company for company in companies if lib.listed(company)]
     entries = [entry for company in listed for entry in lib.readme_entries(company)]
@@ -167,7 +167,7 @@ def render_stats(companies: list[dict]) -> str:
     parts = [
         f"**{competitive} companies at 60k+**",
         f"{len(listed) - competitive} need to improve",
-        f"{len(entries)} engineers with {lib.SENIOR_YEARS}+ years",
+        f"{len(entries)} engineers",
         f"{reached} of them at 60k+",
     ]
     stale = sum(1 for entry in entries if lib.is_stale(entry.get("date")))
@@ -199,11 +199,11 @@ def render_companies(companies: list[dict]) -> str:
 
     The second exists so a company under 60k is still visible, and visibly
     under: "I don't wanna lose all those companies" (maintainer, 2026-09-23).
-    Companies whose seniors median under the floor - and every company with
-    only other roles or junior rows - stay in the CSV for the website, so this
+    Companies whose engineers median under the floor - and every company with
+    only other roles - stay in the CSV for the website, so this
     is a filter here, not a validation rule.
     """
-    out = [f"## Median pay, software engineers with {lib.SENIOR_YEARS}+ years", "", *TABLE_HEADER]
+    out = ["## Median pay, software engineers", "", *TABLE_HEADER]
     on_file = [c for c in companies if lib.listed(c)]
     out += [company_row(c) for c in ranked([c for c in on_file if lib.competitive(c)])]
     behind = ranked([c for c in on_file if not lib.competitive(c)])
