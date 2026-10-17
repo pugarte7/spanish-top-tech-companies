@@ -255,6 +255,17 @@ function levelsUrl(slug) {
     : `https://www.levels.fyi/companies/${slug}/salaries`;
 }
 
+// Both slots are always drawn, empty when a link is missing, so each logo sits
+// in the same column on every row.
+const ICONS = {
+  levels: `<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#788995" d="M0 16V12h4V8h4V4h4V0h4v16z"/></svg>`,
+  linkedin: `<svg viewBox="0 0 16 16" aria-hidden="true"><rect width="16" height="16" rx="3" fill="#0a66c2"/>` +
+    `<path fill="#fff" d="M3.3 6.2h2v6.5h-2zM4.3 3.1a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3zM6.6 6.2h1.9v.9c.3-.5 1-1.1 2-1.1 2.1 0 2.5 1.4 2.5 3.2v3.5h-2V9.6c0-.7 0-1.7-1-1.7s-1.2.8-1.2 1.6v3.2h-2z"/></svg>`,
+};
+const iconLink = (url, kind, label) => url
+  ? `<a href="${esc(url)}" rel="noopener" title="${label}" aria-label="${label}">${ICONS[kind]}</a>`
+  : `<span></span>`;
+
 function companies() {
   const all = D.company_cells[key()] || [];
   const q = state.q.trim().toLowerCase();
@@ -273,10 +284,11 @@ function companies() {
     `${th("share", S.col_share)}${th("n", S.col_n, "num hide-sm")}</tr></thead><tbody>` +
     shown.map((a) => {
       const c = D.companies[a.c];
-      const links = (c.levels ? `<a href="${esc(levelsUrl(c.levels))}" rel="noopener">Levels.fyi</a>` : "") +
-        (c.linkedin ? `<a href="${esc(c.linkedin)}" rel="noopener">LinkedIn</a>` : "");
-      return `<tr><td class="co"><span class="name">${esc(c.name)}</span>` +
-        `<span class="links">${links}</span><span class="cities">${esc(c.cities.join(", "))}</span></td>` +
+      const links = iconLink(c.levels && levelsUrl(c.levels), "levels", "Levels.fyi") +
+        iconLink(c.linkedin, "linkedin", "LinkedIn");
+      return `<tr><td class="co"><div class="co-in"><div><span class="name">${esc(c.name)}</span>` +
+        `<span class="cities">${esc(c.cities.join(", "))}</span></div>` +
+        `<span class="links">${links}</span></div></td>` +
         `<td class="med"><div class="medbar"><b>${money(a.median)}</b><span class="track">` +
         `<span class="rng" style="left:${x(a.p25)}%;width:${x(a.p75) - x(a.p25)}%"></span>` +
         `<span class="dot" style="left:${x(a.median)}%"></span></span></div></td>` +

@@ -157,10 +157,11 @@ td { padding: 14px 12px; border-bottom: 1px solid var(--grid); vertical-align: m
 tr:last-child td { border-bottom: 0; }
 .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 td.co .name { font-weight: 600; }
-td.co .links { display: inline-flex; gap: 6px; margin-left: 8px; vertical-align: 1px; }
-td.co .links a { font-size: 11px; font-weight: 600; letter-spacing: 0; color: var(--text-2);
-                 background: var(--fill); border-radius: 6px; padding: 1px 6px; }
-td.co .links a:hover { color: var(--blue); text-decoration: none; }
+td.co .co-in { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+td.co .links { display: grid; grid-template-columns: 16px 16px; gap: 8px; flex: none; }
+td.co .links a { display: block; width: 16px; height: 16px; opacity: .85; }
+td.co .links a:hover { opacity: 1; }
+td.co .links svg { display: block; width: 16px; height: 16px; }
 th.sort { cursor: pointer; user-select: none; }
 th.sort:hover, th.sort.on { color: var(--text); }
 th.sort.on::after { content: " ↓"; }
