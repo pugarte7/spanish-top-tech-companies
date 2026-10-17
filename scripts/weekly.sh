@@ -19,11 +19,14 @@ main() {
   cd "$HOME/.local/share/spanish-top-tech-companies"
   git fetch -q origin main
   git reset -q --hard origin/main
+  python3 scripts/fetch_taxonomy.py
   python3 scripts/fetch_spain.py --delay 3.0
+  python3 scripts/fetch_company.py --missing --delay 3.0
+  python3 scripts/fetch_radar.py
   python3 tests/test_pipeline.py
   python3 scripts/validate.py
   python3 scripts/build.py
-  git add README.md companies.csv
+  git add README.md companies.csv scripts/taxonomy.py
   if git diff --cached --quiet; then
     echo "Nothing changed."
     return
