@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import collections
 import html
+import itertools
 import json
 import math
 import os
@@ -93,9 +94,23 @@ YEAR_BUCKETS = [(0, 2), (2, 5), (5, 8), (8, 12), (12, 20), (20, None)]
 # Histogram bins of 10k; the ends are open so a lone outlier joins a crowd.
 HIST_LOW, HIST_HIGH, HIST_STEP = 20_000, 150_000, 10_000
 
+GITHUB_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8'
+               'c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94'
+               '-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66'
+               '.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12'
+               ' 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16'
+               ' 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01'
+               ' 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>')
+# Both glyphs ship; the stylesheet shows the moon in light mode and the sun in dark.
+THEME_ICON = ('<svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" '
+              'd="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
+              '<svg class="sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" '
+              'stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2'
+              'M12 20.5v2M1.5 12h2M20.5 12h2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>')
+
 STRINGS = {
     "en": {
-        "title": "Tech salaries in Spain",
+        "title": "Spanish Top Tech Companies", "theme": "Light or dark mode",
         "source": "Data: Levels.fyi",
         "floor": "Companies with a median base of 45k+",
         "all_roles": "All roles", "all_years": "Any",
@@ -103,26 +118,42 @@ STRINGS = {
         "hero_label": "Median base salary",
         "kpi_total": "Median total comp", "kpi_people": "Salaries",
         "kpi_share": "60k+ base", "kpi_companies": "Companies",
-        "map_title": "Median base by region",
+        "map_title": "By region",
+        "map_pay": "Median base", "map_count": "Salaries",
+        "map_pay_sub": "Median gross yearly base salary of everyone reported in each region.",
+        "map_count_sub": "How many salaries were reported in each region.",
         "map_empty": "Fewer than {min} salaries",
-        "years_title": "Median base by years of experience",
-        "hist_title": "Base salary distribution",
+        "years_title": "Pay by experience",
+        "years_sub": "Gross yearly base salary for each band of years of experience.",
+        "key_median": "Median", "key_range": "Middle half of salaries (p25–p75)",
+        "key_n": "Under each band: how many salaries",
+        "hist_title": "How many earn what",
+        "hist_sub": "Number of salaries in each 10k band of gross yearly base salary.",
+        "hist_key": "{p} earn 60k or more", "hist_key_low": "Under 60k",
+        "withheld": "Fewer than {min} salaries, hidden",
         "roles_title": "Median base by role",
         "companies_title": "Companies",
         "search": "Search",
-        "col_company": "Company", "col_median": "Median base",
-        "col_vs": "vs market", "col_total": "Total", "col_n": "Salaries",
-        "col_share": "60k+",
+        "col_company": "Company", "col_median": "Median base salary",
+        "col_vs": "vs market (same role and experience)",
+        "col_total": "Median total pay (base + bonus + stock)", "col_n": "Salaries reported",
+        "col_share": "Earning 60k+",
+        "tip_median": "Gross yearly base salary: half earn more, half earn less",
+        "tip_share": "Share of salaries with a base of 60,000 € or more",
+        "tip_n": "How many salaries this company has under the filters chosen",
         "vs_tip": "Median of each salary against the Spain median for its role and years",
         "show_all": "Show all {n}", "show_less": "Show less",
         "none": "No group of {min} or more salaries.",
         "people": "salaries", "median": "Median", "range": "p25–p75",
         "updated": "Updated {date}",
-        "data": "JSON", "csv": "CSV", "repo": "GitHub",
+        "data": "JSON", "csv": "CSV", "repo": "GitHub", "web": "Website",
         "under": "Under", "over": "Over",
+        "role_label": "Role", "mode_label": "Work",
+        "mode_remote": "Remote", "mode_hybrid": "Hybrid", "mode_office": "Office",
+        "any": "Any", "loading": "Loading…", "from": "From", "to": "To",
     },
     "es": {
-        "title": "Salarios tech en España",
+        "title": "Spanish Top Tech Companies", "theme": "Modo claro u oscuro",
         "source": "Datos: Levels.fyi",
         "floor": "Empresas con base mediana de 45k+",
         "all_roles": "Todos los roles", "all_years": "Todas",
@@ -130,23 +161,39 @@ STRINGS = {
         "hero_label": "Salario base mediano",
         "kpi_total": "Total mediano", "kpi_people": "Salarios",
         "kpi_share": "60k+ de base", "kpi_companies": "Empresas",
-        "map_title": "Base mediana por comunidad",
+        "map_title": "Por comunidad",
+        "map_pay": "Base mediana", "map_count": "Salarios",
+        "map_pay_sub": "Salario base bruto anual mediano de todos los salarios de cada comunidad.",
+        "map_count_sub": "Cuántos salarios se han recogido en cada comunidad.",
         "map_empty": "Menos de {min} salarios",
-        "years_title": "Base mediana por años de experiencia",
-        "hist_title": "Distribución de la base",
+        "years_title": "Salario según experiencia",
+        "years_sub": "Salario base bruto anual por tramo de años de experiencia.",
+        "key_median": "Mediana", "key_range": "La mitad central de los salarios (p25–p75)",
+        "key_n": "Bajo cada tramo: cuántos salarios",
+        "hist_title": "Cuántos cobran cada salario",
+        "hist_sub": "Número de salarios en cada tramo de 10.000 € de base bruta anual.",
+        "hist_key": "{p} cobra 60k o más", "hist_key_low": "Menos de 60k",
+        "withheld": "Menos de {min} salarios, ocultos",
         "roles_title": "Base mediana por rol",
         "companies_title": "Empresas",
         "search": "Buscar",
-        "col_company": "Empresa", "col_median": "Base mediana",
-        "col_vs": "vs mercado", "col_total": "Total", "col_n": "Salarios",
-        "col_share": "60k+",
+        "col_company": "Empresa", "col_median": "Sueldo base mediano",
+        "col_vs": "Frente al mercado (mismo rol y experiencia)",
+        "col_total": "Sueldo total mediano (base + bonus + acciones)", "col_n": "Nº de salarios",
+        "col_share": "Cobran 60k o más",
+        "tip_median": "Salario base bruto anual: la mitad cobra más y la mitad menos",
+        "tip_share": "Porcentaje de salarios con una base de 60.000 € o más",
+        "tip_n": "Cuántos salarios de esta empresa hay con los filtros elegidos",
         "vs_tip": "Mediana de cada salario frente a la mediana de España para su rol y años",
         "show_all": "Ver los {n}", "show_less": "Ver menos",
         "none": "Ningún grupo de {min} o más salarios.",
         "people": "salarios", "median": "Mediana", "range": "p25–p75",
         "updated": "Actualizado {date}",
-        "data": "JSON", "csv": "CSV", "repo": "GitHub",
+        "data": "JSON", "csv": "CSV", "repo": "GitHub", "web": "Web",
         "under": "Menos de", "over": "Más de",
+        "role_label": "Rol", "mode_label": "Modalidad",
+        "mode_remote": "Remoto", "mode_hybrid": "Híbrido", "mode_office": "Presencial",
+        "any": "Cualquiera", "loading": "Cargando…", "from": "Desde", "to": "Hasta",
     },
 }
 
@@ -213,6 +260,16 @@ def pays_enough(company: dict) -> bool:
 
 def build_data(companies: list[dict]) -> dict:
     """Every publishable aggregate, keyed "role|region|years" ("" = all)."""
+    return _build(companies)[0]
+
+
+def build_site(companies: list[dict]) -> tuple[dict, dict[str, dict]]:
+    """data.json, and the companies table's own files, one per role."""
+    data, rows, market, index = _build(companies)
+    return data, company_filters(rows, market, index)
+
+
+def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
     rows = []
     for i, company in enumerate(companies):
         if not pays_enough(company):
@@ -260,7 +317,7 @@ def build_data(companies: list[dict]) -> dict:
         for a in found:
             a["c"] = index[a["c"]]
 
-    return {
+    data = {
         "generated": lib.today_utc().isoformat(),
         "min_group": lib.MIN_GROUP,
         "threshold": lib.THRESHOLD_EUR,
@@ -274,14 +331,99 @@ def build_data(companies: list[dict]) -> dict:
         "cells": stats,
         "company_cells": company_stats,
     }
+    return data, rows, market, index
+
+
+def _subsets(values: list[str]) -> list[tuple[str, ...]]:
+    """Every non-empty choice of values, in their own order; all of them is ""."""
+    return [c for n in range(1, len(values)) for c in itertools.combinations(values, n)]
+
+
+def _spans(values: list[str]) -> list[tuple[str, ...]]:
+    """Every run of consecutive values, short of all of them."""
+    return [tuple(values[i:j]) for i in range(len(values))
+            for j in range(i + 1, len(values) + 1) if j - i < len(values)]
+
+
+def company_filters(rows: list, market: dict, index: dict) -> dict[str, dict]:
+    """The companies table for any role or specialization, any span of
+    experience bands and any set of work arrangements.
+
+    One file per role ("" = every role) and per role/specialization, keyed
+    "arrangements|bands" (comma-joined, "" = all). Rows are arrays in
+    `fields` order: objects would double the size of a file the page has to
+    load.
+
+    The page lets a reader pick a span of years and several arrangements, and
+    a median of a union cannot be built from the medians of its parts, so
+    every combination is aggregated here. Each is still a group of MIN_GROUP
+    or more people, the same rule as data.json; region is left out, which
+    keeps the files small.
+    """
+    bands, modes = bucket_labels(), list(lib.WORK_ARRANGEMENTS)
+    band_sets = [("",)] + _spans(bands)
+    mode_sets = [("",)] + _subsets(modes)
+    groups: dict[str, dict[str, dict[int, list]]] = collections.defaultdict(
+        lambda: collections.defaultdict(lambda: collections.defaultdict(list)))
+    counts = collections.Counter()
+    for i, role, _, bucket, e in rows:
+        spec = e.get("specialization") or ""
+        tables = {"", role, f"{role}/{spec}" if role and spec else ""}
+        counts.update(t for t in tables if t)
+        mode = e.get("work_arrangement") or ""
+        for ms in mode_sets:
+            if ms != ("",) and mode not in ms:
+                continue
+            for bs in band_sets:
+                if bs != ("",) and bucket not in bs:
+                    continue
+                key = f"{','.join(m for m in ms if m)}|{','.join(b for b in bs if b)}"
+                for t in tables:
+                    groups[t][key][i].append(e)
+
+    files = {}
+    fields = ["c", "n", "median", "p25", "p75", "total", "share", "vs"]
+    for name, cells in groups.items():
+        out = {}
+        for key, by_company in cells.items():
+            found = []
+            for i, entries in by_company.items():
+                if a := aggregate(entries):
+                    ratios = [market[id(e)] for e in entries if id(e) in market]
+                    a["vs"] = (round(statistics.median(ratios) - 1, 3)
+                               if len(ratios) >= lib.MIN_GROUP else None)
+                    found.append({"c": index[i], **a})
+            if found:
+                found.sort(key=lambda a: (-a["median"], -a["share"]))
+                out[key] = [[a[f] for f in fields] for a in found]
+        if out:
+            files[name] = {"fields": fields, "cells": out}
+
+    # The role menu, most salaries first, each role with its specializations.
+    # Only tables that exist are offered.
+    def entry(slug: str, name: str) -> dict:
+        return {"slug": slug, "name": name, "n": counts[slug]}
+    menu = []
+    for role in sorted((t for t in files if t and "/" not in t), key=lambda t: -counts[t]):
+        specs = taxonomy.SPECIALIZATIONS.get(role, {})
+        item = entry(role, role_info(role)["name"])
+        item["specs"] = [entry(t, specs.get(t.split("/")[1], (t.split("/")[1],))[0])
+                         for t in sorted((t for t in files if t.startswith(role + "/")),
+                                         key=lambda t: -counts[t])]
+        menu.append(item)
+    files[""]["roles"] = menu
+    files[""]["bands"] = bands
+    return files
 
 
 def company_info(company: dict) -> dict:
     cities = collections.Counter(e["city"] for e in company["entries"] if e.get("city"))
-    url = company.get("careers_url") or company.get("website")
+    # "-" means checked and there is none. The careers page first: it is where to apply.
+    web = next((u for u in (company.get("careers_url"), company.get("website")) if u and u != "-"), None)
+    url = web
     if not url and company.get("levels_slug"):
         url = f"https://www.levels.fyi/companies/{company['levels_slug']}/salaries"
-    return {"name": company["company"], "url": url,
+    return {"name": company["company"], "url": url, "web": web,
             "levels": company.get("levels_slug"),
             "linkedin": company.get("linkedin_url"),
             "cities": [c for c, _ in cities.most_common(3)]}
@@ -367,14 +509,20 @@ def page(lang: str, svg: str) -> str:
     e = {k: html.escape(v) for k, v in s.items()}
     other = "es" if lang == "en" else "en"
     levels = '<a href="https://www.levels.fyi" rel="noopener">Levels.fyi</a>'
+    lang_links = "".join(
+        f'<a class="on" aria-current="page">{code.upper()}</a>' if code == lang
+        else f'<a href="/{code}/" hreflang="{code}">{code.upper()}</a>'
+        for code in ("es", "en"))
     return f"""<!doctype html>
 <html lang="{lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e['title']}</title>
-<meta name="color-scheme" content="light">
-<meta name="theme-color" content="#f5f5f7">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<script>try {{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }} catch (_) {{}}</script>
 <link rel="alternate" hreflang="{other}" href="/{other}/">
 <link rel="alternate" type="application/json" href="/api/v1/data.json" title="Salary aggregates">
 <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Salary aggregates for agents">
@@ -385,12 +533,11 @@ def page(lang: str, svg: str) -> str:
 <nav class="bar">
   <div class="bar-in">
     <a class="brand" href="/{lang}/">{e['title']}</a>
-    <div class="controls">
-      <label class="pill-select"><select id="f-role" aria-label="{e['all_roles']}"></select></label>
-      <div class="seg" id="f-years" role="group" aria-label="{e['years_label']}"></div>
-      <button class="chip" id="f-region" hidden></button>
+    <div class="bar-end">
+      <a class="icon-btn" href="{REPO}" rel="noopener" title="GitHub" aria-label="GitHub">{GITHUB_ICON}</a>
+      <div class="seg" role="group">{lang_links}</div>
+      <button class="icon-btn" id="theme" type="button" title="{e['theme']}" aria-label="{e['theme']}">{THEME_ICON}</button>
     </div>
-    <a class="lang" href="/{other}/" hreflang="{other}">{other.upper()}</a>
   </div>
 </nav>
 
@@ -411,7 +558,12 @@ def page(lang: str, svg: str) -> str:
 
 <main class="bento">
   <section class="tile wide map-tile">
-    <h2>{e['map_title']}</h2>
+    <div class="tile-head">
+      <div><h2>{e['map_title']}</h2><p class="lede" id="map-sub"></p></div>
+      <div class="seg" id="map-metric" role="group" aria-label="{e['map_title']}">
+        <button data-m="pay">{e['map_pay']}</button><button data-m="count">{e['map_count']}</button>
+      </div>
+    </div>
     <div class="map-grid">
       <div class="map-box">{svg}<div class="legend" id="legend"></div></div>
       <ol class="ranking" id="ranking"></ol>
@@ -420,11 +572,15 @@ def page(lang: str, svg: str) -> str:
 
   <section class="tile">
     <h2>{e['years_title']}</h2>
+    <p class="lede">{e['years_sub']}</p>
     <div id="years-chart" class="chart"></div>
+    <div class="chart-key" id="years-key"></div>
   </section>
   <section class="tile">
     <h2>{e['hist_title']}</h2>
+    <p class="lede">{e['hist_sub']}</p>
     <div id="hist-chart" class="chart"></div>
+    <div class="chart-key" id="hist-key"></div>
   </section>
 
   <section class="tile wide" id="roles-card" hidden>
@@ -433,11 +589,12 @@ def page(lang: str, svg: str) -> str:
     <button class="more" id="roles-more" hidden></button>
   </section>
 
-  <section class="tile wide">
+  <section class="tile wide" id="companies-card">
     <div class="tile-head">
       <h2>{e['companies_title']}</h2>
       <input id="search" type="search" placeholder="{e['search']}" autocomplete="off">
     </div>
+    <div class="filters" id="filters"></div>
     <div class="table-wrap"><table id="companies"></table></div>
     <button class="more" id="more" hidden></button>
   </section>
@@ -472,9 +629,15 @@ def main(argv: list[str]) -> int:
     for name in ("app.js", "style.css"):
         shutil.copy(WEB / name, OUT / name)
 
-    data = build_data(lib.load_companies())
+    data, tables = build_site(lib.load_companies())
     (OUT / "api" / "v1" / "data.json").write_text(
         json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    (OUT / "api" / "v1" / "companies").mkdir()
+    for name, table in tables.items():
+        path = OUT / "api" / "v1" / "companies" / f"{name or 'all'}.json"
+        path.parent.mkdir(exist_ok=True)
+        path.write_text(json.dumps(table, ensure_ascii=False, separators=(",", ":")),
+                        encoding="utf-8")
     (OUT / "llms.txt").write_text(llms_txt(data), encoding="utf-8")
     (OUT / "llms-full.txt").write_text(llms_full(data), encoding="utf-8")
     print(f"Built _site/: {len(data['companies'])} companies, {len(data['cells'])} cells "
@@ -494,7 +657,7 @@ def json_ld(lang: str) -> str:
     }[lang]
     dataset = {
         "@context": "https://schema.org", "@type": "Dataset",
-        "name": "Tech Pay Spain", "description": description, "inLanguage": lang,
+        "name": "Spanish Top Tech Companies", "description": description, "inLanguage": lang,
         "url": SITE + "/" if SITE else REPO, "isAccessibleForFree": True,
         "license": "https://creativecommons.org/licenses/by-sa/4.0/",
         "dateModified": lib.today_utc().isoformat(),

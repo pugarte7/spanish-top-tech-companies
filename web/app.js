@@ -11,16 +11,21 @@ const short = (n) => new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 1 })
 const pct = (x) => Math.round(x * 100) + "%";
 
 let D;
-const state = { role: "", region: "", years: "", q: "", all: false, allRoles: false, sort: "median" };
-const key = (o = {}) => {
-  const s = { ...state, ...o };
-  return `${s.role}|${s.region}|${s.years}`;
-};
-const cell = (o) => D.cells[key(o)];
+// Filters belong to the companies table only; the charts above it show everyone.
+const state = { role: "", years: [], modes: [], q: "", all: false, allRoles: false, sort: "median", asc: false };
+const MODES = ["remote", "hybrid", "office"];
+const cell = (o = {}) => D.cells[`${o.role || ""}|${o.region || ""}|${o.years || ""}`];
 const regionName = (code) => D.regions[code]?.[LANG] || code;
 const yearsLabel = (b) => `${b.replace("-", "–")} ${S.years_unit}`;
 
 // --- tooltip ----------------------------------------------------------------
+$("theme").addEventListener("click", () => {
+  const dark = getComputedStyle(document.documentElement).colorScheme === "dark";
+  const next = dark ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("theme", next); } catch (_) {}
+});
+
 const tip = $("tip");
 function showTip(e, html) {
   tip.innerHTML = html;
@@ -41,35 +46,172 @@ const statTip = (title, a) => `<b>${esc(title)}</b><br>${S.median} ${money(a.med
   `<span class="t-sub">${S.range} ${short(a.p25)} – ${short(a.p75)} · ${a.n} ${S.people}</span>`;
 
 // --- filters ------------------------------------------------------------------
-function filters() {
-  const sel = $("f-role");
-  const groups = {};
-  for (const r of D.roles) (groups[r.category] ||= []).push(r);
-  const opt = (r) => `<option value="${r.slug}">${esc(r.name)}</option>`;
-  sel.innerHTML = `<option value="">${esc(S.all_roles)}</option>` +
-    (D.roles.length < 8 ? D.roles.map(opt).join("") : Object.keys(groups).sort().map((g) =>
-      `<optgroup label="${esc(g)}">${groups[g].sort((x, y) => x.name.localeCompare(y.name))
-        .map(opt).join("")}</optgroup>`).join(""));
-  sel.value = state.role;
-  sel.onchange = () => set({ role: sel.value });
+// Each filter is a button that opens a panel: role is a tree of roles and
+// their specializations, most salaries first; experience is a span of bands
+// picked with two handles; work arrangement takes several. Nothing chosen
+// means any.
+const FILTERS = {
+  role: { label: () => S.role_label, active: () => !!state.role, text: () => roleName(state.role) },
+  years: { label: () => S.years_label, active: () => state.years.length > 0, text: () => spanLabel(state.years) },
+  modes: {
+    label: () => S.mode_label, active: () => state.modes.length > 0,
+    text: () => state.modes.map((m) => S["mode_" + m]).join(", "),
+  },
+};
+let menuOpen = null;
+const expanded = new Set();
 
-  const seg = $("f-years");
-  seg.innerHTML = [["", S.all_years], ...D.years.map((b) => [b, yearsLabel(b)])]
-    .map(([v, l]) => `<button data-v="${v}">${esc(l)}</button>`).join("");
-  seg.onclick = (e) => { const b = e.target.closest("button"); if (b) set({ years: b.dataset.v }); };
+const roleTree = () => T[""]?.roles || [];
+const bands = () => T[""]?.bands || D.years;
+function roleName(slug) {
+  for (const r of roleTree()) {
+    if (r.slug === slug) return r.name;
+    const sp = r.specs.find((x) => x.slug === slug);
+    if (sp) return `${r.name} · ${sp.name}`;
+  }
+  return slug;
+}
+// "5-7","8-11" reads "5–11 años"; a span reaching the last band is open-ended.
+function spanLabel(span) {
+  if (!span.length) return S.any;
+  const from = span[0].split(/[-+]/)[0], last = span[span.length - 1];
+  const to = last.endsWith("+") ? "" : last.split("-")[1];
+  return (to ? (from === to ? from : `${from}–${to}`) : `${from}+`) + ` ${S.years_unit}`;
+}
 
-  $("f-region").onclick = () => set({ region: "" });
+function filterBar() {
+  $("filters").innerHTML = Object.entries(FILTERS).map(([k, f]) =>
+    `<div class="filter${f.active() ? " on" : ""}" data-k="${k}">` +
+    `<button class="pick" aria-haspopup="true" aria-expanded="${menuOpen === k}">` +
+    `<span class="lab">${esc(f.label())}</span> <span class="txt">${esc(f.active() ? f.text() : S.any)}</span></button>` +
+    (menuOpen === k ? MENUS[k]() : "") + `</div>`).join("");
+  $("filters").querySelectorAll(".filter").forEach((el) => {
+    const k = el.dataset.k;
+    // Redrawing detaches the clicked node, which the outside-click handler
+    // would read as a click elsewhere, so clicks inside a filter stop here.
+    el.onclick = (e) => e.stopPropagation();
+    el.querySelector(".pick").onclick = () => {
+      menuOpen = menuOpen === k ? null : k;
+      filterBar();
+      $("filters").querySelector(".menu [tabindex], .menu input")?.focus();
+    };
+    el.querySelectorAll("[data-v]").forEach((o) => {
+      o.onclick = () => pick(k, o.dataset.v);
+      o.onkeydown = (e) => {
+        if (e.target !== o) return;
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); o.click(); }
+      };
+    });
+    el.querySelectorAll("[data-toggle]").forEach((t) => t.onclick = (e) => {
+      e.stopPropagation();
+      const r = t.dataset.toggle;
+      expanded.has(r) ? expanded.delete(r) : expanded.add(r);
+      filterBar();
+      $("filters").querySelector(`[data-toggle="${CSS.escape(r)}"]`)?.focus();
+    });
+    if (k === "years" && menuOpen === k) wireSpan(el);
+  });
+}
+
+const option = (v, label, cls, sel, extra = "") =>
+  `<li data-v="${esc(v)}" tabindex="0" role="option" aria-selected="${sel}" class="${cls}${sel ? " sel" : ""}">` +
+  `${label}${extra}</li>`;
+const count = (n) => `<small>${n.toLocaleString(LOCALE)}</small>`;
+
+const MENUS = {
+  role: () => {
+    const open = (r) => expanded.has(r.slug) || state.role.startsWith(r.slug + "/");
+    return `<ul class="menu tree" role="listbox">` + option("", esc(S.all_roles), "", !state.role) +
+      roleTree().map((r) => option(r.slug, `<span>${esc(r.name)}</span>${count(r.n)}`, "role",
+        state.role === r.slug, r.specs.length
+          ? `<button class="twist${open(r) ? " open" : ""}" data-toggle="${esc(r.slug)}" ` +
+            `aria-label="${esc(r.name)}" aria-expanded="${open(r)}">›</button>` : "") +
+        (open(r) ? r.specs.map((sp) => option(sp.slug, `<span>${esc(sp.name)}</span>${count(sp.n)}`,
+          "spec", state.role === sp.slug)).join("") : "")).join("") + `</ul>`;
+  },
+  years: () => {
+    const b = bands(), last = b.length - 1;
+    const [i, j] = state.years.length
+      ? [b.indexOf(state.years[0]), b.indexOf(state.years[state.years.length - 1])] : [0, last];
+    const ticks = b.map((x) => `<span>${esc(x.replace("-", "–"))}</span>`).join("");
+    return `<div class="menu span"><div class="span-head"><b id="span-text">${esc(spanLabel(state.years))}</b>` +
+      `<button class="link" data-v="">${esc(S.any)}</button></div>` +
+      `<div class="dual"><span class="rail"><i id="span-fill"></i></span>` +
+      `<input type="range" id="span-from" min="0" max="${last}" step="1" value="${i}" aria-label="${esc(S.from)}">` +
+      `<input type="range" id="span-to" min="0" max="${last}" step="1" value="${j}" aria-label="${esc(S.to)}"></div>` +
+      `<div class="ticks">${ticks}</div></div>`;
+  },
+  modes: () => `<ul class="menu" role="listbox" aria-multiselectable="true">` +
+    option("", esc(S.any), "any", !state.modes.length) +
+    MODES.map((m) => option(m, esc(S["mode_" + m]), "check", state.modes.includes(m))).join("") + `</ul>`,
+};
+
+// The two handles update the table as they move, without redrawing the panel
+// under the pointer.
+function wireSpan(el) {
+  const from = el.querySelector("#span-from"), to = el.querySelector("#span-to");
+  const b = bands(), last = b.length - 1;
+  const paint = () => {
+    const i = +from.value, j = +to.value;
+    el.querySelector("#span-fill").style.cssText = `left:${(i / last) * 100}%;right:${100 - (j / last) * 100}%`;
+  };
+  const move = (moved) => {
+    if (+from.value > +to.value) (moved === from ? to : from).value = moved.value;
+    const i = +from.value, j = +to.value;
+    state.years = i === 0 && j === last ? [] : b.slice(i, j + 1);
+    state.all = false;
+    paint();
+    el.querySelector("#span-text").textContent = spanLabel(state.years);
+    el.querySelector(".txt").textContent = FILTERS.years.active() ? spanLabel(state.years) : S.any;
+    el.classList.toggle("on", FILTERS.years.active());
+    saveHash();
+    companies();
+  };
+  from.oninput = () => move(from);
+  to.oninput = () => move(to);
+  paint();
+}
+
+async function pick(k, v) {
+  if (k === "role") {
+    state.role = v;
+    menuOpen = null;
+  } else if (k === "years") {
+    state.years = [];
+  } else if (!v) {
+    state.modes = [];
+  } else {
+    const next = state.modes.includes(v) ? state.modes.filter((x) => x !== v) : [...state.modes, v];
+    // Everything ticked is the same as nothing ticked.
+    state.modes = next.length === MODES.length ? [] : MODES.filter((x) => next.includes(x));
+  }
+  state.all = false;
+  saveHash();
+  filterBar();
+  $("filters").querySelector(`.filter[data-k="${k}"] [data-v="${CSS.escape(v)}"]`)?.focus();
+  await loadTable(state.role);
+  companies();
+}
+
+function saveHash() {
+  const h = new URLSearchParams();
+  if (state.role) h.set("role", state.role);
+  if (state.years.length) h.set("years", state.years.join(","));
+  if (state.modes.length) h.set("work", state.modes.join(","));
+  history.replaceState(null, "", h.toString() ? "#" + h : location.pathname);
+}
+
+document.addEventListener("click", (e) => {
+  if (menuOpen && !e.target.closest(".filter")) { menuOpen = null; filterBar(); }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && menuOpen) { menuOpen = null; filterBar(); }
+});
+
+function wire() {
   $("search").oninput = (e) => { state.q = e.target.value; companies(); };
   $("more").onclick = () => { state.all = !state.all; companies(); };
   $("roles-more").onclick = () => { state.allRoles = !state.allRoles; rolesChart(); };
-}
-
-function set(patch) {
-  Object.assign(state, patch, { all: false, allRoles: false });
-  const h = new URLSearchParams();
-  for (const k of ["role", "region", "years"]) if (state[k]) h.set(k, state[k]);
-  history.replaceState(null, "", h.toString() ? "#" + h : location.pathname);
-  render();
 }
 
 // --- KPIs ---------------------------------------------------------------------
@@ -79,14 +221,15 @@ function kpis() {
   $("k-total").textContent = a ? money(a.total) : "—";
   $("k-share").textContent = a ? pct(a.share) : "—";
   $("k-people").textContent = a ? a.n.toLocaleString(LOCALE) : "—";
-  $("k-companies").textContent = (D.company_cells[key()] || []).length.toLocaleString(LOCALE);
-  const role = D.roles.find((r) => r.slug === state.role);
-  $("eyebrow").textContent = [role ? role.name : S.all_roles,
-    state.region && regionName(state.region), state.years && yearsLabel(state.years)]
-    .filter(Boolean).join(" · ");
+  $("k-companies").textContent = (D.company_cells["||"] || []).length.toLocaleString(LOCALE);
+  $("eyebrow").textContent = S.all_roles;
 }
 
 // --- map ------------------------------------------------------------------------
+// The map shows either pay or how many salaries each region has. Counts run
+// from a handful to thousands, so their colour classes are on a log scale.
+let mapMetric = "pay";
+
 function map() {
   const svg = $("map");
   const stats = {};
@@ -94,49 +237,52 @@ function map() {
     const a = cell({ region: code });
     if (a) stats[code] = a;
   }
-  const meds = Object.values(stats).map((a) => a.median);
-  const lo = Math.min(...meds), hi = Math.max(...meds);
-  const classes = meds.length ? 5 : 0;
+  const pay = mapMetric === "pay";
+  const value = (a) => pay ? a.median : a.n;
+  const scale = pay ? (v) => v : Math.log;
+  const unscale = pay ? (v) => v : Math.exp;
+  const vals = Object.values(stats).map((a) => scale(value(a)));
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const classes = vals.length ? 5 : 0;
   const step = (hi - lo) / classes || 1;
-  const cls = (m) => Math.min(classes, 1 + Math.floor((m - lo) / step));
+  const cls = (a) => Math.min(classes, 1 + Math.floor((scale(value(a)) - lo) / step));
+  const fmt = pay ? short : (v) => Math.round(v).toLocaleString(LOCALE);
 
-  svg.classList.toggle("dim", !!state.region);
+  $("map-sub").textContent = pay ? S.map_pay_sub : S.map_count_sub;
+  $("map-metric").querySelectorAll("button").forEach((b) => {
+    b.setAttribute("aria-pressed", b.dataset.m === mapMetric);
+    b.onclick = () => { mapMetric = b.dataset.m; map(); };
+  });
+
   svg.querySelectorAll(".region").forEach((p) => {
     const code = p.dataset.code, a = stats[code];
     p.classList.toggle("has", !!a);
-    p.classList.toggle("sel", code === state.region);
-    p.style.fill = a ? `var(--seq-${hi === lo ? classes : cls(a.median)})` : "";
+    p.style.fill = a ? `var(--seq-${hi === lo ? classes : cls(a)})` : "";
     p.onmousemove = (e) => showTip(e, a ? statTip(regionName(code), a)
       : `<b>${esc(regionName(code))}</b><br>${esc(S.map_empty)}`);
     p.onmouseleave = hideTip;
-    p.onclick = () => a && set({ region: state.region === code ? "" : code });
   });
-  // Selected region on top so its outline is not hidden by neighbours.
-  const sel = svg.querySelector(".region.sel");
-  if (sel) svg.appendChild(sel);
 
   let legend = "";
   if (classes && hi > lo) {
     for (let i = 1; i <= classes; i++) {
-      const from = lo + step * (i - 1), to = lo + step * i;
-      legend += `<span><i style="background:var(--seq-${i})"></i>${short(from)}–${short(to)}</span>`;
+      const from = unscale(lo + step * (i - 1)), to = unscale(lo + step * i);
+      legend += `<span><i style="background:var(--seq-${i})"></i>${fmt(from)}–${fmt(to)}</span>`;
     }
   }
   legend += `<span><i style="background:var(--empty)"></i>${esc(S.map_empty)}</span>`;
   $("legend").innerHTML = legend;
 
-  const ranked = Object.entries(stats).sort((x, y) => y[1].median - x[1].median);
-  const max = ranked.length ? ranked[0][1].median : 1;
+  const ranked = Object.entries(stats).sort((x, y) => value(y[1]) - value(x[1]));
+  const max = ranked.length ? value(ranked[0][1]) : 1;
   const ol = $("ranking");
   ol.innerHTML = ranked.map(([code, a]) =>
-    `<li data-code="${code}" class="${code === state.region ? "sel" : ""}">` +
-    `<span>${esc(regionName(code))}<span class="n">${a.n}</span></span>` +
-    `<span class="v">${money(a.median)}</span>` +
-    `<span class="bar"><i style="width:${(a.median / max) * 100}%"></i></span></li>`).join("");
-  ol.querySelectorAll("li").forEach((li) => {
-    li.onclick = () => set({ region: state.region === li.dataset.code ? "" : li.dataset.code });
-    hover(li, () => statTip(regionName(li.dataset.code), stats[li.dataset.code]));
-  });
+    `<li data-code="${code}">` +
+    `<span>${esc(regionName(code))}<span class="n">${pay ? a.n : money(a.median)}</span></span>` +
+    `<span class="v">${pay ? money(a.median) : a.n.toLocaleString(LOCALE)}</span>` +
+    `<span class="bar"><i style="width:${(value(a) / max) * 100}%"></i></span></li>`).join("");
+  ol.querySelectorAll("li").forEach((li) =>
+    hover(li, () => statTip(regionName(li.dataset.code), stats[li.dataset.code])));
 }
 
 // --- charts ---------------------------------------------------------------------
@@ -153,35 +299,54 @@ function size(el) {
   H = W < 420 ? 200 : 230;
 }
 
+// A tidy axis step: 1, 2 or 5 times a power of ten, giving about `n` ticks.
+function niceStep(max, n = 4) {
+  const raw = max / n, p = 10 ** Math.floor(Math.log10(raw));
+  return [1, 2, 5, 10].map((m) => m * p).find((s) => s >= raw);
+}
+const AXIS = 40;
+
+// Same marks as the companies table: a bar for the middle half of salaries,
+// a dot for the median.
 function yearsChart() {
-  size($("years-chart"));
-  const rows = D.years.map((b) => [b, cell({ years: b })]).filter(([, a]) => a);
   const el = $("years-chart");
+  size(el);
+  const rows = D.years.map((b) => [b, cell({ years: b })]).filter(([, a]) => a);
   if (!rows.length) { el.innerHTML = `<p class="empty">${esc(S.none)}</p>`; return; }
-  const max = Math.max(...rows.map(([, a]) => a.p75)) * 1.08;
-  const ih = H - PAD.t - PAD.b, band = (W - PAD.l - PAD.r) / rows.length;
-  const y = (v) => PAD.t + ih - (v / max) * ih;
-  let g = `<line class="gridline" x1="0" x2="${W}" y1="${PAD.t + ih}" y2="${PAD.t + ih}"/>`;
+  const pb = 44, ih = H - PAD.t - pb;
+  // The axis spans the ranges, not zero to the top: from zero they would be
+  // slivers. Nothing here is a bar whose length has to start at zero.
+  const top = Math.max(...rows.map(([, a]) => a.p75)), bottom = Math.min(...rows.map(([, a]) => a.p25));
+  const tick = niceStep(top - bottom, 4);
+  const min = Math.max(0, Math.floor(bottom / tick - 0.5) * tick);
+  const max = Math.ceil((top + tick * 0.3) / tick) * tick;
+  const band = (W - AXIS - PAD.r) / rows.length;
+  const y = (v) => PAD.t + ih - ((v - min) / (max - min)) * ih;
+  let g = "";
+  for (let v = min; v <= max; v += tick)
+    g += `<line class="gridline" x1="${AXIS}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/>` +
+      `<text x="${AXIS - 8}" y="${y(v) + 4}" text-anchor="end">${v ? short(v) : "0"}</text>`;
   rows.forEach(([b, a], i) => {
-    const bw = Math.min(56, band * 0.56), cx = PAD.l + band * i + band / 2;
-    const off = state.years && state.years !== b ? " off" : "";
-    g += `<g data-i="${i}">` +
-      `<rect class="bar-hit" x="${cx - band / 2}" y="0" width="${band}" height="${H}"/>` +
-      `<path class="bar${off}" d="${roundTop(cx - bw / 2, y(a.median), bw, PAD.t + ih - y(a.median))}"/>` +
-      `<line class="whisker" x1="${cx}" x2="${cx}" y1="${y(a.p25)}" y2="${y(a.p75)}"/>` +
-      `<line class="whisker" x1="${cx - 5}" x2="${cx + 5}" y1="${y(a.p75)}" y2="${y(a.p75)}"/>` +
-      `<line class="whisker" x1="${cx - 5}" x2="${cx + 5}" y1="${y(a.p25)}" y2="${y(a.p25)}"/>` +
-      `<text class="val" x="${cx}" y="${y(a.p75) - 7}" text-anchor="middle">${short(a.median)}</text>` +
-      `<text x="${cx}" y="${H - 8}" text-anchor="middle">${esc(W < 420 ? b.replace("-", "–") : yearsLabel(b))}</text></g>`;
+    const cx = AXIS + band * i + band / 2, bw = Math.min(26, band * 0.4);
+    g += `<g data-i="${i}"><rect class="bar-hit" x="${cx - band / 2}" y="0" width="${band}" height="${H}"/>` +
+      `<rect class="range" x="${cx - bw / 2}" y="${y(a.p75)}" width="${bw}" height="${y(a.p25) - y(a.p75)}" rx="${bw / 2}"/>` +
+      `<circle class="med" cx="${cx}" cy="${y(a.median)}" r="6"/>` +
+      `<text class="val" x="${cx}" y="${y(a.p75) - 8}" text-anchor="middle">${short(a.median)}</text>` +
+      `<text x="${cx}" y="${H - 24}" text-anchor="middle" class="xl">${esc(W < 420 ? b.replace("-", "–") : yearsLabel(b))}</text>` +
+      `<text x="${cx}" y="${H - 8}" text-anchor="middle">${a.n.toLocaleString(LOCALE)}</text></g>`;
   });
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
   el.querySelectorAll("g[data-i]").forEach((n) => {
     const [b, a] = rows[n.dataset.i];
     hover(n, () => statTip(yearsLabel(b), a));
-    n.onclick = () => set({ years: state.years === b ? "" : b });
   });
+  $("years-key").innerHTML = `<span><i class="k-dot"></i>${esc(S.key_median)}</span>` +
+    `<span><i class="k-range"></i>${esc(S.key_range)}</span>` +
+    `<span class="k-n">${esc(S.key_n)}</span>`;
 }
 
+// Bars at or above the bar are the full colour, so the share reads off the
+// chart itself.
 function histChart() {
   const a = cell(), el = $("hist-chart");
   size(el);
@@ -191,38 +356,45 @@ function histChart() {
   const label = (i) => i === 0 ? `${S.under} ${short(low)}`
     : i === counts.length - 1 ? `${S.over} ${short(low + (i - 1) * step)}`
     : `${short(low + (i - 1) * step)}–${short(low + i * step)}`;
-  const max = Math.max(minG, ...counts.map((c) => c || 0)) * 1.08;
-  const ih = H - PAD.t - PAD.b, band = (W - PAD.l - PAD.r) / counts.length;
+  const top = Math.max(minG, ...counts.map((c) => c || 0));
+  const tick = niceStep(top);
+  const max = Math.ceil(top * 1.06 / tick) * tick;
+  const ih = H - PAD.t - PAD.b, band = (W - AXIS - PAD.r) / counts.length;
   const y = (v) => PAD.t + ih - (v / max) * ih;
-  let g = `<line class="gridline" x1="0" x2="${W}" y1="${PAD.t + ih}" y2="${PAD.t + ih}"/>`;
+  let g = "";
+  for (let v = 0; v <= max; v += tick)
+    g += `<line class="gridline" x1="${AXIS}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/>` +
+      `<text x="${AXIS - 8}" y="${y(v) + 4}" text-anchor="end">${v.toLocaleString(LOCALE)}</text>`;
   counts.forEach((c, i) => {
-    const x = PAD.l + band * i + 1, bw = band - 2;
+    const x = AXIS + band * i + 1, bw = band - 2;
+    const high = i > 0 && low + (i - 1) * step >= D.threshold;
     g += `<g data-i="${i}"><rect class="bar-hit" x="${x - 1}" y="0" width="${band}" height="${H}"/>`;
-    if (c) g += `<path class="bar" d="${roundTop(x, y(c), bw, PAD.t + ih - y(c), 3)}"/>`;
+    if (c) g += `<path class="bar${high ? "" : " low"}" d="${roundTop(x, y(c), bw, PAD.t + ih - y(c), 3)}"/>`;
     else if (c === null) g += `<rect class="withheld" x="${x + .5}" y="${y(minG - 1)}" width="${bw - 1}" height="${PAD.t + ih - y(minG - 1)}" rx="2"/>`;
     g += `</g>`;
   });
-  // Axis labels every 20k, plus the bar at the threshold.
   for (let v = low; v <= D.hist.high; v += (W < 400 ? 4 : 2) * step) {
-    const x = PAD.l + band * (1 + (v - low) / step);
-    g += `<text x="${x}" y="${H - 8}" text-anchor="middle">${short(v)}</text>`;
+    const x = AXIS + band * (1 + (v - low) / step);
+    g += `<text x="${x}" y="${H - 8}" text-anchor="middle"${v === D.threshold ? ' class="xl"' : ""}>${short(v)}</text>`;
   }
-  const tx = PAD.l + band * (1 + (D.threshold - low) / step);
-  g += `<line class="mark" x1="${tx}" x2="${tx}" y1="${PAD.t - 6}" y2="${PAD.t + ih}"/>` +
-    `<text class="mark-label" x="${tx + 5}" y="${PAD.t}">${pct(a.share)} ≥ ${short(D.threshold)}</text>`;
+  const tx = AXIS + band * (1 + (D.threshold - low) / step);
+  g += `<line class="mark" x1="${tx}" x2="${tx}" y1="${PAD.t - 6}" y2="${PAD.t + ih}"/>`;
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
   el.querySelectorAll("g[data-i]").forEach((n) => {
     const i = +n.dataset.i, c = counts[i];
     hover(n, () => `<b>${label(i)} €</b><br>` +
-      (c === null ? `${S.under} ${minG} ${S.people}` : `${c} ${S.people}`));
+      (c === null ? `${S.under} ${minG} ${S.people}` : `${c.toLocaleString(LOCALE)} ${S.people}`));
   });
+  $("hist-key").innerHTML = `<span><i class="k-bar"></i>${esc(S.hist_key.replace("{p}", pct(a.share)))}</span>` +
+    `<span><i class="k-bar low"></i>${esc(S.hist_key_low)}</span>` +
+    (counts.includes(null) ? `<span><i class="k-withheld"></i>${esc(S.withheld)}</span>` : "");
 }
 
 function rolesChart() {
   const rows = D.roles.map((r) => [r, cell({ role: r.slug })]).filter(([, a]) => a)
     .sort((x, y) => y[1].median - x[1].median);
   const card = $("roles-card");
-  card.hidden = state.role !== "" || rows.length < 2;
+  card.hidden = rows.length < 2;
   if (card.hidden) return;
   const shown = state.allRoles ? rows : rows.slice(0, 12);
   const max = rows[0][1].median;
@@ -233,7 +405,11 @@ function rolesChart() {
     `<span class="track"><i style="width:${(a.median / max) * 100}%"></i></span></div>`).join("") + `</div>`;
   el.querySelectorAll(".r").forEach((n, i) => {
     hover(n, () => statTip(shown[i][0].name, shown[i][1]));
-    n.onclick = () => set({ role: n.dataset.slug });
+    n.onclick = () => {
+      if (!roleTree().some((r) => r.slug === n.dataset.slug)) return;
+      pick("role", n.dataset.slug);
+      $("companies-card").scrollIntoView({ behavior: "smooth", block: "start" });
+    };
   });
   const more = $("roles-more");
   more.hidden = rows.length <= 12;
@@ -243,7 +419,6 @@ function rolesChart() {
 // --- companies ------------------------------------------------------------------
 const SORTS = {
   median: (a) => a.median,
-  vs: (a) => a.vs ?? -Infinity,
   share: (a) => a.share,
   n: (a) => a.n,
 };
@@ -251,43 +426,122 @@ const signed = (v) => v == null ? "—" : (v > 0 ? "+" : v < 0 ? "−" : "") + M
 
 function levelsUrl(slug) {
   return state.role
-    ? `https://www.levels.fyi/companies/${slug}/salaries/${state.role}/locations/spain`
+    ? `https://www.levels.fyi/companies/${slug}/salaries/${state.role.split("/")[0]}/locations/spain`
     : `https://www.levels.fyi/companies/${slug}/salaries`;
 }
 
+// Every slot is always drawn, empty when a link is missing, so each logo sits
+// in the same column on every row.
+const ICONS = {
+  web: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8">` +
+    `<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c2.8 2.7 4.2 6 4.2 10s-1.4 7.3-4.2 10` +
+    `c-2.8-2.7-4.2-6-4.2-10S9.2 4.7 12 2z"/></svg>`,
+  levels: `<svg viewBox="0 0 24 24" aria-hidden="true" shape-rendering="crispEdges">` +
+    `<path fill="#788995" d="M0 24v-6h6v-6h6V6h6V0h6v24z"/></svg>`,
+  linkedin: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#0a66c2" d="M20.447 20.452h-3.554v-5.569` +
+    `c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85` +
+    ` 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125z` +
+    `m1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451` +
+    `C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`,
+};
+const iconLink = (url, kind, label) => url
+  ? `<a href="${esc(url)}" rel="noopener" title="${label}" aria-label="${label}">${ICONS[kind]}</a>`
+  : `<span></span>`;
+
+// One file per role, with every combination of bands and arrangements in it;
+// see company_filters() in site.py.
+const T = {};
+async function loadTable(role) {
+  if (T[role]) return;
+  $("companies").innerHTML = `<tr><td class="empty">${esc(S.loading)}</td></tr>`;
+  const r = await fetch(`/api/v1/companies/${role || "all"}.json`);
+  T[role] = r.ok ? await r.json() : { fields: [], cells: {} };
+}
+// Keys list arrangements in lib.WORK_ARRANGEMENTS order, not the menu's.
+const KEY_MODES = ["office", "hybrid", "remote"];
+const tkey = (o = {}) => {
+  const modes = KEY_MODES.filter((m) => (o.modes || state.modes).includes(m));
+  return `${modes.join(",")}|${(o.years || state.years).join(",")}`;
+};
+function table(o) {
+  const t = T[state.role];
+  return (t?.cells[tkey(o)] || []).map((row) =>
+    Object.fromEntries(t.fields.map((f, i) => [f, row[i]])));
+}
+
+// A company's own median per experience band, under the role and arrangements
+// chosen; null where the band has fewer than MIN_GROUP people.
+const companyYears = (id) => bands().map((b) =>
+  [b, table({ years: [b] }).find((a) => a.c === id) || null]);
+
+function detail(a) {
+  const bands = companyYears(a.c);
+  const max = Math.max(...bands.map(([, y]) => y ? y.median : 0)) || 1;
+  const bars = bands.map(([b, y]) => `<div class="yb${state.years.includes(b) ? " on" : ""}">` +
+    (y ? `<b>${short(y.median)}</b><i style="height:${(y.median / max) * 72}px"></i>`
+       : `<span class="na">–</span><i class="none"></i>`) +
+    `<span>${yearsLabel(b)}</span></div>`).join("");
+  // A company with no band of MIN_GROUP people would show six empty bars.
+  return `<div class="detail">${bands.some(([, y]) => y) ? `<div class="ybars">${bars}</div>` : ""}<dl class="kv">` +
+    `<div><dt>${S.col_total}</dt><dd>${money(a.total)}</dd></div>` +
+    `<div><dt title="${esc(S.vs_tip)}">${S.col_vs}</dt><dd>${signed(a.vs)}</dd></div></dl></div>`;
+}
+
+const opened = new Set();
+
 function companies() {
-  const all = D.company_cells[key()] || [];
+  const all = table();
   const q = state.q.trim().toLowerCase();
   const by = SORTS[state.sort];
   const rows = (q ? all.filter((a) => D.companies[a.c].name.toLowerCase().includes(q)) : all)
-    .slice().sort((x, y) => by(y) - by(x) || y.median - x.median);
+    .slice().sort((x, y) => (state.asc ? -1 : 1) * (by(y) - by(x) || y.median - x.median));
   const shown = state.all ? rows : rows.slice(0, 15);
-  const lo = Math.min(...all.map((a) => a.p25)), hi = Math.max(...all.map((a) => a.p75));
-  const x = (v) => ((v - lo) / (hi - lo || 1)) * 100;
-  const th = (k, label, cls = "num", title = "") =>
-    `<th class="${cls} sort${state.sort === k ? " on" : ""}" data-sort="${k}"${title ? ` title="${esc(title)}"` : ""}>${label}</th>`;
+  const th = (k, label, tip, cls = "num") =>
+    `<th class="${cls} sort${state.sort === k ? (state.asc ? " on asc" : " on") : ""}" data-sort="${k}"` +
+    ` title="${esc(tip)}" aria-sort="${state.sort === k ? (state.asc ? "ascending" : "descending") : "none"}">${label}</th>`;
 
   $("companies").innerHTML = !rows.length ? `<tr><td class="empty">${esc(S.none)}</td></tr>` :
-    `<thead><tr><th>${S.col_company}</th>${th("median", S.col_median, "")}` +
-    `${th("vs", S.col_vs, "num", S.vs_tip)}<th class="num hide-sm">${S.col_total}</th>` +
-    `${th("share", S.col_share)}${th("n", S.col_n, "num hide-sm")}</tr></thead><tbody>` +
+    `<thead><tr><th class="chev"></th><th>${S.col_company}</th>` +
+    th("median", S.col_median, S.tip_median, "pay") +
+    `${th("share", S.col_share, S.tip_share)}${th("n", S.col_n, S.tip_n, "num hide-sm")}</tr></thead><tbody>` +
     shown.map((a) => {
       const c = D.companies[a.c];
-      const links = (c.levels ? `<a href="${esc(levelsUrl(c.levels))}" rel="noopener">Levels.fyi</a>` : "") +
-        (c.linkedin ? `<a href="${esc(c.linkedin)}" rel="noopener">LinkedIn</a>` : "");
-      return `<tr><td class="co"><span class="name">${esc(c.name)}</span>` +
-        `<span class="links">${links}</span><span class="cities">${esc(c.cities.join(", "))}</span></td>` +
-        `<td class="med"><div class="medbar"><b>${money(a.median)}</b><span class="track">` +
-        `<span class="rng" style="left:${x(a.p25)}%;width:${x(a.p75) - x(a.p25)}%"></span>` +
-        `<span class="dot" style="left:${x(a.median)}%"></span></span></div></td>` +
-        `<td class="num ${a.vs > 0 ? "vs-up" : "vs-down"}">${signed(a.vs)}</td>` +
-        `<td class="num hide-sm">${money(a.total)}</td><td class="num">${pct(a.share)}</td>` +
-        `<td class="num hide-sm">${a.n}</td></tr>`;
+      const open = opened.has(a.c);
+      const links = iconLink(c.levels && levelsUrl(c.levels), "levels", "Levels.fyi") +
+        iconLink(c.linkedin, "linkedin", "LinkedIn") + iconLink(c.web, "web", S.web);
+      return `<tr class="main${open ? " open" : ""}" tabindex="0" aria-expanded="${open}">` +
+        `<td class="chev"><span>›</span></td>` +
+        `<td class="co"><div class="co-in"><div><span class="name">${esc(c.name)}</span>` +
+        `<span class="cities">${esc(c.cities.join(", "))}</span></div>` +
+        `<span class="links">${links}</span></div></td>` +
+        `<td class="pay"><b>${money(a.median)}</b></td>` +
+        `<td class="num">${pct(a.share)}</td>` +
+        `<td class="num hide-sm">${a.n}</td></tr>` +
+        `<tr class="det"${open ? "" : " hidden"}><td colspan="5">${open ? detail(a) : ""}</td></tr>`;
     }).join("") + `</tbody>`;
-  $("companies").querySelectorAll(".medbar .track").forEach((t, i) =>
-    hover(t, () => statTip(D.companies[shown[i].c].name, shown[i])));
+  $("companies").querySelectorAll("tr.main").forEach((tr, i) => {
+    tr.onkeydown = (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tr.click(); }
+    };
+    tr.onclick = (e) => {
+      if (e.target.closest("a")) return;
+      const id = shown[i].c, open = !opened.has(id);
+      open ? opened.add(id) : opened.delete(id);
+      tr.classList.toggle("open", open);
+      tr.setAttribute("aria-expanded", open);
+      const det = tr.nextElementSibling;
+      det.hidden = !open;
+      det.firstChild.innerHTML = open ? detail(shown[i]) : "";
+    };
+  });
   $("companies").querySelectorAll("th.sort").forEach((t) =>
-    t.onclick = () => { state.sort = t.dataset.sort; companies(); });
+    // A second click on the same column flips the order; a new column starts
+    // highest first.
+    t.onclick = () => {
+      state.asc = state.sort === t.dataset.sort ? !state.asc : false;
+      state.sort = t.dataset.sort;
+      companies();
+    });
 
   const more = $("more");
   more.hidden = rows.length <= 15;
@@ -295,25 +549,26 @@ function companies() {
 }
 
 // --- render -------------------------------------------------------------------
-function render() {
-  $("f-role").value = state.role;
-  $("f-years").querySelectorAll("button").forEach((b) =>
-    b.setAttribute("aria-pressed", b.dataset.v === state.years));
-  const chip = $("f-region");
-  chip.hidden = !state.region;
-  chip.textContent = state.region ? regionName(state.region) : "";
-  hideTip();
-  kpis(); map(); yearsChart(); histChart(); rolesChart(); companies();
-}
-
 async function main() {
   D = await (await fetch("/api/v1/data.json")).json();
-  const h = new URLSearchParams(location.hash.slice(1));
-  for (const k of ["role", "region", "years"]) state[k] = h.get(k) || "";
-  if (!D.cells[key()]) Object.assign(state, { role: "", region: "", years: "" });
   $("updated").textContent = S.updated.replace("{date}", D.generated);
-  filters();
-  render();
+  wire();
+  kpis(); map(); yearsChart(); histChart(); rolesChart();
+  await loadTable("");
+  const h = new URLSearchParams(location.hash.slice(1));
+  const list = (k, known) => (h.get(k) || "").split(",").filter((v) => known.includes(v));
+  const role = h.get("role") || "";
+  state.role = roleTree().some((r) => r.slug === role || r.specs.some((x) => x.slug === role)) ? role : "";
+  // A span is consecutive bands; anything else in the link falls back to any.
+  const years = list("years", bands());
+  const at = bands().indexOf(years[0]);
+  const span = years.length && years.every((y, i) => bands()[at + i] === y);
+  state.years = span && years.length < bands().length ? years : [];
+  state.modes = list("work", MODES);
+  if (state.modes.length === MODES.length) state.modes = [];
+  filterBar();
+  await loadTable(state.role);
+  companies();
 }
 let resizing;
 addEventListener("resize", () => {
