@@ -123,15 +123,10 @@ STRINGS = {
         "map_pay_sub": "Median gross yearly base salary of everyone reported in each region.",
         "map_count_sub": "How many salaries were reported in each region.",
         "map_empty": "Fewer than {min} salaries",
-        "years_title": "Pay by experience",
-        "years_sub": "Gross yearly base salary for each band of years of experience.",
-        "key_median": "Median", "key_range": "Middle half of salaries (p25–p75)",
-        "key_n": "Under each band: how many salaries",
-        "hist_title": "How many earn what",
-        "hist_sub": "Number of salaries in each 10k band of gross yearly base salary.",
-        "hist_key": "{p} earn 60k or more", "hist_key_low": "Under 60k",
-        "withheld": "Fewer than {min} salaries, hidden",
-        "roles_title": "Median base by role",
+        "matrix_title": "Pay by role and experience",
+        "matrix_sub": "Median gross yearly base salary for the roles with most data. "
+                      "Click a cell to see which companies pay most there.",
+        "sum_range": "Middle half earns",
         "companies_title": "Companies",
         "search": "Search",
         "col_company": "Company", "col_median": "Median base salary",
@@ -166,15 +161,10 @@ STRINGS = {
         "map_pay_sub": "Salario base bruto anual mediano de todos los salarios de cada comunidad.",
         "map_count_sub": "Cuántos salarios se han recogido en cada comunidad.",
         "map_empty": "Menos de {min} salarios",
-        "years_title": "Salario según experiencia",
-        "years_sub": "Salario base bruto anual por tramo de años de experiencia.",
-        "key_median": "Mediana", "key_range": "La mitad central de los salarios (p25–p75)",
-        "key_n": "Bajo cada tramo: cuántos salarios",
-        "hist_title": "Cuántos cobran cada salario",
-        "hist_sub": "Número de salarios en cada tramo de 10.000 € de base bruta anual.",
-        "hist_key": "{p} cobra 60k o más", "hist_key_low": "Menos de 60k",
-        "withheld": "Menos de {min} salarios, ocultos",
-        "roles_title": "Base mediana por rol",
+        "matrix_title": "Sueldo según rol y experiencia",
+        "matrix_sub": "Sueldo base bruto anual mediano de los roles con más datos. "
+                      "Pulsa una celda para ver qué empresas pagan más en ese caso.",
+        "sum_range": "La mitad cobra entre",
         "companies_title": "Empresas",
         "search": "Buscar",
         "col_company": "Empresa", "col_median": "Sueldo base mediano",
@@ -383,9 +373,14 @@ def company_filters(rows: list, market: dict, index: dict) -> dict[str, dict]:
 
     files = {}
     fields = ["c", "n", "median", "p25", "p75", "total", "share", "vs"]
+    # The summary above the table: everyone under the same filters, one
+    # aggregate per key, with its histogram.
+    summary_fields = ["n", "median", "p25", "p75", "share", "hist"]
     for name, cells in groups.items():
-        out = {}
+        out, summary = {}, {}
         for key, by_company in cells.items():
+            if a := aggregate([e for entries in by_company.values() for e in entries], hist=True):
+                summary[key] = [a[f] for f in summary_fields]
             found = []
             for i, entries in by_company.items():
                 if a := aggregate(entries):
@@ -397,7 +392,8 @@ def company_filters(rows: list, market: dict, index: dict) -> dict[str, dict]:
                 found.sort(key=lambda a: (-a["median"], -a["share"]))
                 out[key] = [[a[f] for f in fields] for a in found]
         if out:
-            files[name] = {"fields": fields, "cells": out}
+            files[name] = {"fields": fields, "cells": out,
+                           "summary_fields": summary_fields, "summary": summary}
 
     # The role menu, most salaries first, each role with its specializations.
     # Only tables that exist are offered.
@@ -570,23 +566,11 @@ def page(lang: str, svg: str) -> str:
     </div>
   </section>
 
-  <section class="tile">
-    <h2>{e['years_title']}</h2>
-    <p class="lede">{e['years_sub']}</p>
-    <div id="years-chart" class="chart"></div>
-    <div class="chart-key" id="years-key"></div>
-  </section>
-  <section class="tile">
-    <h2>{e['hist_title']}</h2>
-    <p class="lede">{e['hist_sub']}</p>
-    <div id="hist-chart" class="chart"></div>
-    <div class="chart-key" id="hist-key"></div>
-  </section>
-
-  <section class="tile wide" id="roles-card" hidden>
-    <h2>{e['roles_title']}</h2>
-    <div id="roles-chart"></div>
-    <button class="more" id="roles-more" hidden></button>
+  <section class="tile wide" id="matrix-card">
+    <h2>{e['matrix_title']}</h2>
+    <p class="lede">{e['matrix_sub']}</p>
+    <div class="matrix-wrap"><table class="matrix" id="matrix"></table></div>
+    <div class="legend" id="matrix-legend"></div>
   </section>
 
   <section class="tile wide" id="companies-card">
@@ -595,6 +579,7 @@ def page(lang: str, svg: str) -> str:
       <input id="search" type="search" placeholder="{e['search']}" autocomplete="off">
     </div>
     <div class="filters" id="filters"></div>
+    <div class="summary" id="summary" aria-live="polite"></div>
     <div class="table-wrap"><table id="companies"></table></div>
     <button class="more" id="more" hidden></button>
   </section>
