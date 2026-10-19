@@ -12,7 +12,7 @@ const pct = (x) => Math.round(x * 100) + "%";
 
 let D;
 // Filters belong to the companies table only; the charts above it show everyone.
-const state = { role: "", years: [], modes: [], q: "", all: false, allRoles: false, sort: "median", asc: false };
+const state = { role: "", years: [], modes: [], q: "", all: false, sort: "median", asc: false };
 const MODES = ["remote", "hybrid", "office"];
 const cell = (o = {}) => D.cells[`${o.role || ""}|${o.region || ""}|${o.years || ""}`];
 const regionName = (code) => D.regions[code]?.[LANG] || code;
@@ -211,7 +211,16 @@ document.addEventListener("keydown", (e) => {
 function wire() {
   $("search").oninput = (e) => { state.q = e.target.value; companies(); };
   $("more").onclick = () => { state.all = !state.all; companies(); };
-  $("roles-more").onclick = () => { state.allRoles = !state.allRoles; rolesChart(); };
+}
+
+// Set several filters at once, as a link or a matrix cell does.
+async function applyFilters(patch) {
+  Object.assign(state, patch, { all: false });
+  menuOpen = null;
+  saveHash();
+  filterBar();
+  await loadTable(state.role);
+  companies();
 }
 
 // --- KPIs ---------------------------------------------------------------------
@@ -285,135 +294,72 @@ function map() {
     hover(li, () => statTip(regionName(li.dataset.code), stats[li.dataset.code])));
 }
 
-// --- charts ---------------------------------------------------------------------
-let W = 480, H = 230;
-const PAD = { t: 22, r: 4, b: 26, l: 4 };
-const roundTop = (x, y, w, h, r = 4) => {
-  r = Math.min(r, w / 2, h);
-  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
-};
+// --- matrix -------------------------------------------------------------------
+// The roles with most salaries against the experience bands, one median per
+// cell. A cell sets the table below to that role and band.
+const MATRIX_ROLES = 8;
+const SHADE_EDGES = [50000, 60000, 70000, 85000];
+const shade = (v) => 1 + SHADE_EDGES.filter((t) => v >= t).length;
 
-// Charts draw at the box's own width so text stays at its real size.
-function size(el) {
-  W = Math.max(260, el.clientWidth || 480);
-  H = W < 420 ? 200 : 230;
-}
-
-// A tidy axis step: 1, 2 or 5 times a power of ten, giving about `n` ticks.
-function niceStep(max, n = 4) {
-  const raw = max / n, p = 10 ** Math.floor(Math.log10(raw));
-  return [1, 2, 5, 10].map((m) => m * p).find((s) => s >= raw);
-}
-const AXIS = 40;
-
-// Same marks as the companies table: a bar for the middle half of salaries,
-// a dot for the median.
-function yearsChart() {
-  const el = $("years-chart");
-  size(el);
-  const rows = D.years.map((b) => [b, cell({ years: b })]).filter(([, a]) => a);
-  if (!rows.length) { el.innerHTML = `<p class="empty">${esc(S.none)}</p>`; return; }
-  const pb = 44, ih = H - PAD.t - pb;
-  // The axis spans the ranges, not zero to the top: from zero they would be
-  // slivers. Nothing here is a bar whose length has to start at zero.
-  const top = Math.max(...rows.map(([, a]) => a.p75)), bottom = Math.min(...rows.map(([, a]) => a.p25));
-  const tick = niceStep(top - bottom, 4);
-  const min = Math.max(0, Math.floor(bottom / tick - 0.5) * tick);
-  const max = Math.ceil((top + tick * 0.3) / tick) * tick;
-  const band = (W - AXIS - PAD.r) / rows.length;
-  const y = (v) => PAD.t + ih - ((v - min) / (max - min)) * ih;
-  let g = "";
-  for (let v = min; v <= max; v += tick)
-    g += `<line class="gridline" x1="${AXIS}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/>` +
-      `<text x="${AXIS - 8}" y="${y(v) + 4}" text-anchor="end">${v ? short(v) : "0"}</text>`;
-  rows.forEach(([b, a], i) => {
-    const cx = AXIS + band * i + band / 2, bw = Math.min(26, band * 0.4);
-    g += `<g data-i="${i}"><rect class="bar-hit" x="${cx - band / 2}" y="0" width="${band}" height="${H}"/>` +
-      `<rect class="range" x="${cx - bw / 2}" y="${y(a.p75)}" width="${bw}" height="${y(a.p25) - y(a.p75)}" rx="${bw / 2}"/>` +
-      `<circle class="med" cx="${cx}" cy="${y(a.median)}" r="6"/>` +
-      `<text class="val" x="${cx}" y="${y(a.p75) - 8}" text-anchor="middle">${short(a.median)}</text>` +
-      `<text x="${cx}" y="${H - 24}" text-anchor="middle" class="xl">${esc(W < 420 ? b.replace("-", "–") : yearsLabel(b))}</text>` +
-      `<text x="${cx}" y="${H - 8}" text-anchor="middle">${a.n.toLocaleString(LOCALE)}</text></g>`;
-  });
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
-  el.querySelectorAll("g[data-i]").forEach((n) => {
-    const [b, a] = rows[n.dataset.i];
-    hover(n, () => statTip(yearsLabel(b), a));
-  });
-  $("years-key").innerHTML = `<span><i class="k-dot"></i>${esc(S.key_median)}</span>` +
-    `<span><i class="k-range"></i>${esc(S.key_range)}</span>` +
-    `<span class="k-n">${esc(S.key_n)}</span>`;
-}
-
-// Bars at or above the bar are the full colour, so the share reads off the
-// chart itself.
-function histChart() {
-  const a = cell(), el = $("hist-chart");
-  size(el);
-  if (!a) { el.innerHTML = `<p class="empty">${esc(S.none)}</p>`; return; }
-  const { low, step } = D.hist, counts = a.hist, minG = D.min_group;
-  // Bands are 0: under `low`, i: [low + (i-1)·step, low + i·step), last: open.
-  const label = (i) => i === 0 ? `${S.under} ${short(low)}`
-    : i === counts.length - 1 ? `${S.over} ${short(low + (i - 1) * step)}`
-    : `${short(low + (i - 1) * step)}–${short(low + i * step)}`;
-  const top = Math.max(minG, ...counts.map((c) => c || 0));
-  const tick = niceStep(top);
-  const max = Math.ceil(top * 1.06 / tick) * tick;
-  const ih = H - PAD.t - PAD.b, band = (W - AXIS - PAD.r) / counts.length;
-  const y = (v) => PAD.t + ih - (v / max) * ih;
-  let g = "";
-  for (let v = 0; v <= max; v += tick)
-    g += `<line class="gridline" x1="${AXIS}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/>` +
-      `<text x="${AXIS - 8}" y="${y(v) + 4}" text-anchor="end">${v.toLocaleString(LOCALE)}</text>`;
-  counts.forEach((c, i) => {
-    const x = AXIS + band * i + 1, bw = band - 2;
-    const high = i > 0 && low + (i - 1) * step >= D.threshold;
-    g += `<g data-i="${i}"><rect class="bar-hit" x="${x - 1}" y="0" width="${band}" height="${H}"/>`;
-    if (c) g += `<path class="bar${high ? "" : " low"}" d="${roundTop(x, y(c), bw, PAD.t + ih - y(c), 3)}"/>`;
-    else if (c === null) g += `<rect class="withheld" x="${x + .5}" y="${y(minG - 1)}" width="${bw - 1}" height="${PAD.t + ih - y(minG - 1)}" rx="2"/>`;
-    g += `</g>`;
-  });
-  for (let v = low; v <= D.hist.high; v += (W < 400 ? 4 : 2) * step) {
-    const x = AXIS + band * (1 + (v - low) / step);
-    g += `<text x="${x}" y="${H - 8}" text-anchor="middle"${v === D.threshold ? ' class="xl"' : ""}>${short(v)}</text>`;
-  }
-  const tx = AXIS + band * (1 + (D.threshold - low) / step);
-  g += `<line class="mark" x1="${tx}" x2="${tx}" y1="${PAD.t - 6}" y2="${PAD.t + ih}"/>`;
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
-  el.querySelectorAll("g[data-i]").forEach((n) => {
-    const i = +n.dataset.i, c = counts[i];
-    hover(n, () => `<b>${label(i)} €</b><br>` +
-      (c === null ? `${S.under} ${minG} ${S.people}` : `${c.toLocaleString(LOCALE)} ${S.people}`));
-  });
-  $("hist-key").innerHTML = `<span><i class="k-bar"></i>${esc(S.hist_key.replace("{p}", pct(a.share)))}</span>` +
-    `<span><i class="k-bar low"></i>${esc(S.hist_key_low)}</span>` +
-    (counts.includes(null) ? `<span><i class="k-withheld"></i>${esc(S.withheld)}</span>` : "");
-}
-
-function rolesChart() {
-  const rows = D.roles.map((r) => [r, cell({ role: r.slug })]).filter(([, a]) => a)
-    .sort((x, y) => y[1].median - x[1].median);
-  const card = $("roles-card");
-  card.hidden = rows.length < 2;
-  if (card.hidden) return;
-  const shown = state.allRoles ? rows : rows.slice(0, 12);
-  const max = rows[0][1].median;
-  const el = $("roles-chart");
-  el.innerHTML = `<div class="roles">` + shown.map(([r, a]) =>
-    `<div class="r" data-slug="${r.slug}"><span class="name">${esc(r.name)}<small>${a.n}</small></span>` +
-    `<span class="v">${money(a.median)}</span>` +
-    `<span class="track"><i style="width:${(a.median / max) * 100}%"></i></span></div>`).join("") + `</div>`;
-  el.querySelectorAll(".r").forEach((n, i) => {
-    hover(n, () => statTip(shown[i][0].name, shown[i][1]));
-    n.onclick = () => {
-      if (!roleTree().some((r) => r.slug === n.dataset.slug)) return;
-      pick("role", n.dataset.slug);
+function matrix() {
+  const roles = D.roles.filter((r) => cell({ role: r.slug }) && roleTree().some((t) => t.slug === r.slug))
+    .slice(0, MATRIX_ROLES);
+  $("matrix").innerHTML = `<thead><tr><th></th>` +
+    D.years.map((b) => `<th scope="col">${esc(yearsLabel(b))}</th>`).join("") + `</tr></thead><tbody>` +
+    roles.map((r) => `<tr><th scope="row">${esc(r.name)}` +
+      `<small>${cell({ role: r.slug }).n.toLocaleString(LOCALE)} ${S.people}</small></th>` +
+      D.years.map((b) => {
+        const a = cell({ role: r.slug, years: b });
+        return a
+          ? `<td><button class="s${shade(a.median)}" data-role="${r.slug}" data-years="${b}"` +
+            ` aria-label="${esc(`${r.name}, ${yearsLabel(b)}: ${money(a.median)}`)}">${short(a.median)}</button></td>`
+          : `<td class="na" title="${esc(S.map_empty)}">·</td>`;
+      }).join("") + `</tr>`).join("") + `</tbody>`;
+  $("matrix").querySelectorAll("button").forEach((btn) => {
+    const r = D.roles.find((x) => x.slug === btn.dataset.role);
+    hover(btn, () => statTip(`${r.name} · ${yearsLabel(btn.dataset.years)}`,
+      cell({ role: btn.dataset.role, years: btn.dataset.years })));
+    btn.onclick = async () => {
+      hideTip();
+      await applyFilters({ role: btn.dataset.role, years: [btn.dataset.years] });
       $("companies-card").scrollIntoView({ behavior: "smooth", block: "start" });
     };
   });
-  const more = $("roles-more");
-  more.hidden = rows.length <= 12;
-  more.textContent = state.allRoles ? S.show_less : S.show_all.replace("{n}", rows.length);
+  const edges = [0, ...SHADE_EDGES];
+  $("matrix-legend").innerHTML = edges.map((v, i) => {
+    const to = edges[i + 1];
+    const label = !v ? `< ${short(to)}` : to ? `${short(v)}–${short(to)}` : `${short(v)}+`;
+    return `<span><i class="s${i + 1}"></i>${label}</span>`;
+  }).join("") + `<span><i class="na"></i>${esc(S.map_empty)}</span>`;
+}
+
+// --- summary ------------------------------------------------------------------
+// Everyone under the table's filters, before search: the figures the old
+// experience and distribution cards gave, now for the case the reader picked.
+function summary() {
+  const t = T[state.role], row = t?.summary?.[tkey()];
+  const el = $("summary");
+  if (!row) { el.innerHTML = `<p class="empty">${esc(S.none)}</p>`; return; }
+  const a = Object.fromEntries(t.summary_fields.map((f, i) => [f, row[i]]));
+  const { low, step } = D.hist, max = Math.max(...a.hist.map((c) => c || 0));
+  const band = (i) => i === 0 ? `${S.under} ${short(low)}`
+    : i === a.hist.length - 1 ? `${S.over} ${short(low + (i - 1) * step)}`
+    : `${short(low + (i - 1) * step)}–${short(low + i * step)}`;
+  const bars = a.hist.map((c, i) => {
+    const high = i > 0 && low + (i - 1) * step >= D.threshold;
+    const tip = `${band(i)} €: ${c === null ? `${S.under} ${D.min_group}` : c} ${S.people}`;
+    return `<i class="${high ? "hi" : ""}${c === null ? " wh" : ""}" title="${esc(tip)}"` +
+      ` style="height:${c ? Math.max(4, (c / max) * 100) : 4}%"></i>`;
+  }).join("");
+  el.innerHTML =
+    `<dl><dt>${S.col_median}</dt><dd>${money(a.median)}</dd></dl>` +
+    `<dl><dt>${S.sum_range}</dt><dd>${short(a.p25)} – ${short(a.p75)}</dd></dl>` +
+    `<dl><dt>${S.col_share}</dt><dd>${pct(a.share)}</dd></dl>` +
+    `<dl><dt>${S.col_n}</dt><dd>${a.n.toLocaleString(LOCALE)}</dd></dl>` +
+    `<div class="dist" aria-hidden="true"><div class="bars">${bars}</div>` +
+    `<div class="axis"><span>${short(low)}</span>` +
+    `<span style="left:${((1 + (D.threshold - low) / step) / a.hist.length) * 100}%">${short(D.threshold)}</span>` +
+    `<span>${short(D.hist.high)}+</span></div></div>`;
 }
 
 // --- companies ------------------------------------------------------------------
@@ -490,6 +436,7 @@ function detail(a) {
 const opened = new Set();
 
 function companies() {
+  summary();
   const all = table();
   const q = state.q.trim().toLowerCase();
   const by = SORTS[state.sort];
@@ -553,8 +500,9 @@ async function main() {
   D = await (await fetch("/api/v1/data.json")).json();
   $("updated").textContent = S.updated.replace("{date}", D.generated);
   wire();
-  kpis(); map(); yearsChart(); histChart(); rolesChart();
+  kpis(); map();
   await loadTable("");
+  matrix();
   const h = new URLSearchParams(location.hash.slice(1));
   const list = (k, known) => (h.get(k) || "").split(",").filter((v) => known.includes(v));
   const role = h.get("role") || "";
@@ -570,9 +518,4 @@ async function main() {
   await loadTable(state.role);
   companies();
 }
-let resizing;
-addEventListener("resize", () => {
-  clearTimeout(resizing);
-  resizing = setTimeout(() => D && (yearsChart(), histChart()), 150);
-});
 main();
