@@ -41,7 +41,9 @@ Options are in the header of `tests/site/shoot.mjs`: viewport size, dark
 mode, clicks in order, scroll to a y offset or a selector, full page. Use
 this instead of headless Chrome from the shell: Chrome's own `--screenshot`
 renders a blank page once the window is scrolled, which hides exactly the
-sticky-bar and overlap bugs worth looking for.
+sticky-bar and overlap bugs worth looking for. `shoot.mjs` runs full
+Chromium rather than Playwright's headless shell for the same reason: the
+shell does not paint `backdrop-filter`, so blur and glass effects look wrong.
 
 Check both themes and a phone width (390) when a change touches layout or
 colour.

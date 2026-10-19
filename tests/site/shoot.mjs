@@ -48,7 +48,9 @@ const server = createServer(async (req, res) => {
 }).listen(0);
 const port = server.address().port;
 
-const browser = await chromium.launch();
+// Full Chromium, not the default headless shell: the shell skips
+// backdrop-filter, so the sticky bar looked clear in shots when it was not.
+const browser = await chromium.launch({ channel: "chromium" });
 const page = await browser.newPage({ viewport: { width: opts.width, height: opts.height },
                                      colorScheme: opts.dark ? "dark" : "light" });
 const errors = [];
