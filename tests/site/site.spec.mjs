@@ -29,10 +29,46 @@ test("loads with figures in every card", async ({ page }) => {
   for (const id of ["k-median", "k-total", "k-share", "k-people", "k-companies"])
     await expect(page.locator(`#${id}`)).not.toHaveText(/^—?$/);
   await expect(page.locator("#map .region.has").first()).toBeVisible();
-  await expect(page.locator("#years-chart svg")).toBeVisible();
-  await expect(page.locator("#hist-chart svg")).toBeVisible();
-  await expect(page.locator("#years-key")).toContainText("Mediana");
-  await expect(page.locator("#hist-key")).toContainText("60k");
+  await expect(page.locator("#matrix button").first()).toBeVisible();
+  await expect(page.locator("#summary dd").first()).not.toBeEmpty();
+});
+
+test("matrix: roles with most salaries, a cell filters the table", async ({ page }) => {
+  await open(page);
+  const counts = (await page.locator("#matrix tbody th small").allTextContents()).map(num);
+  expect(counts.length).toBe(8);
+  expect(counts).toEqual([...counts].sort((a, b) => b - a));
+  await expect(page.locator("#matrix tbody th").first()).toContainText("Software Engineer");
+
+  const cell = page.locator('#matrix button[data-role="product-manager"][data-years="8-11"]');
+  const median = await cell.textContent();
+  await cell.click();
+  await expect(filter(page, "role").locator(".txt")).toHaveText("Product Manager");
+  await expect(filter(page, "years").locator(".txt")).toHaveText("8–11 años");
+  expect(hash(page).get("role")).toBe("product-manager");
+  expect(hash(page).get("years")).toBe("8-11");
+  // The summary is the same group of people as the cell: "75k" there, 75.000 € here.
+  const euros = Math.round(parseFloat(median.replace(",", ".")) * 1000);
+  await expect.poll(async () => num(await page.locator("#summary dd").first().textContent())).toBe(euros);
+  await expect(page.locator("#companies-card")).toBeInViewport();
+});
+
+test("summary follows the table's filters", async ({ page }) => {
+  await open(page);
+  const figures = () => page.locator("#summary dd").allTextContents();
+  const all = await figures();
+  expect(all).toHaveLength(4);
+  await expect(page.locator("#summary .dist .bars i")).toHaveCount(15);
+
+  await filter(page, "role").locator(".pick").click();
+  await page.locator('.menu li[data-v="software-engineer"]').click();
+  await expect.poll(figures).not.toEqual(all);
+  const se = await figures();
+  expect(num(se[3])).toBeLessThan(num(all[3]));
+
+  // Search narrows the companies, not the summary.
+  await page.locator("#search").fill("glovo");
+  expect(await figures()).toEqual(se);
 });
 
 test("map switches between pay and number of salaries", async ({ page }) => {
@@ -165,9 +201,12 @@ test("a row opens with the mouse and the keyboard", async ({ page }) => {
 
 test("search narrows the table", async ({ page }) => {
   await open(page);
+  await expect(page.locator("#more")).toBeVisible();
   await page.locator("#search").fill("glovo");
   await expect(rows(page)).toHaveCount(1);
   await expect(rows(page).first()).toContainText("Glovo");
+  // Nothing more to show, so no "show all" button.
+  await expect(page.locator("#more")).toBeHidden();
 });
 
 test("the English page works too", async ({ page }) => {
