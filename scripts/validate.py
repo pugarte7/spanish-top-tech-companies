@@ -6,7 +6,6 @@ import re
 import sys
 
 import lib
-import taxonomy
 
 errors: list[str] = []
 warnings: list[str] = []
@@ -14,10 +13,9 @@ warnings: list[str] = []
 SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 URL = re.compile(r"^https?://\S+$")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-# The only Levels.fyi page that carries one person's own submission in Spain:
-# one company, one job family, a named location - and the family has to be the
-# row's own role.
-ENTRY_PAGE = re.compile(r"levels\.fyi/companies/[^/]+/salaries/([a-z0-9-]+)/locations/")
+# The only Levels.fyi page that carries a software engineer's own submission in
+# Spain: one company, the software-engineer family, a named location.
+ENTRY_PAGE = re.compile(r"levels\.fyi/companies/[^/]+/salaries/software-engineer/locations/")
 STATUSES = ("resolved", "review", "unmatched")
 MAX_EUR = 2_000_000
 
@@ -32,38 +30,13 @@ def check_date(where: str, label: str, raw) -> None:
 
 
 def check_entry(where: str, entry: dict) -> None:
-    role = entry.get("role")
-    if not role:
-        errors.append(f"{where}: no role (a job-family slug from taxonomy.py)")
-    elif role not in taxonomy.ROLES:
-        errors.append(f"{where}: role {role!r} is not in taxonomy.py; run "
-                      "fetch_taxonomy.py if Levels.fyi added it")
-    if entry.get("specialization") and role in taxonomy.ROLES \
-            and entry["specialization"] not in taxonomy.SPECIALIZATIONS.get(role, {}):
-        errors.append(f"{where}: specialization {entry['specialization']!r} is not one "
-                      f"{role} has")
-    if entry.get("title") and role in taxonomy.ROLES \
-            and entry["title"] not in taxonomy.TITLES.get(role, {}):
-        errors.append(f"{where}: title {entry['title']!r} is not one {role} has")
-    if entry.get("region") and entry["region"] not in lib.REGIONS:
-        errors.append(f"{where}: region {entry['region']!r} is not a region code")
-    for column, known in (("work_arrangement", lib.WORK_ARRANGEMENTS),
-                          ("employment_type", lib.EMPLOYMENT_TYPES),
-                          ("perspective", lib.PERSPECTIVES)):
-        if entry.get(column) and entry[column] not in known:
-            warnings.append(f"{where}: {column} {entry[column]!r} is a value "
-                            "Levels.fyi has not sent before")
-    if entry.get("currency") and not re.fullmatch(r"[A-Z]{3}", entry["currency"]):
-        warnings.append(f"{where}: currency {entry['currency']!r} is not a currency code")
-
     base, total = entry.get("base"), entry.get("total")
-    if base is None and total is None:
-        errors.append(f"{where}: no base or total salary")
-    # Levels.fyi rows are whatever was reported. A first-hand row about the
-    # README's population - a software engineer - is the maintainer
-    # saying "I know they pay that", and "that" means the bar.
-    elif (base is not None and base < lib.THRESHOLD_EUR
-          and entry.get("source") in lib.VOUCHED and role == lib.SWE):
+    if base is None:
+        errors.append(f"{where}: no base salary")
+    # Levels.fyi rows are every senior, paid whatever they are paid; the median
+    # needs the ones under the bar. A first-hand row is the maintainer saying
+    # "I know they pay that", and "that" means the bar.
+    elif base < lib.THRESHOLD_EUR and entry.get("source") in lib.VOUCHED:
         errors.append(f"{where}: a first-hand entry under {lib.fmt_eur(lib.THRESHOLD_EUR)} "
                       "vouches for nothing this list is about")
     for column, amount in (("base", base), ("total", total)):
@@ -74,6 +47,9 @@ def check_entry(where: str, entry: dict) -> None:
     if lib.years(experience) is None:
         errors.append(f"{where}: years_experience {experience!r} must be a number of years, "
                       "or a range like 5-10 or 11+")
+    elif lib.years(experience) < lib.SENIOR_YEARS:
+        errors.append(f"{where}: {experience} years of experience is under "
+                      f"{lib.SENIOR_YEARS}, so it does not belong on the list")
     if entry.get("reported") and not re.fullmatch(r"\d{4}-\d{2}", entry["reported"]):
         errors.append(f"{where}: reported {entry['reported']!r} must be YYYY-MM")
 
@@ -95,47 +71,26 @@ def check_entry(where: str, entry: dict) -> None:
             "- that data is not Spain-scoped"
         )
     # Every other Levels.fyi page publishes a figure pooled across people, or
-    # another job family's pay. Neither is one person's salary for this role.
-    elif "levels.fyi" in url:
-        found = ENTRY_PAGE.search(url)
-        if not found:
-            errors.append(
-                f"{where}: cites a Levels.fyi page that is not a company's "
-                f"{role or '?'} page ({url}) - it cannot hold one person's salary"
-            )
-        elif found.group(1) != role:
-            errors.append(
-                f"{where}: cites the {found.group(1)} page but the row's role is "
-                f"{role!r} ({url}) - a page for one family cannot hold another's salary"
-            )
+    # another job family's pay. Neither is one software engineer's salary.
+    elif "levels.fyi" in url and not ENTRY_PAGE.search(url):
+        errors.append(
+            f"{where}: cites a Levels.fyi page that is not a company's software-engineer "
+            f"page ({url}) - it cannot hold one engineer's salary"
+        )
 
     if lib.is_stale(entry.get("date")):
         warnings.append(f"{where}: not verified in over a year")
 
 
 def check_company(where: str, company: dict) -> None:
-    # On file means having salaries: the CSV keeps every role and seniority,
-    # so a company with none at all is either a hand-added row the fetcher
-    # has not reached or a leftover to delete.
-    if not company.get("entries"):
-        errors.append(f"{where}: no salaries on file. Add a first-hand entry, let "
-                      "fetch_spain.py reach it, or remove the row")
-
-    for column, known in (("company_type", lib.COMPANY_TYPES),
-                          ("remote_policy", lib.REMOTE_POLICIES)):
-        if company.get(column) and company[column] not in known:
-            warnings.append(f"{where}: {column} {company[column]!r} is not a known value")
-    for office in company.get("offices") or []:
-        city, region, lat, lon = lib.parse_office(office)
-        if region and region not in lib.REGIONS:
-            warnings.append(f"{where}: office {office!r} names a region that is not a code")
-        if (lat is None) != (lon is None):
-            warnings.append(f"{where}: office {office!r} has a half coordinate")
-    if company.get("radar_slug") and not SLUG.match(company["radar_slug"]):
-        warnings.append(f"{where}: radar_slug {company['radar_slug']!r} is not a slug")
-    if company.get("cif") and not re.fullmatch(r"[A-Z]\d{7}[A-Z0-9]|\d{7,8}[A-Z]",
-                                               company["cif"]):
-        warnings.append(f"{where}: cif {company['cif']!r} does not look like a Spanish CIF")
+    # A company is on file only while its seniors' median base is at the
+    # floor. A bare `Name,linkedin_id` row is how one is added by hand, and it
+    # is gone the moment fetch_spain.py finds the median below, so a lasting
+    # one is a mistake.
+    if not lib.listed(company):
+        errors.append(f"{where}: median base {lib.fmt_eur(lib.median_base(company))} is under "
+                      f"{lib.fmt_eur(lib.FLOOR_EUR)}, so it is not on the list. Run "
+                      "fetch_spain.py for it, add a first-hand entry, or remove the rows")
 
     slug = company.get("levels_slug")
     if slug in lib.EXCLUDED_SLUGS:

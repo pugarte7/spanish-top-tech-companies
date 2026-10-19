@@ -145,23 +145,15 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--company", action="append", default=[], help="Levels.fyi slug. Repeatable.")
     parser.add_argument("--all", action="store_true",
                         help="Every company in companies.csv with a resolved Levels.fyi slug.")
-    parser.add_argument("--missing", action="store_true",
-                        help="Only companies with a slug but no website or LinkedIn yet - "
-                             "what the feed's new employers look like.")
     parser.add_argument("--delay", type=float, default=3.0,
                         help="Seconds between pages. These are 400KB each; be generous.")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
 
     slugs = list(args.company)
-    if args.all or args.missing:
-        companies = lib.load_companies()
-        resolved = (c for c in companies
-                    if c.get("levels_slug") and c.get("levels_status") == "resolved")
-        if args.missing:
-            resolved = (c for c in resolved
-                        if not c.get("linkedin_url") and not c.get("website"))
-        slugs += sorted(c["levels_slug"] for c in resolved)
+    if args.all:
+        slugs += sorted(c["levels_slug"] for c in lib.load_companies()
+                        if c.get("levels_slug") and c.get("levels_status") == "resolved")
     slugs = [s for s in dict.fromkeys(slugs) if s]
     if not slugs:
         parser.error("give --company SLUG or --all")

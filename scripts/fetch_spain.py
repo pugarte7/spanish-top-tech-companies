@@ -1,49 +1,70 @@
 #!/usr/bin/env python3
-"""Fetch every Spanish salary in every job family from Levels.fyi's signed-in feed.
+"""Fetch every senior software engineer salary in Spain, per company, from Levels.fyi.
 
-    python3 scripts/fetch_spain.py                    # all 129 roles, ~30 min
-    python3 scripts/fetch_spain.py --role data-scientist
-    python3 scripts/fetch_spain.py --company glovo    # only this company written
-    python3 scripts/fetch_spain.py --audit            # report, write nothing
+    python3 scripts/fetch_spain.py                 # every resolved company in companies.csv
+    python3 scripts/fetch_spain.py --company glovo
+    python3 scripts/fetch_spain.py --audit         # report, write nothing
 
-The submissions table's API (api.levels.fyi/v3/salary/search) without a
-companySlug is the country-wide feed: every Spanish submission in one job
-family, newest first. It answers `total: 250` at most but keeps serving rows
-past it, so feed() reads until an empty page rather than the total. That is
-every Spanish submission in the family - the old per-company loop and the
-discovery feed are both obsolete - at roughly 30 calls for software engineers
-and one or two for a family nobody in Spain has submitted to.
+Every engineer with at least lib.SENIOR_YEARS years of experience is a row,
+whatever they are paid: the README shows the median over all of them. The level
+name does not matter: companies call the same job L4, SDE II or Senior, and
+years are the one thing every submission states the same way. A company stays
+on the list while the median of those rows is at lib.THRESHOLD_EUR or more.
 
-The feed only exists behind a sign-in: the browser loads it with the
-visitor's Cognito id token, which LEVELS_TOKEN, ~/.config/levels/token or the
-refresh token in ~/.config/levels/refresh_token supplies (that last mints a
-fresh id token each run, which is what lets it run unattended). A refused
-refresh token stops the run rather than falling back to anything partial.
-The token is a session credential: it is never written anywhere and never
-printed.
+Most submissions are behind a sign-in. The public page embeds a handful (see
+below); the "Latest Salary Submissions" table under it holds every one, and is
+loaded by the browser from api.levels.fyi with the visitor's session token,
+which an anonymous visitor does not have (the rows render as asterisks). Fever
+is the case that exposed this: 29 Spanish software engineers in the table, one
+on the public page. With a token in LEVELS_TOKEN or ~/.config/levels/token, or
+a refresh token in ~/.config/levels/refresh_token that mints one each run, this
+script reads the table too; without one it can only --audit the public page.
+The token is a session credential: it is never written anywhere, and the run
+report never prints it.
 
-Every row is checked for its own location ("Barcelona, CT, Spain"), never for
-the currency or the page's scope - a German salary in this list is worse than
-no salary. Rows carry their own exchange rate and the currency their author
-was paid in; a euro row converts back at its own rate to exactly the figure
-the author typed, and anything else goes through the Spain page's
-locationExchangeRate (Smile.io's 105.000 USD once read as 105.000 EUR until
-2026-09-15). Rows whose currency cannot be priced in euros are dropped and
-counted, not guessed.
+Why this exists instead of fetch_company.py: that script reads
+/companies/<slug>/salaries, which is scoped by the caller's IP and silently
+falls back to another country when Levels.fyi has no Spanish submissions. Its
+only guard is that the page currency is EUR, which every euro-zone country
+passes. Adyen, Celonis, N26, TomTom and FREE NOW all returned Dutch or German
+salaries that way, and Datadog, Microsoft and Amazon returned US ones.
 
-What a row keeps and what it drops is deliberate: the role, official
-specialization and title slugs, work arrangement, contract type, offer-vs-
-employee status, pay and city are stored; the submission uuid, exact day,
-free-text title, team, details, years at company and years at level are not,
-because those point at a person.
+The per-location page carries individual submissions in two places:
+
+  averages     The company's ladder for the location asked about. Each rung
+               carries up to twenty recent `samples`, each one a submission
+               with its city, years of experience and pay. That is where
+               almost every entry comes from. A rung's `count` can be higher
+               than its samples: the page does not publish the rest.
+  median       One more submission. It stays Spanish even when the aggregate
+               has given up, and it is often the only one a small company has.
+  percentiles  An aggregate across every level. Never an entry. It falls back
+               to another country when the Spanish sample is below their
+               publication threshold; `percentiles.locationName` names the
+               country actually served. `locationMeta` only echoes the URL.
+
+Every sample names its city, and one outside Spain is skipped whatever page it
+came from.
+
+EVERY MONEY FIELD IN THE PAYLOAD IS USD. The page prints euros by multiplying
+by `locationExchangeRate`, and the euro figures in its own FAQ text confirm it:
+Glovo's Spanish median total of 79710.65 is published as "€68,551", which is
+79710.65 x 0.86. An earlier version of this script wrote the raw numbers into a
+file whose `compensation.currency` said EUR, which put every one of its 141
+bands about 16% over the truth.
+
+The median record also carries the currency its author was paid in and the rate
+they typed it at. That rate converts to *their* currency, not to euros: Smile.io's
+submission was 105.000 USD at a rate of 1, and was listed as 105.000 EUR until
+2026-09-15. It is only used when that currency is EUR.
 """
 from __future__ import annotations
 
 import argparse
 import base64
-import collections
-import hashlib
+import copy
 import gzip
+import hashlib
 import json
 import os
 import pathlib
@@ -57,10 +78,10 @@ import urllib.request
 import zlib
 
 import lib
-import taxonomy
 
 BASE = "https://www.levels.fyi"
 API = "https://api.levels.fyi/v3/salary/search"
+ROLE = "software-engineer"
 ATTRIBUTION = "Data source: Levels.fyi (https://www.levels.fyi)"
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/128.0 Safari/537.36")
@@ -71,10 +92,6 @@ MONTHS = {name: number for number, name in enumerate(
 # ceiling (it answers 400 above it), and where the maintainer leaves a token.
 SPAIN_COUNTRY_ID = 226
 TABLE_PAGE = 50
-# The API refuses an offset past 990 ("offset must not be greater than 990"),
-# so one query sees at most 1,000 rows. Software engineers in Spain are
-# several times that; read_role() works around it.
-MAX_OFFSET = 990
 TOKEN_FILE = pathlib.Path.home() / ".config" / "levels" / "token"
 # A Cognito refresh token for the same login mints a fresh id token each run,
 # so an unattended run needs nobody to paste one daily. The pool's region and
@@ -84,6 +101,8 @@ COGNITO = "https://cognito-idp.us-west-2.amazonaws.com/"
 COGNITO_CLIENT = "76of0ich18hd8uehju7fniv2u1"
 # Level names the API sends where the author left the field blank.
 NO_LEVEL = {"", "false", "none", "null"}
+# Run-report labels for a company nothing could be read about.
+UNREAD = {"unreadable", "unreachable", "table unreadable"}
 
 
 def unscoped(entry: dict) -> bool:
@@ -105,9 +124,9 @@ def unscoped(entry: dict) -> bool:
 def ours(entry: dict) -> bool:
     """Was this entry written by this script on an earlier run?
 
-    Those are replaced wholesale per role, because the feed's contents change
-    as new submissions arrive. Anything with a source this script does not
-    write - a first-hand figure, a job ad - is left exactly where it is.
+    Those are replaced wholesale, because the page's samples change as new
+    submissions arrive. Anything with a source this script does not write - a
+    first-hand figure, a job ad - is left exactly where it is.
     """
     url = entry.get("source_url") or ""
     return (entry.get("source") == "levels.fyi"
@@ -123,11 +142,11 @@ def get(url: str, delay: float, attempts: int = 3, headers: dict | None = None) 
 
     A dropped connection mid-read raises ConnectionResetError, which is an
     OSError and not wrapped by urllib.error, so catching URLError alone lets it
-    kill a run. One reset is not a verdict: retry.
+    kill a 243-page run. One reset is not a verdict about the company: retry.
 
     401 and 402 come from the API only. 401 is a token that has expired or was
     pasted wrong; 402 is what it answers a request it takes for a bot (a bare
-    User-Agent got one). Neither says anything about the data, so both stop
+    User-Agent got one). Neither says anything about the company, so both stop
     the run rather than write "no data".
     """
     request = urllib.request.Request(
@@ -185,8 +204,8 @@ def refreshed(path: pathlib.Path) -> str:
     The same call the site's own Amplify client makes when its id token runs
     out. A pool that rotates refresh tokens answers with a new one and retires
     the old, so a new one is written back over the file. A refused refresh
-    token stops the run: falling back to public pages would replace every
-    feed entry on file with a fraction of them.
+    token stops the run: falling back to the public page would replace every
+    table entry on file with the page's handful.
     """
     request = urllib.request.Request(COGNITO, data=json.dumps({
         "ClientId": COGNITO_CLIENT, "RefreshToken": path.read_text(encoding="utf-8").strip(),
@@ -222,39 +241,30 @@ def decrypt(payload: str) -> dict:
     return json.loads(zlib.decompress(plain))
 
 
-class Truncated(Exception):
-    """A query reached the API's offset ceiling with rows still coming."""
+def table(bearer: str, delay: float, slug: str | None = None) -> list[dict] | None:
+    """Every Spanish software-engineer submission in the signed-in table.
 
-    def __init__(self, rows: list[dict]):
-        super().__init__(f"{len(rows)} rows read before the offset ceiling")
-        self.rows = rows
+    With a slug, the company's own table; without one, the newest submissions
+    across every employer in Spain. Fifty per page, newest first, until the
+    API's own total is reached. The total tops out at 250, so for the largest
+    employers, and always for the country-wide feed, this is the 250 most
+    recent. Each row has the same shape as the page's `median` record, its own
+    exchange rate and currency included, so entries() reads both the same way.
 
-
-def feed(bearer: str, role: str, delay: float, company: str | None = None,
-         order: str = "DESC") -> list[dict] | None:
-    """Every Spanish submission in one job family, to the end of the query.
-
-    Without `company` it is the country-wide feed. `total` in the answer tops
-    out at 250 but the API keeps serving rows past it, so paging stops at an
-    empty page, not at the total. Rows repeat across pages when new
-    submissions arrive mid-read; entries_by_company() dedupes on uuid. Each
-    row carries its own exchange rate and currency, so the only thing the
-    role's public page adds is the rate for rows paid in another currency.
-
-    Returns None when a page could not be read: half a feed is not a smaller
-    feed, and write_role() would treat the missing rows as deleted. Raises
-    Truncated when the query outgrows the offset ceiling.
+    Returns None when a page could not be read, and the caller then leaves the
+    company alone: a table that half-loaded is not a smaller table.
     """
     rows: list[dict] = []
+    scope = f"/companies/{slug}/salaries/{ROLE}" if slug else f"/t/{ROLE}"
     headers = {"Authorization": f"Bearer {bearer}", "x-agent": "levelsfyi_website",
                "Accept": "application/json", "Origin": BASE,
-               "Referer": f"{BASE}/t/{role}/locations/spain"}
-    for offset in range(0, MAX_OFFSET + 1, TABLE_PAGE):
-        query = urllib.parse.urlencode(
-            ([("companySlug", company)] if company else []) + [
-                ("jobFamilySlug", role), ("countryIds[0]", SPAIN_COUNTRY_ID),
-                ("offset", offset), ("limit", TABLE_PAGE),
-                ("sortBy", "offer_date"), ("sortOrder", order)])
+               "Referer": f"{BASE}{scope}/locations/spain"}
+    while True:
+        query = urllib.parse.urlencode([
+            *([("companySlug", slug)] if slug else []),
+            ("jobFamilySlug", ROLE), ("countryIds[0]", SPAIN_COUNTRY_ID),
+            ("offset", len(rows)), ("limit", TABLE_PAGE), ("sortBy", "offer_date"),
+            ("sortOrder", "DESC")])
         body = get(f"{API}?{query}", delay, headers=headers)
         if body is None:
             return None
@@ -265,90 +275,12 @@ def feed(bearer: str, role: str, delay: float, company: str | None = None,
             page = data["rows"]
         except (json.JSONDecodeError, ValueError, TypeError, KeyError, zlib.error,
                 subprocess.CalledProcessError) as exc:
-            print(f"  {role}: feed answer unreadable ({exc.__class__.__name__})",
+            print(f"  {slug or 'spain'}: table answer unreadable ({exc.__class__.__name__})",
                   file=sys.stderr)
             return None
         rows += page
-        if not page:
+        if not page or len(rows) >= (data.get("total") or 0):
             return rows
-    raise Truncated(rows)
-
-
-def read_role(bearer: str, role: str, delay: float, companies: list[dict],
-              only: set | None = None):
-    """(rows, scope) for one role, or None when it could not be read.
-
-    scope is None when the country feed was read whole. A role past the
-    offset ceiling is read newest-first and oldest-first; when the two
-    windows meet, that is the whole feed. When they do not, the rows in
-    between are only reachable per company: every employer either window
-    names and every company already on file for the role is read on its own,
-    and scope is the set of canonical slugs read whole. write_role() then
-    touches only those, because an employer that reported only in the gap
-    is invisible here and must keep what it has.
-    """
-    try:
-        rows = feed(bearer, role, delay)
-        return None if rows is None else (rows, None)
-    except Truncated as newest:
-        rows = newest.rows
-    try:
-        oldest = feed(bearer, role, delay, order="ASC")
-    except Truncated as exc:
-        oldest = exc.rows
-    if oldest is None:
-        return None
-    if {_dedupe_key(r) for r in rows} & {_dedupe_key(r) for r in oldest}:
-        return rows + oldest, None
-
-    slugs = {r["companySlug"] for r in rows + oldest
-             if isinstance(r.get("companySlug"), str) and r["companySlug"]}
-    for company in companies:
-        if company.get("levels_slug") and any(e.get("role") == role
-                                              for e in company["entries"]):
-            slugs.add(company["levels_slug"])
-            slugs.update(lib.aliases_of(company["levels_slug"]))
-    if only:
-        slugs = {slug for slug in slugs if lib.canonical(slug) in only}
-    print(f"  {role}: over {MAX_OFFSET + TABLE_PAGE} rows; reading {len(slugs)} "
-          "companies one by one")
-    read, unread = set(), set()
-    for slug in sorted(slugs):
-        try:
-            found = feed(bearer, role, delay, company=slug)
-        except Truncated:
-            found = None
-        if found is None:
-            unread.add(lib.canonical(slug))
-            print(f"    {slug}: unreadable, left untouched", file=sys.stderr)
-            continue
-        rows += found
-        read.add(lib.canonical(slug))
-    return rows + oldest, read - unread
-
-
-def page_props(body: str) -> dict | None:
-    found = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', body, re.S)
-    if not found:
-        return None
-    try:
-        return json.loads(found.group(1))["props"]["pageProps"]
-    except (KeyError, TypeError, json.JSONDecodeError):
-        return None
-
-
-def role_page(role: str, delay: float) -> dict | None:
-    """The public /t/<role>/locations/spain page's props, for the euro rate.
-
-    Non-euro rows convert at this page's locationExchangeRate; a page that is
-    not quoting EUR is not about Spain and its rate is unusable, which costs
-    only the rows that have no rate of their own.
-    """
-    body = get(f"{BASE}/t/{role}/locations/spain", delay)
-    props = page_props(body) if body else None
-    if not props or props.get("locationCurrency") != "EUR":
-        return None
-    return props
 
 
 def eur(amount, rate) -> int | None:
@@ -371,8 +303,8 @@ def in_spain(where) -> bool:
 def reported(raw) -> str | None:
     """YYYY-MM of a submission's offer date.
 
-    Feed rows date themselves as JavaScript strings ("Thu Sep 24 2026
-    08:53:46 GMT+0000"), page samples in ISO. The day is dropped: with a
+    Samples date themselves in ISO, the median record as a JavaScript date
+    string ("Fri Oct 06 2023 07:43:13 GMT+0000"). The day is dropped: with a
     company, a city and a level beside it, an exact date points at a person.
     """
     text = str(raw or "")
@@ -385,229 +317,325 @@ def reported(raw) -> str | None:
     return None
 
 
-def _dedupe_key(record: dict):
-    """uuid, or the row's own facts when it has none."""
-    return (record.get("uuid")
-            or (record.get("companySlug"), record.get("offerDate"),
-                record.get("baseSalary"), record.get("location"),
-                record.get("yearsOfExperience"), record.get("level")))
+def spain_data(slug: str, delay: float, bearer: str | None = None):
+    """Everything Spanish this company will give up, under every slug it has.
 
+    Returns (label, page, company). `page` is None when the page could not be
+    read at all, and `label` says what it served, for the run report.
 
-def entries_by_company(rows: list[dict], role: str, page_rate, today: str):
-    """Feed rows to {canonical slug: {"name": ..., "entries": [...]}}.
-
-    Pure: tests hand it saved rows. Anything that names no employer, sits
-    outside Spain, belongs to another family, states no years, or cannot be
-    priced in euros is counted and skipped - never written.
+    An employer Levels.fyi files under two slugs (lib.SLUG_ALIASES) is read
+    under both and filed under the canonical one; each row keeps the URL of
+    the page it was read from. An alias whose page is gone and whose table is
+    empty adds nothing; an alias whose table could not be read makes the whole
+    company unread, like the canonical slug's would.
     """
-    by_slug: dict[str, dict] = {}
-    seen: set = set()
-    skipped = {"foreign": 0, "wrong-family": 0, "no-employer": 0,
-               "no-years": 0, "not-euro": 0, "duplicate": 0}
-    for record in rows:
-        family = record.get("jobFamilySlug")
-        if isinstance(family, str) and family != role:
-            skipped["wrong-family"] += 1
+    label, page, company = read_slug(slug, delay, bearer)
+    if page is None:
+        return label, page, company
+    seen = {record.get("uuid") for record in page["records"]}
+    for alias in lib.aliases_of(slug):
+        alias_label, alias_page, _ = read_slug(alias, delay, bearer)
+        if alias_page is None:
+            if alias_label == "table unreadable":
+                return alias_label, None, company
             continue
+        for record in alias_page["records"]:
+            if record.get("uuid") not in seen:
+                seen.add(record.get("uuid"))
+                page["records"].append({**record, "_url": alias_page["url"]})
+    return label, page, company
+
+
+def read_slug(slug: str, delay: float, bearer: str | None = None):
+    """One slug's page and table.
+
+    With a token, the signed-in table is read as well, and a table that could
+    not be read makes the whole company unread: writing the public page's
+    handful in its place would delete the table entries from the last run.
+
+    Levels.fyi answers 404 for the page of an employer with only a submission
+    or two, while the table still has them: 42 of the 107 employers discovery
+    turned up on 2026-09-21 were like that. So with a token, no page and a
+    table is still an answer, read from the rows alone.
+    """
+    url = f"{BASE}/companies/{slug}/salaries/{ROLE}/locations/spain"
+    body = get(url, delay)
+    props = page_props(body) if body else None
+    if body and props is None:
+        return "unreadable", None, {}
+    rows = None
+    if bearer:
+        rows = table(bearer, delay, slug)
+        if rows is None:
+            return "table unreadable", None, (props or {}).get("company") or {}
+    if props is None:
+        if not rows:
+            return "unreachable", None, {}
+        props = {"locationCurrency": "EUR"}
+    return interpret(props, slug, url, rows)
+
+
+def page_props(body: str) -> dict | None:
+    found = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', body, re.S)
+    if not found:
+        return None
+    try:
+        return json.loads(found.group(1))["props"]["pageProps"]
+    except (KeyError, TypeError, json.JSONDecodeError):
+        return None
+
+
+def interpret(props: dict, slug: str, url: str, rows: list[dict] | None = None):
+    """Split one page's props, and the signed-in table if it was read, into the
+    Spanish submissions worth reading.
+
+    Separate from the fetch so the regression tests can hand it a saved page.
+    """
+    company = props.get("company") or {}
+
+    # A Spanish page that is not quoting euros is a page that is not about
+    # Spain, and without a rate its figures cannot be denominated. Table rows
+    # carry their own euro rate, so with rows on hand a missing page rate only
+    # costs the records that have none; entries() leaves those out.
+    rate = props.get("locationExchangeRate")
+    if props.get("locationCurrency") != "EUR" or not (isinstance(rate, (int, float)) or rows):
+        return "not priced in EUR", None, company
+    if not isinstance(rate, (int, float)):
+        rate = None
+
+    median = props.get("median") or {}
+    samples = [sample for rung in props.get("averages") or [] for sample in rung.get("samples") or []]
+
+    # The median record goes first: it can also be one of the samples, and it
+    # carries the rate its author typed it at. The table's rows carry theirs
+    # too and usually include the median and every sample, so they go last
+    # and the uuid check drops the repeats.
+    records, seen, foreign = [], set(), 0
+    for record in ([median] if median else []) + samples + (rows or []):
         if not in_spain(record.get("location")):
-            skipped["foreign"] += 1
+            foreign += bool(record.get("location"))
             continue
-        key = _dedupe_key(record)
-        if key in seen:
-            skipped["duplicate"] += 1
+        key = record.get("uuid")
+        if key and key in seen:
             continue
         seen.add(key)
-        slug = record.get("companySlug")
-        if not isinstance(slug, str) or not slug:
-            skipped["no-employer"] += 1
-            continue
-        slug = lib.canonical(slug)
-        if slug in lib.EXCLUDED_SLUGS:
-            continue
+        records.append(record)
+    if foreign:
+        print(f"  {slug}: skipped {foreign} submission{'s' if foreign != 1 else ''} "
+              "from outside Spain", file=sys.stderr)
+
+    # "Spain (table)" is the one label that means every Spanish submission was
+    # read. The others mean the public page's subset, which for most companies
+    # is the median record alone.
+    percentiles = props.get("percentiles") or {}
+    if rows:
+        label = "Spain (table)"
+    elif any(in_spain(sample.get("location")) for sample in samples):
+        label = "Spain (ladder)"
+    elif percentiles.get("locationName") == "Spain":
+        label = "Spain (aggregate)"
+    elif records:
+        label = "Spain (submission)"
+    else:
+        label = percentiles.get("locationName") or "no data"
+
+    page = {"rate": rate, "records": records, "url": url}
+    # The company record is about the employer, not the location, so it is
+    # worth keeping even when there is no Spanish pay to record.
+    return label, page, company
+
+
+def entries(page: dict, today: str) -> list[dict]:
+    """Every Spanish submission on the page with enough years and enough pay."""
+    out = []
+    for record in page["records"]:
         experience = record.get("yearsOfExperience")
-        if lib.years(experience) is None:
-            skipped["no-years"] += 1
-            continue
-        # A record that names euros converts back at its own rate to exactly
-        # what its author typed; anything else goes through the page's.
-        rate = page_rate
+        # A record that names euros converts back to exactly what its author
+        # typed at its own rate; anything else goes through the page's.
+        rate = page["rate"]
         if record.get("baseSalaryCurrency") == "EUR" and record.get("exchangeRate"):
             rate = record["exchangeRate"]
-        base = eur(record.get("baseSalary"), rate)
-        total = eur(record.get("totalCompensation"), rate)
-        if base is None and total is None:
-            skipped["not-euro"] += 1
-            continue
         level = str(record.get("level") or "").strip()
-        city, region = lib.split_location(record.get("location"))
-        title = lib.title_slug(role, record.get("title"))
         entry = {
-            "role": role,
-            "base": base,
-            "total": total,
-            "bonus": eur(record.get("avgAnnualBonusValue") or record.get("firstYearBonusValue"), rate),
-            "stock": eur(record.get("avgAnnualStockGrantValue") or record.get("firstYearStockGrantValue"), rate),
-            "currency": record.get("baseSalaryCurrency") or None,
-            "years_experience": str(experience),
+            "base": eur(record.get("baseSalary"), rate),
+            "total": eur(record.get("totalCompensation"), rate),
+            "years_experience": None if experience is None else str(experience),
             "level": None if level.lower() in NO_LEVEL else level,
-            "title": title,
-            # focusTag first; a sub-tag name maps to its parent, and a known
-            # title implies its specialization when the author left both blank.
-            "specialization": lib.specialization_slug(role, record.get("focusTag"))
-                or lib.specialization_slug(role, record.get("focusSubTag"))
-                or lib.title_spec(role, title),
-            "city": city,
-            "region": region,
-            "work_arrangement": record.get("workArrangement") or None,
-            "employment_type": record.get("employmentType") or None,
-            "perspective": record.get("compPerspective") or None,
-            "reported": reported(record.get("offerDate") or record.get("createdAt")),
+            "city": (record.get("location") or "").split(",")[0].strip() or None,
+            "reported": reported(record.get("offerDate")),
             "source": "levels.fyi",
-            "source_url": f"{BASE}/companies/{record['companySlug']}/salaries/{role}/locations/spain",
+            "source_url": record.get("_url") or page["url"],
             "date": today,
             "notes": None,
         }
-        group = by_slug.setdefault(slug, {"name": None, "entries": []})
-        if not group["name"]:
-            name = record.get("company") or (record.get("companyInfo") or {}).get("name")
-            group["name"] = name if isinstance(name, str) and name else slug
-        group["entries"].append(entry)
-    for group in by_slug.values():
-        group["entries"].sort(key=lib.entry_order)
-    return by_slug, skipped
+        if lib.is_senior(entry):
+            out.append(entry)
+    return sorted(out, key=lib.entry_order)
 
 
-def _as_rows(entries: list[dict]) -> collections.Counter:
-    # A multiset, not a sorted list: rows mix None and text in one column.
-    return collections.Counter(tuple(entry.get(column) for column in lib.ENTRY_COLUMNS)
-                               for entry in entries)
+def write(slug: str, new_entries: list[dict], name_hint: str, today: str,
+          record: dict | None = None, served: str | None = None) -> str:
+    """Update one company in companies.csv. Returns what happened, for the run report.
 
+    The whole file is read and written for each company, so a run that gets
+    blocked halfway keeps everything it fetched before that.
 
-def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
-    """Replace one role's stored Levels.fyi rows with the feed's, per company.
-
-    Only the role's own rows are touched: first-hand entries and other roles
-    stay exactly where they are. A company left with no rows at all is
-    removed - on file means having salaries - but a hand-added row that never
-    had any survives, because the fetcher may not have reached it yet. A slug
-    struck off by hand is never written.
+    A company is on file only while the median of its rows is at the floor
+    (lib.FLOOR_EUR); under the bar it sits in "Need to improve". One that
+    Levels.fyi was asked about and that ends up below the floor, and that nobody
+    has vouched for with a first-hand entry, is removed; the maintainer dropped
+    112 rows with nothing on 2026-09-21 rather than list them as "no data". A
+    page that could not be read removes nothing. A slug struck off by hand is
+    never written.
     """
+    if slug in lib.EXCLUDED_SLUGS:
+        return "excluded"
     companies = lib.load_companies()
-    stats = {"rewritten": 0, "unchanged": 0, "created": 0, "dropped": 0, "refused": 0}
-    touched: set[int] = set()
-    for company in companies:
-        slug = company.get("levels_slug")
-        canonical = lib.canonical(slug) if slug else None
-        if (slug in lib.EXCLUDED_SLUGS) or (only and canonical not in only):
-            continue
-        found = by_slug.pop(canonical, None) if canonical else None
-        kept = [entry for entry in company["entries"]
-                if not unscoped(entry)
-                and not (ours(entry) and entry.get("role") == role)]
-        if found is None and len(kept) == len(company["entries"]):
-            continue
-        updated = kept + (found["entries"] if found else [])
-        if _as_rows(company["entries"]) == _as_rows(updated):
-            stats["unchanged"] += 1
-            continue
-        company["entries"] = updated
-        touched.add(id(company))
-        stats["rewritten"] += 1
-    for slug in sorted(by_slug):
-        if slug in lib.EXCLUDED_SLUGS or (only and slug not in only):
-            continue
-        group = by_slug[slug]
-        if lib.by_name(companies, group["name"]):
-            print(f"  {slug}: not created, {group['name']!r} is already on file "
-                  "under another slug", file=sys.stderr)
-            stats["refused"] += 1
-            continue
-        company = lib.blank_company(group["name"], levels_slug=slug, levels_status="resolved")
-        company["entries"] = group["entries"]
-        companies.append(company)
-        stats["created"] += 1
-    dropped = [company for company in companies
-               if id(company) in touched and not company["entries"]]
-    stats["dropped"] = len(dropped)
-    companies = [company for company in companies if company not in dropped]
-    if stats["rewritten"] or stats["created"] or stats["dropped"]:
+    company = lib.by_slug(companies, slug)
+    created = company is None
+    if created:
+        company = lib.blank_company(name_hint or (record or {}).get("name") or slug,
+                                    levels_slug=slug, levels_status="resolved")
+    before = copy.deepcopy(company)
+
+    # The employer's own LinkedIn page, which the front page links company
+    # names to. Never overwrite one already on file: a hand-entered URL was
+    # put there deliberately and is better than anything guessed here.
+    handle = ((record or {}).get("linkedin") or "").strip().strip("/")
+    if handle and not company.get("linkedin_url"):
+        # Usually `company/<name>`, sometimes already a full URL.
+        company["linkedin_url"] = handle if handle.startswith("http") \
+            else f"https://www.linkedin.com/{handle}"
+
+    # Anything read off the unscoped company page is another country's pay.
+    # Drop it whether or not this company also turns out to have a Spanish
+    # entry: the earlier version only ran this when the company had no Spanish
+    # data at all, so 27 companies kept theirs.
+    company["entries"] = [entry for entry in company["entries"] if not unscoped(entry)]
+
+    # A page that never loaded is not evidence of anything. It used to count as
+    # a page with no figures and delete the ones already on file, so a network
+    # error could empty a company; only an answer actually read changes them.
+    if served is not None:
+        company["entries"] = [entry for entry in company["entries"] if not ours(entry)] \
+            + new_entries
+
+    # Nothing is created below the floor, whatever else the page gave (an unread
+    # table once created two companies from their LinkedIn handle alone), and a
+    # company that came back below it is removed. An unread page removes nothing.
+    if not lib.listed(company):
+        if created:
+            return "not listed"
+        if served is None:
+            return "skipped"
+        companies.remove(company)
         lib.save_companies(companies)
-    return stats
+        return "removed"
+
+    if company == before:
+        return "skipped"
+    if created:
+        if lib.by_name(companies, company["company"]):
+            print(f"  {slug}: not written, {company['company']!r} is already in "
+                  f"{lib.DATA.name} under another slug", file=sys.stderr)
+            return "refused"
+        companies.append(company)
+    lib.save_companies(companies)
+    if not new_entries:
+        return "created" if created else "cleaned"
+    return "created" if created else "updated"
 
 
-def roles_from_args(args) -> list[str]:
-    roles = sorted(dict.fromkeys(args.role)) if args.role else sorted(taxonomy.ROLES)
-    unknown = [role for role in roles if role not in taxonomy.ROLES]
-    if unknown:
-        raise SystemExit(f"unknown job families: {', '.join(unknown)} "
-                         "(regenerate scripts/taxonomy.py if Levels.fyi added them)")
-    return roles
+def targets() -> list[tuple[str, str]]:
+    """(slug, name) for every company with a confirmed Levels.fyi page."""
+    return sorted((c["levels_slug"], c["company"]) for c in lib.load_companies()
+                  if c.get("levels_slug") and c.get("levels_status") == "resolved"
+                  and c["levels_slug"] not in lib.EXCLUDED_SLUGS)
+
+
+def discover(bearer: str, delay: float, known: set[str]) -> list[tuple[str, str]]:
+    """(slug, name) for every employer with a recent Spanish submission not yet on file.
+
+    The country-wide feed is the newest 250 Spanish software-engineer
+    submissions, about three months' worth. Reading it each run is what makes
+    "add your salary on Levels.fyi and it gets picked up" true for a company
+    nobody has added by hand: it is fetched like the rest, and gets a row the
+    first time its seniors' median is at the bar. The API sends `False` for both
+    company fields on a few rows; those name no employer to look up.
+    """
+    skip = known | set(lib.SLUG_ALIASES) | set(lib.EXCLUDED_SLUGS)
+    rows = table(bearer, delay) or []
+    found = {row["companySlug"]: row.get("company") or row["companySlug"] for row in rows
+             if isinstance(row.get("companySlug"), str) and row["companySlug"] not in skip}
+    return sorted(found.items())
 
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--role", action="append", default=[],
-                        help="Job-family slug. Repeatable. Defaults to every one in the catalog.")
     parser.add_argument("--company", action="append", default=[],
-                        help="Write only this Levels.fyi slug. Repeatable. "
-                             "The feeds are still read in full.")
+                        help="Levels.fyi slug. Repeatable. Defaults to every resolved slug.")
     parser.add_argument("--delay", type=float, default=3.0,
-                        help="Seconds between requests. Below ~2.5 trips their WAF.")
+                        help="Seconds between pages. Below ~2 trips their WAF.")
     parser.add_argument("--audit", action="store_true",
-                        help="Report what each role's feed serves, write nothing.")
+                        help="Report what each company serves, write nothing.")
     args = parser.parse_args(argv)
 
-    bearer = token()
-    if not bearer:
-        raise SystemExit(f"No token in LEVELS_TOKEN, {TOKEN_FILE} or {REFRESH_FILE}. The "
-                         "feed is the only source and it needs one; --audit skips only "
-                         "the writes, not the reading.")
-    only = {lib.canonical(slug) for slug in args.company} or None
+    pending = [(lib.canonical(s), "") for s in args.company] if args.company else targets()
     today = lib.today_utc().isoformat()
-    read = skipped_roles = 0
+    served: dict[str, int] = {}
+    tally: dict[str, int] = {}
+    found = 0
 
+    bearer = token()
+    if not bearer and not args.audit:
+        raise SystemExit(f"No token in LEVELS_TOKEN, {TOKEN_FILE} or {REFRESH_FILE}. Without "
+                         "one only the public page can be read, which would overwrite the "
+                         "table entries on file; --audit reads it without writing.")
+    print("signed in: reading each company's submissions table" if bearer else
+          "no token: auditing the public page only, which hides most submissions",
+          file=sys.stderr)
+
+    blocked = None
     try:
-        for role in roles_from_args(args):
-            answer = read_role(bearer, role, args.delay, lib.load_companies(), only)
-            if answer is None:
-                skipped_roles += 1
-                print(f"  {role}: feed unreadable, left untouched", file=sys.stderr)
-                continue
-            rows, scope = answer
-            if scope is not None:
-                scope = scope & only if only else scope
-            if not rows:
-                print(f"  {role}: no Spanish submissions")
-                if not args.audit:
-                    write_role(role, {}, only if scope is None else scope)
-                continue
-            props = role_page(role, args.delay)
-            by_slug, skipped = entries_by_company(rows, role,
-                                                  (props or {}).get("locationExchangeRate"),
-                                                  today)
-            total = sum(len(group["entries"]) for group in by_slug.values())
-            dropped = ", ".join(f"{k} {v}" for k, v in skipped.items() if v)
-            print(f"  {role}: {total} entries at {len(by_slug)} companies"
-                  + (f"  (skipped: {dropped})" if dropped else ""))
-            read += 1
+        if bearer and not args.company:
+            new = discover(bearer, args.delay, {slug for slug, _ in pending})
+            print(f"  {len(new)} employers with recent Spanish submissions are not on file: "
+                  + ", ".join(slug for slug, _ in new), file=sys.stderr)
+            pending += new
+        for slug, name in pending:
+            label, page, record = spain_data(slug, args.delay, bearer)
+            served[label] = served.get(label, 0) + 1
+            new_entries = entries(page, today) if page else []
+            at_bar = sum(1 for entry in new_entries if lib.at_bar(entry))
+            found += at_bar
+            if new_entries:
+                print(f"  {slug}: {label} - {len(new_entries)} of {len(page['records'])} "
+                      f"with {lib.SENIOR_YEARS}+ years, {at_bar} at 60k+, top "
+                      f"{lib.fmt_eur(new_entries[0]['base'])}")
+            else:
+                print(f"  {slug}: {label}, nobody with {lib.SENIOR_YEARS}+ years")
             if not args.audit:
-                stats = write_role(role, by_slug, only if scope is None else scope)
-                print("    file: " + ", ".join(f"{v} {k}" for k, v in stats.items() if v)
-                      or "    file: nothing changed")
+                outcome = write(slug, new_entries, name, today, record,
+                                label if page else None)
+                tally[outcome] = tally.get(outcome, 0) + 1
     except Blocked as exc:
+        blocked = exc
         print(f"\n{exc}", file=sys.stderr)
         print("Progress so far is saved.", file=sys.stderr)
 
-    print(f"\nroles read: {read}, unreadable: {skipped_roles}")
+    print("\nserved: " + ", ".join(
+        f"{k} {v}" for k, v in sorted(served.items(), key=lambda kv: -kv[1])))
+    print(f"engineers at 60k+: {found}")
     if not args.audit:
+        print("companies: " + ", ".join(f"{k} {v}" for k, v in sorted(tally.items())))
         print(f"\n{ATTRIBUTION}")
         print("Next: python3 scripts/validate.py && python3 scripts/build.py")
-    if not read:
-        print("\nNo role could be read: Levels.fyi is refusing this machine "
+    unread = bool(served) and set(served) <= UNREAD
+    if unread:
+        print("\nNo company could be read: Levels.fyi is refusing this machine "
               "(GitHub's runners get exactly this).", file=sys.stderr)
-        return 1
-    return 0 if skipped_roles < read else 1
+    return 1 if blocked or unread else 0
 
 
 if __name__ == "__main__":

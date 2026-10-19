@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import contextlib
 import io
-import json
 import pathlib
 import sys
 import tempfile
@@ -27,11 +26,8 @@ import lib  # noqa: E402
 UNSCOPED = "https://www.levels.fyi/companies/adyen/salaries"
 PER_LOCATION = ("https://www.levels.fyi/companies/adyen/salaries"
                 "/software-engineer/locations/spain")
-DS_LOCATION = ("https://www.levels.fyi/companies/adyen/salaries"
-               "/data-scientist/locations/spain")
 COUNTRY = "https://www.levels.fyi/t/software-engineer/locations/spain"
 OTHER_FAMILY = "https://www.levels.fyi/companies/bcg/salaries/data-scientist/locations/spain"
-TODAY = "2026-10-14"
 
 failures: list[str] = []
 
@@ -45,22 +41,8 @@ def check(label: str, got, want) -> None:
 
 
 def entry(url: str | None, notes: str = "", source: str = "levels.fyi", **fields) -> dict:
-    return {"role": "software-engineer", "base": 80000, "years_experience": "8",
-            "notes": notes, "source": source, "source_url": url,
-            "date": "2026-08-31", **fields}
-
-
-def row(slug: str = "acme", base: float = 100000, years=8,
-        where: str = "Madrid, MD, Spain", uuid: str | None = None,
-        role: str = "software-engineer", **extra) -> dict:
-    """One row of the signed-in feed, the shape api.levels.fyi serves."""
-    return {"uuid": uuid or f"{slug}-{base}-{years}-{where}",
-            "companySlug": slug, "company": slug.replace("-", " ").title(),
-            "jobFamilySlug": role, "level": "L4", "location": where,
-            "yearsOfExperience": years, "baseSalary": base,
-            "totalCompensation": base, "baseSalaryCurrency": "EUR",
-            "exchangeRate": 0.86,
-            "offerDate": "Thu Jun 25 2026 10:00:00 GMT+0000", **extra}
+    return {"base": 80000, "years_experience": "8", "notes": notes, "source": source,
+            "source_url": url, "date": "2026-08-31", **fields}
 
 
 @contextlib.contextmanager
@@ -85,33 +67,20 @@ def stored(slug: str = "acme") -> dict | None:
     return lib.by_slug(lib.load_companies(), slug)
 
 
-def fed(rows: list[dict], role: str = "software-engineer", rate: float = 0.86,
-        today: str = TODAY):
-    """What fetch_spain.entries_by_company does with feed rows."""
-    import fetch_spain
-    return fetch_spain.entries_by_company(rows, role, rate, today)
-
-
-def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
-    import fetch_spain
-    with contextlib.redirect_stderr(io.StringIO()):
-        return fetch_spain.write_role(role, by_slug, only)
-
-
 def test_location_guard() -> None:
     """An entry must cite a URL that names a location, or validate.py fails.
 
-    It also has to be a company page for the row's own job family: the country
-    pages publish one median pooled across everyone, and another family's page
-    is another job.
+    It also has to be a company's software-engineer page: the country pages
+    publish one median pooled across everyone, and another family's page is
+    another job.
     """
-    print("validate.py rejects data that cannot prove it is a Spanish salary")
+    print("validate.py rejects data that cannot prove it is a Spanish engineer's")
     import validate
 
     for label, url, message in (
         ("unscoped company page is rejected", UNSCOPED, "not Spain-scoped"),
-        ("country job-family page is rejected", COUNTRY, "cannot hold one person"),
-        ("another job family is rejected", OTHER_FAMILY, "role is 'software-engineer'"),
+        ("country job-family page is rejected", COUNTRY, "cannot hold one engineer"),
+        ("another job family is rejected", OTHER_FAMILY, "cannot hold one engineer"),
     ):
         validate.errors.clear()
         validate.check_entry("test", entry(url))
@@ -119,8 +88,6 @@ def test_location_guard() -> None:
 
     for label, found in (
         ("per-location software-engineer page is accepted", entry(PER_LOCATION)),
-        ("a data-scientist row cites the data-scientist page",
-         entry(DS_LOCATION, role="data-scientist")),
         # Someone reporting their own salary has no Levels.fyi URL to name.
         ("first-hand source needs no location", entry(None, source="offer-letter")),
     ):
@@ -152,22 +119,60 @@ def test_purge_runs_even_when_spain_data_exists() -> None:
     company that did have one kept its foreign bands sitting beside it. Adyen
     kept a Dutch band next to a Spanish one.
     """
-    print("fetch_spain.write_role() drops foreign entries beside a Spanish one")
+    print("fetch_spain.write() drops foreign entries beside a Spanish one")
     import fetch_spain
 
     with temp_data(acme(entry(UNSCOPED, "reports this as 'L3'."),
                         entry(UNSCOPED, "Common Range Average across all levels."))):
-        by_slug, _ = fed([row("acme")])
-        write_role("software-engineer", by_slug)
+        fetch_spain.write("acme", [entry(PER_LOCATION)], "Acme", "2026-09-02",
+                          served="Spain (ladder)")
         check("only the Spanish entry survives",
-              [e["source_url"] for e in stored()["entries"]],
-              ["https://www.levels.fyi/companies/acme/salaries"
-               "/software-engineer/locations/spain"])
+              [e["source_url"] for e in stored()["entries"]], [PER_LOCATION])
 
     with temp_data(acme(entry(None, source="community"))):
-        write_role("software-engineer", {})
+        fetch_spain.write("acme", [], "Acme", "2026-09-02", served="no data")
         check("a first-hand entry is left alone",
               [e["source"] for e in stored()["entries"]], ["community"])
+
+
+def props(**overrides) -> dict:
+    """A Levels.fyi /locations/spain page, trimmed to what the fetcher reads."""
+    page = {
+        "locationCurrency": "EUR",
+        "locationExchangeRate": 0.86,
+        "percentiles": {"base_salary": {"p25": 0, "p50": 0, "p75": 0},
+                        "tc": {"p25": 0, "p50": 0, "p75": 0}},
+        "median": None,
+        "averages": [],
+        "company": {},
+    }
+    page.update(overrides)
+    return page
+
+
+def sample(base: float, years, level: str = "L4", where: str = "Madrid, MD, Spain",
+           uuid: str | None = None, **extra) -> dict:
+    return {"uuid": uuid or f"{base}-{years}-{where}", "level": level, "location": where,
+            "yearsOfExperience": years, "baseSalary": base, "totalCompensation": base,
+            "offerDate": "2026-06-30T21:59:59.999+00:00", **extra}
+
+
+def ladder(*samples: dict) -> dict:
+    return props(averages=[{"primaryLevelName": "L4", "count": len(samples),
+                            "samples": list(samples)}])
+
+
+def read(page: dict, slug: str = "acme", rows: list[dict] | None = None) -> list[dict]:
+    import fetch_spain
+    with contextlib.redirect_stderr(io.StringIO()):
+        _, parsed, _ = fetch_spain.interpret(page, slug, PER_LOCATION, rows)
+    return fetch_spain.entries(parsed, "2026-09-15")
+
+
+def label(page: dict, rows: list[dict] | None = None) -> str:
+    import fetch_spain
+    with contextlib.redirect_stderr(io.StringIO()):
+        return fetch_spain.interpret(page, "acme", PER_LOCATION, rows)[0]
 
 
 def test_figures_are_converted_to_euros() -> None:
@@ -178,164 +183,128 @@ def test_figures_are_converted_to_euros() -> None:
     page says the median total of 79710.65 is EUR 68.551. This script wrote the
     raw number as euros, so every figure it produced was about 16% high.
 
-    A row's own exchangeRate converts to the currency its author was paid in,
-    which is not always euros. Smile.io's was 105.000 USD at a rate of 1, and
-    it went on the list as 105.000 EUR.
+    The median record's own exchangeRate converts to the currency its author was
+    paid in, which is not always euros. Smile.io's was 105.000 USD at a rate of 1,
+    and it went on the list as 105.000 EUR.
     """
     print("fetch_spain converts USD to EUR")
     import fetch_spain
 
     check("Glovo's published euro figure", fetch_spain.eur(79710.65, 0.86), 68551)
 
+    [found] = read(ladder(sample(100000, 8)))
+    check("a sample goes through the page's rate", found["base"], 86000)
+
     # A euro submission round-trips to the figure its author typed: exactly
-    # 70.000 EUR at its own rate, whatever the page-wide rate is.
-    by_slug, _ = fed([row(base=81641.1, years=6, exchangeRate=0.857413)])
-    check("a euro submission uses its own rate", by_slug["acme"]["entries"][0]["base"], 70000)
+    # 70.000 EUR at its own rate, not 70.211 at the page's.
+    [found] = read(props(median=sample(81641.1, 6, baseSalaryCurrency="EUR",
+                                       exchangeRate=0.857413)))
+    check("a euro submission uses its own rate", found["base"], 70000)
 
-    by_slug, _ = fed([row(base=105000, baseSalaryCurrency="USD", exchangeRate=1)])
-    check("a dollar submission goes through the page's rate",
-          by_slug["acme"]["entries"][0]["base"], 90300)
-    check("and is marked as paid in dollars",
-          by_slug["acme"]["entries"][0]["currency"], "USD")
-
-    by_slug, skipped = fed([row(base=105000, baseSalaryCurrency="USD", exchangeRate=1)],
-                           rate=None)
-    check("a dollar submission with no euro rate is dropped, not guessed",
-          (by_slug, skipped["not-euro"]), ({}, 1))
+    [found] = read(props(median=sample(105000, 8, baseSalaryCurrency="USD", exchangeRate=1)))
+    check("a dollar submission goes through the page's rate", found["base"], 90300)
 
 
-def test_every_year_is_kept_the_readme_filters() -> None:
-    """The file keeps every seniority now; the README still counts seniors.
+def test_seniority_is_years_not_titles() -> None:
+    """Five years of experience makes an engineer senior, whatever the level says.
 
-    Seniority is five or more years, whatever the level says: on 2026-09-15
-    the list briefly counted only rungs named senior, which threw away an L4
-    with eight years at 90k and would have kept a "Senior" with two. Pay never
-    decided who is a row either - until 2026-09-22 only seniors at 60k+ were
-    kept, so two 90k engineers made Minsait read 90k while fourteen under 60k
-    went unrecorded. Since 2026-10-14 juniors and other roles are kept for
-    the website, and since 2026-10-17 juniors reach the README's median too.
+    On 2026-09-15 the list briefly counted only rungs and submissions whose names
+    said senior. That threw away an L4 with eight years at 90k and would have
+    kept a "Senior" with two, and the maintainer ruled it out the same day:
+    seniority is five or more years, and the level name does not matter.
+
+    Pay does not decide who is a row either. Until 2026-09-22 only seniors at
+    60k+ were kept and averaged, so two 90k engineers made Minsait read 90k
+    while fourteen seniors under 60k went unrecorded; the median now needs
+    every one of them. A first-hand row is different: it vouches for 60k+.
     """
-    print("fetch_spain keeps every year of experience; readme_entries filters roles")
+    print("fetch_spain keeps every engineer with 5+ years, whatever the pay")
 
-    by_slug, skipped = fed([row(years=8, level="SDE I"),
-                            row(years=4, level="Senior Software Engineer"),
-                            row(years="5-10", level=None),
-                            row(years="2-4"),
-                            row(years=None, uuid="no-years")])
-    entries = by_slug["acme"]["entries"]
-    check("every parseable year becomes a row, 'False' levels do not",
-          sorted(e["years_experience"] for e in entries), ["2-4", "4", "5-10", "8"])
-    check("a row with no years is skipped", skipped["no-years"], 1)
-    check("the README counts software engineers at any experience",
-          len(lib.readme_entries(acme(*entries))), 4)
-    check("the README counts no other role",
-          len(lib.readme_entries(acme(entry(None, role="product-manager")))), 0)
+    found = read(ladder(
+        sample(100000, 8, level="SDE I"),
+        sample(100000, 4, level="Senior Software Engineer"),
+        sample(100000, "5-10", level=None),
+        sample(100000, "2-4"),
+        sample(50000, 12),
+    ))
+    check("years decide, level names and pay do not",
+          sorted((e["years_experience"], e["base"], e["level"]) for e in found),
+          [("12", 43000, "L4"), ("5-10", 86000, None), ("8", 86000, "SDE I")])
     check("a bucket counts from its low end", lib.years("5-10"), 5)
     check("an open bucket counts from its number", lib.years("11+"), 11)
 
     import validate
-    for label, row_, bad in (
-        ("under five years is data now", entry(PER_LOCATION, years_experience="4"), False),
+    for label, row, bad in (
+        ("under five years", entry(PER_LOCATION, years_experience="4"), True),
         ("no years", entry(PER_LOCATION, years_experience=None), True),
-        ("a first-hand senior SWE under 60k", entry(None, source="community", base=55000), True),
-        ("a first-hand junior SWE under 60k",
-         entry(None, source="community", base=40000, years_experience="2"), True),
-        ("a first-hand junior PM under 60k",
-         entry(None, source="community", base=30000, years_experience="2",
-               role="product-manager"), False),
+        ("a first-hand entry under 60k", entry(None, source="community", base=55000), True),
         ("a Levels.fyi entry under 60k", entry(PER_LOCATION, base=55000), False),
     ):
         validate.errors.clear()
-        validate.check_entry("test", row_)
+        validate.check_entry("test", row)
         check(f"validate.py {'rejects' if bad else 'keeps'} {label}", bool(validate.errors), bad)
 
 
 def test_one_submission_is_one_entry() -> None:
-    """Feed rows repeat across pages when submissions arrive mid-read.
+    """The median record is usually one of the ladder's samples too.
 
-    Dedupe is on uuid; a row without one dedupes on its own facts.
+    Read naively, Amazon's median would be listed twice, once at the page's rate
+    and once at its own.
     """
     print("fetch_spain lists a submission once")
 
-    shared = row(uuid="same", base=81641.1, years=6, exchangeRate=0.857413)
-    by_slug, skipped = fed([shared, dict(shared)])
-    check("one entry, at the submission's own rate",
-          [e["base"] for e in by_slug["acme"]["entries"]], [70000])
-    check("the repeat counted as a duplicate", skipped["duplicate"], 1)
-
-    anon = row(uuid=None, base=90000)
-    anon.pop("uuid")
-    by_slug, _ = fed([anon, dict(anon)])
-    check("uuid-less rows dedupe on their facts",
-          len(by_slug["acme"]["entries"]), 1)
+    shared = sample(81641.1, 6, uuid="same", baseSalaryCurrency="EUR", exchangeRate=0.857413)
+    found = read(props(median=shared, averages=[{"samples": [dict(shared)]}]))
+    check("one entry, at the submission's own rate", [e["base"] for e in found], [70000])
 
 
-def test_foreign_rows_are_skipped() -> None:
-    """Every row is checked for its own location, whatever feed it came in.
+def test_foreign_samples_are_skipped() -> None:
+    """The page is location-scoped, but every submission is checked anyway.
 
-    The same guard that has had to be enforced twice elsewhere: a Berlin
-    submission arriving in the Spanish feed is still a German salary.
+    This is the same guard that has had to be enforced twice elsewhere: a Berlin
+    submission on a Spanish page is still a German salary.
     """
     print("fetch_spain skips a submission from outside Spain")
 
-    by_slug, skipped = fed([row(where="Berlin, BE, Germany", uuid="de"),
-                            row(uuid="es")])
-    entries = by_slug["acme"]["entries"]
-    check("only the Spanish submission survives",
-          [(e["city"], e["region"]) for e in entries], [("Madrid", "MD")])
-    check("the foreign one is counted", skipped["foreign"], 1)
+    found = read(ladder(sample(100000, 8, where="Berlin, BE, Germany"),
+                        sample(90000, 7)))
+    check("only the Spanish submission survives", [e["city"] for e in found], ["Madrid"])
 
 
-def test_feed_is_read_to_the_end() -> None:
-    """The feed keeps serving rows past its own `total`; read until empty.
+def test_signed_in_table_is_read() -> None:
+    """The public page hides most submissions; the signed-in table has them all.
 
-    The API's total tops out at 250, so a caller that trusts it reads only
-    the newest three months and misses Amazon's and Glovo's older rows. The
-    feed is also the whole source of truth: a page that cannot be read is not
-    an empty feed.
+    Fever's Spain page embedded one record (L3, 6 years, 48.7k) and the README
+    said "none with 5+ years at 60k+". Its table, which the browser only loads
+    with a session token, held 29 Spanish engineers, ten of them qualifying. The
+    fetcher had never asked for it.
     """
-    print("fetch_spain pages the feed until an empty answer")
+    print("fetch_spain reads the signed-in table beside the page")
     import fetch_spain
 
-    calls = []
+    median = sample(56172.21, 6, level="L3", uuid="median", baseSalaryCurrency="EUR",
+                    exchangeRate=0.85452)
+    rows = [
+        dict(median),
+        sample(104584.28, 20, level="Staff", uuid="staff", baseSalaryCurrency="EUR",
+               exchangeRate=0.86055),
+        # The API sends the string "False" where the author left the level blank.
+        sample(79835.77, "5-10", level="False", uuid="ml", baseSalaryCurrency="EUR",
+               exchangeRate=0.8768),
+        sample(120000, 10, level="L6", uuid="abroad", where="Lisbon, Portugal"),
+    ]
+    page = props(median=median, percentiles={"locationName": "Spain", "count": 14})
 
-    def fake_get(url, delay, attempts=3, headers=None):
-        calls.append(url)
-        return pages.pop(0) if pages else None
-
-    original = fetch_spain.get
-    fetch_spain.get = fake_get
-    try:
-        a, b, c = row(uuid="a"), row(uuid="b"), row(uuid="c")
-        pages = [json.dumps({"total": 250, "rows": [a, b]}),
-                 json.dumps({"total": 250, "rows": [b, c]}),
-                 json.dumps({"total": 250, "rows": []})]
-        found = fetch_spain.feed("token", "software-engineer", 0)
-        check("pages until the empty one, ignoring the lying total",
-              [r["uuid"] for r in found], ["a", "b", "b", "c"])
-        check("the offset walked by page size, not by new rows",
-              ["offset=50" in u for u in calls[1:2]], [True])
-
-        pages = [None]
-        check("a page that fails to load makes the feed unread",
-              fetch_spain.feed("token", "data-scientist", 0), None)
-        pages = ['not json']
-        check("a page that does not parse makes the feed unread",
-              fetch_spain.feed("token", "data-scientist", 0), None)
-        pages = [json.dumps({"rows": [{"uuid": "x"}] * 50})] * 40
-        try:
-            fetch_spain.feed("token", "software-engineer", 0)
-            truncated = False
-        except fetch_spain.Truncated:
-            truncated = True
-        check("a feed past the offset ceiling is truncated, not complete", truncated, True)
-        check("no offset past the ceiling is asked for",
-              any("offset=1000" in u for u in calls), False)
-    finally:
-        fetch_spain.get = original
+    found = read(page, rows=rows)
+    check("table rows become entries, at their own rate, once each, Spain only",
+          sorted((e["base"], e["years_experience"], e["level"]) for e in found),
+          [(48000, "6", "L3"), (70000, "5-10", None), (90000, "20", "Staff")])
+    check("a table read is labelled as the complete answer", label(page, rows), "Spain (table)")
+    check("without the table the label stays partial", label(page), "Spain (aggregate)")
+    check("an empty table does not claim completeness", label(page, []), "Spain (aggregate)")
 
     # The API wraps its answer the way the site's own JavaScript unwraps it.
-    import base64, hashlib, subprocess, zlib
+    import base64, hashlib, json, subprocess, zlib
     key = base64.b64encode(hashlib.md5(b"levelstothemoon!!").digest())[:16]
     body = zlib.compress(json.dumps({"total": 1, "rows": [{"uuid": "x"}]}).encode())
     sealed = subprocess.run(["openssl", "enc", "-aes-128-ecb", "-K", key.hex()],
@@ -343,150 +312,126 @@ def test_feed_is_read_to_the_end() -> None:
     check("an encrypted answer is decoded", fetch_spain.decrypt(base64.b64encode(sealed).decode()),
           {"total": 1, "rows": [{"uuid": "x"}]})
 
-    # A few feed rows carry False for both company fields: they name no
-    # employer to file under and are skipped. Rows of another family arriving
-    # in this feed are skipped too.
-    by_slug, skipped = fed([row(uuid="ok"), row(uuid="anon", companySlug=False,
-                                                company=False),
-                            row(uuid="other", jobFamilySlug="data-scientist")])
-    check("rows naming no employer or another family are skipped",
-          (len(by_slug["acme"]["entries"]), skipped["no-employer"],
-           skipped["wrong-family"]), (1, 1, 1))
-
-
-def test_a_role_past_the_ceiling_is_read_per_company() -> None:
-    """One query sees at most 1,000 rows; software engineers are more.
-
-    On 2026-10-16 the all-roles run could not read software engineers: the
-    API refuses an offset past 990. Newest-first and oldest-first leave a
-    gap of years between them, so read_role() reads each employer on its own
-    and scopes the write to the companies it read.
-    """
-    print("fetch_spain reads a role past the offset ceiling company by company")
-    import fetch_spain
-
-    def fake_feed(bearer, role, delay, company=None, order="DESC"):
-        if company is None:
-            raise fetch_spain.Truncated([row("newco", uuid="n1")] if order == "DESC"
-                                        else [row("oldco", uuid="o1")])
-        if company == "broken":
-            return None
-        return [row(company, uuid=f"{company}-1"), row(company, uuid=f"{company}-2")]
-
-    original = fetch_spain.feed
-    fetch_spain.feed = fake_feed
+    # A table that failed to load must not hand the company back to the page's
+    # subset: write() would then replace last run's table entries with it.
+    html = ('<script id="__NEXT_DATA__" type="application/json">'
+            + json.dumps({"props": {"pageProps": page}}) + "</script>")
+    original = fetch_spain.get, fetch_spain.table
+    fetch_spain.get = lambda url, delay, attempts=3, headers=None: html
+    fetch_spain.table = lambda bearer, delay, slug=None: None
     try:
-        on_file = [acme(entry(PER_LOCATION)),
-                   lib.blank_company("Broken", levels_slug="broken") | {"entries": [entry(PER_LOCATION)]},
-                   lib.blank_company("Analysts", levels_slug="analysts")
-                   | {"entries": [entry(PER_LOCATION, role="data-analyst")]}]
-        rows, scope = fetch_spain.read_role("t", "software-engineer", 0, on_file)
-        check("windows' employers and companies on file are read; others are not",
-              scope, {"newco", "oldco", "acme"})
-        check("the per-company rows are kept",
-              sorted(r["uuid"] for r in rows if r["companySlug"] == "acme"), ["acme-1", "acme-2"])
-
-        def meeting(bearer, role, delay, company=None, order="DESC"):
-            raise fetch_spain.Truncated([row(uuid="same")])
-        fetch_spain.feed = meeting
-        check("windows that meet are the whole feed",
-              fetch_spain.read_role("t", "software-engineer", 0, on_file)[1], None)
+        with contextlib.redirect_stderr(io.StringIO()):
+            served, parsed, _ = fetch_spain.spain_data("acme", 0, "token")
+        check("an unread table makes the company unread", (served, parsed),
+              ("table unreadable", None))
+        fetch_spain.table = lambda bearer, delay, slug=None: rows
+        with contextlib.redirect_stderr(io.StringIO()):
+            served, parsed, _ = fetch_spain.spain_data("acme", 0, "token")
+        check("a read table is merged with the page", (served, len(parsed["records"])),
+              ("Spain (table)", 3))
+        # Levels.fyi 404s the page of an employer with a submission or two. The
+        # table still has them, and its rows carry their own euro rate, so a
+        # dollar row is the only thing the missing page rate costs.
+        fetch_spain.get = lambda url, delay, attempts=3, headers=None: (
+            None if "levels.fyi/companies/" in url else "{}")
+        fetch_spain.table = lambda bearer, delay, slug=None: rows + [
+            sample(100000, 8, uuid="usd", baseSalaryCurrency="USD", exchangeRate=1)]
+        with contextlib.redirect_stderr(io.StringIO()):
+            served, parsed, _ = fetch_spain.spain_data("acme", 0, "token")
+        check("no page but a table is still read",
+              (served, sorted(e["base"] for e in fetch_spain.entries(parsed, "2026-09-21"))),
+              ("Spain (table)", [48000, 70000, 90000]))
+        fetch_spain.table = lambda bearer, delay, slug=None: []
+        with contextlib.redirect_stderr(io.StringIO()):
+            check("no page and an empty table is unreachable",
+                  fetch_spain.spain_data("acme", 0, "token")[:2], ("unreachable", None))
+        fetch_spain.get = lambda url, delay, attempts=3, headers=None: html
+        # The country-wide feed names employers nobody has added by hand. A
+        # few of its rows carry False for the company; they name nothing.
+        feed = [dict(r, companySlug="acme", company="Acme") for r in rows[:2]] + [
+            dict(rows[2], companySlug="newco", company="NewCo"),
+            dict(rows[3], companySlug=False, company=False)]
+        fetch_spain.table = lambda bearer, delay, slug=None: feed
+        check("discovery lists only employers not on file",
+              fetch_spain.discover("token", 0, {"acme"}), [("newco", "NewCo")])
     finally:
-        fetch_spain.feed = original
+        fetch_spain.get, fetch_spain.table = original
 
 
-def test_an_unread_feed_changes_nothing() -> None:
-    """A feed that failed to load is not a feed with no entries.
+def test_an_unread_page_changes_nothing() -> None:
+    """A page that failed to load is not a page with no entries.
 
-    An unreachable page used to count as a page with no figures and delete
-    what was on file; an unreadable feed would do that to every company in a
-    role at once.
+    write() used to replace the company's Levels.fyi figures with whatever the
+    run found, and an unreachable page found nothing, so one network error was
+    enough to empty a company.
     """
-    print("a role whose feed cannot be read is left untouched")
-    import fetch_spain
-
-    calls = []
-    original = fetch_spain.feed, fetch_spain.write_role, fetch_spain.token
-    real_write = fetch_spain.write_role
-    fetch_spain.token = lambda: "test-token"
-    fetch_spain.write_role = lambda *a, **kw: calls.append(a) or real_write(*a, **kw)
-    try:
-        fetch_spain.feed = lambda *a, **kw: None
-        with temp_data(acme(entry(PER_LOCATION))):
-            with contextlib.redirect_stderr(io.StringIO()):
-                fetch_spain.main(["--role", "software-engineer"])
-            check("unreadable feed: write_role never called",
-                  (calls, stored()["entries"][0]["source_url"]), ([], PER_LOCATION))
-
-        fetch_spain.feed = lambda *a, **kw: []
-        with temp_data(acme(entry(PER_LOCATION))):
-            calls.clear()
-            with contextlib.redirect_stderr(io.StringIO()):
-                fetch_spain.main(["--role", "software-engineer"])
-            check("an empty feed is a real answer and wipes the role's rows",
-                  (len(calls), stored()), (1, None))
-    finally:
-        fetch_spain.feed, fetch_spain.write_role, fetch_spain.token = original
-
-
-def test_companies_are_their_salaries() -> None:
-    """On file means having salaries; the README's bar is about the median.
-
-    Until 2026-10-14 a company under the 50k floor was deleted. Now the file
-    keeps every role and seniority for the website, so low-median data stays
-    on file - it just does not reach the README. What still disappears is a
-    company with no rows at all after a full role read, and the feed still
-    never writes a struck-off slug.
-    """
-    print("a company is kept while it has any salary, dropped at zero")
+    print("fetch_spain.write() leaves a company alone when its page was not read")
     import fetch_spain
 
     with temp_data(acme(entry(PER_LOCATION))):
-        low = fed([row(base=52325)])  # 45k EUR
-        write_role("software-engineer", low[0])
-        check("a median under the floor stays on file",
-              (stored() is not None, lib.listed(stored())), (True, False))
+        outcome = fetch_spain.write("acme", [], "Acme", "2026-09-15", served=None)
+        check("nothing is written", outcome, "skipped")
+        check("the entry is still there",
+              [e["source_url"] for e in stored()["entries"]], [PER_LOCATION])
+
+
+def test_a_company_with_its_median_under_the_bar_is_not_listed() -> None:
+    """A company is on the list only while its seniors' median base is 60k+.
+
+    Until 2026-09-21 a company Levels.fyi had nothing Spanish for kept a row
+    reading "no Spain data", and 112 of them sat under the table. The
+    maintainer's rule: get rid of the companies that don't have Spanish data and
+    that nobody has vouched for. For a day the rule was then "at least one
+    senior at 60k+", which listed BBVA at a median of 55k; a reader pointed out
+    that the company filter has to be on the aggregate, and on 2026-09-22 it
+    became the median. So the fetcher removes a company whose median comes back
+    under the bar, keeps one a first-hand entry vouches for, and validate.py
+    refuses lasting rows with a median under it.
+    """
+    print("a company whose median is under 60k is removed, not listed")
+    import fetch_spain
+    import validate
 
     with temp_data(acme(entry(PER_LOCATION))):
-        write_role("software-engineer", {})
-        check("a company whose feed emptied is dropped", stored(), None)
+        outcome = fetch_spain.write("acme", [], "Acme", "2026-09-21", served="Spain (table)")
+        check("a company that comes back empty is removed", (outcome, stored()), ("removed", None))
+
+    with temp_data(acme(entry(PER_LOCATION))):
+        outcome = fetch_spain.write("acme", [entry(PER_LOCATION, base=45000)], "Acme", "2026-09-21",
+                                    served="Spain (table)")
+        check("so is one whose seniors are all under 60k", (outcome, stored()), ("removed", None))
+
+    with temp_data(acme(entry(PER_LOCATION))):
+        outcome = fetch_spain.write("acme", [entry(PER_LOCATION, base=45000), entry(PER_LOCATION, base=45000),
+                                             entry(PER_LOCATION, base=120000)], "Acme", "2026-09-21",
+                                    served="Spain (table)")
+        check("and one with a well-paid senior but a median under 60k",
+              (outcome, stored()), ("removed", None))
 
     with temp_data(acme(entry(None, source="community"))):
-        write_role("software-engineer", {})
-        check("a first-hand entry keeps it", stored() is not None, True)
+        outcome = fetch_spain.write("acme", [], "Acme", "2026-09-21", served="no data")
+        check("a first-hand entry keeps it", (outcome, len(stored()["entries"])), ("skipped", 1))
 
     with temp_data():
-        stats = write_role("software-engineer", {})
-        check("nothing read, nothing created", (stats, stored()),
-              ({"rewritten": 0, "unchanged": 0, "created": 0, "dropped": 0, "refused": 0}, None))
+        outcome = fetch_spain.write("acme", [], "Acme", "2026-09-21", served="United States")
+        check("a new company with nothing is never added", (outcome, stored()), ("not listed", None))
+        # An unread table used to create the company anyway, from the LinkedIn
+        # handle the page had given: two empty rows, removed on the next run.
+        outcome = fetch_spain.write("acme", [], "Acme", "2026-09-21",
+                                    record={"linkedin": "company/acme"}, served=None)
+        check("not even from a LinkedIn handle", (outcome, stored()), ("not listed", None))
 
-    with temp_data():
-        by_slug, _ = fed([row("newco")])
-        stats = write_role("software-engineer", by_slug)
-        check("a feed employer not on file is created",
-              (stats["created"], stored("newco")["company"]), (1, "Newco"))
-
-    with temp_data(acme()):
-        pass  # an empty hand-added row is validate.py's problem, checked below
-
-    import validate
     for label, company, refused in (
         ("an empty row", acme(), True),
-        ("rows all under 50k", acme(entry(PER_LOCATION, base=45000)), False),
+        ("rows all under 60k", acme(entry(PER_LOCATION, base=45000)), True),
+        ("one row at 60k+ among three", acme(entry(PER_LOCATION, base=45000),
+                                             entry(PER_LOCATION, base=46000), entry(PER_LOCATION)), True),
         ("a median at 60k+", acme(entry(PER_LOCATION, base=45000), entry(PER_LOCATION)), False),
     ):
         validate.errors.clear()
         validate.check_company("acme", company)
-        check(f"validate.py {'refuses' if refused else 'keeps'} {label}",
-              any("no salaries on file" in e for e in validate.errors), refused)
-
-    with temp_data(acme(entry(None, source="community"))):
-        check("excluded rows never reach write_role", fed([row("abracadabra")])[0], {})
-        stats = write_role("software-engineer", fed([row("abracadabra")])[0])
-        check("a struck-off slug is never written or created",
-              (stats["created"], stored("abracadabra")), (0, None))
-        check("and a first-hand row elsewhere is untouched",
-              [e["source"] for e in stored()["entries"]], ["community"])
+        check(f"validate.py refuses {label}", any("not on the list" in e for e in validate.errors),
+              refused)
 
 
 def test_median_and_share_over_every_senior() -> None:
@@ -498,26 +443,18 @@ def test_median_and_share_over_every_senior() -> None:
     "Use all the data" was the criticism, and the maintainer took it, keeping
     the 60k bar for which companies are listed and for the share only.
     """
-    print("the README shows the median over every engineer and the share at 60k+")
+    print("the README shows the median over every senior and the share at 60k+")
     import build
 
     company = acme(entry(PER_LOCATION, base=90000, total=95000), entry(PER_LOCATION, base=90000),
                    *[entry(PER_LOCATION, base=40000 + 1000 * i) for i in range(6)])
     found = build.summary(company)
-    check("median over all engineers, not the mean of the 60k+ ones",
+    check("median over all seniors, not the mean of the 60k+ ones",
           (found["base"], found["engineers"], found["at_bar"]), (43500, 8, 2))
-    check("the share is at 60k+ over all engineers", build.share_cell(found), "25% (2)")
+    check("the share is at 60k+ over all seniors", build.share_cell(found), "25% (2)")
     check("total has its own median", found["total"], 95000)
     check("a share under 1% is not 0%",
           build.share_cell({"share": 1 / 250, "at_bar": 1}), "<1% (1)")
-
-    with_junior_and_pm = acme(
-        entry(PER_LOCATION, base=90000), entry(PER_LOCATION, base=41000),
-        entry(PER_LOCATION, base=30000, years_experience="2"),
-        entry(DS_LOCATION, role="data-scientist", base=200000))
-    found = build.summary(with_junior_and_pm)
-    check("juniors reach the README's median, other roles never do",
-          (found["base"], found["engineers"]), (41000, 3))
 
     def named(name: str, *entries: dict) -> dict:
         return lib.blank_company(name) | {"entries": list(entries)}
@@ -526,24 +463,20 @@ def test_median_and_share_over_every_senior() -> None:
         named("Everyone", entry(PER_LOCATION, base=70000)),
         named("Everyone Paid More", entry(PER_LOCATION, base=90000)),
         named("Vouched", entry(None, source="community", base=65000)),
-        named("Only Juniors", entry(PER_LOCATION, base=30000, years_experience="2")),
-        named("Only PMs", entry(DS_LOCATION, role="data-scientist", base=200000)),
     ])
     check("rows sort by median, then share, first-hand first",
           [line.split(" | ")[0].lstrip("| ") for line in table.splitlines()[4:]],
           ["Vouched", "Everyone Paid More", "Rare High", "Everyone"])
-    check("companies under the floor or without software engineers are not in the README",
-          "Only Juniors" in table or "Only PMs" in table, False)
 
 
 def test_floor_aliases_and_exclusions() -> None:
     """The maintainer's hand on the data, 2026-09-23.
 
     "I don't wanna lose all those companies": a median between 50k and 60k is
-    kept and shown under "Need to improve". "Timescale and Tiger Data are the
-    same": an alias slug's rows are filed under the canonical company, each
-    row keeping the page it came from. "Remove Abracadabra as we don't know
-    what company it is": a struck-off slug is never written or created.
+    kept and shown under "Need to improve", below 50k is gone. "Timescale and
+    Tiger Data are the same": an alias slug is read into the canonical company,
+    each row keeping the page it came from. "Remove Abracadabra as we don't know
+    what company it is": a struck-off slug is never written or discovered.
     """
     print("floor, alias slugs and struck-off slugs")
     import build
@@ -562,24 +495,58 @@ def test_floor_aliases_and_exclusions() -> None:
     check("and the first table ends before it",
           table.index("At Bar") < table.index("## Need to improve") < table.index("Nearly"), True)
     check("the second table says what it is", "## Need to improve: median between 50k and 60k" in table, True)
-    check("under the floor is not on the README",
-          lib.listed(named("Low", entry(PER_LOCATION, base=49000))), False)
+    check("under the floor is not listed", lib.listed(named("Low", entry(PER_LOCATION, base=49000))), False)
     check("at the floor is listed but not competitive",
           (lib.listed(named("Mid", entry(PER_LOCATION, base=55000))),
            lib.competitive(named("Mid", entry(PER_LOCATION, base=55000)))), (True, False))
 
-    # An alias slug's rows are filed under the canonical slug; each row keeps
-    # the page it was read from in its source URL.
-    with temp_data(named("Timescale", entry(PER_LOCATION), levels_slug="timescale",
-                         levels_status="resolved")):
-        by_slug, _ = fed([row("timescale", base=120000, uuid="a"),
-                          row("tiger-data", base=150000, uuid="b")])
-        write_role("software-engineer", by_slug)
-        found = stored("timescale")
-        check("alias rows join the canonical company with their own page URL",
-              sorted((e["base"], e["source_url"].split("/companies/")[1].split("/")[0])
-                     for e in found["entries"]),
+    with temp_data(acme(entry(PER_LOCATION))):
+        outcome = fetch_spain.write("acme", [entry(PER_LOCATION, base=55000)], "Acme", "2026-09-23",
+                                    served="Spain (table)")
+        check("a median of 55k stays on file", (outcome, [e["base"] for e in stored()["entries"]]),
+              ("updated", [55000]))
+        outcome = fetch_spain.write("acme", [entry(PER_LOCATION, base=45000)], "Acme", "2026-09-23",
+                                    served="Spain (table)")
+        check("a median of 45k is removed", (outcome, stored()), ("removed", None))
+
+    # An alias is read with the canonical slug and filed under it.
+    original = fetch_spain.read_slug
+    pages = {
+        "timescale": ("Spain (table)", {"rate": 0.86, "url": PER_LOCATION.replace("adyen", "timescale"),
+                                        "records": [sample(120000, 8, uuid="a")]}, {}),
+        "tiger-data": ("Spain (table)", {"rate": 0.86, "url": PER_LOCATION.replace("adyen", "tiger-data"),
+                                         "records": [sample(120000, 8, uuid="a"), sample(150000, 9, uuid="b")]}, {}),
+    }
+    fetch_spain.read_slug = lambda slug, delay, bearer=None: pages[slug]
+    try:
+        with contextlib.redirect_stderr(io.StringIO()):
+            _, page, _ = fetch_spain.spain_data("timescale", 0, "token")
+        found = fetch_spain.entries(page, "2026-09-23")
+        check("alias rows join the canonical company, once each, with their own page",
+              sorted((e["base"], e["source_url"].split("/companies/")[1].split("/")[0]) for e in found),
               [(103200, "timescale"), (129000, "tiger-data")])
+        fetch_spain.read_slug = lambda slug, delay, bearer=None: (
+            pages[slug] if slug == "timescale" else ("table unreadable", None, {}))
+        with contextlib.redirect_stderr(io.StringIO()):
+            check("an alias whose table failed makes the company unread",
+                  fetch_spain.spain_data("timescale", 0, "token")[:2], ("table unreadable", None))
+    finally:
+        fetch_spain.read_slug = original
+
+    with temp_data():
+        check("a struck-off slug is never written",
+              (fetch_spain.write("abracadabra", [entry(PER_LOCATION)], "Abracadabra", "2026-09-23",
+                                 served="Spain (table)"), stored("abracadabra")), ("excluded", None))
+    original = fetch_spain.table
+    fetch_spain.table = lambda bearer, delay, slug=None: [
+        dict(sample(1, 1), companySlug="tiger-data", company="Tiger Data"),
+        dict(sample(1, 1), companySlug="abracadabra", company="Abracadabra"),
+        dict(sample(1, 1), companySlug="newco", company="NewCo")]
+    try:
+        check("discovery skips aliases and struck-off slugs",
+              fetch_spain.discover("token", 0, set()), [("newco", "NewCo")])
+    finally:
+        fetch_spain.table = original
 
     for label, company, message in (
         ("an alias slug's own row group", named("Tiger", entry(PER_LOCATION), levels_slug="tiger-data"),
@@ -592,168 +559,17 @@ def test_floor_aliases_and_exclusions() -> None:
         check(f"validate.py refuses {label}", any(message in e for e in validate.errors), True)
 
 
-def test_normalization() -> None:
-    """New fields are normalized enums, never the free text an author typed."""
-    print("locations, titles and specializations normalize")
-
-    check("a Levels.fyi location splits",
-          lib.split_location("Barcelona, CT, Spain"), ("Barcelona", "CT"))
-    check("a radar-style region name maps to its code",
-          lib.split_location("Palma, Illes Balears, Spain"), ("Palma", "IB"))
-    check("a misspelled city is fixed", lib.split_location("1A Coruna, GA, Spain"),
-          ("A Coruna", "GA"))
-    check("a bare city has no region", lib.split_location("Madrid, Spain"), ("Madrid", None))
-
-    check("seniority words are stripped for the title lookup",
-          lib.title_slug("software-engineer", "Senior Data Engineer"), "data-engineer")
-    check("a developer spelling maps to the catalog's engineer",
-          lib.title_slug("software-engineer", "iOS Developer"), "ios-engineer")
-    check("an abbreviation expands", lib.title_slug("software-engineer", "ML Engineer"),
-          "machine-learning-engineer")
-    check("the family's own name is not a title worth storing",
-          lib.title_slug("software-engineer", "Software Engineer"), None)
-    check("an invented title stays empty",
-          lib.title_slug("software-engineer", "Wizard of Code"), None)
-
-    check("a displayValue matches its slug",
-          lib.specialization_slug("software-engineer", "Machine Learning"), "ml-ai")
-    check("a sub-tag maps to its parent",
-          lib.specialization_slug("software-engineer", "Pre-training"), "ml-ai")
-    check("the family's own name is its generic bucket",
-          lib.specialization_slug("data-scientist", "Data Science"), "general")
-    check("an unsalvageable focus stays empty",
-          lib.specialization_slug("data-scientist", "Asociarte Tech Analyst"), None)
-    check("a known title backfills an empty focusTag",
-          lib.title_spec("software-engineer", "data-engineer"), "data")
-
-    by_slug, _ = fed([row(uuid="x", title="Senior Data Engineer", focusTag=None,
-                          workArrangement="remote", employmentType="contract",
-                          compPerspective="offer")])
-    found = by_slug["acme"]["entries"][0]
-    check("a feed row becomes a normalized entry",
-          (found["title"], found["specialization"], found["work_arrangement"],
-           found["employment_type"], found["perspective"], found["region"],
-           found["currency"], found["reported"]),
-          ("data-engineer", "data", "remote", "contract", "offer", "MD", "EUR", "2026-06"))
-
-
-def test_radar_enrichment() -> None:
-    """Spain Tech Radar enriches salary-bearing companies, matched three ways."""
-    print("fetch_radar matches and fills without overwriting")
-    import fetch_radar
-
-    empresa = {"slug": "acme-com", "nombre": "Acme", "dominio": "acme.com",
-               "tipo": "producto", "remoto": "hibrido", "cif": "B12345678",
-               "enlaces": {"web": "https://acme.com", "empleo": "https://acme.com/jobs",
-                           "github": "https://github.com/acme"},
-               "oficinas": [{"municipio": "Barcelona", "comunidad": "Cataluña",
-                             "lat": 41.38, "lon": 2.17}],
-               "stack": [{"tecnologia": "Python"}, {"tecnologia": "TypeScript"}]}
-    wanted = fetch_radar.fields(empresa)
-    check("a radar company maps to our columns",
-          (wanted["company_type"], wanted["remote_policy"], wanted["offices"],
-           wanted["stack"], wanted["cif"]),
-          ("product", "hybrid", ["Barcelona, CT (41.38,2.17)"],
-           ["Python", "TypeScript"], "B12345678"))
-
-    company = acme(entry(PER_LOCATION), website=None, linkedin_url="https://www.linkedin.com/company/acme")
-    filled = fetch_radar.fill(company, wanted)
-    check("empty fields are filled", filled > 0 and company["company_type"], "product")
-
-    company = acme(entry(PER_LOCATION), website="https://acme.example",
-                   remote_policy="-")
-    fetch_radar.fill(company, wanted)
-    check("hand-set values are never overwritten, '-' included",
-          (company["website"], company["remote_policy"]),
-          ("https://acme.example", "-"))
-
-    dataset = [empresa,
-               {"slug": "same-a", "nombre": "Same Name", "dominio": "same-a.com",
-                "enlaces": {}, "oficinas": [], "stack": [], "tipo": "desconocido"},
-               {"slug": "same-b", "nombre": "Same Name", "dominio": "same-b.com",
-                "enlaces": {}, "oficinas": [], "stack": [], "tipo": "desconocido"},
-               {"slug": "linked", "nombre": "Other", "dominio": "other.io",
-                "enlaces": {"linkedin": "https://www.linkedin.com/company/acme"},
-                "oficinas": [], "stack": [], "tipo": "desconocido"}]
-    companies = [acme(entry(PER_LOCATION), website="https://acme.com"),
-                 acme(entry(PER_LOCATION), website=None,
-                      linkedin_url="https://www.linkedin.com/company/acme"),
-                 lib.blank_company("Same Name", levels_slug="same") | {"entries": [entry(PER_LOCATION)]},
-                 lib.blank_company("No Salaries") | {"entries": []}]
-    companies[1]["company"] = "Acme2"
-    matched = fetch_radar.match(companies, dataset)
-    check("domain wins; ambiguous names and salary-less companies are skipped",
-          {name: way for name, (_, way) in matched.items()},
-          {"Acme": "domain", "Acme2": "linkedin"})
-
-
-def test_rows_compare_with_empty_cells() -> None:
-    """A role's rows mix empty and filled cells in one column.
-
-    The first all-roles run died at data-analyst on 2026-10-15: comparing the
-    stored rows with the feed's sorted tuples, and None does not sort
-    against text.
-    """
-    print("fetch_spain compares rows whose cells are empty in some, filled in others")
-    import fetch_spain
-    rows = [entry(PER_LOCATION, city=None), entry(PER_LOCATION, city="Madrid")]
-    check("same rows, any order, compare equal",
-          fetch_spain._as_rows(rows) == fetch_spain._as_rows(rows[::-1]), True)
-    with temp_data(acme(*rows)):
-        by_slug = {"acme": {"name": "Acme", "entries": stored()["entries"][::-1]}}
-        check("an unchanged role counts as unchanged",
-              write_role("software-engineer", by_slug)["unchanged"], 1)
-
-
-def test_agents_see_only_groups_of_three() -> None:
-    """The MCP server and llms-full.txt read data.json, which holds no group under MIN_GROUP."""
-    print("mcp_server answers from aggregates of three or more")
-    import importlib.util
-    import mcp_server
-    spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
-    site_build = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(site_build)
-    rows = [entry(PER_LOCATION, base=b, region="MD", city="Madrid") for b in (50000, 70000, 90000)]
-    rows += [entry(PER_LOCATION, base=b, region="CT", city="Barcelona") for b in (60000, 80000)]
-    with temp_data(acme(*rows)):
-        data = site_build.build_data(lib.load_companies())
-
-    def ask(tool, **args):
-        reply = mcp_server.handle(data, {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
-                                         "params": {"name": tool, "arguments": args}})
-        return reply["result"].get("structuredContent")
-
-    check("Madrid's three give a median",
-          ask("salary_stats", region="Madrid")["result"]["median_base_eur"], 70000)
-    check("Barcelona's two give nothing", ask("salary_stats", region="Cataluña")["result"], None)
-    check("years are bucketed", ask("salary_stats", years=8)["selection"]["years"], "8-11")
-    check("a company's groups leave Barcelona out",
-          sorted(g["region"] or "" for g in ask("company_salaries", name="acme")["groups"]
-                 if g["years"] is None and g["role"] is None), ["", "MD"])
-    check("an unknown role is a tool error, not a crash",
-          mcp_server.handle(data, {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {
-              "name": "salary_stats", "arguments": {"role": "astronaut"}}})["result"]["isError"],
-          True)
-    check("llms-full.txt renders", "## By region" in site_build.llms_full(data), True)
-
-
 def main() -> int:
     for test in (test_location_guard, test_unscoped_classifier,
                  test_purge_runs_even_when_spain_data_exists,
                  test_figures_are_converted_to_euros,
-                 test_every_year_is_kept_the_readme_filters,
+                 test_seniority_is_years_not_titles,
                  test_one_submission_is_one_entry,
-                 test_foreign_rows_are_skipped,
-                 test_feed_is_read_to_the_end,
-                 test_a_role_past_the_ceiling_is_read_per_company,
-                 test_an_unread_feed_changes_nothing,
-                 test_companies_are_their_salaries,
-                 test_rows_compare_with_empty_cells,
-                 test_median_and_share_over_every_senior,
-                 test_agents_see_only_groups_of_three,
-                 test_floor_aliases_and_exclusions,
-                 test_normalization,
-                 test_radar_enrichment):
+                 test_foreign_samples_are_skipped,
+                 test_signed_in_table_is_read,
+                 test_an_unread_page_changes_nothing,
+                 test_a_company_with_its_median_under_the_bar_is_not_listed,
+                 test_median_and_share_over_every_senior, test_floor_aliases_and_exclusions):
         test()
     if failures:
         print(f"\n{len(failures)} failed: {', '.join(failures)}")

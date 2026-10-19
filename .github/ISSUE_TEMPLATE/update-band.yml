@@ -29,7 +29,7 @@ body:
     id: years
     attributes:
       label: Years of experience
-      description: Any. What the company calls the level does not matter.
+      description: 5 or more. What the company calls the level does not matter.
       placeholder: "8"
     validations: { required: true }
 
