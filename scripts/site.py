@@ -13,7 +13,7 @@ Pages come in English and Spanish under /en/ and /es/. The page's look lives
 in web/ (app.js, style.css); this script renders the HTML shell, the map of
 Spain and /api/v1/data.json, which serves both the page and agents. Agents
 that only read URLs get /llms.txt and /llms-full.txt (markdown, from the same
-aggregates through query.py); agents that speak MCP get scripts/mcp_server.py.
+aggregates); agents that speak MCP get /mcp (api/mcp.js), which reads data.json.
 Set SITE_URL to the public origin so those pages carry absolute links.
 """
 from __future__ import annotations
@@ -31,7 +31,6 @@ import sys
 import urllib.request
 
 import lib
-import query
 import taxonomy
 
 OUT = lib.ROOT / "_site"
@@ -1037,10 +1036,10 @@ def _table(head: list[str], rows: list[list]) -> str:
     return "\n".join(lines)
 
 
-def _stat_row(label: str, r: dict) -> list:
-    return [label, _k(r["median_base_eur"]),
-            f"{_k(r['p25_base_eur'])} - {_k(r['p75_base_eur'])}",
-            _k(r["median_total_eur"]), f"{round(r['share_at_60k_base'] * 100)}%", r["people"]]
+def _stat_row(label: str, a: dict) -> list:
+    """One cell of data.json as a table row."""
+    return [label, _k(a["median"]), f"{_k(a['p25'])} - {_k(a['p75'])}",
+            _k(a["total"]), f"{round(a['share'] * 100)}%", a["n"]]
 
 
 STAT_HEAD = ["", "Median base", "Middle half", "Median total", "60k+ base", "People"]
@@ -1114,36 +1113,39 @@ def _coverage(data: dict) -> str:
 def llms_full(data: dict) -> str:
     parts = [llms_txt(data).split("\n## Data")[0].rstrip()]
 
-    overall = query.stats(data)["result"]
-    parts.append("## Spain, every role\n\n" + _table(STAT_HEAD, [_stat_row("All", overall)]))
+    def cell(role: str = "", region: str = "", years: str = "") -> dict | None:
+        return data["cells"].get(f"{role}|{region}|{years}")
 
-    rows = [_stat_row(f"{r['name']} (`{r['slug']}`)", res)
-            for r in data["roles"] if (res := query.stats(data, role=r["slug"])["result"])]
+    parts.append("## Spain, every role\n\n" + _table(STAT_HEAD, [_stat_row("All", cell())]))
+
+    rows = [_stat_row(f"{r['name']} (`{r['slug']}`)", a)
+            for r in data["roles"] if (a := cell(role=r["slug"]))]
     parts.append("## By role\n\n" + _table(STAT_HEAD, rows))
 
-    rows = [_stat_row(f"{names['es']} (`{code}`)", res) for code, names in data["regions"].items()
-            if (res := query.stats(data, region=code)["result"])]
+    rows = [_stat_row(f"{names['es']} (`{code}`)", a) for code, names in data["regions"].items()
+            if (a := cell(region=code))]
     rows.sort(key=lambda r: -r[-1])
     parts.append("## By region\n\n" + _table(STAT_HEAD, rows))
 
     for role in ("", "software-engineer"):
-        rows = [_stat_row(f"{y} years", res) for y in data["years"]
-                if (res := query.stats(data, role=role, years=y)["result"])]
+        rows = [_stat_row(f"{y} years", a) for y in data["years"] if (a := cell(role, years=y))]
         title = "software engineers" if role else "every role"
         parts.append(f"## By years of experience, {title}\n\n" + _table(STAT_HEAD, rows))
 
     head = ["Company", "Median base", "Median total", "60k+ base", "People"]
     for role, title in (("", "every role"), ("software-engineer", "software engineers")):
-        top = query.top_companies(data, role=role, limit=50)["result"]
-        rows = [[f"[{c['company']}]({c['url']})" if c["url"] else c["company"],
-                 _k(c["median_base_eur"]), _k(c["median_total_eur"]),
-                 f"{round(c['share_at_60k_base'] * 100)}%", c["people"]] for c in top]
+        rows = []
+        for a in data["company_cells"].get(f"{role}||", [])[:50]:
+            c = data["companies"][a["c"]]
+            rows.append([f"[{c['name']}]({c['url']})" if c["url"] else c["name"], _k(a["median"]),
+                         _k(a["total"]), f"{round(a['share'] * 100)}%", a["n"]])
         parts.append(f"## Best-paying companies, {title} (top {len(rows)})\n\n"
                      + _table(head, rows))
 
     parts.append("Narrower selections (a role in a region, a company by role) are in "
                  f"[data.json]({SITE}/api/v1/data.json) and through the MCP server.")
     return "\n\n".join(parts) + "\n"
+
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))

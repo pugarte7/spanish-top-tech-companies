@@ -1,9 +1,8 @@
 // Vercel Function: the MCP server, public at /mcp (vercel.json rewrites it here).
 //
-// A port of scripts/query.py and scripts/mcp_server.py, which stay the
-// reference (and the stdio server for local agents); tests/mcp.test.mjs checks
-// both give the same answers on the same data.json. The site itself is static
-// files from _site/ that Vercel serves without calling this code.
+// The only implementation: scripts/mcp-stdio.mjs serves the same `respond` over
+// stdio for local agents, and tests/mcp.test.mjs checks both. The site itself
+// is static files from _site/ that Vercel serves without calling this code.
 //
 // Both eras of the protocol: a request carrying
 // _meta["io.modelcontextprotocol/protocolVersion"] is answered statelessly under
@@ -84,7 +83,7 @@ export const tools = (data) => [
     inputSchema: { type: "object", properties: {} }, annotations: READ_ONLY },
 ];
 
-// --- query.py ------------------------------------------------------------------
+// --- Queries over data.json -----------------------------------------------------
 
 class QueryError extends Error {}
 
@@ -217,7 +216,7 @@ export function filters(data) {
   };
 }
 
-// --- mcp_server.py --------------------------------------------------------------
+// --- JSON-RPC --------------------------------------------------------------------
 
 function call(data, name, args) {
   if (name === "salary_stats") return stats(data, args);

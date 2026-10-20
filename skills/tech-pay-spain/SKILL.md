@@ -26,8 +26,8 @@ CORS). Connect to it and use its tools:
 
 Without an MCP client, fetch `/llms-full.txt` from the site for the national,
 per-role, per-region and per-experience tables, or `/api/v1/data.json` for
-every selection. `scripts/mcp_server.py` in the repository is the same server
-over stdio, for development only.
+every selection. `node scripts/mcp-stdio.mjs` in the repository is the same
+server over stdio.
 
 ## Reading them right
 

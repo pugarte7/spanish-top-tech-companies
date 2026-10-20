@@ -35,7 +35,7 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Site builds and /mcp answers like mcp_server.py
+      - name: Site builds and /mcp answers
         run: python3 scripts/site.py && node tests/mcp.test.mjs
 
       - name: Validate companies.csv

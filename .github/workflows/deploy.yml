@@ -54,7 +54,7 @@ jobs:
           vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
           vercel build --prod --token="$VERCEL_TOKEN"
 
-      - name: /mcp answers like mcp_server.py
+      - name: /mcp answers
         run: node tests/mcp.test.mjs
 
       - name: Deploy to Vercel
