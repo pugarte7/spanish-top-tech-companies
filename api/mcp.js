@@ -55,33 +55,46 @@ const SELECTION = {
            "or a bucket such as 5-7. Omit for any experience." },
 };
 const READ_ONLY = { readOnlyHint: true, openWorldHint: false };
-const TOOL_NAMES = ["salary_stats", "top_companies", "company_salaries", "list_filters"];
-export const tools = (data) => [
-  { name: "salary_stats", title: "Salary statistics",
-    description: "Median base, middle half (p25-p75), median total comp and share at " +
-                 "60k+ base for a role, region and experience in Spain.",
-    inputSchema: { type: "object", properties: SELECTION }, annotations: READ_ONLY },
-  { name: "top_companies", title: "Best-paying companies",
-    description: `Companies ranked by median base for a selection, each from ${data.min_group}+ ` +
-                 "salaries. Use search to look one company up within the selection.",
-    inputSchema: { type: "object", properties: {
-      ...SELECTION,
-      search: { type: "string", description: "Filter companies by name." },
-      limit: { type: "integer", minimum: 1, maximum: 200, default: 20 } } },
-    annotations: READ_ONLY },
-  { name: "company_salaries", title: "One company's salaries",
-    description: "One company in Spain: overall, and by role, region or experience " +
-                 `where ${data.min_group}+ people report. Give a role, region or years ` +
-                 "to see the groups within it, combinations included.",
-    inputSchema: { type: "object", required: ["name"], properties: {
-      name: { type: "string", description: "Company name, e.g. Glovo." },
-      ...SELECTION } },
-    annotations: READ_ONLY },
-  { name: "list_filters", title: "Roles, regions and experience buckets",
-    description: "The role slugs, region codes and experience buckets that have data, " +
-                 "and the date of the data.",
-    inputSchema: { type: "object", properties: {} }, annotations: READ_ONLY },
-];
+
+// Every tool once: what tools/list shows of it, and what a call runs.
+const TOOLS = {
+  salary_stats: {
+    define: () => ({ title: "Salary statistics",
+      description: "Median base, middle half (p25-p75), median total comp and share at " +
+                   "60k+ base for a role, region and experience in Spain.",
+      inputSchema: { type: "object", properties: SELECTION } }),
+    run: (data, args) => stats(data, args),
+  },
+  top_companies: {
+    define: (data) => ({ title: "Best-paying companies",
+      description: `Companies ranked by median base for a selection, each from ${data.min_group}+ ` +
+                   "salaries. Use search to look one company up within the selection.",
+      inputSchema: { type: "object", properties: {
+        ...SELECTION,
+        search: { type: "string", description: "Filter companies by name." },
+        limit: { type: "integer", minimum: 1, maximum: 200, default: 20 } } } }),
+    run: (data, args) => topCompanies(data, args),
+  },
+  company_salaries: {
+    define: (data) => ({ title: "One company's salaries",
+      description: "One company in Spain: overall, and by role, region or experience " +
+                   `where ${data.min_group}+ people report. Give a role, region or years ` +
+                   "to see the groups within it, combinations included.",
+      inputSchema: { type: "object", required: ["name"], properties: {
+        name: { type: "string", description: "Company name, e.g. Glovo." },
+        ...SELECTION } } }),
+    run: (data, args) => company(data, args.name, args),
+  },
+  list_filters: {
+    define: () => ({ title: "Roles, regions and experience buckets",
+      description: "The role slugs, region codes and experience buckets that have data, " +
+                   "and the date of the data.",
+      inputSchema: { type: "object", properties: {} } }),
+    run: (data) => filters(data),
+  },
+};
+export const tools = (data) => Object.entries(TOOLS)
+  .map(([name, tool]) => ({ name, ...tool.define(data), annotations: READ_ONLY }));
 
 // --- Queries over data.json -----------------------------------------------------
 
@@ -218,13 +231,6 @@ export function filters(data) {
 
 // --- JSON-RPC --------------------------------------------------------------------
 
-function call(data, name, args) {
-  if (name === "salary_stats") return stats(data, args);
-  if (name === "top_companies") return topCompanies(data, args);
-  if (name === "company_salaries") return company(data, args.name ?? "", args);
-  return filters(data);
-}
-
 function error(id, code, message, detail) {
   const out = { jsonrpc: "2.0", id, error: { code, message } };
   if (detail !== undefined) out.error.data = detail;
@@ -284,10 +290,12 @@ function callTool(data, id, params, extra) {
   const name = params.name;
   const args = params.arguments ?? {};
   if (!isObject(args)) return error(id, INVALID_PARAMS, "arguments must be an object");
-  if (!TOOL_NAMES.includes(name)) return error(id, INVALID_PARAMS, `unknown tool '${name}'`);
+  // Own keys only: a name such as "constructor" must not reach Object's prototype.
+  const tool = typeof name === "string" && Object.hasOwn(TOOLS, name) ? TOOLS[name] : null;
+  if (!tool) return error(id, INVALID_PARAMS, `unknown tool '${name}'`);
   let result;
   try {
-    const out = call(data, name, args);
+    const out = tool.run(data, args);
     result = { content: [{ type: "text", text: JSON.stringify(out) }], structuredContent: out };
   } catch (e) {
     if (!(e instanceof QueryError)) throw e;
