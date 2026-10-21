@@ -217,12 +217,14 @@ test("a row opens with the mouse and the keyboard", async ({ page }) => {
   await expect(detail).toBeHidden();
 });
 
-test("an open row splits pay into base, bonus, stock and total", async ({ page }) => {
+test("an open row shows how total pay splits, adding up to 100%", async ({ page }) => {
   await open(page);
   const row = rows(page).first();
   await row.click();
-  const split = row.locator("xpath=following-sibling::tr[1]").locator(".split dt");
-  await expect(split).toHaveText(["Base", "Bonus", "Acciones", "Total"]);
+  const key = row.locator("xpath=following-sibling::tr[1]").locator(".mix-key li");
+  await expect(key).toHaveText([/^Base \d+%$/, /^Bonus \d+%$/, /^Acciones \d+%$/]);
+  const sum = (await key.allTextContents()).reduce((s, t) => s + +t.match(/(\d+)%/)[1], 0);
+  expect(sum).toBe(100);
 });
 
 test("links that leave the page open in a new tab", async ({ page, context }) => {
