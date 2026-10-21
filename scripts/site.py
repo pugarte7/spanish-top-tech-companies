@@ -574,11 +574,11 @@ def page(lang: str, svg: str) -> str:
   </section>
 
   <section class="tile wide" id="companies-card">
-    <div class="tile-head">
-      <h2>{e['companies_title']}</h2>
-      <input id="search" type="search" placeholder="{e['search']}" autocomplete="off">
+    <h2>{e['companies_title']}</h2>
+    <div class="filter-row">
+      <div class="filters" id="filters"></div>
+      <input id="search" type="search" placeholder="{e['search']}" aria-label="{e['search']}" autocomplete="off">
     </div>
-    <div class="filters" id="filters"></div>
     <div class="summary" id="summary" aria-live="polite"></div>
     <div class="table-wrap"><table id="companies"></table></div>
     <button class="more" id="more" hidden></button>
