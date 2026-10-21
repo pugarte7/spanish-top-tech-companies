@@ -93,6 +93,18 @@ test("map switches between pay and number of salaries", async ({ page }) => {
   expect(counts[0]).toBeGreaterThan(1000);
 });
 
+test("only the top bar sticks when scrolling", async ({ page }) => {
+  await open(page);
+  await page.locator("#companies-card").scrollIntoViewIfNeeded();
+  const stuck = await page.evaluate(() => [...document.querySelectorAll("body *")]
+    .filter((e) => getComputedStyle(e).position === "sticky")
+    .filter((e) => !e.matches(".topbar, .matrix tbody th"))
+    .map((e) => e.outerHTML.slice(0, 60)));
+  expect(stuck).toEqual([]);
+  // The map ranking has scrolled away, not stuck under the top bar.
+  expect((await page.locator("#ranking .bar").first().boundingBox()).y).toBeLessThan(0);
+});
+
 test("link logos sit in the same place on every row", async ({ page }) => {
   await open(page);
   const xs = await page.locator("#companies tr.main .links").evaluateAll((els) =>
