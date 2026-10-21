@@ -18,6 +18,7 @@ Set SITE_URL to the public origin so those pages carry absolute links.
 from __future__ import annotations
 
 import collections
+import hashlib
 import html
 import itertools
 import json
@@ -186,6 +187,12 @@ STRINGS = {
         "any": "Cualquiera", "loading": "Cargando…", "from": "Desde", "to": "Hasta",
     },
 }
+
+
+def asset_version(name: str) -> str:
+    """A short hash of a file in web/, put in its URL so a browser fetches it
+    again whenever it changes instead of running a cached copy."""
+    return hashlib.sha256((WEB / name).read_bytes()).hexdigest()[:10]
 
 
 def year_bucket(years: int | None) -> str | None:
@@ -523,7 +530,7 @@ def page(lang: str, svg: str) -> str:
 <link rel="alternate" type="application/json" href="/api/v1/data.json" title="Salary aggregates">
 <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Salary aggregates for agents">
 <script type="application/ld+json">{json_ld(lang)}</script>
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
 </head>
 <body data-lang="{lang}">
 <nav class="bar">
@@ -593,7 +600,7 @@ def page(lang: str, svg: str) -> str:
 </footer>
 <div id="tip" role="tooltip" hidden></div>
 <script>window.S={json.dumps(s, ensure_ascii=False)};</script>
-<script src="/app.js"></script>
+<script src="/app.js?v={asset_version("app.js")}"></script>
 </body>
 </html>
 """
