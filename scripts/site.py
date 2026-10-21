@@ -95,10 +95,13 @@ YEAR_BUCKETS = [(0, 2), (2, 5), (5, 8), (8, 12), (12, 20), (20, None)]
 # Histogram bins of 10k; the ends are open so a lone outlier joins a crowd.
 HIST_LOW, HIST_HIGH, HIST_STEP = 20_000, 150_000, 10_000
 
+# GitHub's outline star (octicon star-16), the one on its Star button.
 STAR_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .25a.75.75 0 0 1 '
-             '.673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791'
+             '.673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791'
              'L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611'
-             'L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>')
+             'L7.327.668A.75.75 0 0 1 8 .25Zm0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 '
+             '0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664'
+             'l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41L8 2.694Z"/></svg>')
 GITHUB_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8'
                'c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94'
                '-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66'
@@ -149,7 +152,7 @@ STRINGS = {
         "data": "JSON", "csv": "CSV", "repo": "GitHub", "web": "Website",
         "star_title": "Finding this useful?",
         "star_text": "Give the repo a star on GitHub. It helps more people find it.",
-        "star_button": "Star", "star_later": "Not now", "star_close": "Close",
+        "star_button": "Star on GitHub", "star_close": "Close",
         "under": "Under", "over": "Over",
         "role_label": "Role", "mode_label": "Work",
         "mode_remote": "Remote", "mode_hybrid": "Hybrid", "mode_office": "Office",
@@ -190,7 +193,7 @@ STRINGS = {
         "data": "JSON", "csv": "CSV", "repo": "GitHub", "web": "Web",
         "star_title": "¿Te está sirviendo?",
         "star_text": "Dale una estrella al repo en GitHub. Ayuda a que lo encuentre más gente.",
-        "star_button": "Star", "star_later": "Ahora no", "star_close": "Cerrar",
+        "star_button": "Dar una estrella en GitHub", "star_close": "Cerrar",
         "under": "Menos de", "over": "Más de",
         "role_label": "Rol", "mode_label": "Modalidad",
         "mode_remote": "Remoto", "mode_hybrid": "Híbrido", "mode_office": "Presencial",
@@ -613,10 +616,7 @@ def page(lang: str, svg: str) -> str:
   <button class="star-x" id="star-close" type="button" aria-label="{e['star_close']}">×</button>
   <p class="star-title" id="star-title">{e['star_title']}</p>
   <p class="star-text">{e['star_text']}</p>
-  <div class="star-actions">
-    <a class="star-btn" id="star-go" href="{REPO}" target="_blank" rel="noopener">{STAR_ICON}<span>{e['star_button']}</span><span class="star-count" id="star-count" hidden></span></a>
-    <button class="star-later" id="star-later" type="button">{e['star_later']}</button>
-  </div>
+  <a class="star-btn" id="star-go" href="{REPO}" target="_blank" rel="noopener" aria-label="{e['star_button']}" title="{e['star_button']}">{STAR_ICON}</a>
 </aside>
 <script>window.S={json.dumps(s, ensure_ascii=False)};</script>
 <script src="/app.js?v={asset_version("app.js")}"></script>
