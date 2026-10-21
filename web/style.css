@@ -76,16 +76,17 @@ a:hover { text-decoration: underline; }
 button, select, input { font: inherit; letter-spacing: inherit; color: inherit; }
 
 /* Frosted bar */
-.bar {
+/* Not ".bar": the map ranking draws its bars with that class and would turn sticky too. */
+.topbar {
   position: sticky; top: 0; z-index: 20; background: var(--bar);
   -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
   border-bottom: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
 }
-.bar-in { max-width: 1120px; margin: 0 auto; padding: 8px 22px; min-height: 52px;
+.topbar-in { max-width: 1120px; margin: 0 auto; padding: 8px 22px; min-height: 52px;
           display: flex; align-items: center; gap: 16px; }
 .brand { font-size: 17px; font-weight: 600; color: var(--text); white-space: nowrap; }
 .brand:hover { text-decoration: none; }
-.bar-end { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.topbar-end { margin-left: auto; display: flex; align-items: center; gap: 6px; }
 .icon-btn { display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 50%;
             background: none; color: var(--text-2); cursor: pointer; }
 .icon-btn:hover { background: var(--fill); color: var(--text); text-decoration: none; }
@@ -345,7 +346,7 @@ footer p { margin: 4px 0; max-width: 720px; }
   .stats { grid-template-columns: repeat(2, 1fr); row-gap: 28px; }
 }
 @media (max-width: 640px) {
-  .bar-in { flex-wrap: wrap; padding: 8px 16px; gap: 8px 12px; }
+  .topbar-in { flex-wrap: wrap; padding: 8px 16px; gap: 8px 12px; }
   .hero { padding: 56px 16px 40px; }
   .bento { padding: 0 12px; gap: 12px; }
   .tile { padding: 28px 20px; border-radius: 22px; }

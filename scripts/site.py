@@ -533,10 +533,10 @@ def page(lang: str, svg: str) -> str:
 <link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
 </head>
 <body data-lang="{lang}">
-<nav class="bar">
-  <div class="bar-in">
+<nav class="topbar">
+  <div class="topbar-in">
     <a class="brand" href="/{lang}/">{e['title']}</a>
-    <div class="bar-end">
+    <div class="topbar-end">
       <a class="icon-btn" href="{REPO}" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub">{GITHUB_ICON}</a>
       <div class="seg" role="group">{lang_links}</div>
       <button class="icon-btn" id="theme" type="button" title="{e['theme']}" aria-label="{e['theme']}">{THEME_ICON}</button>
