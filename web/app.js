@@ -505,11 +505,49 @@ function companies() {
   more.textContent = state.all ? S.show_less : S.show_all.replace("{n}", rows.length);
 }
 
+// --- star prompt ----------------------------------------------------------------
+// After a while on the page, a small card asks for a GitHub star. The button
+// opens the repo, where the reader stars it themselves: a page cannot star a
+// repo for someone. Shown once; "not now" waits a month, a click never again.
+const STAR_DELAY_MS = 40_000;
+const STAR_SNOOZE_DAYS = 30;
+const STAR_KEY = "star-prompt";
+const REPO_API = "https://api.github.com/repos/pugarte7/spanish-top-tech-companies";
+
+function store(value) {
+  try { return value === undefined ? localStorage.getItem(STAR_KEY) : localStorage.setItem(STAR_KEY, value); }
+  catch { return null; }
+}
+
+function starPrompt() {
+  const seen = store();
+  if (seen === "starred" || (seen && Date.now() < +seen)) return;
+  const pop = $("star");
+  const close = (value) => { pop.hidden = true; store(value); };
+  $("star-go").onclick = () => close("starred");
+  $("star-later").onclick = $("star-close").onclick = () =>
+    close(String(Date.now() + STAR_SNOOZE_DAYS * 864e5));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !pop.hidden) $("star-later").click(); });
+  setTimeout(async () => {
+    pop.hidden = false;
+    // The count is a nicety; GitHub's API limits anonymous calls, so a failure shows none.
+    try {
+      const r = await fetch(REPO_API);
+      if (r.ok) {
+        const n = (await r.json()).stargazers_count;
+        $("star-count").textContent = n.toLocaleString(LOCALE);
+        $("star-count").hidden = false;
+      }
+    } catch {}
+  }, STAR_DELAY_MS);
+}
+
 // --- render -------------------------------------------------------------------
 async function main() {
   D = await (await fetch("/api/v1/data.json")).json();
   $("updated").textContent = S.updated.replace("{date}", D.generated);
   wire();
+  starPrompt();
   kpis(); map();
   await loadTable("");
   matrix();
