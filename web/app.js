@@ -345,11 +345,12 @@ function summary() {
   const band = (i) => i === 0 ? `${S.under} ${short(low)}`
     : i === a.hist.length - 1 ? `${S.over} ${short(low + (i - 1) * step)}`
     : `${short(low + (i - 1) * step)}–${short(low + i * step)}`;
+  // Each band is a full-height column, so hovering above a short bar still
+  // finds it.
   const bars = a.hist.map((c, i) => {
     const high = i > 0 && low + (i - 1) * step >= D.threshold;
-    const tip = `${band(i)} €: ${c === null ? `${S.under} ${D.min_group}` : c} ${S.people}`;
-    return `<i class="${high ? "hi" : ""}${c === null ? " wh" : ""}" title="${esc(tip)}"` +
-      ` style="height:${c ? Math.max(4, (c / max) * 100) : 4}%"></i>`;
+    return `<span class="col" data-i="${i}"><i class="${high ? "hi" : ""}${c === null ? " wh" : ""}"` +
+      ` style="height:${c ? Math.max(4, (c / max) * 100) : 4}%"></i></span>`;
   }).join("");
   el.innerHTML =
     `<dl><dt>${S.col_median}</dt><dd>${money(a.median)}</dd></dl>` +
@@ -360,6 +361,12 @@ function summary() {
     `<div class="axis"><span>${short(low)}</span>` +
     `<span style="left:${((1 + (D.threshold - low) / step) / a.hist.length) * 100}%">${short(D.threshold)}</span>` +
     `<span>${short(D.hist.high)}+</span></div></div>`;
+  el.querySelectorAll(".dist .col").forEach((col) => {
+    const i = +col.dataset.i, c = a.hist[i];
+    hover(col, () => `<b>${band(i)} €</b><br>` + (c === null
+      ? `${S.under} ${D.min_group} ${S.people}`
+      : `${c.toLocaleString(LOCALE)} ${S.people} · ${pct(c / a.n)}`));
+  });
 }
 
 // --- companies ------------------------------------------------------------------

@@ -66,6 +66,11 @@ test("summary follows the table's filters", async ({ page }) => {
   const se = await figures();
   expect(num(se[3])).toBeLessThan(num(all[3]));
 
+  // Every band answers a hover, short bars included.
+  await page.locator("#summary .dist .col").nth(5).hover();
+  await expect(page.locator("#tip")).toBeVisible();
+  await expect(page.locator("#tip")).toContainText("salarios");
+
   // Search narrows the companies, not the summary.
   await page.locator("#search").fill("glovo");
   expect(await figures()).toEqual(se);
