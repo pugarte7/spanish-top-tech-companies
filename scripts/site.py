@@ -579,7 +579,7 @@ def strings(lang: str) -> dict:
     return out
 
 
-def page(lang: str, svg: str) -> str:
+def page(lang: str, svg: str, data_version: str) -> str:
     s = strings(lang)
     e = {k: html.escape(v) for k, v in s.items()}
     other = "es" if lang == "en" else "en"
@@ -689,7 +689,7 @@ def page(lang: str, svg: str) -> str:
   <p class="star-text">{e['star_text']}</p>
   <a class="star-btn" id="star-go" href="{REPO}" target="_blank" rel="noopener" aria-label="{e['star_button']}" title="{e['star_button']}">{STAR_ICON}</a>
 </aside>
-<script>window.S={json.dumps(s, ensure_ascii=False)};</script>
+<script>window.S={json.dumps(s, ensure_ascii=False)};window.DATA_V="{data_version}";</script>
 <script src="/app.js?v={asset_version("app.js")}"></script>
 </body>
 </html>
@@ -700,10 +700,17 @@ def main(argv: list[str]) -> int:
     if OUT.exists():
         shutil.rmtree(OUT)
     (OUT / "api" / "v1").mkdir(parents=True)
+    data, tables = build_site(lib.load_companies())
+    dump = lambda v: json.dumps(v, ensure_ascii=False, separators=(",", ":"))
+    files = {"data.json": dump(data)}
+    files.update({f"companies/{name or 'all'}.json": dump(t) for name, t in tables.items()})
+    # Like asset_version, for the JSON the page fetches: a browser holding
+    # yesterday's tables under the same URL would run new code on old fields.
+    data_version = hashlib.sha256("".join(files.values()).encode()).hexdigest()[:10]
     svg = spain_svg()
     for lang in ("en", "es"):
         (OUT / lang).mkdir()
-        (OUT / lang / "index.html").write_text(page(lang, svg), encoding="utf-8")
+        (OUT / lang / "index.html").write_text(page(lang, svg, data_version), encoding="utf-8")
     (OUT / "index.html").write_text(
         '<!doctype html><meta charset="utf-8"><script>location.replace('
         '(navigator.language || "").startsWith("es") ? "/es/" : "/en/")</script>'
@@ -711,15 +718,10 @@ def main(argv: list[str]) -> int:
     for name in ("app.js", "style.css"):
         shutil.copy(WEB / name, OUT / name)
 
-    data, tables = build_site(lib.load_companies())
-    (OUT / "api" / "v1" / "data.json").write_text(
-        json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    (OUT / "api" / "v1" / "companies").mkdir()
-    for name, table in tables.items():
-        path = OUT / "api" / "v1" / "companies" / f"{name or 'all'}.json"
-        path.parent.mkdir(exist_ok=True)
-        path.write_text(json.dumps(table, ensure_ascii=False, separators=(",", ":")),
-                        encoding="utf-8")
+    for name, text in files.items():
+        path = OUT / "api" / "v1" / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
     (OUT / "llms.txt").write_text(llms_txt(data), encoding="utf-8")
     (OUT / "llms-full.txt").write_text(llms_full(data), encoding="utf-8")
     print(f"Built _site/: {len(data['companies'])} companies, {len(data['cells'])} cells "

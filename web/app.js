@@ -409,7 +409,7 @@ const T = {};
 async function loadTable(role) {
   if (T[role]) return;
   $("companies").innerHTML = `<tr><td class="empty">${esc(S.loading)}</td></tr>`;
-  const r = await fetch(`/api/v1/companies/${role || "all"}.json`);
+  const r = await fetch(`/api/v1/companies/${role || "all"}.json?v=${window.DATA_V}`);
   T[role] = r.ok ? await r.json() : { fields: [], cells: {} };
 }
 // Keys list arrangements in lib.WORK_ARRANGEMENTS order, not the menu's.
@@ -545,7 +545,7 @@ function starPrompt() {
 
 // --- render -------------------------------------------------------------------
 async function main() {
-  D = await (await fetch("/api/v1/data.json")).json();
+  D = await (await fetch(`/api/v1/data.json?v=${window.DATA_V}`)).json();
   $("updated").textContent = S.updated.replace("{date}", D.generated);
   wire();
   starPrompt();
