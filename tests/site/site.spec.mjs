@@ -233,16 +233,16 @@ test("links that leave the page open in a new tab", async ({ page, context }) =>
 test.describe("star prompt", () => {
   test.beforeEach(async ({ page }) => {
     await page.clock.install();
-    await page.route("https://api.github.com/**", (r) => r.fulfill({ json: { stargazers_count: 12345 } }));
   });
   const wait = (page) => page.clock.fastForward(41_000);
 
-  test("appears after a while, with the star count", async ({ page }) => {
+  test("appears after a while, with GitHub's star", async ({ page }) => {
     await open(page);
     await expect(page.locator("#star")).toBeHidden();
     await wait(page);
     await expect(page.locator("#star")).toBeVisible();
-    await expect(page.locator("#star-count")).toHaveText("12.345");
+    await expect(page.locator("#star-go svg")).toBeVisible();
+    await expect(page.locator("#star-go")).toHaveText("");
     await expect(page.locator("#star-go")).toHaveAttribute("href", /github\.com\/pugarte7\/spanish-top-tech-companies$/);
   });
 
@@ -259,10 +259,10 @@ test.describe("star prompt", () => {
     await expect(page.locator("#star")).toBeHidden();
   });
 
-  test("not now hides it on later visits too", async ({ page }) => {
+  test("closing it hides it on later visits too", async ({ page }) => {
     await open(page);
     await wait(page);
-    await page.locator("#star-later").click();
+    await page.locator("#star-close").click();
     await expect(page.locator("#star")).toBeHidden();
     await page.reload();
     await expect(rows(page).first()).toBeVisible();

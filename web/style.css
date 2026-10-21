@@ -338,21 +338,16 @@ footer p { margin: 4px 0; max-width: 720px; }
 @keyframes star-in { from { opacity: 0; transform: translateY(12px); } }
 .star-title { margin: 0 24px 4px 0; font-size: 17px; font-weight: 600; }
 .star-text { margin: 0 0 14px; font-size: 14px; color: var(--text-2); line-height: 1.4; }
-.star-actions { display: flex; align-items: center; gap: 10px; }
-.star-btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 980px;
-            background: var(--text); color: var(--tile); font-size: 14px; font-weight: 600; }
-.star-btn:hover { text-decoration: none; opacity: .88; }
-.star-btn svg { width: 15px; height: 15px; color: #e3b341; }
-.star-count { padding-left: 8px; margin-left: 2px; border-left: 1px solid color-mix(in srgb, var(--tile) 35%, transparent);
-              font-variant-numeric: tabular-nums; font-weight: 500; }
-.star-later { border: 0; background: none; color: var(--text-2); font-size: 14px; cursor: pointer; padding: 6px; }
-.star-later:hover { color: var(--text); }
+.star-btn { display: grid; place-items: center; width: 56px; height: 56px; margin: 0 auto; border-radius: 16px;
+            background: var(--fill); color: var(--text); transition: color .15s, transform .15s; }
+.star-btn:hover { color: #e3b341; transform: scale(1.06); text-decoration: none; }
+.star-btn svg { width: 28px; height: 28px; }
 .star-x { position: absolute; top: 8px; right: 10px; width: 28px; height: 28px; border: 0; border-radius: 50%;
           background: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; }
 .star-x:hover { background: var(--fill); color: var(--text); }
-.star-btn:focus-visible, .star-later:focus-visible, .star-x:focus-visible {
+.star-btn:focus-visible, .star-x:focus-visible {
   outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 40%, transparent); }
-@media (prefers-reduced-motion: reduce) { .star-pop { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .star-pop { animation: none; } .star-btn { transition: none; } }
 
 #tip { position: fixed; z-index: 30; pointer-events: none; font-size: 13px; line-height: 1.45;
        letter-spacing: 0; padding: 10px 12px; border-radius: 12px; max-width: 260px;
