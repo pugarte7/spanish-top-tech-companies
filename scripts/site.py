@@ -120,7 +120,23 @@ STRINGS = {
     "en": {
         "title": "Spanish Top Tech Companies", "theme": "Light or dark mode",
         "source": "Data: Levels.fyi",
-        "floor": "Companies with a median base of 45k+",
+        "rule": "Only companies in Spain whose median base salary, counting all their salaries, "
+                "is {floor} or more. The rest are not shown.",
+        "how_title": "How it is calculated",
+        "how_source_t": "Source.",
+        "how_source": "Individual salaries from Levels.fyi, each kept only if its own location is in Spain.",
+        "how_floor_t": "Which companies.",
+        "how_floor": "For each company, the median base salary over all its salaries, any role and "
+                     "experience. It is shown if that reaches {floor}; the rest stay in the CSV.",
+        "how_groups_t": "Groups of {min} or more.",
+        "how_groups": "By role, region and years of experience. No figure comes from fewer than "
+                      "{min} salaries, so nobody can be singled out.",
+        "how_figures_t": "What you see.",
+        "how_figures": "Median base, the middle half (p25–p75), median total pay (base + bonus + stock) "
+                       "and the share with a base of {bar} or more. They describe these companies, "
+                       "not all of Spain.",
+        "how_repro_t": "Reproduce it.",
+        "how_repro": "One command builds this page and its JSON from the public CSV:",
         "all_roles": "All roles", "all_years": "Any",
         "years_label": "Experience", "years_unit": "yrs",
         "hero_label": "Median base salary",
@@ -162,7 +178,24 @@ STRINGS = {
     "es": {
         "title": "Spanish Top Tech Companies", "theme": "Modo claro u oscuro",
         "source": "Datos: Levels.fyi",
-        "floor": "Empresas con base mediana de 45k+",
+        "rule": "Solo empresas en España con un sueldo base mediano de {floor} o más, contando "
+                "todos sus salarios. Las demás no aparecen.",
+        "how_title": "Cómo se calcula",
+        "how_source_t": "Fuente.",
+        "how_source": "Salarios individuales de Levels.fyi. Cada uno se acepta solo si su propia "
+                      "ubicación está en España.",
+        "how_floor_t": "Qué empresas entran.",
+        "how_floor": "Por empresa, la mediana del sueldo base de todos sus salarios, de cualquier rol "
+                     "y experiencia. Entra si llega a {floor}; las demás siguen en el CSV.",
+        "how_groups_t": "Grupos de {min} o más.",
+        "how_groups": "Por rol, comunidad y años de experiencia. Ninguna cifra sale de menos de "
+                      "{min} salarios, para que nadie sea identificable.",
+        "how_figures_t": "Qué se muestra.",
+        "how_figures": "Sueldo base mediano, la mitad central (p25–p75), el total mediano (base + bonus "
+                       "+ acciones) y el porcentaje con una base de {bar} o más. Son cifras de estas "
+                       "empresas, no de toda España.",
+        "how_repro_t": "Cómo reproducirlo.",
+        "how_repro": "Un comando genera esta página y su JSON a partir del CSV público:",
         "all_roles": "Todos los roles", "all_years": "Todas",
         "years_label": "Experiencia", "years_unit": "años",
         "hero_label": "Salario base mediano",
@@ -511,8 +544,19 @@ def spain_svg() -> str:
 
 # --- Page --------------------------------------------------------------------
 
+def euros(n: int, lang: str) -> str:
+    return f"{n:,}\u00a0€".replace(",", ".") if lang == "es" else f"€{n:,}"
+
+
 def strings(lang: str) -> dict:
-    return {k: v.replace("{min}", str(lib.MIN_GROUP)) for k, v in STRINGS[lang].items()}
+    fill = {"{min}": str(lib.MIN_GROUP), "{floor}": euros(COMPANY_FLOOR_EUR, lang),
+            "{bar}": euros(lib.THRESHOLD_EUR, lang)}
+    out = {}
+    for k, v in STRINGS[lang].items():
+        for mark, value in fill.items():
+            v = v.replace(mark, value)
+        out[k] = v
+    return out
 
 
 def page(lang: str, svg: str) -> str:
@@ -520,6 +564,8 @@ def page(lang: str, svg: str) -> str:
     e = {k: html.escape(v) for k, v in s.items()}
     other = "es" if lang == "en" else "en"
     levels = '<a href="https://www.levels.fyi" target="_blank" rel="noopener">Levels.fyi</a>'
+    steps = "".join(f"\n      <li><b>{e[f'how_{k}_t']}</b> {e[f'how_{k}']}</li>"
+                    for k in ("source", "floor", "groups", "figures"))
     lang_links = "".join(
         f'<a class="on" aria-current="page">{code.upper()}</a>' if code == lang
         else f'<a href="/{code}/" hreflang="{code}">{code.upper()}</a>'
@@ -564,7 +610,17 @@ def page(lang: str, svg: str) -> str:
     <div><dt>{e['kpi_people']}</dt><dd id="k-people"></dd></div>
     <div><dt>{e['kpi_companies']}</dt><dd id="k-companies"></dd></div>
   </dl>
-  <p class="source">{e['source'].replace('Levels.fyi', levels)} · {e['floor']}</p>
+  <p class="rule">{e['rule']}</p>
+  <p class="source">{e['source'].replace('Levels.fyi', levels)}</p>
+  <details class="how">
+    <summary>{e['how_title']}</summary>
+    <ol class="steps">{steps}
+      <li><b>{e['how_repro_t']}</b> {e['how_repro']}
+        <span class="flow"><a href="{REPO}/blob/main/companies.csv" target="_blank" rel="noopener"><code>companies.csv</code></a>
+        → <code>python3 scripts/site.py</code>
+        → <a href="/api/v1/data.json" target="_blank" rel="noopener"><code>data.json</code></a></span></li>
+    </ol>
+  </details>
 </header>
 
 <main class="bento">
