@@ -208,7 +208,7 @@ test("a row opens with the mouse and the keyboard", async ({ page }) => {
   await row.click();
   await expect(row).toHaveAttribute("aria-expanded", "true");
   await expect(detail).toBeVisible();
-  await expect(detail).toContainText(/Acciones|Ninguno de sus/);
+  await expect(detail).toContainText(/Sueldo total mediano|Solo sueldo base/);
   await expect(detail).not.toContainText("Frente al mercado");
 
   await row.focus();
@@ -225,7 +225,7 @@ test("companies with no bonus or stock say so instead of a total", async ({ page
   await row.click();
   const detail = row.locator("xpath=following-sibling::tr[1]");
   await expect(detail.locator(".fixed-note")).toContainText("Ninguno de sus");
-  await expect(detail).not.toContainText("Acciones");
+  await expect(detail).not.toContainText("Sueldo total mediano");
 });
 
 test("links that leave the page open in a new tab", async ({ page, context }) => {
