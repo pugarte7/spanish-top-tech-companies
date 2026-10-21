@@ -1,0 +1,21 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "python3 scripts/site.py",
+  "outputDirectory": "_site",
+  "git": { "deploymentEnabled": false },
+  "rewrites": [{ "source": "/mcp", "destination": "/api/mcp" }],
+  "headers": [
+    {
+      "source": "/api/v1/(.*)",
+      "headers": [{ "key": "Access-Control-Allow-Origin", "value": "*" }]
+    },
+    {
+      "source": "/(llms\\.txt|llms-full\\.txt)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Content-Type", "value": "text/plain; charset=utf-8" }
+      ]
+    }
+  ]
+}

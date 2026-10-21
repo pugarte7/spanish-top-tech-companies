@@ -1,8 +1,8 @@
-// The Worker and scripts/mcp_server.py must answer alike. Run after site.py:
-//     node worker/test.mjs
+// api/mcp.js and scripts/mcp_server.py must answer alike. Run after site.py:
+//     node tests/mcp.test.mjs
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import worker, { handle } from "./index.js";
+import mcp, { handle } from "../api/mcp.js";
 
 const DATA = "_site/api/v1/data.json";
 const data = JSON.parse(readFileSync(DATA, "utf8"));
@@ -42,10 +42,10 @@ calls.forEach((c, i) => {
   console.log(`  ${same ? "pass" : "FAIL"}  ${c.method} ${c.params?.name ?? ""}`);
 });
 
-const env = { ASSETS: { fetch: async () => new Response(JSON.stringify(data)) } };
-const post = (body) => worker.fetch(new Request("https://x/mcp", { method: "POST", body }), env);
+globalThis.fetch = async () => new Response(JSON.stringify(data));
+const post = (body) => mcp.fetch(new Request("https://x/mcp", { method: "POST", body }));
 const checks = [
-  ["GET /mcp is 405", (await worker.fetch(new Request("https://x/mcp"), env)).status, 405],
+  ["GET /mcp is 405", (await mcp.fetch(new Request("https://x/mcp"))).status, 405],
   ["a notification is 202", (await post('{"jsonrpc":"2.0","method":"notifications/initialized"}')).status, 202],
   ["bad JSON is 400", (await post("{")).status, 400],
   ["a call answers", (await (await post(JSON.stringify(calls[2]))).json()).result.structuredContent.result.people,
@@ -55,5 +55,5 @@ for (const [label, got, want] of checks) {
   if (got !== want) failed++;
   console.log(`  ${got === want ? "pass" : "FAIL"}  ${label}${got === want ? "" : ` (got ${got}, want ${want})`}`);
 }
-console.log(failed ? `${failed} failed` : "worker matches mcp_server.py");
+console.log(failed ? `${failed} failed` : "api/mcp.js matches mcp_server.py");
 process.exit(failed ? 1 : 0);
