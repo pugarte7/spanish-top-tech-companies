@@ -204,6 +204,20 @@ test("a row opens with the mouse and the keyboard", async ({ page }) => {
   await expect(detail).toBeHidden();
 });
 
+test("links that leave the page open in a new tab", async ({ page, context }) => {
+  await open(page);
+  // Every link except the brand and the language switch (hreflang).
+  const stay = await page.locator("a[href]").evaluateAll((as) => as
+    .filter((a) => !a.matches(".brand, [hreflang]") && a.target !== "_blank")
+    .map((a) => a.outerHTML.slice(0, 80)));
+  expect(stay).toEqual([]);
+
+  const tab = context.waitForEvent("page");
+  await rows(page).first().locator('a[aria-label="LinkedIn"]').click();
+  expect((await tab).url()).not.toBe(page.url());
+  await expect(rows(page).first()).toBeVisible();
+});
+
 test("search narrows the table", async ({ page }) => {
   await open(page);
   await expect(page.locator("#more")).toBeVisible();
