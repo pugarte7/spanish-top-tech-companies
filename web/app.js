@@ -9,6 +9,9 @@ const money = (n) => n == null ? "—" : new Intl.NumberFormat(LOCALE, {
 const short = (n) => new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 1 })
   .format(n / 1000) + "k";
 const pct = (x) => Math.round(x * 100) + "%";
+// A share of a whole that can be small: one decimal under 10%, "<0,1%" for a trace.
+const share = (x) => x > 0 && x < 0.001 ? `<${(0.1).toLocaleString(LOCALE)}%`
+  : (x * 100).toLocaleString(LOCALE, { maximumFractionDigits: x < 0.1 ? 1 : 0 }) + "%";
 
 let D;
 // Filters belong to the companies table only; the charts above it show everyone.
@@ -365,7 +368,7 @@ function summary() {
     const i = +col.dataset.i, c = a.hist[i];
     hover(col, () => `<b>${band(i)} €</b><br>` + (c === null
       ? `${S.under} ${D.min_group} ${S.people}`
-      : `${c.toLocaleString(LOCALE)} ${S.people} · ${pct(c / a.n)}`));
+      : `${c.toLocaleString(LOCALE)} ${S.people} · ${share(c / a.n)}`));
   });
 }
 
