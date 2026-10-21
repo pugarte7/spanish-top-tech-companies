@@ -97,8 +97,10 @@ refuses to write (`--audit` only), and a blocked run, or one that could read
 no company at all, exits 1.
 
 The weekly refresh runs on the maintainer's Mac, not on GitHub: Levels.fyi
-serves GitHub's runners pages without data. `scripts/weekly.sh` runs from
-launchd every Monday at 08:00 and pushes a "Refresh salaries" commit;
+serves GitHub's runners pages without data. On this branch `scripts/weekly.sh`
+runs from launchd every Monday at 10:00 and pushes a "Refresh salaries"
+commit to `website`, which deploys the site; main's own refresh runs at 08:00
+and pushes to `main`, where
 `.github/workflows/weekly.yml` turns that push into an issue with
 `scripts/digest.py`'s summary of what changed. See docs/CONTEXT.md.
 

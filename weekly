@@ -1,16 +1,62 @@
 #!/bin/sh
-# Manual handle on the Monday refresh. `run` starts the launchd job itself
-# rather than scripts/weekly.sh, so it runs from the same clone with the same
-# environment as the scheduled run.
+# Manual handle on the website's Monday refresh. `run` starts the launchd job
+# itself rather than scripts/weekly.sh, so it runs from the same clone with the
+# same environment as the scheduled run. `install` writes and loads that job:
+# Mondays at 10:00, after main's 08:00 refresh has had time to finish, so the
+# two never read Levels.fyi at once.
 set -eu
 
-job="gui/$(id -u)/com.pugarte7.spanish-top-tech-companies.weekly"
-log="$HOME/Library/Logs/spanish-top-tech-companies/weekly.log"
+label=com.pugarte7.spanish-top-tech-companies.website
+job="gui/$(id -u)/$label"
+plist="$HOME/Library/LaunchAgents/$label.plist"
+clone="$HOME/.local/share/spanish-top-tech-companies-website"
+log="$HOME/Library/Logs/spanish-top-tech-companies/weekly-website.log"
 
 running() { launchctl print "$job" | grep -q 'state = running'; }
 last_exit() { launchctl print "$job" | sed -n 's/.*last exit code = //p'; }
 
 case "${1:-}" in
+  install)
+    [ -d "$clone/.git" ] || git clone -q --branch website \
+      https://github.com/pugarte7/spanish-top-tech-companies.git "$clone"
+    mkdir -p "$(dirname "$log")" "$(dirname "$plist")"
+    cat >"$plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>$label</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>$clone/scripts/weekly.sh</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Weekday</key>
+    <integer>1</integer>
+    <key>Hour</key>
+    <integer>10</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>$(dirname "$log")/launchd-website.log</string>
+  <key>StandardErrorPath</key>
+  <string>$(dirname "$log")/launchd-website.log</string>
+</dict>
+</plist>
+PLIST
+    launchctl bootout "$job" 2>/dev/null || true
+    launchctl bootstrap "gui/$(id -u)" "$plist"
+    echo "Installed $label: Mondays 10:00, clone in $clone"
+    ;;
   run)
     if running; then echo "Already running. Follow it with: sh weekly log -f" >&2; exit 1; fi
     mkdir -p "$(dirname "$log")"
@@ -29,15 +75,15 @@ case "${1:-}" in
     ;;
   status)
     launchctl print "$job" | grep -E 'state =|runs =|last exit code'
-    git -C "$(dirname "$0")" fetch -q origin main
-    last=$(git -C "$(dirname "$0")" log -1 --format='%h %ad %s' --date=short --grep='^Refresh salaries' origin/main)
+    git -C "$(dirname "$0")" fetch -q origin website
+    last=$(git -C "$(dirname "$0")" log -1 --format='%h %ad %s' --date=short --grep='^Refresh salaries' origin/website)
     echo "last refresh: ${last:-none yet}"
     ;;
   log)
     if [ "${2:-}" = -f ]; then tail -f "$log"; else tail -n "${2:-50}" "$log"; fi
     ;;
   *)
-    echo "usage: sh weekly run | status | log [lines | -f]" >&2
+    echo "usage: sh weekly install | run | status | log [lines | -f]" >&2
     exit 2
     ;;
 esac

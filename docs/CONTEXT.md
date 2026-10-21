@@ -420,7 +420,7 @@ priced in euros is dropped and counted, never guessed.
 | `site.py` | Builds `_site/`: the page in Spanish and English, `/api/v1/data.json` (every aggregate of `lib.MIN_GROUP`+ people), `/llms.txt` and `/llms-full.txt` for agents that only read URLs. `SITE_URL` makes their links absolute. | Yes |
 | `mcp_server.py` | MCP server (stdio, or stateless Streamable HTTP with `--http`) over `data.json` through `query.py`: `salary_stats`, `top_companies`, `company_salaries`, `list_filters`. Reads only the published aggregates, so it can never return a group under `MIN_GROUP`. `skills/tech-pay-spain/SKILL.md` tells agents (Hermes, any agentskills.io client) how to use it. | Yes |
 | `worker/index.js` | Cloudflare Worker: serves `_site/` as static assets and the MCP server at `/mcp`. A JS port of `query.py` and `mcp_server.py`; `worker/test.mjs` fails CI when the two answer differently. Deployed on every push to `main` by `.github/workflows/deploy.yml` (free plan; static files do not count against its request quota). | Deployed by CI |
-| `weekly.sh` | The Monday refresh launchd runs on the maintainer's Mac: taxonomy, salary feeds, company details, radar, test, validate, build, push. | Pushes to `main` |
+| `weekly.sh` | The website's Monday refresh launchd runs on the maintainer's Mac at 10:00: taxonomy, salary feeds, company details, radar, test, validate, build, push. `sh weekly install` sets it up. | Pushes to `website` |
 
 `lib.py` is the only code that reads or writes `companies.csv`. Writes go to a
 temporary file first, because an interrupted fetch must not truncate the only
@@ -435,18 +435,28 @@ a token fine and got `unreadable` for both glovo and fever: HTML without the
 page data, most likely Levels.fyi's bot protection answering Azure addresses.
 So:
 
-- launchd agent `com.pugarte7.spanish-top-tech-companies.weekly`
-  (`~/Library/LaunchAgents/`) runs `scripts/weekly.sh` from its own clone in
-  `~/.local/share/spanish-top-tech-companies` every Monday at 08:00 local.
-  launchd runs a missed slot when the Mac wakes, not when it was off.
-- `weekly.sh` resets that clone to `origin/main`, fetches, runs the tests,
-  `validate.py` and `build.py`, and pushes "Refresh salaries YYYY-MM-DD".
-  Its log is `~/Library/Logs/spanish-top-tech-companies/weekly.log`; a failure
-  also raises a macOS notification.
-- `sh weekly run` (repo root) starts the same launchd job by hand and follows
-  its log; `sh weekly status` shows the job's last exit and the last refresh
-  commit, `sh weekly log` the log.
-- `.github/workflows/weekly.yml` opens an issue from that push with
+- Two launchd agents, because `main` (the README) and `website` (the site)
+  run different pipelines on different branches since 2026-10-19. Each
+  branch's `scripts/weekly.sh` is the one for that branch, run from a clone
+  of its own so the two never share a checkout. launchd runs a missed slot
+  when the Mac wakes, not when it was off.
+- `com.pugarte7.spanish-top-tech-companies.weekly` runs main's `weekly.sh`
+  from `~/.local/share/spanish-top-tech-companies` every Monday at 08:00 and
+  pushes "Refresh salaries YYYY-MM-DD" to `main`. Log: `weekly.log`.
+- `com.pugarte7.spanish-top-tech-companies.website` runs this branch's
+  `weekly.sh` from `~/.local/share/spanish-top-tech-companies-website` every
+  Monday at 10:00, two hours later so the two runs never read Levels.fyi at
+  once, and pushes to `website`, which `deploy.yml` puts on the site. Log:
+  `weekly-website.log`. `sh weekly install` (repo root, on this branch)
+  clones, writes the plist and loads it.
+- Each resets its clone to its branch, fetches, runs the tests, `validate.py`
+  and `build.py`, and pushes. Logs are in
+  `~/Library/Logs/spanish-top-tech-companies/`; a failure also raises a macOS
+  notification.
+- `sh weekly run` (repo root) starts the job for the branch checked out by
+  hand and follows its log; `sh weekly status` shows the job's last exit and
+  the last refresh commit, `sh weekly log` the log.
+- `.github/workflows/weekly.yml` opens an issue from main's push with
   `scripts/digest.py` (companies in and out, table moves, median changes,
   every new salary, a draft post). It runs as github-actions[bot] because
   GitHub never notifies people of their own activity. On Tuesdays at 12:00
