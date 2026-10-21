@@ -1,6 +1,6 @@
 # Dataset license
 
-`companies.csv`, and the tables generated from it in `README.md`, are licensed
+The tables in `README.md` are licensed
 **Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**.
 
 Full text: https://creativecommons.org/licenses/by-sa/4.0/legalcode
@@ -13,8 +13,9 @@ The scripts and workflows are MIT — see LICENSE.
 
 ## Third-party data
 
-Most salary entries are individual submissions read from levels.fyi's public
-pages, each with a link back to the page it came from. This license does not
-cover that data: levels.fyi's own terms apply to it, and nothing here grants
-rights they do not. If you believe something here goes beyond them, open an
-issue and it will be removed.
+Most of the salaries behind the tables are submissions read from levels.fyi,
+and each table row links back to the page it came from. The individual
+submissions are not published. This license does not cover levels.fyi's data:
+their own terms apply to it, and nothing here grants rights they do not. If
+you believe something here goes beyond them, open an issue and it will be
+removed.

@@ -1,4 +1,9 @@
-"""Reading, writing and scoring companies.csv, the only data file."""
+"""Reading, writing and scoring companies.csv, the only data file.
+
+The file is private: it holds one row per person, so it lives on the
+maintainer's machine, outside the repository, and only the README's
+per-company aggregates are published. STC_DATA points elsewhere.
+"""
 from __future__ import annotations
 
 import csv
@@ -10,7 +15,9 @@ import re
 import statistics
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-DATA = ROOT / "companies.csv"
+DATA = pathlib.Path(os.environ.get("STC_DATA") or
+                    pathlib.Path.home() / ".local" / "share" / "spanish-top-tech-companies-data"
+                    / "companies.csv")
 
 # Every software engineer in Spain with this much experience is a row,
 # whatever they are paid; the median over them is what a company pays a senior.

@@ -5,21 +5,12 @@ on:
     branches: [main]
   pull_request:
   schedule:
-    - cron: "0 6 1 * *"   # monthly staleness sweep
+    - cron: "0 6 1 * *"   # monthly
   workflow_dispatch:
 
 jobs:
   check:
     runs-on: ubuntu-latest
-
-    # GitHub's default shell is `bash -e`, with no pipefail. That made the
-    # validate step below report success whatever it found, because its exit
-    # code was tee's rather than its own - so the guard that keeps another
-    # country's salaries out of this dataset could fail and the build stayed
-    # green. `shell: bash` is the one that sets -o pipefail.
-    defaults:
-      run:
-        shell: bash
 
     steps:
       - uses: actions/checkout@v4
@@ -31,26 +22,5 @@ jobs:
       - name: Pipeline regression tests
         run: python3 tests/test_pipeline.py
 
-      - name: Validate companies.csv
-        run: python3 scripts/validate.py | tee validate.log
-
-      - name: Rebuild README and normalise companies.csv
-        run: python3 scripts/build.py
-
-      - name: Fail if generated files are out of date
-        run: |
-          if ! git diff --exit-code -- README.md companies.csv; then
-            echo "::error::README.md or companies.csv are stale. Run 'python3 scripts/build.py' and commit the result."
-            exit 1
-          fi
-
-      - name: Staleness report
-        if: always()
-        run: |
-          {
-            echo "### Data health"
-            echo
-            echo '```'
-            grep -E "not verified in over a year|^[0-9]+ companies" validate.log || echo "nothing stale"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+      # companies.csv is private, so validate.py and build.py run on the
+      # maintainer's Mac (scripts/weekly.sh); CI has only the tests.

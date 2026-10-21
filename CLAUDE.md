@@ -39,6 +39,15 @@ only data file: one row per salary, company columns repeated. Never slim the
 README by moving data into side files, and never go back to one file per
 company. Both were tried and the maintainer rejected them.
 
+**`companies.csv` is private.** Since 2026-10-21 it is not in the repository:
+one row per person is personal data and a copy of Levels.fyi's database, and
+the maintainer stopped publishing it. It lives at `lib.DATA`
+(`~/.local/share/spanish-top-tech-companies-data/companies.csv`, or
+`STC_DATA`), git ignores it, and only the README's per-company aggregates are
+published. Never commit it, link to it, or put a single person's salary in
+anything public: the weekly digest and its issue carry company aggregates
+only. CI has no data, so it runs only the tests.
+
 The five things that will bite you:
 
 1. **Levels.fyi serves another country's salaries when it has no Spanish data**,
@@ -130,4 +139,4 @@ day: once the median decided the table, it put one-person 60k rows above N26 at
 maintainer vouching that the company pays that.
 
 After any data change: `python3 scripts/validate.py && python3 scripts/build.py`,
-and commit the regenerated `README.md` and `companies.csv` — CI fails otherwise.
+and commit the regenerated `README.md`, never `companies.csv`.
