@@ -9,5 +9,5 @@ playwright-report/
 *.tmp
 _site/
 .cache/
-.wrangler/
-node_modules/
+.vercel/
+node_modules

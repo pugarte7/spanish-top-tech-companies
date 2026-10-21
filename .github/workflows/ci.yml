@@ -35,8 +35,8 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Site builds and the Worker answers like mcp_server.py
-        run: python3 scripts/site.py && node worker/test.mjs
+      - name: Site builds and /mcp answers like mcp_server.py
+        run: python3 scripts/site.py && node tests/mcp.test.mjs
 
       - name: Validate companies.csv
         run: python3 scripts/validate.py | tee validate.log

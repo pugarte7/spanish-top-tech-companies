@@ -1,18 +1,20 @@
 name: deploy
 
-# Builds _site/ from companies.csv and publishes it with the MCP server to
-# Cloudflare Workers. Every push to main redeploys, so Monday's "Refresh
-# salaries" commit is on the site minutes later. Building only reads the CSV,
-# so it runs fine on GitHub; fetching from Levels.fyi stays on the Mac.
+# Builds _site/ from companies.csv and publishes it, with the MCP server at
+# /mcp (api/mcp.js), to Vercel. Built here and uploaded prebuilt: vercel.json
+# turns off Vercel's own Git deployments so a push is deployed once. Building
+# only reads the CSV, so it runs fine on GitHub; fetching from Levels.fyi
+# stays on the Mac.
 #
-# Needs repository secrets CLOUDFLARE_API_TOKEN ("Edit Cloudflare Workers"
-# template) and CLOUDFLARE_ACCOUNT_ID, and optionally the variable SITE_URL
-# (e.g. https://tech-pay-spain.<subdomain>.workers.dev) for absolute links in
-# llms.txt. Without the secrets it builds and tests but does not deploy.
+# Needs repository secrets VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID
+# (the last two from .vercel/project.json after `vercel link`), and
+# optionally the variable SITE_URL (e.g. https://tech-pay-spain.vercel.app)
+# for absolute links in llms.txt. Without the token it builds and tests but
+# does not deploy.
 
 on:
   push:
-    branches: [main]
+    branches: [website]
   workflow_dispatch:
 
 concurrency:
@@ -27,7 +29,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SITE_URL: ${{ vars.SITE_URL }}
-      HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -40,20 +44,23 @@ jobs:
           node-version: "22"
 
       - name: Build site
+        if: env.VERCEL_TOKEN == ''
         run: python3 scripts/site.py
 
-      - name: Worker answers like mcp_server.py
-        run: node worker/test.mjs
+      - name: Build for Vercel
+        if: env.VERCEL_TOKEN != ''
+        run: |
+          npm install --global vercel@latest
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          vercel build --prod --token="$VERCEL_TOKEN"
 
-      - name: Deploy to Cloudflare Workers
-        if: env.HAS_TOKEN == 'true'
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: "4"
-          command: deploy
+      - name: /mcp answers like mcp_server.py
+        run: node tests/mcp.test.mjs
+
+      - name: Deploy to Vercel
+        if: env.VERCEL_TOKEN != ''
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
 
       - name: Not deployed
-        if: env.HAS_TOKEN != 'true'
-        run: echo "::warning::CLOUDFLARE_API_TOKEN is not set; built and tested, not deployed."
+        if: env.VERCEL_TOKEN == ''
+        run: echo "::warning::VERCEL_TOKEN is not set; built and tested, not deployed."

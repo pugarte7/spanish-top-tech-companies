@@ -1,10 +1,9 @@
-// Cloudflare Worker: serves _site/ as static assets and the MCP server at /mcp.
+// Vercel Function: the MCP server, public at /mcp (vercel.json rewrites it here).
 //
 // A port of scripts/query.py and scripts/mcp_server.py, which stay the
-// reference (and the stdio server for local agents); worker/test.mjs checks
-// both give the same answers on the same data.json. Static files never reach
-// this code: Workers serve assets first and call fetch() only for what is not
-// a file, which keeps the site's traffic off the free plan's request quota.
+// reference (and the stdio server for local agents); tests/mcp.test.mjs checks
+// both give the same answers on the same data.json. The site itself is static
+// files from _site/ that Vercel serves without calling this code.
 
 const VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 const SERVER = { name: "tech-pay-spain", title: "Tech Pay Spain", version: "1.0.0" };
@@ -218,17 +217,21 @@ const json = (body, status = 200) => new Response(body === null ? null : JSON.st
   status, headers: { ...CORS, ...(body === null ? {} : { "Content-Type": "application/json" }) },
 });
 
-let DATA; // one parse per isolate; a deploy with new data starts new isolates
+let DATA; // one parse per instance; a deploy with new data starts new instances
 
-async function load(env, url) {
-  if (!DATA) DATA = await (await env.ASSETS.fetch(new URL("/api/v1/data.json", url))).json();
+// The deployment's own static copy, so the answers always match the site's.
+async function load(url) {
+  if (!DATA) {
+    const answer = await fetch(new URL("/api/v1/data.json", url));
+    if (!answer.ok) throw new Error(`data.json answered ${answer.status}`);
+    DATA = await answer.json();
+  }
   return DATA;
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request) {
     const url = new URL(request.url);
-    if (url.pathname !== "/mcp") return env.ASSETS.fetch(request);
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
     // No server-initiated stream: the spec's answer for GET is 405.
     if (request.method !== "POST") return json({ error: "POST JSON-RPC to /mcp" }, 405);
@@ -239,7 +242,7 @@ export default {
       return json({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "parse error" } }, 400);
     }
     const reply = msg && typeof msg === "object" && !Array.isArray(msg)
-      ? handle(await load(env, url), msg) : null;
+      ? handle(await load(url), msg) : null;
     return reply ? json(reply) : json(null, 202);
   },
 };
