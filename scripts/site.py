@@ -138,13 +138,14 @@ STRINGS = {
         "companies_title": "Companies",
         "search": "Search",
         "col_company": "Company", "col_median": "Median base salary",
-        "col_vs": "vs market (same role and experience)",
+        "fixed": "Base only",
         "col_total": "Median total pay (base + bonus + stock)", "col_n": "Salaries reported",
         "col_share": "Earning 60k+",
         "tip_median": "Gross yearly base salary: half earn more, half earn less",
         "tip_share": "Share of salaries with a base of 60,000 € or more",
         "tip_n": "How many salaries this company has under the filters chosen",
-        "vs_tip": "Median of each salary against the Spain median for its role and years",
+        "fixed_tip": "None of these salaries reports a bonus or stock",
+        "fixed_text": "None of its {n} salaries reports a bonus or stock: what you see is all you get.",
         "show_all": "Show all {n}", "show_less": "Show less",
         "none": "No group of {min} or more salaries.",
         "people": "salaries", "median": "Median", "range": "p25–p75",
@@ -179,13 +180,14 @@ STRINGS = {
         "companies_title": "Empresas",
         "search": "Buscar",
         "col_company": "Empresa", "col_median": "Sueldo base mediano",
-        "col_vs": "Frente al mercado (mismo rol y experiencia)",
+        "fixed": "Solo sueldo base",
         "col_total": "Sueldo total mediano (base + bonus + acciones)", "col_n": "Nº de salarios",
         "col_share": "Cobran 60k o más",
         "tip_median": "Salario base bruto anual: la mitad cobra más y la mitad menos",
         "tip_share": "Porcentaje de salarios con una base de 60.000 € o más",
         "tip_n": "Cuántos salarios de esta empresa hay con los filtros elegidos",
-        "vs_tip": "Mediana de cada salario frente a la mediana de España para su rol y años",
+        "fixed_tip": "Ninguno de estos salarios declara bonus ni acciones",
+        "fixed_text": "Ninguno de sus {n} salarios declara bonus ni acciones: lo que ves es lo que hay.",
         "show_all": "Ver los {n}", "show_less": "Ver menos",
         "none": "Ningún grupo de {min} o más salarios.",
         "people": "salarios", "median": "Mediana", "range": "p25–p75",
@@ -263,6 +265,11 @@ def aggregate(entries: list[dict], hist: bool = False) -> dict | None:
     return out
 
 
+def fixed_pay(entries: list[dict]) -> bool:
+    """No salary in the group reports a bonus or stock: total is the base."""
+    return all(e.get("total") == e["base"] for e in entries)
+
+
 def pays_enough(company: dict) -> bool:
     bases = [e["base"] for e in company["entries"] if e.get("base")]
     return bool(bases) and statistics.median(bases) >= COMPANY_FLOOR_EUR
@@ -275,8 +282,8 @@ def build_data(companies: list[dict]) -> dict:
 
 def build_site(companies: list[dict]) -> tuple[dict, dict[str, dict]]:
     """data.json, and the companies table's own files, one per role."""
-    data, rows, market, index = _build(companies)
-    return data, company_filters(rows, market, index)
+    data, rows, index = _build(companies)
+    return data, company_filters(rows, index)
 
 
 def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
@@ -301,21 +308,11 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
                     by_company[key][i].append(e)
 
     stats = {k: a for k, v in cells.items() if (a := aggregate(v, hist=True))}
-    # "vs market": each salary against the Spain-wide median of its own role
-    # and years, so a company of juniors is not read as one that pays less.
-    market = {}
-    for _, role, _, bucket, e in rows:
-        reference = stats.get(f"{role}||{bucket}") if role and bucket else None
-        if reference:
-            market[id(e)] = e["base"] / reference["median"]
     company_stats = {}
     for key in stats:
         found = []
         for i, entries in by_company[key].items():
             if a := aggregate(entries):
-                ratios = [market[id(e)] for e in entries if id(e) in market]
-                a["vs"] = (round(statistics.median(ratios) - 1, 3)
-                           if len(ratios) >= lib.MIN_GROUP else None)
                 found.append({"c": i, **a})
         found.sort(key=lambda a: (-a["median"], -a["share"]))
         company_stats[key] = found
@@ -341,7 +338,7 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
         "cells": stats,
         "company_cells": company_stats,
     }
-    return data, rows, market, index
+    return data, rows, index
 
 
 def _subsets(values: list[str]) -> list[tuple[str, ...]]:
@@ -355,7 +352,7 @@ def _spans(values: list[str]) -> list[tuple[str, ...]]:
             for j in range(i + 1, len(values) + 1) if j - i < len(values)]
 
 
-def company_filters(rows: list, market: dict, index: dict) -> dict[str, dict]:
+def company_filters(rows: list, index: dict) -> dict[str, dict]:
     """The companies table for any role or specialization, any span of
     experience bands and any set of work arrangements.
 
@@ -392,7 +389,7 @@ def company_filters(rows: list, market: dict, index: dict) -> dict[str, dict]:
                     groups[t][key][i].append(e)
 
     files = {}
-    fields = ["c", "n", "median", "p25", "p75", "total", "share", "vs"]
+    fields = ["c", "n", "median", "p25", "p75", "total", "share", "fixed"]
     # The summary above the table: everyone under the same filters, one
     # aggregate per key, with its histogram.
     summary_fields = ["n", "median", "p25", "p75", "share", "hist"]
@@ -404,9 +401,7 @@ def company_filters(rows: list, market: dict, index: dict) -> dict[str, dict]:
             found = []
             for i, entries in by_company.items():
                 if a := aggregate(entries):
-                    ratios = [market[id(e)] for e in entries if id(e) in market]
-                    a["vs"] = (round(statistics.median(ratios) - 1, 3)
-                               if len(ratios) >= lib.MIN_GROUP else None)
+                    a["fixed"] = int(fixed_pay(entries))
                     found.append({"c": index[i], **a})
             if found:
                 found.sort(key=lambda a: (-a["median"], -a["share"]))

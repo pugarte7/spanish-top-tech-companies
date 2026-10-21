@@ -378,7 +378,6 @@ const SORTS = {
   share: (a) => a.share,
   n: (a) => a.n,
 };
-const signed = (v) => v == null ? "—" : (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(Math.round(v * 100)) + "%";
 
 function levelsUrl(slug) {
   return state.role
@@ -438,9 +437,9 @@ function detail(a) {
        : `<span class="na">–</span><i class="none"></i>`) +
     `<span>${yearsLabel(b)}</span></div>`).join("");
   // A company with no band of MIN_GROUP people would show six empty bars.
-  return `<div class="detail">${bands.some(([, y]) => y) ? `<div class="ybars">${bars}</div>` : ""}<dl class="kv">` +
-    `<div><dt>${S.col_total}</dt><dd>${money(a.total)}</dd></div>` +
-    `<div><dt title="${esc(S.vs_tip)}">${S.col_vs}</dt><dd>${signed(a.vs)}</dd></div></dl></div>`;
+  return `<div class="detail">${bands.some(([, y]) => y) ? `<div class="ybars">${bars}</div>` : ""}` +
+    (a.fixed ? `<p class="fixed-note">${esc(S.fixed_text.replace("{n}", a.n))}</p>`
+      : `<dl class="kv"><div><dt>${S.col_total}</dt><dd>${money(a.total)}</dd></div></dl>`) + `</div>`;
 }
 
 const opened = new Set();
@@ -469,6 +468,7 @@ function companies() {
       return `<tr class="main${open ? " open" : ""}" tabindex="0" aria-expanded="${open}">` +
         `<td class="chev"><span>›</span></td>` +
         `<td class="co"><div class="co-in"><div><span class="name">${esc(c.name)}</span>` +
+        (a.fixed ? `<span class="fixed" title="${esc(S.fixed_tip)}">${S.fixed}</span>` : "") +
         `<span class="cities">${esc(c.cities.join(", "))}</span></div>` +
         `<span class="links">${links}</span></div></td>` +
         `<td class="pay"><b>${money(a.median)}</b></td>` +
