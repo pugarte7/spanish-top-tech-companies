@@ -146,10 +146,10 @@ input[type=search] { -webkit-appearance: none; appearance: none; background: var
 input[type=search]:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 35%, transparent); }
 
 /* Company filters: a button per filter, each opening a list */
-.filter-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px;
+.filter-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px 16px;
               margin-bottom: 20px; }
-.filters { display: flex; flex-wrap: wrap; gap: 8px; }
-.filter-row input[type=search] { height: 34px; border-radius: 980px; font-size: 14px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; flex: 1 1 auto; min-width: 0; }
+.filter-row input[type=search] { flex: none; height: 34px; border-radius: 980px; font-size: 14px; }
 .filter { position: relative; }
 .pick { border: 0; background: var(--fill); border-radius: 980px; height: 34px; padding: 0 30px 0 14px;
         font-size: 14px; cursor: pointer; white-space: nowrap; position: relative; max-width: 100%;
@@ -337,6 +337,8 @@ footer p { margin: 4px 0; max-width: 720px; }
 #tip .t-sub { color: var(--text-2); }
 
 @media (max-width: 900px) {
+  .summary { grid-template-columns: repeat(4, 1fr); }
+  .dist { grid-column: 1 / -1; }
   .bento { grid-template-columns: 1fr; }
   .map-grid { grid-template-columns: 1fr; gap: 24px; }
   .roles { grid-template-columns: 1fr; }
@@ -355,6 +357,7 @@ footer p { margin: 4px 0; max-width: 720px; }
   .hide-sm { display: none; }
   footer { padding: 32px 16px 48px; }
   .summary { grid-template-columns: 1fr 1fr; }
+  .filter-row { flex-wrap: wrap; }
   .matrix { min-width: 560px; }
   .matrix thead th:first-child { width: 112px; }
   .matrix tbody th { white-space: normal; min-width: 104px; max-width: 120px; font-size: 13px; }
