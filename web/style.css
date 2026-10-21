@@ -322,10 +322,13 @@ tr.det td { background: var(--hover); padding: 18px 12px 20px 44px; }
 .yb.on span:last-child { color: var(--text); font-weight: 600; }
 .yb i.none { height: 3px; background: var(--line); }
 .yb .na { color: var(--muted); }
-.kv { display: grid; gap: 10px; margin: 0; }
-.kv div { display: grid; gap: 1px; }
-.kv dt { font-size: 12px; color: var(--muted); letter-spacing: 0; }
-.kv dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.split { display: flex; flex-wrap: wrap; gap: 16px 28px; margin: 0; }
+.split div { display: grid; gap: 2px; align-content: start; }
+.split dt { font-size: 12px; color: var(--muted); }
+.split dd { margin: 0; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.split span { font-size: 12px; color: var(--text-2); }
+.split .nil dd { color: var(--muted); }
+.split .sum { padding-left: 28px; border-left: 1px solid var(--line); }
 .empty { color: var(--muted); padding: 32px 0; text-align: center; }
 .more { display: block; margin: 20px auto 0; border: 0; background: none; color: var(--blue);
         font-size: 17px; cursor: pointer; }
