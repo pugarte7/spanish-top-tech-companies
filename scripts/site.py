@@ -155,13 +155,16 @@ STRINGS = {
         "search": "Search",
         "col_company": "Company", "col_median": "Median base salary",
         "fixed": "Base only",
-        "col_total": "Median total pay (base + bonus + stock)", "col_n": "Salaries reported",
+        "col_n": "Salaries reported",
         "col_share": "Earning 60k+",
         "tip_median": "Gross yearly base salary: half earn more, half earn less",
         "tip_share": "Share of salaries with a base of 60,000 € or more",
         "tip_n": "How many salaries this company has under the filters chosen",
         "fixed_tip": "None of these salaries reports a bonus or stock",
         "fixed_text": "None of its {n} salaries reports a bonus or stock: what you see is all you get.",
+        "split_base": "Base", "split_bonus": "Bonus", "split_stock": "Stock",
+        "split_total": "Total", "split_med": "median", "split_got": "{k} of {n} get it",
+        "split_none": "nobody reports it", "split_tip": "Median among those who get it; the parts do not add up to the median total",
         "show_all": "Show all {n}", "show_less": "Show less",
         "none": "No group of {min} or more salaries.",
         "people": "salaries", "median": "Median", "range": "p25–p75",
@@ -214,13 +217,16 @@ STRINGS = {
         "search": "Buscar",
         "col_company": "Empresa", "col_median": "Sueldo base mediano",
         "fixed": "Solo sueldo base",
-        "col_total": "Sueldo total mediano (base + bonus + acciones)", "col_n": "Nº de salarios",
+        "col_n": "Nº de salarios",
         "col_share": "Cobran 60k o más",
         "tip_median": "Salario base bruto anual: la mitad cobra más y la mitad menos",
         "tip_share": "Porcentaje de salarios con una base de 60.000 € o más",
         "tip_n": "Cuántos salarios de esta empresa hay con los filtros elegidos",
         "fixed_tip": "Ninguno de estos salarios declara bonus ni acciones",
         "fixed_text": "Ninguno de sus {n} salarios declara bonus ni acciones: lo que ves es lo que hay.",
+        "split_base": "Base", "split_bonus": "Bonus", "split_stock": "Acciones",
+        "split_total": "Total", "split_med": "mediana", "split_got": "lo cobran {k} de {n}",
+        "split_none": "nadie lo declara", "split_tip": "Mediana entre quienes lo cobran; las partes no suman el total mediano",
         "show_all": "Ver los {n}", "show_less": "Ver menos",
         "none": "Ningún grupo de {min} o más salarios.",
         "people": "salarios", "median": "Mediana", "range": "p25–p75",
@@ -301,6 +307,17 @@ def aggregate(entries: list[dict], hist: bool = False) -> dict | None:
 def fixed_pay(entries: list[dict]) -> bool:
     """No salary in the group reports a bonus or stock: total is the base."""
     return all(e.get("total") == e["base"] for e in entries)
+
+
+def paid_part(entries: list[dict], part: str) -> tuple[int, int | None]:
+    """How many get a bonus (or stock), and its median among them.
+
+    Among them, not over everyone: with zeros counted, a bonus half the
+    company gets would read as none. The three medians do not add up to the
+    median total, so each is shown on its own."""
+    amounts = [e[part] for e in entries if e.get(part)]
+    median = round(statistics.median(amounts)) if len(amounts) >= lib.MIN_GROUP else None
+    return len(amounts), median
 
 
 def pays_enough(company: dict) -> bool:
@@ -422,7 +439,8 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
                     groups[t][key][i].append(e)
 
     files = {}
-    fields = ["c", "n", "median", "p25", "p75", "total", "share", "fixed"]
+    fields = ["c", "n", "median", "p25", "p75", "total", "share", "fixed",
+              "bonus_n", "bonus", "stock_n", "stock"]
     # The summary above the table: everyone under the same filters, one
     # aggregate per key, with its histogram.
     summary_fields = ["n", "median", "p25", "p75", "share", "hist"]
@@ -435,6 +453,8 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
             for i, entries in by_company.items():
                 if a := aggregate(entries):
                     a["fixed"] = int(fixed_pay(entries))
+                    for part in ("bonus", "stock"):
+                        a[f"{part}_n"], a[part] = paid_part(entries, part)
                     found.append({"c": index[i], **a})
             if found:
                 found.sort(key=lambda a: (-a["median"], -a["share"]))
