@@ -4,3 +4,5 @@ __pycache__/
 .DS_Store
 .claude/
 *.tmp
+# One row per person: private, kept outside the repository (lib.DATA).
+companies.csv

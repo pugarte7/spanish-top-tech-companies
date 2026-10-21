@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
-"""What changed in companies.csv since a git revision, as Markdown.
+"""What changed in companies.csv since an earlier copy of it, as Markdown.
 
-    python3 scripts/digest.py            # working tree against HEAD
-    python3 scripts/digest.py 3dd5b0e    # against an older commit
+    python3 scripts/digest.py /path/to/before.csv
 
-The weekly refresh posts this as an issue, so each Monday's new data points
-arrive as a notification, with a draft post at the bottom. Rows carry no
-submission id, so a new salary is a row that, minus the run date, was not on
-file before.
+The weekly refresh puts this in its commit message and the weekly workflow
+posts it as an issue, so it is public: company aggregates only, never a
+single person's salary. Rows carry no submission id, so a new salary is a
+row that, minus the run date, was not on file before.
 """
 from __future__ import annotations
 
 import collections
 import pathlib
-import subprocess
 import sys
-import tempfile
 
 import build
 import lib
@@ -24,15 +21,6 @@ REPO = "https://github.com/pugarte7/spanish-top-tech-companies"
 POST_LIMIT = 280
 LINK_LENGTH = 23  # X counts every link as 23 characters
 MAIN, BEHIND = "60k+", "need to improve"
-
-
-def at(revision: str) -> list[dict]:
-    text = subprocess.run(["git", "show", f"{revision}:companies.csv"], cwd=lib.ROOT,
-                          capture_output=True, text=True, check=True).stdout
-    with tempfile.TemporaryDirectory() as directory:
-        path = pathlib.Path(directory) / "companies.csv"
-        path.write_text(text, encoding="utf-8")
-        return lib.read(path)[0]
 
 
 def table(company: dict | None) -> str | None:
@@ -66,7 +54,9 @@ def post(date: str, on_main: int, change: int, arrived: list[dict], new: int) ->
 
 
 def main(argv: list[str]) -> int:
-    before = {c["company"]: c for c in at(argv[0] if argv else "HEAD")}
+    if len(argv) != 1:
+        raise SystemExit("usage: digest.py BEFORE.csv")
+    before = {c["company"]: c for c in lib.read(pathlib.Path(argv[0]))[0]}
     after = {c["company"]: c for c in lib.load_companies()}
     new = salaries(after.values()) - salaries(before.values())
     gone = salaries(before.values()) - salaries(after.values())
@@ -85,10 +75,6 @@ def main(argv: list[str]) -> int:
                       for name in after if name in before
                       and lib.median_base(before[name]) != lib.median_base(after[name])),
                      key=lambda change: -abs((change[2] or 0) - (change[1] or 0)))
-    per_company: dict[str, list[int]] = collections.defaultdict(list)
-    for name, base, *_ in new.elements():
-        per_company[name].append(base or 0)
-
     on_main = count(after.values(), MAIN)
     change = on_main - count(before.values(), MAIN)
     behind = count(after.values(), BEHIND)
@@ -114,8 +100,6 @@ def main(argv: list[str]) -> int:
     section("Off the list", [f"- {name} (was {median(before[name])})" for name in left])
     section("Median changes", [f"- {name}: {build.k(was)} → {build.k(now)}"
                                for name, was, now in changes[:15]])
-    section("New salaries", [f"- {name}: {', '.join(build.k(base) for base in sorted(bases, reverse=True))}"
-                             for name, bases in sorted(per_company.items(), key=lambda item: -len(item[1]))])
     section("Draft post", ["> " + post(date, on_main, change, [after[n] for n in arrived],
                                        sum(new.values()))])
     print("\n".join(out))

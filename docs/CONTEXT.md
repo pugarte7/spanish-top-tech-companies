@@ -103,6 +103,14 @@ maintainer called that wrong, and it was rebuilt the other way round:
 Do not move salaries out of the README to make it shorter, and do not split the
 CSV into per-company files or add a second data file.
 
+On 2026-10-21 the maintainer stopped publishing `companies.csv`. One row per
+person is personal data under the GDPR (company, city, years and month pick
+out one engineer at a small company), and republishing Levels.fyi's Spanish
+submissions row by row is the extraction its database right forbids. The file
+moved out of the repository to `lib.DATA` on the maintainer's Mac, git ignores
+it, and the README keeps only per-company aggregates. Its earlier versions are
+still in the git history.
+
 ### The standard the maintainer wants
 
 A row should eventually mean: *I know someone in Spain doing this job and what
@@ -362,8 +370,8 @@ for both company fields; they name nothing and are skipped.
 | `resolve_slugs.py` | Company name → Levels.fyi slug, with verification and an alias table. Folds a company into the one already holding its slug. | Yes |
 | `build.py` | Regenerates the README and rewrites `companies.csv` in canonical order. | Yes |
 | `validate.py` | Column checks and sanity checks, including the location guard, the software-engineer page guard, and that every company has a salary on file. | Yes |
-| `digest.py` | Markdown summary of what changed in `companies.csv` since a git revision (default `HEAD`), for the weekly issue. Rows have no submission id, so a new salary is a row that, minus its run date, was not there before. | Yes |
-| `weekly.sh` | The Monday refresh launchd runs on the maintainer's Mac: fetch, test, validate, build, push. | Pushes to `main` |
+| `digest.py` | Markdown summary of what changed in `companies.csv` since an earlier copy of it, for the weekly issue. Public, so company aggregates only, never one person's salary. Rows have no submission id, so a new salary is a row that, minus its run date, was not there before. | Yes |
+| `weekly.sh` | The Monday refresh launchd runs on the maintainer's Mac: fetch, test, validate, build, push the README with the digest as the commit body. | Pushes to `main` |
 
 `lib.py` is the only code that reads or writes `companies.csv`. Writes go to a
 temporary file first, because an interrupted fetch must not truncate the only
@@ -452,9 +460,8 @@ No dependencies: everything is the Python standard library, plus the
 repository actually shipped, so a failure there means one of them is back rather
 than that the test needs updating.
 
-`build.py` is idempotent; CI rebuilds and fails if the result differs from
-what is committed, so always commit the regenerated `README.md` and
-`companies.csv`.
+`build.py` is idempotent. CI has no data since `companies.csv` went private,
+so it runs only the tests; commit the regenerated `README.md`, never the CSV.
 
 ## Conventions
 
