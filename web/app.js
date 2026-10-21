@@ -438,22 +438,17 @@ function detail(a) {
     `<span>${yearsLabel(b)}</span></div>`).join("");
   // A company with no band of MIN_GROUP people would show six empty bars.
   return `<div class="detail">${bands.some(([, y]) => y) ? `<div class="ybars">${bars}</div>` : ""}` +
-    (a.fixed ? `<p class="fixed-note">${esc(S.fixed_text.replace("{n}", a.n))}</p>`
-      : split(a)) + `</div>`;
+    split(a) + `</div>`;
 }
 
 // Base, bonus and stock side by side, then the total. Bonus and stock are
 // medians among those who get them, so the four do not add up.
 function split(a) {
-  const part = (k, amount, sub, cls = "") =>
-    `<div class="${cls}"><dt>${k}</dt><dd>${amount}</dd><span>${sub}</span></div>`;
-  const extra = (k, got, median) => !got ? part(k, "—", S.split_none, "nil") :
-    part(k, median == null ? "—" : money(median), S.split_got.replace("{k}", got).replace("{n}", a.n));
-  return `<dl class="split" title="${esc(S.split_tip)}">` +
-    part(S.split_base, money(a.median), S.split_med) +
-    extra(S.split_bonus, a.bonus_n, a.bonus) +
-    extra(S.split_stock, a.stock_n, a.stock) +
-    part(S.split_total, money(a.total), S.split_med, "sum") + `</dl>`;
+  const part = (k, v, cls = "") => `<div class="${cls}"><dt>${k}</dt><dd>${money(v)}</dd></div>`;
+  return `<dl class="split" title="${esc(S.split_tip)}">` + part(S.split_base, a.median) +
+    part(S.split_bonus, a.bonus, a.bonus == null ? "nil" : "") +
+    part(S.split_stock, a.stock, a.stock == null ? "nil" : "") +
+    part(S.split_total, a.total, "sum") + `</dl>`;
 }
 
 const opened = new Set();
@@ -482,7 +477,6 @@ function companies() {
       return `<tr class="main${open ? " open" : ""}" tabindex="0" aria-expanded="${open}">` +
         `<td class="chev"><span>›</span></td>` +
         `<td class="co"><div class="co-in"><div><span class="name">${esc(c.name)}</span>` +
-        (a.fixed ? `<span class="fixed" title="${esc(S.fixed_tip)}">${S.fixed}</span>` : "") +
         `<span class="cities">${esc(c.cities.join(", "))}</span></div>` +
         `<span class="links">${links}</span></div></td>` +
         `<td class="pay"><b>${money(a.median)}</b></td>` +

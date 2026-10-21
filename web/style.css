@@ -14,7 +14,6 @@
   --range: #7fb2ef;
   --bar: rgba(245, 245, 247, .92);
   --empty: #ececf0;
-  --fixed-bg: #fff1d6; --fixed-ink: #8a5a00;
   --seq-1: #cde2fb; --seq-2: #8fbdf3; --seq-3: #4b94e8; --seq-4: #0071e3; --seq-5: #004a99;
   --ink-1: #1d1d1f; --ink-2: #1d1d1f; --ink-3: #fff; --ink-4: #fff; --ink-5: #fff;
   --shadow: 0 2px 10px rgba(0, 0, 0, .04);
@@ -36,7 +35,6 @@
     --range: #1d5fa8;
     --bar: rgba(22, 22, 23, .92);
     --empty: #2c2c2e;
-    --fixed-bg: #3d2c0a; --fixed-ink: #f5c25b;
     --seq-1: #0b3a66; --seq-2: #145a9e; --seq-3: #1f7ad6; --seq-4: #2997ff; --seq-5: #8cc4ff;
     --ink-1: #fff; --ink-2: #fff; --ink-3: #fff; --ink-4: #fff; --ink-5: #000;
     --shadow: none;
@@ -58,7 +56,6 @@
   --range: #1d5fa8;
   --bar: rgba(22, 22, 23, .92);
   --empty: #2c2c2e;
-  --fixed-bg: #3d2c0a; --fixed-ink: #f5c25b;
   --seq-1: #0b3a66; --seq-2: #145a9e; --seq-3: #1f7ad6; --seq-4: #2997ff; --seq-5: #8cc4ff;
   --ink-1: #fff; --ink-2: #fff; --ink-3: #fff; --ink-4: #fff; --ink-5: #000;
   --shadow: none;
@@ -314,10 +311,6 @@ th.sort.on::after { content: "↓"; display: inline-block; width: 0; margin-left
 th.sort.on.asc::after { content: "↑"; }
 #companies th.num, #companies td.num, #companies th.pay, #companies td.pay { text-align: center; }
 td.co .cities { display: block; font-size: 13px; color: var(--muted); }
-.fixed { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px;
-         background: var(--fixed-bg); color: var(--fixed-ink); font-size: 12px; font-weight: 600;
-         vertical-align: 1px; white-space: nowrap; }
-.fixed-note { margin: 0; max-width: 360px; font-size: 14px; color: var(--text-2); line-height: 1.5; }
 tr.main { cursor: pointer; }
 tr.main:hover td, tr.main:focus-visible td { background: var(--hover); }
 tr.main:focus-visible { outline: none; }
@@ -340,10 +333,9 @@ tr.det td { background: var(--hover); padding: 18px 12px 20px 44px; }
 .yb i.none { height: 3px; background: var(--line); }
 .yb .na { color: var(--muted); }
 .split { display: flex; flex-wrap: wrap; gap: 16px 28px; margin: 0; }
-.split div { display: grid; gap: 2px; align-content: start; }
+.split div { display: grid; gap: 4px; align-content: start; }
 .split dt { font-size: 12px; color: var(--muted); }
 .split dd { margin: 0; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.split span { font-size: 12px; color: var(--text-2); }
 .split .nil dd { color: var(--muted); }
 .split .sum { padding-left: 28px; border-left: 1px solid var(--line); }
 .empty { color: var(--muted); padding: 32px 0; text-align: center; }
