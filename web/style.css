@@ -137,7 +137,7 @@ h2 { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.1; font-weight: 700;
               transition: background .2s, box-shadow .2s; }
 .seg button[aria-pressed=true] { background: var(--tile); box-shadow: 0 1px 4px rgba(0,0,0,.12); font-weight: 500; }
 .seg button:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 35%, transparent); }
-#companies-card .tile-head { margin-bottom: 16px; }
+#companies-card > h2 { margin-bottom: 20px; }
 .source { margin: 40px 0 0; font-size: 14px; color: var(--text-2); }
 .tile-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;
              flex-wrap: wrap; }
@@ -146,7 +146,10 @@ input[type=search] { -webkit-appearance: none; appearance: none; background: var
 input[type=search]:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 35%, transparent); }
 
 /* Company filters: a button per filter, each opening a list */
-.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.filter-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px;
+              margin-bottom: 20px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.filter-row input[type=search] { height: 34px; border-radius: 980px; font-size: 14px; }
 .filter { position: relative; }
 .pick { border: 0; background: var(--fill); border-radius: 980px; height: 34px; padding: 0 30px 0 14px;
         font-size: 14px; cursor: pointer; white-space: nowrap; position: relative; max-width: 100%;
@@ -253,12 +256,16 @@ input[type=search]:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 
 /* Summary of the table's filters */
 .summary { display: grid; grid-template-columns: repeat(4, auto) minmax(160px, 1fr); gap: 16px 32px; align-items: end;
            padding: 16px 20px; margin-bottom: 20px; background: var(--hover); border-radius: 16px; }
-.summary dl { margin: 0; display: flex; flex-direction: column-reverse; gap: 2px; }
+.summary dl { margin: 0; display: flex; flex-direction: column-reverse; align-items: center; gap: 2px;
+              text-align: center; }
 .summary dt { font-size: 12px; color: var(--text-2); letter-spacing: 0; }
 .summary dd { margin: 0; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .summary .empty { grid-column: 1 / -1; padding: 8px 0; }
 .dist .bars { display: flex; align-items: flex-end; gap: 2px; height: 44px; }
-.dist .bars i { flex: 1; background: var(--range); border-radius: 2px 2px 0 0; }
+.dist .col { flex: 1; height: 100%; display: flex; align-items: flex-end; cursor: default; }
+.dist .bars i { flex: 1; background: var(--range); border-radius: 2px 2px 0 0; transition: opacity .15s; }
+.dist .bars:hover i { opacity: .45; }
+.dist .bars .col:hover i { opacity: 1; }
 .dist .bars i.hi { background: var(--blue); }
 .dist .bars i.wh { background: none; border: 1px dashed var(--muted); border-bottom: 0; }
 .dist .axis { position: relative; display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px;
