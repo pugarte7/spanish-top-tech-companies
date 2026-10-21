@@ -441,14 +441,14 @@ function detail(a) {
     split(a) + `</div>`;
 }
 
-// Base, bonus and stock side by side, then the total. Bonus and stock are
-// medians among those who get them, so the four do not add up.
+// The median total, and how much of the pay behind it is base, bonus and
+// stock: shares that add up, where three medians would not.
 function split(a) {
-  const part = (k, v, cls = "") => `<div class="${cls}"><dt>${k}</dt><dd>${money(v)}</dd></div>`;
-  return `<dl class="split" title="${esc(S.split_tip)}">` + part(S.split_base, a.median) +
-    part(S.split_bonus, a.bonus, a.bonus == null ? "nil" : "") +
-    part(S.split_stock, a.stock, a.stock == null ? "nil" : "") +
-    part(S.split_total, a.total, "sum") + `</dl>`;
+  const parts = [[S.split_base, "b0"], [S.split_bonus, "b1"], [S.split_stock, "b2"]];
+  return `<div class="split" title="${esc(S.split_tip)}"><dl><dt>${S.split_total}</dt>` +
+    `<dd>${money(a.total)}</dd></dl>` +
+    `<div class="mix">${parts.map(([, c], i) => a.mix[i] ? `<i class="${c}" style="width:${a.mix[i]}%"></i>` : "").join("")}</div>` +
+    `<ul class="mix-key">${parts.map(([k, c], i) => `<li class="${c}${a.mix[i] ? "" : " nil"}">${k} <b>${a.mix[i]}%</b></li>`).join("")}</ul></div>`;
 }
 
 const opened = new Set();

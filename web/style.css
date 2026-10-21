@@ -332,12 +332,19 @@ tr.det td { background: var(--hover); padding: 18px 12px 20px 44px; }
 .yb.on span:last-child { color: var(--text); font-weight: 600; }
 .yb i.none { height: 3px; background: var(--line); }
 .yb .na { color: var(--muted); }
-.split { display: flex; flex-wrap: wrap; gap: 16px 28px; margin: 0; }
-.split div { display: grid; gap: 4px; align-content: start; }
+.split { display: grid; gap: 10px; width: 280px; max-width: 100%; }
+.split dl { margin: 0; display: grid; gap: 2px; }
 .split dt { font-size: 12px; color: var(--muted); }
 .split dd { margin: 0; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.split .nil dd { color: var(--muted); }
-.split .sum { padding-left: 28px; border-left: 1px solid var(--line); }
+.mix { display: flex; gap: 2px; height: 8px; border-radius: 4px; overflow: hidden; }
+.mix i { display: block; }
+.b0 { --c: var(--seq-4); } .b1 { --c: var(--seq-2); } .b2 { --c: var(--seq-5); }
+.mix i { background: var(--c); }
+.mix-key { display: flex; gap: 14px; margin: 0; padding: 0; list-style: none; font-size: 12px; color: var(--text-2); }
+.mix-key li::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 5px;
+                      border-radius: 2px; background: var(--c); }
+.mix-key b { font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+.mix-key .nil { opacity: .5; }
 .empty { color: var(--muted); padding: 32px 0; text-align: center; }
 .more { display: block; margin: 20px auto 0; border: 0; background: none; color: var(--blue);
         font-size: 17px; cursor: pointer; }

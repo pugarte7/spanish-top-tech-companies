@@ -160,7 +160,7 @@ STRINGS = {
         "tip_share": "Share of salaries with a base of 60,000 € or more",
         "tip_n": "How many salaries this company has under the filters chosen",
         "split_base": "Base", "split_bonus": "Bonus", "split_stock": "Stock",
-        "split_total": "Total", "split_tip": "Medians; bonus and stock among those who get them, so they do not add up",
+        "split_total": "Median total pay", "split_tip": "How much of these salaries' pay is base, bonus and stock",
         "show_all": "Show all {n}", "show_less": "Show less",
         "none": "No group of {min} or more salaries.",
         "people": "salaries", "median": "Median", "range": "p25–p75",
@@ -218,7 +218,7 @@ STRINGS = {
         "tip_share": "Porcentaje de salarios con una base de 60.000 € o más",
         "tip_n": "Cuántos salarios de esta empresa hay con los filtros elegidos",
         "split_base": "Base", "split_bonus": "Bonus", "split_stock": "Acciones",
-        "split_total": "Total", "split_tip": "Medianas; bonus y acciones entre quienes los cobran, así que no suman",
+        "split_total": "Sueldo total mediano", "split_tip": "Qué parte del pago de estos salarios es base, bonus y acciones",
         "show_all": "Ver los {n}", "show_less": "Ver menos",
         "none": "Ningún grupo de {min} o más salarios.",
         "people": "salarios", "median": "Mediana", "range": "p25–p75",
@@ -296,14 +296,19 @@ def aggregate(entries: list[dict], hist: bool = False) -> dict | None:
     return out
 
 
-def paid_part(entries: list[dict], part: str) -> int | None:
-    """The median bonus (or stock) among those who get it.
+def pay_mix(entries: list[dict]) -> list[int]:
+    """Percent of the group's pay that is base, bonus and stock, summing to 100.
 
-    Among them, not over everyone: with zeros counted, a bonus half the
-    company gets would read as none. The three medians do not add up to the
-    median total, so each is shown on its own."""
-    amounts = [e[part] for e in entries if e.get(part)]
-    return round(statistics.median(amounts)) if len(amounts) >= lib.MIN_GROUP else None
+    A share of the summed pay, not a median per part: the medians of base,
+    bonus and stock come from different people and never add up to the
+    median total. Totals that carry pay outside the three are left out."""
+    sums = [sum(e.get(k) or 0 for e in entries) for k in ("base", "bonus", "stock")]
+    exact = [100 * x / sum(sums) for x in sums]
+    out = [int(x) for x in exact]
+    # Largest remainders, so the three always sum to 100.
+    for k in sorted(range(3), key=lambda k: out[k] - exact[k])[:100 - sum(out)]:
+        out[k] += 1
+    return out
 
 
 def pays_enough(company: dict) -> bool:
@@ -425,7 +430,7 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
                     groups[t][key][i].append(e)
 
     files = {}
-    fields = ["c", "n", "median", "p25", "p75", "total", "share", "bonus", "stock"]
+    fields = ["c", "n", "median", "p25", "p75", "total", "share", "mix"]
     # The summary above the table: everyone under the same filters, one
     # aggregate per key, with its histogram.
     summary_fields = ["n", "median", "p25", "p75", "share", "hist"]
@@ -437,8 +442,7 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
             found = []
             for i, entries in by_company.items():
                 if a := aggregate(entries):
-                    for part in ("bonus", "stock"):
-                        a[part] = paid_part(entries, part)
+                    a["mix"] = pay_mix(entries)
                     found.append({"c": index[i], **a})
             if found:
                 found.sort(key=lambda a: (-a["median"], -a["share"]))
