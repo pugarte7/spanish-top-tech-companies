@@ -401,7 +401,7 @@ const ICONS = {
     `C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`,
 };
 const iconLink = (url, kind, label) => url
-  ? `<a href="${esc(url)}" rel="noopener" title="${label}" aria-label="${label}">${ICONS[kind]}</a>`
+  ? `<a href="${esc(url)}" target="_blank" rel="noopener" title="${label}" aria-label="${label}">${ICONS[kind]}</a>`
   : `<span></span>`;
 
 // One file per role, with every combination of bands and arrangements in it;

@@ -511,7 +511,7 @@ def page(lang: str, svg: str) -> str:
     s = strings(lang)
     e = {k: html.escape(v) for k, v in s.items()}
     other = "es" if lang == "en" else "en"
-    levels = '<a href="https://www.levels.fyi" rel="noopener">Levels.fyi</a>'
+    levels = '<a href="https://www.levels.fyi" target="_blank" rel="noopener">Levels.fyi</a>'
     lang_links = "".join(
         f'<a class="on" aria-current="page">{code.upper()}</a>' if code == lang
         else f'<a href="/{code}/" hreflang="{code}">{code.upper()}</a>'
@@ -537,7 +537,7 @@ def page(lang: str, svg: str) -> str:
   <div class="bar-in">
     <a class="brand" href="/{lang}/">{e['title']}</a>
     <div class="bar-end">
-      <a class="icon-btn" href="{REPO}" rel="noopener" title="GitHub" aria-label="GitHub">{GITHUB_ICON}</a>
+      <a class="icon-btn" href="{REPO}" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub">{GITHUB_ICON}</a>
       <div class="seg" role="group">{lang_links}</div>
       <button class="icon-btn" id="theme" type="button" title="{e['theme']}" aria-label="{e['theme']}">{THEME_ICON}</button>
     </div>
@@ -594,9 +594,9 @@ def page(lang: str, svg: str) -> str:
 
 <footer>
   <p>{e['source'].replace('Levels.fyi', levels)} · <span id="updated"></span> ·
-     <a href="/api/v1/data.json">{e['data']}</a> ·
-     <a href="{REPO}/blob/main/companies.csv">{e['csv']}</a> ·
-     <a href="{REPO}">{e['repo']}</a></p>
+     <a href="/api/v1/data.json" target="_blank" rel="noopener">{e['data']}</a> ·
+     <a href="{REPO}/blob/main/companies.csv" target="_blank" rel="noopener">{e['csv']}</a> ·
+     <a href="{REPO}" target="_blank" rel="noopener">{e['repo']}</a></p>
 </footer>
 <div id="tip" role="tooltip" hidden></div>
 <script>window.S={json.dumps(s, ensure_ascii=False)};</script>
