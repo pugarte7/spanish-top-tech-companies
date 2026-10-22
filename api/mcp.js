@@ -7,10 +7,13 @@
 
 const VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 const SERVER = { name: "tech-pay-spain", title: "Tech Pay Spain", version: "1.0.0" };
-const INSTRUCTIONS =
+// The privacy thresholds come from data.json, so the text cannot drift from them.
+const instructions = (data) =>
   "Salaries of people working in Spain, from Levels.fyi submissions and first-hand " +
   "reports, in euros per year. Base is gross salary; total adds bonus and stock. " +
-  "Every figure is a median over 3 or more people; a selection with fewer returns " +
+  `Every figure comes from ${data.min_group} or more people, the middle half (p25-p75) ` +
+  `from ${data.quartile_min}, and euro figures are rounded to the nearest ${data.round_eur}; ` +
+  "a selection with fewer returns " +
   "no result, so widen it instead of guessing. Only companies whose median base over " +
   "all their salaries reaches company_floor_eur (see list_filters) are counted; say so " +
   "when quoting a figure for Spain. Years are years of experience in " +
@@ -27,13 +30,13 @@ const SELECTION = {
            "or a bucket such as 5-7. Omit for any experience." },
 };
 const READ_ONLY = { readOnlyHint: true, openWorldHint: false };
-export const TOOLS = [
+export const tools = (data) => [
   { name: "salary_stats", title: "Salary statistics",
     description: "Median base, middle half (p25-p75), median total comp and share at " +
                  "60k+ base for a role, region and experience in Spain.",
     inputSchema: { type: "object", properties: SELECTION }, annotations: READ_ONLY },
   { name: "top_companies", title: "Best-paying companies",
-    description: "Companies ranked by median base for a selection, each from 3+ " +
+    description: `Companies ranked by median base for a selection, each from ${data.min_group}+ ` +
                  "salaries. Use search to look one company up within the selection.",
     inputSchema: { type: "object", properties: {
       ...SELECTION,
@@ -42,7 +45,7 @@ export const TOOLS = [
     annotations: READ_ONLY },
   { name: "company_salaries", title: "One company's salaries",
     description: "Every published aggregate for one company in Spain: overall and by " +
-                 "role, region and experience where 3+ people report.",
+                 `role, region and experience where ${data.min_group}+ people report.`,
     inputSchema: { type: "object", required: ["name"], properties: {
       name: { type: "string", description: "Company name, e.g. Glovo." } } },
     annotations: READ_ONLY },
@@ -187,10 +190,10 @@ export function handle(data, msg) {
     const asked = params.protocolVersion;
     return ok({ protocolVersion: VERSIONS.includes(asked) ? asked : VERSIONS[0],
                 capabilities: { tools: { listChanged: false } },
-                serverInfo: SERVER, instructions: INSTRUCTIONS });
+                serverInfo: SERVER, instructions: instructions(data) });
   }
   if (method === "ping") return ok({});
-  if (method === "tools/list") return ok({ tools: TOOLS });
+  if (method === "tools/list") return ok({ tools: tools(data) });
   if (method === "tools/call") {
     let out;
     try {

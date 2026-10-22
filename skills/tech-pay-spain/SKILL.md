@@ -9,8 +9,9 @@ metadata:
 # Tech Pay Spain
 
 Medians of yearly gross salaries in euros of people working in Spain, from
-Levels.fyi submissions and first-hand reports. Every figure comes from 3 or
-more people.
+Levels.fyi submissions and first-hand reports. Every figure comes from 5 or
+more people, the middle half from 10, and euro figures are rounded to the
+nearest 1,000.
 
 ## Getting the numbers
 
@@ -32,7 +33,7 @@ more people.
 - Quote the median and the middle half (p25 to p75), never a mean.
 - Experience is years, in buckets 0-1, 2-4, 5-7, 8-11, 12-19, 20+. "Senior"
   means years of experience, not a job title.
-- No result means fewer than 3 people match. Widen the selection (drop the
+- No result means fewer than 5 people match. Widen the selection (drop the
   region, then the years) and say you did; never estimate a figure.
 - Spain only. Do not mix in figures from other countries.
 - Only companies whose median base over all their salaries reaches a floor
