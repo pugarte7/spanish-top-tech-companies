@@ -45,8 +45,10 @@ function hover(el, html) {
   el.addEventListener("mousemove", (e) => showTip(e, html()));
   el.addEventListener("mouseleave", hideTip);
 }
+// The middle half exists only for groups of D.quartile_min or more.
+const range = (a) => a.p25 == null ? "—" : `${short(a.p25)} – ${short(a.p75)}`;
 const statTip = (title, a) => `<b>${esc(title)}</b><br>${S.median} ${money(a.median)}<br>` +
-  `<span class="t-sub">${S.range} ${short(a.p25)} – ${short(a.p75)} · ${a.n} ${S.people}</span>`;
+  `<span class="t-sub">${a.p25 == null ? "" : `${S.range} ${range(a)} · `}${a.n} ${S.people}</span>`;
 
 // --- filters ------------------------------------------------------------------
 // Each filter is a button that opens a panel: role is a tree of roles and
@@ -357,7 +359,7 @@ function summary() {
   }).join("");
   el.innerHTML =
     `<dl><dt>${S.col_median}</dt><dd>${money(a.median)}</dd></dl>` +
-    `<dl><dt>${S.sum_range}</dt><dd>${short(a.p25)} – ${short(a.p75)}</dd></dl>` +
+    `<dl><dt>${S.sum_range}</dt><dd>${range(a)}</dd></dl>` +
     `<dl><dt>${S.col_share}</dt><dd>${pct(a.share)}</dd></dl>` +
     `<dl><dt>${S.col_n}</dt><dd>${a.n.toLocaleString(LOCALE)}</dd></dl>` +
     `<div class="dist" aria-hidden="true"><div class="bars">${bars}</div>` +

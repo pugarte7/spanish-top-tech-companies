@@ -5,8 +5,9 @@
     python3 -m http.server -d _site    # then open http://localhost:8000/es/
 
 The site publishes aggregates only: every number on it comes from at least
-lib.MIN_GROUP people. The public CSV stays row-level; a city x role x years
-cell of one or two would name a person.
+lib.MIN_GROUP people, quartiles from lib.QUARTILE_MIN, and every euro figure
+is rounded to lib.ROUND_EUR. The CSV stays row-level; a city x role x years
+cell of a few people would name them.
 
 Pages come in English and Spanish under /en/ and /es/. The page's look lives
 in web/ (app.js, style.css); this script renders the HTML shell, the map of
@@ -130,16 +131,15 @@ STRINGS = {
         "how_source": "Individual salaries from Levels.fyi, each kept only if its own location is in Spain.",
         "how_floor_t": "Which companies.",
         "how_floor": "For each company, the median base salary over all its salaries, any role and "
-                     "experience. It is shown if that reaches {floor}; the rest stay in the CSV.",
+                     "experience. It is shown if that reaches {floor}; the rest are left out.",
         "how_groups_t": "Groups of {min} or more.",
         "how_groups": "By role, region and years of experience. No figure comes from fewer than "
-                      "{min} salaries, so nobody can be singled out.",
+                      "{min} salaries, the middle half needs {qmin}, and every amount is rounded "
+                      "to the nearest {round}, so nobody's pay can be read off a figure.",
         "how_figures_t": "What you see.",
         "how_figures": "Median base, the middle half (p25–p75), median total pay (base + bonus + stock) "
                        "and the share with a base of {bar} or more. They describe these companies, "
                        "not all of Spain.",
-        "how_repro_t": "Reproduce it.",
-        "how_repro": "One command builds this page and its JSON from the public CSV:",
         "all_roles": "All roles", "all_years": "Any",
         "years_label": "Experience", "years_unit": "yrs",
         "hero_label": "Median base salary",
@@ -168,7 +168,7 @@ STRINGS = {
         "none": "No group of {min} or more salaries.",
         "people": "salaries", "median": "Median", "range": "p25–p75",
         "updated": "Updated {date}",
-        "data": "JSON", "csv": "CSV", "repo": "GitHub", "web": "Website",
+        "data": "JSON", "repo": "GitHub", "web": "Website",
         "star_title": "Finding this useful?",
         "star_text": "Give the repo a star on GitHub. It helps more people find it.",
         "star_button": "Star on GitHub", "star_close": "Close",
@@ -188,16 +188,15 @@ STRINGS = {
                       "ubicación está en España.",
         "how_floor_t": "Qué empresas entran.",
         "how_floor": "Por empresa, la mediana del sueldo base de todos sus salarios, de cualquier rol "
-                     "y experiencia. Entra si llega a {floor}; las demás siguen en el CSV.",
+                     "y experiencia. Entra si llega a {floor}; las demás se quedan fuera.",
         "how_groups_t": "Grupos de {min} o más.",
         "how_groups": "Por rol, comunidad y años de experiencia. Ninguna cifra sale de menos de "
-                      "{min} salarios, para que nadie sea identificable.",
+                      "{min} salarios, la mitad central necesita {qmin} y todos los importes se "
+                      "redondean a {round}, para que no se pueda deducir el sueldo de nadie.",
         "how_figures_t": "Qué se muestra.",
         "how_figures": "Sueldo base mediano, la mitad central (p25–p75), el total mediano (base + bonus "
                        "+ acciones) y el porcentaje con una base de {bar} o más. Son cifras de estas "
                        "empresas, no de toda España.",
-        "how_repro_t": "Cómo reproducirlo.",
-        "how_repro": "Un comando genera esta página y su JSON a partir del CSV público:",
         "all_roles": "Todos los roles", "all_years": "Todas",
         "years_label": "Experiencia", "years_unit": "años",
         "hero_label": "Salario base mediano",
@@ -226,7 +225,7 @@ STRINGS = {
         "none": "Ningún grupo de {min} o más salarios.",
         "people": "salarios", "median": "Mediana", "range": "p25–p75",
         "updated": "Actualizado {date}",
-        "data": "JSON", "csv": "CSV", "repo": "GitHub", "web": "Web",
+        "data": "JSON", "repo": "GitHub", "web": "Web",
         "star_title": "¿Te está sirviendo?",
         "star_text": "Dale una estrella al repo en GitHub. Ayuda a que lo encuentre más gente.",
         "star_button": "Dar una estrella en GitHub", "star_close": "Cerrar",
@@ -269,7 +268,7 @@ def region_of(entry: dict) -> str | None:
 
 
 def histogram(bases: list[int]) -> list[int | None]:
-    """Counts per band; a band of one or two people is withheld as None."""
+    """Counts per band; a band of fewer than MIN_GROUP people is withheld as None."""
     bands = (HIST_HIGH - HIST_LOW) // HIST_STEP + 2
     counts = [0] * bands
     for b in bases:
@@ -278,20 +277,29 @@ def histogram(bases: list[int]) -> list[int | None]:
     return [c if c == 0 or c >= lib.MIN_GROUP else None for c in counts]
 
 
+def rounded(eur: float) -> int:
+    """To the nearest lib.ROUND_EUR, halves up, so no figure is someone's exact pay."""
+    return int(math.floor(eur / lib.ROUND_EUR + 0.5)) * lib.ROUND_EUR
+
+
 def aggregate(entries: list[dict], hist: bool = False) -> dict | None:
-    """Median, quartiles and share at the bar, or None under MIN_GROUP."""
+    """Median, quartiles and share at the bar, or None under MIN_GROUP.
+
+    Quartiles are None under QUARTILE_MIN: in a small group they pin down the
+    salaries around them."""
     bases = sorted(e["base"] for e in entries if e.get("base"))
     if len(bases) < lib.MIN_GROUP:
         return None
     totals = [e["total"] for e in entries if e.get("total")]
-    p25, _, p75 = statistics.quantiles(bases, n=4, method="inclusive")
+    quartiles = (statistics.quantiles(bases, n=4, method="inclusive")
+                 if len(bases) >= lib.QUARTILE_MIN else None)
     at_bar = sum(1 for b in bases if b >= lib.THRESHOLD_EUR)
     out = {
         "n": len(bases),
-        "median": round(statistics.median(bases)),
-        "p25": round(p25),
-        "p75": round(p75),
-        "total": round(statistics.median(totals)) if len(totals) >= lib.MIN_GROUP else None,
+        "median": rounded(statistics.median(bases)),
+        "p25": rounded(quartiles[0]) if quartiles else None,
+        "p75": rounded(quartiles[2]) if quartiles else None,
+        "total": rounded(statistics.median(totals)) if len(totals) >= lib.MIN_GROUP else None,
         "share": round(at_bar / len(bases), 3),
     }
     if hist:
@@ -371,6 +379,8 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
     data = {
         "generated": lib.today_utc().isoformat(),
         "min_group": lib.MIN_GROUP,
+        "quartile_min": lib.QUARTILE_MIN,
+        "round_eur": lib.ROUND_EUR,
         "threshold": lib.THRESHOLD_EUR,
         "company_floor": COMPANY_FLOOR_EUR,
         "hist": {"low": HIST_LOW, "high": HIST_HIGH, "step": HIST_STEP},
@@ -566,7 +576,8 @@ def euros(n: int, lang: str) -> str:
 
 
 def strings(lang: str) -> dict:
-    fill = {"{min}": str(lib.MIN_GROUP), "{floor}": euros(COMPANY_FLOOR_EUR, lang),
+    fill = {"{min}": str(lib.MIN_GROUP), "{qmin}": str(lib.QUARTILE_MIN),
+            "{round}": euros(lib.ROUND_EUR, lang), "{floor}": euros(COMPANY_FLOOR_EUR, lang),
             "{bar}": euros(lib.THRESHOLD_EUR, lang)}
     out = {}
     for k, v in STRINGS[lang].items():
@@ -632,10 +643,6 @@ def page(lang: str, svg: str, data_version: str) -> str:
   <details class="how">
     <summary>{e['how_title']}</summary>
     <ol class="steps">{steps}
-      <li><b>{e['how_repro_t']}</b> {e['how_repro']}
-        <span class="flow"><a href="{REPO}/blob/main/companies.csv" target="_blank" rel="noopener"><code>companies.csv</code></a>
-        → <code>python3 scripts/site.py</code>
-        → <a href="/api/v1/data.json" target="_blank" rel="noopener"><code>data.json</code></a></span></li>
     </ol>
   </details>
 </header>
@@ -676,7 +683,6 @@ def page(lang: str, svg: str, data_version: str) -> str:
 <footer>
   <p>{e['source'].replace('Levels.fyi', levels)} · <span id="updated"></span> ·
      <a href="/api/v1/data.json" target="_blank" rel="noopener">{e['data']}</a> ·
-     <a href="{REPO}/blob/main/companies.csv" target="_blank" rel="noopener">{e['csv']}</a> ·
      <a href="{REPO}" target="_blank" rel="noopener">{e['repo']}</a></p>
 </footer>
 <div id="tip" role="tooltip" hidden></div>
@@ -732,9 +738,9 @@ def json_ld(lang: str) -> str:
     # Its own wording, not STRINGS: the page copy changes without the dataset changing.
     description = {
         "en": "Median yearly gross salaries in euros of people working in Spain, by role, "
-              "region and years of experience, each from 3 or more people.",
+              f"region and years of experience, each from {lib.MIN_GROUP} or more people.",
         "es": "Salarios brutos anuales medianos en euros de gente que trabaja en España, por "
-              "rol, comunidad y años de experiencia, cada uno de 3 personas o más.",
+              f"rol, comunidad y años de experiencia, cada uno de {lib.MIN_GROUP} personas o más.",
     }[lang]
     dataset = {
         "@context": "https://schema.org", "@type": "Dataset",
@@ -747,8 +753,6 @@ def json_ld(lang: str) -> str:
         "distribution": [
             {"@type": "DataDownload", "encodingFormat": "application/json",
              "contentUrl": SITE + "/api/v1/data.json"},
-            {"@type": "DataDownload", "encodingFormat": "text/csv",
-             "contentUrl": f"{REPO}/blob/main/companies.csv"},
         ],
     }
     return json.dumps(dataset, ensure_ascii=False).replace("</", "<\\/")
@@ -783,13 +787,14 @@ def llms_txt(data: dict) -> str:
 
 Base is gross yearly salary; total adds bonus and stock. Spain only: no
 salary from another country is ever mixed in. A selection with fewer than
-{data['min_group']} people has no figure; widen it rather than estimate.
+{data['min_group']} people has no figure; widen it rather than estimate. The
+middle half (p25-p75) needs {data['quartile_min']} people, and every euro
+figure is rounded to the nearest {data['round_eur']:,} EUR.
 {_coverage(data)}
 ## Data
 
 - [All aggregates for agents (markdown)]({SITE}/llms-full.txt): national, per role, region, experience and the best-paying companies
-- [All aggregates (JSON)]({SITE}/api/v1/data.json): `cells["role|region|years"]` (empty part = all) gives n, median, p25, p75, total, share at 60k+; `company_cells` the same per company, `c` indexing `companies`
-- [Row-level CSV]({REPO}/blob/main/companies.csv): one salary per row, CC BY-SA 4.0
+- [All aggregates (JSON)]({SITE}/api/v1/data.json): `cells["role|region|years"]` (empty part = all) gives n, median, p25, p75 (null under {data['quartile_min']} people), total, share at 60k+; `company_cells` the same per company, `c` indexing `companies`
 
 ## Tools
 

@@ -152,10 +152,6 @@ h2 { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.1; font-weight: 700;
 .steps { margin: 16px 0 0; padding: 22px 24px 22px 44px; background: var(--tile); border-radius: 18px;
          box-shadow: var(--shadow); display: grid; gap: 12px; font-size: 15px; color: var(--text-2); }
 .steps b { color: var(--text); font-weight: 600; }
-.steps code { font: 13px/1.4 ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: 0; color: var(--text);
-              background: var(--fill); padding: 1px 6px; border-radius: 6px; }
-.steps a code { color: var(--blue); }
-.flow { display: block; margin-top: 6px; }
 @media (prefers-reduced-motion: reduce) { .how summary::after { transition: none; } }
 .tile-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;
              flex-wrap: wrap; }

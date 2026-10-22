@@ -705,16 +705,21 @@ def test_rows_compare_with_empty_cells() -> None:
               write_role("software-engineer", by_slug)["unchanged"], 1)
 
 
-def test_agents_see_only_groups_of_three() -> None:
-    """The MCP server and llms-full.txt read data.json, which holds no group under MIN_GROUP."""
-    print("mcp_server answers from aggregates of three or more")
+def test_agents_see_only_groups_of_five() -> None:
+    """data.json holds no group under MIN_GROUP, no quartiles under QUARTILE_MIN and no
+    unrounded euro: with three people, median and quartiles gave back every salary."""
+    print("published aggregates cannot be turned back into salaries")
     import importlib.util
     import mcp_server
     spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
     site_build = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(site_build)
-    rows = [entry(PER_LOCATION, base=b, region="MD", city="Madrid") for b in (50000, 70000, 90000)]
-    rows += [entry(PER_LOCATION, base=b, region="CT", city="Barcelona") for b in (60000, 80000)]
+    madrid = (40100, 45300, 50200, 55500, 61400, 70400, 75000, 82600, 90000, 99900)
+    rows = [entry(PER_LOCATION, base=b, region="MD", city="Madrid") for b in madrid]
+    rows += [entry(PER_LOCATION, base=b, region="VC", city="Valencia")
+             for b in (50200, 61400, 70400, 82600, 90000)]
+    rows += [entry(PER_LOCATION, base=b, region="CT", city="Barcelona")
+             for b in (60000, 65000, 70000, 80000)]
     with temp_data(acme(*rows)):
         data = site_build.build_data(lib.load_companies())
 
@@ -723,13 +728,22 @@ def test_agents_see_only_groups_of_three() -> None:
                                          "params": {"name": tool, "arguments": args}})
         return reply["result"].get("structuredContent")
 
-    check("Madrid's three give a median",
-          ask("salary_stats", region="Madrid")["result"]["median_base_eur"], 70000)
-    check("Barcelona's two give nothing", ask("salary_stats", region="Cataluña")["result"], None)
+    got = ask("salary_stats", region="Madrid")["result"]
+    check("Madrid's ten: median and quartiles, rounded to 1,000",
+          [got["median_base_eur"], got["p25_base_eur"], got["p75_base_eur"]], [66000, 52000, 81000])
+    got = ask("salary_stats", region="Valencia")["result"]
+    check("Valencia's five: a rounded median, no quartiles",
+          [got["median_base_eur"], got["p25_base_eur"], got["p75_base_eur"]], [70000, None, None])
+    check("Barcelona's four give nothing", ask("salary_stats", region="Cataluña")["result"], None)
+    published = list(data["cells"].values()) + [a for v in data["company_cells"].values() for a in v]
+    check("no published group under five", min(a["n"] for a in published), 5)
+    check("every published euro figure is a multiple of 1,000",
+          [a for a in published for k in ("median", "p25", "p75", "total")
+           if a[k] is not None and a[k] % 1000], [])
     check("years are bucketed", ask("salary_stats", years=8)["selection"]["years"], "8-11")
     check("a company's groups leave Barcelona out",
           sorted(g["region"] or "" for g in ask("company_salaries", name="acme")["groups"]
-                 if g["years"] is None and g["role"] is None), ["", "MD"])
+                 if g["years"] is None and g["role"] is None), ["", "MD", "VC"])
     check("an unknown role is a tool error, not a crash",
           mcp_server.handle(data, {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {
               "name": "salary_stats", "arguments": {"role": "astronaut"}}})["result"]["isError"],
@@ -750,7 +764,7 @@ def main() -> int:
                  test_companies_are_their_salaries,
                  test_rows_compare_with_empty_cells,
                  test_median_and_share_over_every_senior,
-                 test_agents_see_only_groups_of_three,
+                 test_agents_see_only_groups_of_five,
                  test_floor_aliases_and_exclusions,
                  test_normalization,
                  test_radar_enrichment):
