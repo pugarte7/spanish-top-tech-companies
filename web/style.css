@@ -227,7 +227,7 @@ input[type=search]:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 
 
 /* Map */
 .map-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 40px;
-            align-items: center; }
+            align-items: start; }
 #map { width: 100%; height: auto; display: block; }
 #map .region { fill: var(--empty); stroke: var(--tile); stroke-width: 1.2; stroke-linejoin: round;
                transition: fill .35s, opacity .25s; }
@@ -238,8 +238,9 @@ input[type=search]:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
-.ranking { list-style: none; margin: 0; padding: 0; font-size: 15px; max-height: 460px; overflow-y: auto; }
-.ranking li { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; padding: 10px 12px;
+/* Every region in full: an inner scroll hid the last four, with no scrollbar on a Mac. */
+.ranking { list-style: none; margin: 0; padding: 0; font-size: 15px; }
+.ranking li { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 7px 12px;
               border-radius: 12px; transition: background .15s; }
 .ranking li:hover { background: var(--hover); }
 .ranking .v { font-variant-numeric: tabular-nums; font-weight: 600; }

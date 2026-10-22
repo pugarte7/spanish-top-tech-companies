@@ -42,14 +42,17 @@ SITE = os.environ.get("SITE_URL", "").rstrip("/")
 # rebuilt from the pinned URL).
 TOPO_URL = "https://unpkg.com/es-atlas@0.6.0/es/autonomous_regions.json"
 TOPO = lib.ROOT / ".cache" / "es_autonomous_regions.json"
+# Keyed by the atlas's own names, bilingual ones included: "Cataluña" alone
+# matched nothing, and the map shipped without Cataluña and País Vasco.
 ES_ATLAS = {
     "Andalucía": "AN", "Aragón": "AR", "Principado de Asturias": "AS",
     "Cantabria": "CB", "Castilla y León": "CL", "Castilla-La Mancha": "CM",
-    "Cataluña": "CT", "Comunidad de Madrid": "MD", "Comunitat Valenciana": "VC",
+    "Cataluña/Catalunya": "CT", "Comunidad de Madrid": "MD", "Comunitat Valenciana": "VC",
     "Comunidad Valenciana": "VC", "Extremadura": "EX", "Galicia": "GA",
     "Illes Balears": "IB", "Islas Baleares": "IB", "Canarias": "CN",
     "La Rioja": "RI", "Región de Murcia": "MU", "Comunidad Foral de Navarra": "NC",
-    "País Vasco": "PV", "Ceuta": "CE", "Melilla": "ML",
+    "País Vasco/Euskadi": "PV", "Ciudad Autónoma de Ceuta": "CE",
+    "Ciudad Autónoma de Melilla": "ML",
 }
 # The Canaries sit far southwest; slide them into the usual inset corner.
 CANARY_SHIFT = (5.5, 7.6)
@@ -511,13 +514,19 @@ def decoded_regions(topo: dict) -> list[tuple[str, list]]:
             ring += arc[1:] if ring else arc
         return ring
 
-    out = []
+    out, unmatched = [], []
     for g in topo["objects"]["autonomous_regions"]["geometries"]:
         code = ES_ATLAS.get(g["properties"].get("name"))
         if not code:
+            unmatched.append(g["properties"].get("name"))
             continue
         polys = g["arcs"] if g["type"] == "MultiPolygon" else [g["arcs"]]
         out.append((code, [[stitch(part) for part in poly] for poly in polys]))
+    # A region left off the map looks like a region with no data, so stop the build.
+    missing = sorted(set(lib.REGIONS) - {code for code, _ in out})
+    if missing:
+        raise SystemExit(f"No map outline for {', '.join(missing)}; "
+                         f"atlas names not in ES_ATLAS: {unmatched}")
     return out
 
 
