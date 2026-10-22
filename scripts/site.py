@@ -96,6 +96,10 @@ CITY_REGION = {
 # The site covers companies whose median base, over every salary on file at
 # any role and seniority, reaches this. The CSV keeps the rest.
 COMPANY_FLOOR_EUR = 45_000
+# A yearly base under this is no full-time salary in Spain, whose minimum wage
+# has been above it since 2023: it is a monthly figure, a stipend or part-time,
+# and one of them in a group of five moves the median.
+MIN_BASE_EUR = 15_000
 
 YEAR_BUCKETS = [(0, 2), (2, 5), (5, 8), (8, 12), (12, 20), (20, None)]
 # Histogram bins of 10k; the ends are open so a lone outlier joins a crowd.
@@ -130,7 +134,11 @@ STRINGS = {
                 "is {floor} or more. The rest are not shown.",
         "how_title": "How it is calculated",
         "how_source_t": "Source.",
-        "how_source": "Individual salaries from Levels.fyi, each kept only if its own location is in Spain.",
+        "how_source": "Individual salaries from Levels.fyi, each kept only if its own location is in Spain. "
+                      "A base under {minbase} a year, below the full-time minimum wage, is left out.",
+        "how_when_t": "When.",
+        "how_when": "Reported from {from} to {to}, half of them since {since}. Older salaries stay in, "
+                    "so figures can trail what companies offer today.",
         "how_floor_t": "Which companies.",
         "how_floor": "For each company, the median base salary over all its salaries, any role and "
                      "experience. It is shown if that reaches {floor}; the rest are left out.",
@@ -187,7 +195,11 @@ STRINGS = {
         "how_title": "Cómo se calcula",
         "how_source_t": "Fuente.",
         "how_source": "Salarios individuales de Levels.fyi. Cada uno se acepta solo si su propia "
-                      "ubicación está en España.",
+                      "ubicación está en España. Un sueldo base de menos de {minbase} al año, por "
+                      "debajo del salario mínimo a jornada completa, se descarta.",
+        "how_when_t": "Cuándo.",
+        "how_when": "Publicados entre {from} y {to}, la mitad desde {since}. Los antiguos se "
+                    "mantienen, así que las cifras pueden ir por detrás de lo que se ofrece hoy.",
         "how_floor_t": "Qué empresas entran.",
         "how_floor": "Por empresa, la mediana del sueldo base de todos sus salarios, de cualquier rol "
                      "y experiencia. Entra si llega a {floor}; las demás se quedan fuera.",
@@ -324,8 +336,12 @@ def pay_mix(entries: list[dict]) -> list[int]:
     return out
 
 
+def counted(entry: dict) -> bool:
+    return bool(entry.get("base")) and entry["base"] >= MIN_BASE_EUR
+
+
 def pays_enough(company: dict) -> bool:
-    bases = [e["base"] for e in company["entries"] if e.get("base")]
+    bases = [e["base"] for e in company["entries"] if counted(e)]
     return bool(bases) and statistics.median(bases) >= COMPANY_FLOOR_EUR
 
 
@@ -346,7 +362,7 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
         if not pays_enough(company):
             continue
         for e in company["entries"]:
-            if e.get("base"):
+            if counted(e):
                 rows.append((i, e.get("role") or "", region_of(e) or "",
                              year_bucket(lib.years(e.get("years_experience"))) or "", e))
 
@@ -378,8 +394,16 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
         for a in found:
             a["c"] = index[a["c"]]
 
+    # When the salaries are from, not when this ran: a rebuild with the same
+    # rows used to move the page's "Updated" date forward.
+    fetched = [str(e["date"])[:10] for *_, e in rows if e.get("date")]
+    months = sorted(e["reported"] for *_, e in rows if e.get("reported"))
     data = {
         "generated": lib.today_utc().isoformat(),
+        "data_as_of": max(fetched) if fetched else lib.today_utc().isoformat(),
+        "reported": {"from": months[0], "to": months[-1], "median": months[len(months) // 2]}
+                    if months else None,
+        "min_base": MIN_BASE_EUR,
         "min_group": lib.MIN_GROUP,
         "quartile_min": lib.QUARTILE_MIN,
         "round_eur": lib.ROUND_EUR,
@@ -577,10 +601,23 @@ def euros(n: int, lang: str) -> str:
     return f"{n:,}\u00a0€".replace(",", ".") if lang == "es" else f"€{n:,}"
 
 
-def strings(lang: str) -> dict:
+MONTHS = {"en": "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(),
+          "es": "ene feb mar abr may jun jul ago sep oct nov dic".split()}
+
+
+def month(ym: str, lang: str) -> str:
+    """"2024-11" as "Nov 2024" or "nov 2024"."""
+    year, number = ym.split("-")
+    return f"{MONTHS[lang][int(number) - 1]} {year}"
+
+
+def strings(lang: str, data: dict) -> dict:
+    reported = data.get("reported") or {"from": "", "to": "", "median": ""}
     fill = {"{min}": str(lib.MIN_GROUP), "{qmin}": str(lib.QUARTILE_MIN),
             "{round}": euros(lib.ROUND_EUR, lang), "{floor}": euros(COMPANY_FLOOR_EUR, lang),
-            "{bar}": euros(lib.THRESHOLD_EUR, lang)}
+            "{bar}": euros(lib.THRESHOLD_EUR, lang), "{minbase}": euros(MIN_BASE_EUR, lang),
+            **{f"{{{k}}}": month(v, lang) if v else "" for k, v in
+               (("from", reported["from"]), ("to", reported["to"]), ("since", reported["median"]))}}
     out = {}
     for k, v in STRINGS[lang].items():
         for mark, value in fill.items():
@@ -589,13 +626,13 @@ def strings(lang: str) -> dict:
     return out
 
 
-def page(lang: str, svg: str, data_version: str) -> str:
-    s = strings(lang)
+def page(lang: str, svg: str, data_version: str, data: dict) -> str:
+    s = strings(lang, data)
     e = {k: html.escape(v) for k, v in s.items()}
     other = "es" if lang == "en" else "en"
     levels = '<a href="https://www.levels.fyi" target="_blank" rel="noopener">Levels.fyi</a>'
     steps = "".join(f"\n      <li><b>{e[f'how_{k}_t']}</b> {e[f'how_{k}']}</li>"
-                    for k in ("source", "floor", "groups", "figures"))
+                    for k in ("source", "when", "floor", "groups", "figures"))
     lang_links = "".join(
         f'<a class="on" aria-current="page">{code.upper()}</a>' if code == lang
         else f'<a href="/{code}/" hreflang="{code}">{code.upper()}</a>'
@@ -613,7 +650,7 @@ def page(lang: str, svg: str, data_version: str) -> str:
 <link rel="alternate" hreflang="{other}" href="/{other}/">
 <link rel="alternate" type="application/json" href="/api/v1/data.json" title="Salary aggregates">
 <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Salary aggregates for agents">
-<script type="application/ld+json">{json_ld(lang)}</script>
+<script type="application/ld+json">{json_ld(lang, data)}</script>
 <link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
 </head>
 <body data-lang="{lang}">
@@ -715,7 +752,7 @@ def main(argv: list[str]) -> int:
     svg = spain_svg()
     for lang in ("en", "es"):
         (OUT / lang).mkdir()
-        (OUT / lang / "index.html").write_text(page(lang, svg, data_version), encoding="utf-8")
+        (OUT / lang / "index.html").write_text(page(lang, svg, data_version, data), encoding="utf-8")
     (OUT / "index.html").write_text(
         '<!doctype html><meta charset="utf-8"><script>location.replace('
         '(navigator.language || "").startsWith("es") ? "/es/" : "/en/")</script>'
@@ -736,7 +773,7 @@ def main(argv: list[str]) -> int:
 
 # --- Agents ------------------------------------------------------------------
 
-def json_ld(lang: str) -> str:
+def json_ld(lang: str, data: dict) -> str:
     # Its own wording, not STRINGS: the page copy changes without the dataset changing.
     description = {
         "en": "Median yearly gross salaries in euros of people working in Spain, by role, "
@@ -749,7 +786,7 @@ def json_ld(lang: str) -> str:
         "name": "Spanish Top Tech Companies", "description": description, "inLanguage": lang,
         "url": SITE + "/" if SITE else REPO, "isAccessibleForFree": True,
         "license": "https://creativecommons.org/licenses/by-sa/4.0/",
-        "dateModified": lib.today_utc().isoformat(),
+        "dateModified": data["data_as_of"],
         "spatialCoverage": {"@type": "Country", "name": "Spain"},
         "variableMeasured": ["median base salary (EUR)", "median total compensation (EUR)"],
         "distribution": [
@@ -784,14 +821,14 @@ def llms_txt(data: dict) -> str:
 
 > What tech and other professional jobs pay in Spain: medians of yearly gross
 > salaries in euros, by role, region and years of experience, from Levels.fyi
-> submissions. Every figure comes from {data['min_group']} or more people. Data as of {data['generated']}.
+> submissions. Every figure comes from {data['min_group']} or more people. Data as of {data['data_as_of']}.
 
 Base is gross yearly salary; total adds bonus and stock. Spain only: no
 salary from another country is ever mixed in. A selection with fewer than
 {data['min_group']} people has no figure; widen it rather than estimate. The
 middle half (p25-p75) needs {data['quartile_min']} people, and every euro
 figure is rounded to the nearest {data['round_eur']:,} EUR.
-{_coverage(data)}
+{_reported(data)}{_coverage(data)}
 ## Data
 
 - [All aggregates for agents (markdown)]({SITE}/llms-full.txt): national, per role, region, experience and the best-paying companies
@@ -808,6 +845,15 @@ figure is rounded to the nearest {data['round_eur']:,} EUR.
 - [Web page, English]({SITE}/en/)
 - [Methodology]({REPO}/blob/{BRANCH}/METHODOLOGY.md#the-website-and-the-mcp-server)
 """
+
+
+def _reported(data: dict) -> str:
+    r = data.get("reported")
+    if not r:
+        return ""
+    return (f"\nSalaries were reported from {r['from']} to {r['to']}, half of them since\n"
+            f"{r['median']}; older ones stay in, so figures can trail today's offers. A base\n"
+            f"under {data['min_base']:,} EUR a year is left out as no full-time salary.\n")
 
 
 def _coverage(data: dict) -> str:
