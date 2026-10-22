@@ -188,7 +188,7 @@ input[type=search]:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 
 .menu li.check.sel::before { content: "✓"; background: var(--blue); color: #fff; box-shadow: none;
   font-size: 11px; line-height: 14px; text-align: center; font-weight: 700; }
 .menu small { color: var(--muted); font-size: 12px; margin-left: 8px; font-variant-numeric: tabular-nums; }
-.menu.tree { min-width: 320px; }
+.menu.tree { min-width: min(320px, calc(100vw - 24px)); }
 .tree li { display: flex; align-items: center; gap: 4px; padding-right: 6px; }
 .tree li > span { flex: 1; overflow: hidden; text-overflow: ellipsis; }
 .tree li.spec { padding-left: 48px; font-size: 13.5px; }
@@ -297,10 +297,12 @@ tr:last-child td { border-bottom: 0; }
 .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 td.co .name { font-weight: 600; }
 td.co .co-in { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
-td.co .links { display: grid; grid-template-columns: repeat(3, 22px); gap: 10px; flex: none; }
-td.co .links a { display: block; width: 22px; height: 22px; opacity: .9; color: var(--text-2); }
-td.co .links a:hover { opacity: 1; }
-td.co .links svg { display: block; width: 22px; height: 22px; }
+.links { display: grid; grid-template-columns: repeat(3, 22px); gap: 10px; flex: none; }
+.links a { display: block; width: 22px; height: 22px; opacity: .9; color: var(--text-2); }
+.links a:hover { opacity: 1; }
+.links svg { display: block; width: 22px; height: 22px; }
+/* On a desktop the row carries the links; the open row repeats them for phones. */
+.detail .links { display: none; }
 th.sort { cursor: pointer; user-select: none; }
 th.sort:hover, th.sort.on { color: var(--text); }
 /* The arrow takes no width, so it does not push a centred heading off its column. */
@@ -389,7 +391,17 @@ footer p { margin: 4px 0; max-width: 720px; }
   .stats { grid-template-columns: repeat(2, 1fr); row-gap: 28px; }
 }
 @media (max-width: 640px) {
-  .topbar-in { flex-wrap: wrap; padding: 8px 16px; gap: 8px 12px; }
+  /* One row, so the sticky bar takes 52px of a phone's screen, not 90. */
+  .topbar-in { padding: 8px 10px 8px 16px; gap: 8px; }
+  .brand { font-size: 15px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .topbar-end { gap: 2px; flex: none; }
+  /* The companies table fits a phone: the links move into the open row and
+     headings wrap, so the median and the 60k+ share stay on screen. */
+  td.co .co-in > .links { display: none; }
+  .detail .links { display: grid; }
+  #companies th { white-space: normal; font-size: 11px; line-height: 1.25; padding: 0 6px 8px; }
+  #companies td { padding: 12px 6px; }
+  #companies td.chev, #companies th.chev { width: 12px; padding-left: 6px; padding-right: 0; }
   .hero { padding: 56px 16px 40px; }
   .bento { padding: 0 12px; gap: 12px; }
   .tile { padding: 28px 20px; border-radius: 22px; }
@@ -407,4 +419,8 @@ footer p { margin: 4px 0; max-width: 720px; }
   .matrix thead th:first-child { width: 112px; }
   .matrix tbody th { white-space: normal; min-width: 104px; max-width: 120px; font-size: 13px; }
   .dist { grid-column: 1 / -1; }
+}
+@media (max-width: 400px) {
+  /* The footer and the star prompt link to GitHub too. */
+  .topbar-end > a.icon-btn { display: none; }
 }
