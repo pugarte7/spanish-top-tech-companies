@@ -751,6 +751,28 @@ def test_agents_see_only_groups_of_five() -> None:
     check("llms-full.txt renders", "## By region" in site_build.llms_full(data), True)
 
 
+def test_site_dates_and_minimum_base() -> None:
+    """The page's date is when the salaries were read, and a base under the minimum wage
+    is no salary: once it held a company's median down and moved small groups."""
+    print("site dates and the minimum base")
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
+    site_build = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(site_build)
+    rows = [entry(PER_LOCATION, base=b, region="MD", city="Madrid", date=d, reported=r)
+            for b, d, r in ((52000, "2026-09-01", "2021-03"), (61000, "2026-09-01", "2024-05"),
+                            (70000, "2026-10-17", "2025-01"), (82000, "2026-10-17", "2026-02"),
+                            (90000, "2026-10-17", "2026-10"))]
+    rows.append(entry(PER_LOCATION, base=1000, region="MD", city="Madrid", date="2026-10-18"))
+    with temp_data(acme(*rows)):
+        data = site_build.build_data(lib.load_companies())
+    check("the 1,000 EUR base is left out", data["cells"]["||"]["n"], 5)
+    check("the date is the latest read of a counted salary", data["data_as_of"], "2026-10-17")
+    check("reported months: first, last and median",
+          data["reported"], {"from": "2021-03", "to": "2026-10", "median": "2025-01"})
+    check("llms.txt says when", "reported from 2021-03 to 2026-10" in site_build.llms_txt(data), True)
+
+
 def main() -> int:
     for test in (test_location_guard, test_unscoped_classifier,
                  test_purge_runs_even_when_spain_data_exists,
@@ -765,6 +787,7 @@ def main() -> int:
                  test_rows_compare_with_empty_cells,
                  test_median_and_share_over_every_senior,
                  test_agents_see_only_groups_of_five,
+                 test_site_dates_and_minimum_base,
                  test_floor_aliases_and_exclusions,
                  test_normalization,
                  test_radar_enrichment):

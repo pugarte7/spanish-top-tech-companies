@@ -554,7 +554,10 @@ function starPrompt() {
 // --- render -------------------------------------------------------------------
 async function main() {
   D = await (await fetch(`/api/v1/data.json?v=${window.DATA_V}`)).json();
-  $("updated").textContent = S.updated.replace("{date}", D.generated);
+  // The day the salaries were read, not the day the page was built.
+  const asOf = new Date(`${D.data_as_of || D.generated}T00:00:00Z`);
+  $("updated").textContent = S.updated.replace("{date}", asOf.toLocaleDateString(LOCALE,
+    { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }));
   wire();
   starPrompt();
   kpis(); map();

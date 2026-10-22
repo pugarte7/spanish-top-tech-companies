@@ -184,4 +184,5 @@ def filters(data: dict) -> dict:
             "min_group": data["min_group"], "quartile_min": data.get("quartile_min"),
             "round_eur": data.get("round_eur"), "threshold_eur": data["threshold"],
             "company_floor_eur": data.get("company_floor"),
-            "data_as_of": data["generated"]}
+            "min_base_eur": data.get("min_base"), "reported": data.get("reported"),
+            "data_as_of": data.get("data_as_of") or data["generated"]}

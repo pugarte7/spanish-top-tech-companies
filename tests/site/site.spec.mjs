@@ -304,6 +304,15 @@ test("search narrows the table", async ({ page }) => {
   await expect(page.locator("#more")).toBeHidden();
 });
 
+test("the date shown is the data's, and the method says when salaries are from", async ({ page }) => {
+  await open(page);
+  const data = await (await page.request.get("/api/v1/data.json")).json();
+  const day = new Date(`${data.data_as_of}T00:00:00Z`).toLocaleDateString("es-ES",
+    { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  await expect(page.locator("#updated")).toHaveText(`Actualizado ${day}`);
+  await expect(page.locator(".how .steps")).toContainText("Cuándo.");
+});
+
 test("the English page works too", async ({ page }) => {
   await open(page, "/en/");
   await expect(page.locator("#companies thead")).toContainText("Median base salary");

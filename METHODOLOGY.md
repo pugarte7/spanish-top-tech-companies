@@ -30,6 +30,8 @@ The website, its JSON and the MCP server read the same file under different rule
 - **Which companies.** A company counts while its median base over all its salaries, at any role and seniority, is 45.000 € or more (`COMPANY_FLOOR_EUR` in `scripts/site.py`). Below that it is left out entirely, so every figure describes better-paying employers, not all of Spain.
 - **Groups.** Salaries are grouped by role, region and years of experience (0-1, 2-4, 5-7, 8-11, 12-19, 20+). A group needs five people for any figure and ten for the middle half, and every amount is rounded to 1.000 €. With three people, the median and quartiles gave back every salary in the group.
 - **Figures.** Median base, the middle half (p25 to p75), median total (base plus bonus and stock) and the share with a base of 60.000 € or more. Never a mean.
+- **What is left out.** A base under 15.000 € a year (`MIN_BASE_EUR`): Spain's full-time minimum wage has been above it since 2023, so such a row is a monthly figure, a stipend or part-time.
+- **When.** Old salaries stay in. The page and llms.txt say the months they were reported in and the month by which half of them were, and the date shown is when the salaries were last read, not when the page was built.
 
 ## What "gross annual" means here
 
