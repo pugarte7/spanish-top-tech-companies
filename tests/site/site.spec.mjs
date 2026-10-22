@@ -93,6 +93,18 @@ test("map switches between pay and number of salaries", async ({ page }) => {
   expect(counts[0]).toBeGreaterThan(1000);
 });
 
+test("the map draws every region and the ranking lists all of those with data", async ({ page }) => {
+  await open(page);
+  const codes = await page.locator("#map .region").evaluateAll((ps) => ps.map((p) => p.dataset.code).sort());
+  expect(codes).toEqual(["AN", "AR", "AS", "CB", "CE", "CL", "CM", "CN", "CT", "EX", "GA", "IB", "MD",
+                         "ML", "MU", "NC", "PV", "RI", "VC"]);
+  // Cataluña has the most salaries; it once went missing from the map.
+  await expect(page.locator('#map .region[data-code="CT"]')).toHaveClass(/has/);
+  await expect(page.locator("#ranking li")).toHaveCount(await page.locator("#map .region.has").count());
+  const [scroll, client] = await page.locator("#ranking").evaluate((el) => [el.scrollHeight, el.clientHeight]);
+  expect(scroll).toBeLessThanOrEqual(client);
+});
+
 test("only the top bar sticks when scrolling", async ({ page }) => {
   await open(page);
   await page.locator("#companies-card").scrollIntoViewIfNeeded();
