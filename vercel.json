@@ -4,7 +4,10 @@
   "buildCommand": "python3 scripts/site.py",
   "outputDirectory": "_site",
   "git": { "deploymentEnabled": false },
-  "rewrites": [{ "source": "/mcp", "destination": "/api/mcp" }],
+  "rewrites": [
+    { "source": "/mcp", "destination": "/api/mcp" },
+    { "source": "/mcp/", "destination": "/api/mcp" }
+  ],
   "headers": [
     {
       "source": "/api/v1/(.*)",

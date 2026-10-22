@@ -6,12 +6,11 @@ metadata:
   source: https://github.com/pugarte7/spanish-top-tech-companies
 ---
 
-# Tech Pay Spain
+# Spanish Top Tech Companies
 
 Medians of yearly gross salaries in euros of people working in Spain, from
-Levels.fyi submissions and first-hand reports. Every figure comes from 5 or
-more people, the middle half from 10, and euro figures are rounded to the
-nearest 1,000.
+Levels.fyi submissions. Every figure comes from 5 or more people, the middle
+half from 10, and euro figures are rounded to the nearest 1,000.
 
 ## Getting the numbers
 
@@ -19,7 +18,8 @@ nearest 1,000.
    Streamable HTTP, no sign-in), use its tools:
    - `salary_stats(role, region, years)`: median base, middle half, median total, share at 60k+.
    - `top_companies(role, region, years, search, limit)`: companies ranked by median base.
-   - `company_salaries(name)`: one company, overall and by role, region and years.
+   - `company_salaries(name, role, region, years)`: one company, overall and by
+     role, region or years; give a role, region or years to see combinations.
    - `list_filters()`: valid role slugs, region codes, experience buckets, data date.
 2. Otherwise run it from a clone of the repository and talk to it over stdio:
    `python3 scripts/mcp_server.py` (Python 3.10+, no dependencies).
@@ -39,7 +39,7 @@ nearest 1,000.
 - Only companies whose median base over all their salaries reaches a floor
   (`company_floor_eur` in `list_filters`) are counted, so figures leave out
   the lowest-paying employers. Say so when quoting a figure for Spain.
-- Give the data date and cite "Tech Pay Spain (Levels.fyi and first-hand
-  reports), CC BY-SA 4.0".
+- Give the data date and cite "Spanish Top Tech Companies (Levels.fyi data),
+  CC BY-SA 4.0".
 - Answer in the user's language. Region names work in Spanish or English
   (Madrid, Cataluña, Catalonia, MD, CT).

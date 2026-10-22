@@ -37,6 +37,8 @@ import taxonomy
 OUT = lib.ROOT / "_site"
 WEB = lib.ROOT / "web"
 REPO = "https://github.com/pugarte7/spanish-top-tech-companies"
+# The branch the site, the MCP server and the skill live on: main holds the README alone.
+BRANCH = "website"
 SITE = os.environ.get("SITE_URL", "").rstrip("/")
 
 # Region outlines, fetched once into .cache/ (gitignored is fine: it is
@@ -778,12 +780,11 @@ STAT_HEAD = ["", "Median base", "Middle half", "Median total", "60k+ base", "Peo
 
 
 def llms_txt(data: dict) -> str:
-    return f"""# Tech Pay Spain
+    return f"""# Spanish Top Tech Companies
 
 > What tech and other professional jobs pay in Spain: medians of yearly gross
 > salaries in euros, by role, region and years of experience, from Levels.fyi
-> submissions and first-hand reports. Every figure comes from {data['min_group']}
-> or more people. Data as of {data['generated']}.
+> submissions. Every figure comes from {data['min_group']} or more people. Data as of {data['generated']}.
 
 Base is gross yearly salary; total adds bonus and stock. Spain only: no
 salary from another country is ever mixed in. A selection with fewer than
@@ -798,14 +799,14 @@ figure is rounded to the nearest {data['round_eur']:,} EUR.
 
 ## Tools
 
-- [MCP server]({SITE}/mcp): Streamable HTTP, no sign-in; or run [mcp_server.py]({REPO}/blob/main/scripts/mcp_server.py) locally over stdio; tools `salary_stats`, `top_companies`, `company_salaries`, `list_filters`
-- [Agent skill]({REPO}/tree/main/skills/tech-pay-spain): SKILL.md for Hermes and other agentskills.io agents
+- [MCP server]({SITE}/mcp): Streamable HTTP, no sign-in; or run [mcp_server.py]({REPO}/blob/{BRANCH}/scripts/mcp_server.py) locally over stdio; protocol 2026-07-28 and the handshake versions back to 2024-11-05; tools `salary_stats`, `top_companies`, `company_salaries`, `list_filters`
+- [Agent skill]({REPO}/tree/{BRANCH}/skills/tech-pay-spain): SKILL.md for Hermes and other agentskills.io agents
 
 ## Optional
 
 - [Web page, Spanish]({SITE}/es/)
 - [Web page, English]({SITE}/en/)
-- [Methodology]({REPO}/blob/main/METHODOLOGY.md)
+- [Methodology]({REPO}/blob/{BRANCH}/METHODOLOGY.md#the-website-and-the-mcp-server)
 """
 
 
