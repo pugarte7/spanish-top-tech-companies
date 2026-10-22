@@ -314,3 +314,31 @@ test("no sideways scroll on a phone @mobile", async ({ page }) => {
   const [scroll, width] = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
   expect(scroll).toBeLessThanOrEqual(width);
 });
+
+test("the companies table fits a phone, links in the open row @mobile", async ({ page }) => {
+  await open(page);
+  // The table once scrolled sideways inside its card, hiding the 60k+ column.
+  const [inner, outer] = await page.locator(".table-wrap").evaluate((el) => [el.scrollWidth, el.clientWidth]);
+  expect(inner).toBeLessThanOrEqual(outer);
+  const share = await page.locator('#companies th[data-sort="share"]').boundingBox();
+  expect(share.x + share.width).toBeLessThanOrEqual(await page.evaluate(() => innerWidth));
+  await rows(page).first().click();
+  await expect(rows(page).first().locator("xpath=following-sibling::tr[1]").locator(".links a").first()).toBeVisible();
+});
+
+test("filter menus stay on a phone's screen @mobile", async ({ page }) => {
+  await open(page);
+  const width = await page.evaluate(() => document.documentElement.clientWidth);
+  for (const k of ["role", "years", "modes"]) {
+    await filter(page, k).locator(".pick").click();
+    const box = await page.locator(".menu").boundingBox();
+    expect(box.x, `${k} menu's left edge`).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width, `${k} menu's right edge`).toBeLessThanOrEqual(width);
+    await page.keyboard.press("Escape");
+  }
+});
+
+test("the top bar is one row on a phone @mobile", async ({ page }) => {
+  await open(page);
+  expect((await page.locator(".topbar").boundingBox()).height).toBeLessThan(60);
+});

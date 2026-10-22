@@ -116,6 +116,16 @@ function filterBar() {
     });
     if (k === "years" && menuOpen === k) wireSpan(el);
   });
+  placeMenu();
+}
+
+// A menu opens under its button; one near the right edge slides left to stay
+// on screen, which on a phone is most of them.
+function placeMenu() {
+  const menu = $("filters").querySelector(".menu");
+  if (!menu) return;
+  const r = menu.getBoundingClientRect(), edge = document.documentElement.clientWidth - 12;
+  if (r.right > edge) menu.style.left = `${Math.max(edge - r.right, 12 - r.left)}px`;
 }
 
 const option = (v, label, cls, sel, extra = "") =>
@@ -439,9 +449,13 @@ function detail(a) {
        : `<span class="na">–</span><i class="none"></i>`) +
     `<span>${yearsLabel(b)}</span></div>`).join("");
   // A company with no band of MIN_GROUP people would show six empty bars.
+  // The links repeat here for phones, where the row has no room for them.
   return `<div class="detail">${bands.some(([, y]) => y) ? `<div class="ybars">${bars}</div>` : ""}` +
-    split(a) + `</div>`;
+    split(a) + `<span class="links">${companyLinks(D.companies[a.c])}</span></div>`;
 }
+
+const companyLinks = (c) => iconLink(c.levels && levelsUrl(c.levels), "levels", "Levels.fyi") +
+  iconLink(c.linkedin, "linkedin", "LinkedIn") + iconLink(c.web, "web", S.web);
 
 // The median total, and how much of the pay behind it is base, bonus and
 // stock: shares that add up, where three medians would not.
@@ -474,13 +488,11 @@ function companies() {
     shown.map((a) => {
       const c = D.companies[a.c];
       const open = opened.has(a.c);
-      const links = iconLink(c.levels && levelsUrl(c.levels), "levels", "Levels.fyi") +
-        iconLink(c.linkedin, "linkedin", "LinkedIn") + iconLink(c.web, "web", S.web);
       return `<tr class="main${open ? " open" : ""}" tabindex="0" aria-expanded="${open}">` +
         `<td class="chev"><span>›</span></td>` +
         `<td class="co"><div class="co-in"><div><span class="name">${esc(c.name)}</span>` +
         `<span class="cities">${esc(c.cities.join(", "))}</span></div>` +
-        `<span class="links">${links}</span></div></td>` +
+        `<span class="links">${companyLinks(c)}</span></div></td>` +
         `<td class="pay"><b>${money(a.median)}</b></td>` +
         `<td class="num">${pct(a.share)}</td>` +
         `<td class="num hide-sm">${a.n}</td></tr>` +
