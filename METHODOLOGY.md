@@ -53,6 +53,12 @@ Every entry needs a source. In rough order of how much we trust them:
 
 A first-hand entry (`offer-letter`, `community`) sorts above any crowdsourced one, however large that one is.
 
+A `job-posting` is not a salary and never enters a median, on the README or the website. It is what a company offered, so the README shows it in its own Advertised column.
+
+### Where a job ad comes from
+
+[`scripts/fetch_manfred.py`](scripts/fetch_manfred.py) reads [Manfred](https://www.getmanfred.com)'s public offers API, which returns every offer it has published since 2021 in one response, each with a salary range. An ad is kept when it names a city in Spain, is a salaried job in euros (freelance ads quote day rates), its position reads as a known role, and the employer is already on file with salaries, matched by website domain or exact name. Remote ads mostly name no place, and remote on Manfred can mean anywhere in Europe, so they are left out. Each run replaces every stored Manfred ad. A download that fails changes nothing.
+
 ### Where a Levels.fyi entry comes from
 
 Entries come from the same API that fills the "Latest Salary Submissions" table on the site, read once per job family rather than once per company: `api.levels.fyi/v3/salary/search` scoped to Spain (`countryIds[0]=226`) and the family's slug, with no `companySlug`, is the country-wide feed — every Spanish submission in the family, newest first. The browser loads it with the visitor's Cognito session, and shows an anonymous visitor a wall of asterisks instead, so the fetcher runs with the maintainer's session and refuses to write without one.

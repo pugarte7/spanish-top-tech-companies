@@ -44,7 +44,7 @@ def table(company: dict | None) -> str | None:
 def salaries(companies) -> collections.Counter:
     return collections.Counter(
         (company["company"], *(entry.get(column) for column in lib.ENTRY_COLUMNS if column != "date"))
-        for company in companies for entry in company["entries"])
+        for company in companies for entry in lib.salaries(company))
 
 
 def median(company: dict) -> str:
@@ -106,7 +106,7 @@ def main(argv: list[str]) -> int:
             out.extend(["", f"### {title}", "", *lines])
 
     section("New on the list", [f"- {name}: {median(after[name])} median, "
-                                f"{len(after[name]['entries'])} engineers ({table(after[name])})"
+                                f"{len(lib.salaries(after[name]))} engineers ({table(after[name])})"
                                 for name in arrived])
     section("Up to 60k+", [f"- {name}: {median(after[name])}" for name in moved(BEHIND, MAIN)])
     section("Down to need to improve", [f"- {name}: {median(after[name])}"

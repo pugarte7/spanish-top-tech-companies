@@ -46,6 +46,7 @@ The id is the `f_C` number in a LinkedIn job search filtered to that company. [`
 | `levels_slug`, `levels_status` | Its Levels.fyi page, and `resolved`, `review` or `unmatched` (not on Levels.fyi). Written by `resolve_slugs.py`. An employer with two Levels.fyi slugs keeps the canonical one here and the other in `lib.SLUG_ALIASES`; a slug nobody can put a company to goes in `lib.EXCLUDED_SLUGS`. |
 | `role` | The taxonomy's slug for the job family: `software-engineer`, `product-manager`, `data-scientist`… Never free text; `scripts/taxonomy.py` is the catalog. |
 | `base` | Gross annual base salary in euros. A first-hand software-engineer row must be 60000 or more; anything else is whatever was reported. |
+| `base_max` | Job ads only (`source` `job-posting`): the top of the advertised range, with `base` its bottom. Either end may be empty. Ads are never counted as salaries. |
 | `total`, `bonus`, `stock` | Total compensation, annual bonus and annualised equity in euros, if known. |
 | `currency` | The currency the person is actually paid in (`EUR`, `USD`…). Figures above are always euros; this marks, say, a remote job paid in dollars. |
 | `years_experience` | Years of experience: a number, or a bucket like `5-10` or `11+`. Any value. |

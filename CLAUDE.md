@@ -127,6 +127,12 @@ type/CIF, CC BY 4.0, only for companies with salaries), then Levels.fyi
 (`fetch_company.py`). No fetcher ever overwrites a filled field; a `-` cell
 means "checked, there is none", and counts as filled.
 
+Job ads (`source` `job-posting`, from `fetch_manfred.py`) are a range,
+`base` to `base_max`, and are not salaries: `lib.salaries()` drops them
+before any median, the site or the on-file rule; only the README's
+Advertised column reads them, through `lib.postings()`. An ad never puts a
+company on file.
+
 Hand-made facts live in `lib.py`, not in the CSV: `SLUG_ALIASES` (two
 Levels.fyi slugs, one employer: `tiger-data` into `timescale`, `meta` into
 `facebook`; the alias is read with the canonical slug and each row keeps its

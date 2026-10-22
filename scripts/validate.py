@@ -57,7 +57,12 @@ def check_entry(where: str, entry: dict) -> None:
         warnings.append(f"{where}: currency {entry['currency']!r} is not a currency code")
 
     base, total = entry.get("base"), entry.get("total")
-    if base is None and total is None:
+    posted = entry.get("source") in lib.POSTED
+    if posted:
+        check_posting(where, entry)
+    elif entry.get("base_max") is not None:
+        errors.append(f"{where}: base_max is a job ad's upper end; a salary has one base")
+    elif base is None and total is None:
         errors.append(f"{where}: no base or total salary")
     # Levels.fyi rows are whatever was reported. A first-hand row about the
     # README's population - a software engineer - is the maintainer
@@ -66,12 +71,13 @@ def check_entry(where: str, entry: dict) -> None:
           and entry.get("source") in lib.VOUCHED and role == lib.SWE):
         errors.append(f"{where}: a first-hand entry under {lib.fmt_eur(lib.THRESHOLD_EUR)} "
                       "vouches for nothing this list is about")
-    for column, amount in (("base", base), ("total", total)):
+    for column, amount in (("base", base), ("base_max", entry.get("base_max")),
+                           ("total", total)):
         if amount is not None and amount > MAX_EUR:
             errors.append(f"{where}: {column} {amount} is not a salary")
 
     experience = entry.get("years_experience")
-    if lib.years(experience) is None:
+    if lib.years(experience) is None and not posted:
         errors.append(f"{where}: years_experience {experience!r} must be a number of years, "
                       "or a range like 5-10 or 11+")
     if entry.get("reported") and not re.fullmatch(r"\d{4}-\d{2}", entry["reported"]):
@@ -113,11 +119,24 @@ def check_entry(where: str, entry: dict) -> None:
         warnings.append(f"{where}: not verified in over a year")
 
 
+def check_posting(where: str, entry: dict) -> None:
+    """A job ad is a range, cited, and says nothing about anyone's years."""
+    low, high = entry.get("base"), entry.get("base_max")
+    if low is None and high is None:
+        errors.append(f"{where}: a job ad with no range")
+    elif low is not None and high is not None and low > high:
+        errors.append(f"{where}: range {low} to {high} runs backwards")
+    if not entry.get("source_url"):
+        errors.append(f"{where}: a job ad needs the ad's URL")
+    if entry.get("total") is not None or entry.get("years_experience") is not None:
+        errors.append(f"{where}: a job ad has no total or years of experience")
+
+
 def check_company(where: str, company: dict) -> None:
     # On file means having salaries: the CSV keeps every role and seniority,
     # so a company with none at all is either a hand-added row the fetcher
-    # has not reached or a leftover to delete.
-    if not company.get("entries"):
+    # has not reached or a leftover to delete. Job ads alone do not count.
+    if not lib.salaries(company):
         errors.append(f"{where}: no salaries on file. Add a first-hand entry, let "
                       "fetch_spain.py reach it, or remove the row")
 

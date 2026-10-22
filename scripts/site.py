@@ -312,7 +312,7 @@ def pay_mix(entries: list[dict]) -> list[int]:
 
 
 def pays_enough(company: dict) -> bool:
-    bases = [e["base"] for e in company["entries"] if e.get("base")]
+    bases = [e["base"] for e in lib.salaries(company) if e.get("base")]
     return bool(bases) and statistics.median(bases) >= COMPANY_FLOOR_EUR
 
 
@@ -332,7 +332,7 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
     for i, company in enumerate(companies):
         if not pays_enough(company):
             continue
-        for e in company["entries"]:
+        for e in lib.salaries(company):
             if e.get("base"):
                 rows.append((i, e.get("role") or "", region_of(e) or "",
                              year_bucket(lib.years(e.get("years_experience"))) or "", e))
@@ -469,7 +469,7 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
 
 
 def company_info(company: dict) -> dict:
-    cities = collections.Counter(e["city"] for e in company["entries"] if e.get("city"))
+    cities = collections.Counter(e["city"] for e in lib.salaries(company) if e.get("city"))
     # "-" means checked and there is none. The careers page first: it is where to apply.
     web = next((u for u in (company.get("careers_url"), company.get("website")) if u and u != "-"), None)
     url = web

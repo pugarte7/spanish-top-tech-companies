@@ -116,7 +116,7 @@ def match(companies: list[dict], dataset: list[dict]) -> dict:
 
     found = {}
     for company in companies:
-        if not company["entries"]:
+        if not lib.salaries(company):
             continue
         ours_domain = domain(company.get("website"))
         ours_linkedin = linkedin_slug(company.get("linkedin_url"))
@@ -158,7 +158,7 @@ def main(argv: list[str]) -> int:
         if way == "name":
             print(f"  {name} -> {empresa['slug']} matched on name alone; check it",
                   file=sys.stderr)
-    print(f"{len(matched)} of {sum(1 for c in companies if c['entries'])} companies with "
+    print(f"{len(matched)} of {sum(1 for c in companies if lib.salaries(c))} companies with "
           f"salaries matched "
           f"({how['domain']} by domain, {how['linkedin']} by LinkedIn, {how['name']} by name)")
     if args.dry_run:

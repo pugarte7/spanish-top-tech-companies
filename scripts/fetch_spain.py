@@ -489,7 +489,8 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
     Only the role's own rows are touched: first-hand entries and other roles
     stay exactly where they are. A company left with no rows at all is
     removed - on file means having salaries - but a hand-added row that never
-    had any survives, because the fetcher may not have reached it yet. A slug
+    had any survives, because the fetcher may not have reached it yet. Job
+    ads are not salaries: a company left with only those goes too. A slug
     struck off by hand is never written.
     """
     companies = lib.load_companies()
@@ -527,7 +528,7 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
         companies.append(company)
         stats["created"] += 1
     dropped = [company for company in companies
-               if id(company) in touched and not company["entries"]]
+               if id(company) in touched and not lib.salaries(company)]
     stats["dropped"] = len(dropped)
     companies = [company for company in companies if company not in dropped]
     if stats["rewritten"] or stats["created"] or stats["dropped"]:
