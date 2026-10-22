@@ -25,11 +25,16 @@ THRESHOLD_EUR = 60_000
 # floor it is not on the list at all (maintainer, 2026-09-23).
 FLOOR_EUR = 50_000
 
-# The public CSV is row-level by design. The website, the JSON API and the
-# MCP server publish only aggregates, and an aggregate exists only when at
-# least this many people contribute to the cell - a city × role × arrangement
-# group of one or two names a person.
-MIN_GROUP = 3
+# The CSV is row-level by design. The website, the JSON API and the MCP
+# server publish only aggregates, and an aggregate exists only when at least
+# MIN_GROUP people contribute to the cell - a city × role × arrangement group
+# of one or two names a person. Three was not enough: with three people the
+# median and the quartiles give back all three salaries (x0 = 2·p25 - median),
+# which was true of every three-person group the site published. So quartiles
+# need QUARTILE_MIN people, and every euro figure is rounded to ROUND_EUR.
+MIN_GROUP = 5
+QUARTILE_MIN = 10
+ROUND_EUR = 1_000
 
 # Two Levels.fyi slugs, one employer. The alias's page and table are read
 # together with the canonical slug's and filed under its company; discovery
