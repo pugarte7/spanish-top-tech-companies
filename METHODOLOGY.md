@@ -22,6 +22,15 @@ Each table is sorted by median base first and At 60k+ second, after any first-ha
 
 On 2026-09-16 the list became the **mean of each company's seniors at 60k+**, and only those. Readers pointed out, correctly, that filtering to 60k+ before averaging makes any company with one well-paid senior look competitive: Minsait showed 90k off two engineers while its fourteen other seniors, all under 60k, were not even on file. On 2026-09-22 the maintainer replaced it with the median over every senior, declined a 15-year cap on experience (it changed no company's median by more than 2k), and kept the 60k bar as the share column. For a day the listing rule was "at least one senior at 60k+", which still listed BBVA at a median of 55k; a reader put it plainly, the company filter has to be on the aggregate, and the rule became median ≥ 60k. Thirty-three companies left the main table that way. The next day the maintainer brought back the 24 of them with a median of 50k or more under "Need to improve" (EPAM, eDreams, BBVA, Thoughtworks, Freenow, Ocado...) rather than lose them; the nine under 50k (Accenture, Minsait, Inditex, NTT DATA, adidas...) stayed out. Earlier versions had published Levels.fyi's per-company averages across levels, every job family, only rungs whose names said senior, and every salary as its own row. All of those were replaced. On 2026-10-17 the 5-year cut went too: it existed because the old fetcher only stored seniors, and once the feed carried every experience level the maintainer counted every software engineer.
 
+## The website and the MCP server
+
+The website, its JSON and the MCP server read the same file under different rules from the README:
+
+- **Every role, any experience.** Not only software engineers.
+- **Which companies.** A company counts while its median base over all its salaries, at any role and seniority, is 45.000 € or more (`COMPANY_FLOOR_EUR` in `scripts/site.py`). Below that it is left out entirely, so every figure describes better-paying employers, not all of Spain.
+- **Groups.** Salaries are grouped by role, region and years of experience (0-1, 2-4, 5-7, 8-11, 12-19, 20+). A group needs five people for any figure and ten for the middle half, and every amount is rounded to 1.000 €. With three people, the median and quartiles gave back every salary in the group.
+- **Figures.** Median base, the middle half (p25 to p75), median total (base plus bonus and stock) and the share with a base of 60.000 € or more. Never a mean.
+
 ## What "gross annual" means here
 
 Total gross for the year, **before IRPF and social security**, across however many payments the contract splits it into. If a company pays 14 payments of 4.500 €, that is 63.000 € and it goes in as 63000.
