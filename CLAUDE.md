@@ -107,8 +107,10 @@ normalized columns (`lib.ENTRY_COLUMNS`): role, specialization and title are
 the taxonomy's official slugs or empty — never free text, which is how a row
 still cannot point at a person. Keep no submission ids, exact days, teams or
 free-text detail, keep the attribution, and remove anything someone asks to
-have removed. The public CSV is row-level; the website and MCP publish only
-aggregates of three or more people (`lib.MIN_GROUP`).
+have removed. The CSV is row-level; the website and MCP publish only
+aggregates of five or more people (`lib.MIN_GROUP`), quartiles only from ten
+(`lib.QUARTILE_MIN`) and every euro figure rounded to 1.000 € (`lib.ROUND_EUR`):
+with three people, a median and its quartiles gave back all three salaries.
 
 A row should ideally mean the maintainer knows someone in Spain doing that job,
 or was offered the position. Crowdsourced figures are placeholders; first-hand

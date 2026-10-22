@@ -83,7 +83,7 @@ Companies with salaries are enriched from [Spain Tech Radar](https://www.spainte
 
 When two sources disagree, the order is: a value typed by hand, then the radar, then Levels.fyi. No fetcher overwrites a filled field, and a `-` cell means "checked, there is none", not missing.
 
-Never include anything that identifies a person: no names, no team, no "the guy who joined in March". The CSV is public row by row, and the same field set applies: normalized values only. Anything the website or the API publishes on top is an aggregate of three people or more (`lib.MIN_GROUP`).
+Never include anything that identifies a person: no names, no team, no "the guy who joined in March". The CSV is public row by row, and the same field set applies: normalized values only. Anything the website or the API publishes on top is an aggregate of five people or more (`lib.MIN_GROUP`), with quartiles only from ten (`lib.QUARTILE_MIN`) and every euro figure rounded to 1.000 € (`lib.ROUND_EUR`), so no published number gives back one person's salary.
 
 ## Base salary versus total compensation
 
