@@ -103,13 +103,17 @@ class QueryError extends Error {}
 const norm = (text) => String(text ?? "").normalize("NFKD").replace(/[^\x00-\x7f]/g, "")
   .toLowerCase().replace(/-/g, " ").split(/\s+/).filter(Boolean).join(" ");
 
+// Left out, or nothing but spaces: the schema's "omit for all".
+const blank = (v) => v === undefined || v === null || String(v).trim() === "";
+
 // An integer, a float with nothing after the point or a string of digits; else null.
 const whole = (v) => typeof v === "number" ? (Number.isInteger(v) ? v : null)
   : typeof v === "string" && /^\s*-?\d+\s*$/.test(v) ? parseInt(v, 10) : null;
 
 function resolveRole(data, role) {
-  if (!role) return "";
+  if (blank(role)) return "";
   const want = norm(role);
+  if (!want) throw new QueryError(`unknown role '${role}'; see list_filters`);
   for (const r of data.roles) if (want === norm(r.slug) || want === norm(r.name)) return r.slug;
   const close = data.roles.filter((r) => norm(r.name).includes(want) || norm(r.slug).includes(want))
     .map((r) => r.slug);
@@ -119,8 +123,9 @@ function resolveRole(data, role) {
 }
 
 function resolveRegion(data, region) {
-  if (!region) return "";
+  if (blank(region)) return "";
   const want = norm(region);
+  if (!want) throw new QueryError(`unknown region '${region}'; use a code like MD or a name like Cataluña`);
   const entries = Object.entries(data.regions);
   for (const [code, n] of entries)
     if ([norm(code), norm(n.en), norm(n.es)].includes(want)) return code;
@@ -130,7 +135,7 @@ function resolveRegion(data, region) {
 }
 
 function resolveYears(data, years) {
-  if (years === undefined || years === null || years === "") return "";
+  if (blank(years)) return "";
   if (data.years.includes(String(years))) return String(years);
   const n = whole(years);
   if (n === null)
@@ -143,7 +148,7 @@ function resolveYears(data, years) {
 }
 
 function resolveLimit(limit) {
-  if (limit === undefined || limit === null || limit === "") return 20;
+  if (blank(limit)) return 20;
   const n = whole(limit);
   if (n === null) throw new QueryError("limit must be a whole number from 1 to 200");
   return Math.max(1, Math.min(n, 200));
@@ -187,11 +192,12 @@ export function topCompanies(data, args = {}) {
 
 export function company(data, name, args = {}) {
   const [, selection] = select(data, args);
+  if (blank(name)) throw new QueryError("name is required: a company such as Glovo");
   const want = norm(name);
   let matches = data.companies.map((c, i) => [c, i]).filter(([c]) => norm(c.name).includes(want));
   const exact = matches.filter(([c]) => norm(c.name) === want);
   if (exact.length) matches = exact;
-  if (!matches.length)
+  if (!want || !matches.length)
     throw new QueryError(`no company matching '${name}' has ${data.min_group}+ salaries`);
   if (matches.length > 1)
     throw new QueryError("several companies match: " +
