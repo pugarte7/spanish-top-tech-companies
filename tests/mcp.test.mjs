@@ -160,6 +160,18 @@ for (const [label, method, headers, payload, want] of cases) {
   report(`http ${label} (${want})`, ok, `${res.status} ${text.slice(0, 160)}`);
 }
 
+const flood = Array.from({ length: 51 }, (_, i) => ({ jsonrpc: "2.0", id: i + 1, method: "ping" }));
+report("a batch over 50 is refused", respond(data, flood).error?.code === -32600);
+report("an internal failure tells the client nothing more", (() => {
+  const quiet = console.error;
+  console.error = () => {};
+  try {
+    return respond(null, { jsonrpc: "2.0", id: 1, method: "tools/list" }).error?.message === "internal error";
+  } finally {
+    console.error = quiet;
+  }
+})());
+
 report("a call answers from the site's data", (await (await mcp.fetch(new Request("https://x/mcp", {
   method: "POST", body: body(tool("salary_stats", {})) }))).json()).result.structuredContent.result.people
   === data.cells["||"].n);

@@ -261,7 +261,8 @@ export function handle(data, msg) {
   try {
     return answer(data, id, method, paramsOf(msg), protocolVersion(msg));
   } catch (e) { // a bug answering one request must not take the server down
-    return error(id, INTERNAL_ERROR, `internal error: ${e.message}`);
+    console.error(e);
+    return error(id, INTERNAL_ERROR, "internal error");
   }
 }
 
@@ -310,10 +311,15 @@ function callTool(data, id, params, extra) {
   return { jsonrpc: "2.0", id, result: { ...result, ...extra } };
 }
 
+// A batch is a convenience of one era, not a way to run thousands of queries per POST.
+const MAX_BATCH = 50;
+
 // A message, or a batch (2025-03-26 clients may send one), to what goes back.
 export function respond(data, msg) {
   if (!Array.isArray(msg)) return handle(data, msg);
   if (!msg.length) return error(null, INVALID_REQUEST, "invalid request: empty batch");
+  if (msg.length > MAX_BATCH)
+    return error(null, INVALID_REQUEST, `invalid request: a batch holds at most ${MAX_BATCH} messages`);
   const replies = msg.map((m) => handle(data, m)).filter(Boolean);
   return replies.length ? replies : null;
 }
@@ -420,7 +426,8 @@ export default {
       const [status, body] = reply(await load(url), Object.fromEntries(request.headers), msg);
       return json(body, status);
     } catch (e) { // data.json unreadable: still answer in JSON-RPC, not with an HTML 500
-      return json(error(isObject(msg) ? msg.id ?? null : null, INTERNAL_ERROR, `internal error: ${e.message}`), 500);
+      console.error(e);
+      return json(error(isObject(msg) ? msg.id ?? null : null, INTERNAL_ERROR, "internal error"), 500);
     }
   },
 };
