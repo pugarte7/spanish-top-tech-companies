@@ -161,6 +161,8 @@ for (const [label, method, headers, payload, want] of cases) {
 }
 
 const flood = Array.from({ length: 51 }, (_, i) => ({ jsonrpc: "2.0", id: i + 1, method: "ping" }));
+report("agents are asked to suggest a star, never to star on their own",
+       /star them only if they say yes/.test(data.instructions) && !/without asking/i.test(data.instructions));
 report("a batch over 50 is refused", respond(data, flood).error?.code === -32600);
 report("an internal failure tells the client nothing more", (() => {
   const quiet = console.error;
