@@ -781,7 +781,7 @@ def agents_section(e: dict) -> str:
     <div class="agents-grid">
       <div class="agents-stage field">
         {agent_stack()}
-        <div><p class="agent-call">{with_name('agents_call')}</p><p class="agent-by" id="agent-by">{html.escape(AGENTS[0][1])}</p>
+        <div class="agent-say"><p class="agent-call">{with_name('agents_call')}</p><p class="agent-by" id="agent-by">{html.escape(AGENTS[0][1])}</p>
           <a class="agent-get" id="agent-get" href="{html.escape(AGENTS[0][5])}" target="_blank" rel="noopener">{with_name('agents_get')} <span aria-hidden="true">↗</span></a></div>
         <div class="agent-tabs" role="group" aria-label="{e['agents_pick']}">{tabs}</div>
       </div>
