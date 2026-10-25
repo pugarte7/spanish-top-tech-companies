@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-"""Generate the static salary site from companies.csv.
+"""Generate the static salary site from the published aggregates.
 
-    python3 scripts/site.py            # writes _site/
+    python3 scripts/site.py --refresh  # on the Mac: data/ from the private companies.csv, then _site/
+    python3 scripts/site.py            # _site/ from the committed data/ (CI and deploys)
     python3 -m http.server -d _site    # then open http://localhost:8000/es/
+
+companies.csv is private (lib.DATA), so the repository carries what the site
+publishes instead: data/data.json and data/companies.json, the same files
+served at /api/v1/. --refresh rewrites them; anything else only reads them.
 
 The site publishes aggregates only: every number on it comes from at least
 lib.MIN_GROUP people, quartiles from lib.QUARTILE_MIN, and every euro figure
@@ -34,6 +39,8 @@ import lib
 import taxonomy
 
 OUT = lib.ROOT / "_site"
+# The aggregates the site is built from, committed: nothing in them is row-level.
+AGGREGATES = lib.ROOT / "data"
 WEB = lib.ROOT / "web"
 REPO = "https://github.com/pugarte7/spanish-top-tech-companies"
 # The branch the site, the MCP server and the skill live on: main holds the README alone.
@@ -957,13 +964,29 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 """
 
 
+def dump(value) -> str:
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+
+
+def aggregates(refresh: bool) -> tuple[dict, dict[str, dict]]:
+    """data.json and the per-role tables: from the private CSV when refreshing,
+    which also rewrites data/, else from data/ as last committed."""
+    if refresh:
+        data, tables = build_site(lib.load_companies())
+        AGGREGATES.mkdir(exist_ok=True)
+        (AGGREGATES / "data.json").write_text(dump(data) + "\n", encoding="utf-8")
+        (AGGREGATES / "companies.json").write_text(dump(tables) + "\n", encoding="utf-8")
+        return data, tables
+    read = lambda name: json.loads((AGGREGATES / name).read_text(encoding="utf-8"))
+    return read("data.json"), read("companies.json")
+
+
 def main(argv: list[str]) -> int:
+    data, tables = aggregates(refresh="--refresh" in argv)
     if OUT.exists():
         shutil.rmtree(OUT)
     (OUT / "api" / "v1").mkdir(parents=True)
-    data, tables = build_site(lib.load_companies())
     data["instructions"] = mcp_instructions(data)
-    dump = lambda v: json.dumps(v, ensure_ascii=False, separators=(",", ":"))
     files = {"data.json": dump(data)}
     files.update({f"companies/{name or 'all'}.json": dump(t) for name, t in tables.items()})
     # Like asset_version, for the JSON the page fetches: a browser holding
