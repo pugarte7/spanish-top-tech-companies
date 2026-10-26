@@ -129,6 +129,7 @@ THEME_ICON = ('<svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path fi
 STRINGS = {
     "en": {
         "title": "Spanish Top Tech Companies", "theme": "Light or dark mode",
+        "h1": "What tech companies in Spain pay",
         "source": "Data: Levels.fyi",
         "rule": "Only companies in Spain whose median base salary, counting all their salaries, "
                 "is {floor} or more. The rest are not shown.",
@@ -189,6 +190,7 @@ STRINGS = {
     },
     "es": {
         "title": "Spanish Top Tech Companies", "theme": "Modo claro u oscuro",
+        "h1": "Lo que pagan las empresas tech en España",
         "source": "Datos: Levels.fyi",
         "rule": "Solo empresas en España con un sueldo base mediano de {floor} o más, contando "
                 "todos sus salarios. Las demás no aparecen.",
@@ -644,13 +646,14 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e['title']}</title>
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#f2f4f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <script>try {{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }} catch (_) {{}}</script>
 <link rel="alternate" hreflang="{other}" href="/{other}/">
 <link rel="alternate" type="application/json" href="/api/v1/data.json" title="Salary aggregates">
 <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Salary aggregates for agents">
 <script type="application/ld+json">{json_ld(lang, data)}</script>
+<link rel="preload" href="/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
 </head>
 <body data-lang="{lang}">
@@ -665,20 +668,17 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
   </div>
 </nav>
 
-<header class="hero">
-  <p class="eyebrow" id="eyebrow"></p>
-  <div class="hero-stat">
-    <span class="hero-value" id="k-median"></span>
-    <span class="hero-label">{e['hero_label']}</span>
-  </div>
-  <dl class="stats">
-    <div><dt>{e['kpi_total']}</dt><dd id="k-total"></dd></div>
+<header class="head">
+  <h1>{e['h1']}</h1>
+  <p class="sub">{e['source'].replace('Levels.fyi', levels)} · <span id="updated"></span></p>
+  <dl class="kpis">
+    <div class="lead"><dt>{e['hero_label']}</dt><dd id="k-median"></dd></div>
+    <div class="money"><dt>{e['kpi_total']}</dt><dd id="k-total"></dd></div>
     <div><dt>{e['kpi_share']}</dt><dd id="k-share"></dd></div>
     <div><dt>{e['kpi_people']}</dt><dd id="k-people"></dd></div>
     <div><dt>{e['kpi_companies']}</dt><dd id="k-companies"></dd></div>
   </dl>
   <p class="rule">{e['rule']}</p>
-  <p class="source">{e['source'].replace('Levels.fyi', levels)}</p>
   <details class="how">
     <summary>{e['how_title']}</summary>
     <ol class="steps">{steps}
@@ -720,7 +720,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 </main>
 
 <footer>
-  <p>{e['source'].replace('Levels.fyi', levels)} · <span id="updated"></span> ·
+  <p>{e['source'].replace('Levels.fyi', levels)} ·
      <a href="/api/v1/data.json" target="_blank" rel="noopener">{e['data']}</a> ·
      <a href="{REPO}" target="_blank" rel="noopener">{e['repo']}</a></p>
 </footer>
@@ -759,6 +759,7 @@ def main(argv: list[str]) -> int:
         '<a href="/es/">ES</a> · <a href="/en/">EN</a>', encoding="utf-8")
     for name in ("app.js", "style.css"):
         shutil.copy(WEB / name, OUT / name)
+    shutil.copytree(WEB / "fonts", OUT / "fonts")
 
     for name, text in files.items():
         path = OUT / "api" / "v1" / name
