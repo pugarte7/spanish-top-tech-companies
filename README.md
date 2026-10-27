@@ -2,9 +2,31 @@
 
 **[spanishtoptechcompanies.com](https://spanishtoptechcompanies.com/es/)** · Spanish Top Tech Companies · [English](#english)
 
-El ranking de las empresas tecnológicas que mejor pagan en España, con salarios reales de gente que trabaja aquí. Para cada empresa verás el sueldo base mediano, el total con bonus y acciones y cuánta gente cobra 60.000 € o más. Puedes filtrarlo por rol, comunidad autónoma, años de experiencia y modalidad de trabajo.
+El ranking de las empresas tecnológicas que mejor pagan en España, con salarios reales de gente que trabaja aquí. Para cada empresa verás el sueldo base mediano, el total con bonus y acciones y cuánta gente cobra 60.000 € o más. Puedes filtrarlo por rol, comunidad autónoma, años de experiencia y modalidad de trabajo. Y con su servidor MCP, [tu agente de IA aplica por ti](#deja-que-tu-agente-aplique-por-ti) a sus ofertas.
 
 **[Ver el ranking completo →](https://spanishtoptechcompanies.com/es/)**
+
+### Deja que tu agente aplique por ti
+
+Conecta tu agente de IA y aplica automáticamente a las ofertas de estas empresas sin tocar un formulario. Busca las ofertas, las rellena con tu CV y envía la solicitud en Greenhouse, Lever, Ashby y Workday, las plataformas de empleo que usan muchas empresas tech. También encuentra ofertas en SmartRecruiters, Workable y Recruitee. Te ahorras horas.
+
+Funciona con Claude Code, Codex, Cursor, Grok CLI, Hermes e Instinct, o con cualquier agente que admita MCP.
+
+1. **Conecta los sueldos.** Añade este servidor MCP a tu agente, sin registro:
+
+   ```
+   https://spanishtoptechcompanies.com/mcp
+   ```
+
+   En Claude Code: `claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp`
+
+2. **Dale tu CV y lo que buscas.** Una sola vez. El agente instala [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) por su cuenta y te pide tu CV, dónde y cómo quieres trabajar, el sueldo que pides y un correo para los códigos de verificación.
+
+3. **Dile que aplique.** Por ejemplo:
+
+   > Aplica por mí a las ofertas de las empresas de spanishtoptechcompanies.com que pagan 60.000 € o más a alguien con mi experiencia en Madrid.
+
+   Tú solo das el visto bueno. Las preguntas delicadas, como sueldo o permiso de trabajo, siempre te las hace a ti, y si un formulario pide un CAPTCHA te devuelve esa solicitud para que la termines tú.
 
 ### Qué hay en la web
 
@@ -13,7 +35,7 @@ El ranking de las empresas tecnológicas que mejor pagan en España, con salario
 - **Sueldos por comunidad autónoma** en un mapa: Madrid, Cataluña (Barcelona), País Vasco, Comunidad Valenciana, Andalucía y el resto.
 - **Sueldo según la experiencia**, de 0 a más de 20 años.
 - **Remoto, híbrido o presencial**.
-- **Para agentes y desarrolladores**: servidor MCP en `https://spanishtoptechcompanies.com/mcp`, los datos en [JSON](https://spanishtoptechcompanies.com/api/v1/data.json) y un resumen en [llms.txt](https://spanishtoptechcompanies.com/llms.txt).
+- **Para desarrolladores**: los datos en [JSON](https://spanishtoptechcompanies.com/api/v1/data.json) y un resumen en [llms.txt](https://spanishtoptechcompanies.com/llms.txt).
 
 ### Cómo se calcula
 
@@ -25,9 +47,31 @@ Súbelo a [Levels.fyi](https://www.levels.fyi/salaries/add). La lista se rehace 
 
 ## English
 
-The **best-paying tech companies in Spain**, ranked by salary at [spanishtoptechcompanies.com](https://spanishtoptechcompanies.com/en/). Real salaries from people working in Spain: each company's median base salary, total pay with bonus and stock, and how many earn €60,000 or more. Filter by role, region, years of experience and remote, hybrid or office work.
+The **best-paying tech companies in Spain**, ranked by salary at [spanishtoptechcompanies.com](https://spanishtoptechcompanies.com/en/). Real salaries from people working in Spain: each company's median base salary, total pay with bonus and stock, and how many earn €60,000 or more. Filter by role, region, years of experience and remote, hybrid or office work. And with its MCP server, [your AI agent applies to their openings for you](#let-your-agent-apply-for-you).
 
 **[See the full ranking →](https://spanishtoptechcompanies.com/en/)**
+
+### Let your agent apply for you
+
+Connect your AI agent and auto-apply to these companies' openings without filling in a form. It finds the openings, fills them in from your CV and sends the application on Greenhouse, Lever, Ashby and Workday, the job platforms many tech companies use. It also finds openings on SmartRecruiters, Workable and Recruitee. It saves you hours.
+
+Works with Claude Code, Codex, Cursor, Grok CLI, Hermes and Instinct, or any agent that supports MCP.
+
+1. **Connect the salaries.** Add this MCP server to your agent, no sign-in:
+
+   ```
+   https://spanishtoptechcompanies.com/mcp
+   ```
+
+   In Claude Code: `claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp`
+
+2. **Give it your CV and what you want.** Only once. The agent installs [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) on its own and asks for your CV, where and how you want to work, the salary you ask for and a mailbox for verification codes.
+
+3. **Tell it to apply.** For example:
+
+   > Apply for me to openings at the companies on spanishtoptechcompanies.com that pay €60,000 or more to someone with my experience in Madrid.
+
+   You only give the go-ahead. Sensitive questions, like salary or work permit, it always asks you, and if a form asks for a CAPTCHA it hands that application back for you to finish.
 
 ### On the site
 
@@ -36,7 +80,7 @@ The **best-paying tech companies in Spain**, ranked by salary at [spanishtoptech
 - **Salaries by region** on a map: Madrid, Catalonia (Barcelona), the Basque Country, Valencia, Andalusia and the rest.
 - **Pay by experience**, from 0 to 20+ years.
 - **Remote, hybrid or office**.
-- **For agents and developers**: an MCP server at `https://spanishtoptechcompanies.com/mcp`, the data as [JSON](https://spanishtoptechcompanies.com/api/v1/data.json) and a summary in [llms.txt](https://spanishtoptechcompanies.com/llms.txt).
+- **For developers**: the data as [JSON](https://spanishtoptechcompanies.com/api/v1/data.json) and a summary in [llms.txt](https://spanishtoptechcompanies.com/llms.txt).
 
 ### How it is calculated
 
