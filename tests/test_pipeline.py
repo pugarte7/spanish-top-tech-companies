@@ -15,7 +15,9 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import os
 import pathlib
+import subprocess
 import sys
 import tempfile
 
@@ -764,8 +766,27 @@ def test_site_dates_and_minimum_base() -> None:
     check("llms.txt says when", "reported from 2021-03 to 2026-10" in site_build.llms_txt(data), True)
 
 
+def test_aggregates_ignore_the_hash_seed() -> None:
+    """A refresh of the same salaries writes the same data/: once the per-role tables
+    came out in PYTHONHASHSEED order and every weekly run committed a diff of nothing."""
+    print("data/ is the same whatever the hash seed")
+    rows = [entry(PER_LOCATION, base=60000 + 1000 * i, region="MD", city="Madrid",
+                  specialization=spec) for spec in ("backend", "frontend") for i in range(6)]
+    script = ("import importlib.util, json, sys; sys.path.insert(0, 'scripts'); import lib; "
+              "spec = importlib.util.spec_from_file_location('site_build', 'scripts/site.py'); "
+              "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); "
+              "data, tables = m.build_site(lib.load_companies()); "
+              "print(json.dumps([list(data['cells']), list(tables)]))")
+    with temp_data(acme(*rows)):
+        runs = {subprocess.run([sys.executable, "-c", script], cwd=ROOT, capture_output=True, text=True,
+                               env={**os.environ, "STC_DATA": str(lib.DATA), "PYTHONHASHSEED": seed},
+                               check=True).stdout
+                for seed in ("1", "2", "3", "4")}
+    check("four seeds, one order of cells and tables", len(runs), 1)
+
+
 def main() -> int:
-    for test in (test_location_guard, test_unscoped_classifier,
+    for test in (test_aggregates_ignore_the_hash_seed, test_location_guard, test_unscoped_classifier,
                  test_purge_runs_even_when_spain_data_exists,
                  test_figures_are_converted_to_euros,
                  test_every_year_is_kept_the_readme_filters,

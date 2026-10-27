@@ -495,9 +495,9 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
     by_company: dict[str, dict[int, list[dict]]] = collections.defaultdict(
         lambda: collections.defaultdict(list))
     for i, role, region, bucket, e in rows:
-        for r in {"", role}:
-            for g in {"", region}:
-                for y in {"", bucket}:
+        for r in dict.fromkeys(("", role)):
+            for g in dict.fromkeys(("", region)):
+                for y in dict.fromkeys(("", bucket)):
                     key = f"{r}|{g}|{y}"
                     cells[key].append(e)
                     by_company[key][i].append(e)
@@ -580,7 +580,9 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
     counts = collections.Counter()
     for i, role, _, bucket, e in rows:
         spec = e.get("specialization") or ""
-        tables = {"", role, f"{role}/{spec}" if role and spec else ""}
+        # Ordered, not a set: a set's order follows PYTHONHASHSEED, and data/
+        # would then change on every refresh with the same salaries.
+        tables = dict.fromkeys(("", role, f"{role}/{spec}" if role and spec else ""))
         counts.update(t for t in tables if t)
         mode = e.get("work_arrangement") or ""
         for ms in mode_sets:
