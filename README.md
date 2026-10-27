@@ -1,12 +1,60 @@
-# Spanish Top Tech Companies
+# Empresas tech que más pagan en España
 
-What companies in Spain pay software engineers with 5 or more years of experience: the median over every such engineer reported there, and how many of them earn 60.000 € or more in base. Companies whose median is 60.000 € or more make the main table; those between 50.000 € and 60.000 € are listed under "Need to improve". Every median links to the page its salaries were read from; company names link to LinkedIn and to open roles in Spain. The list is whatever the last run found: the line below says how many and when.
+**[spanishtoptechcompanies.com](https://spanishtoptechcompanies.com/es/)** · Spanish Top Tech Companies · [English](#english)
+
+El ranking de las empresas tecnológicas que mejor pagan en España, con salarios reales de gente que trabaja aquí. Para cada empresa verás el sueldo base mediano, el total con bonus y acciones y cuánta gente cobra 60.000 € o más. Puedes filtrarlo por rol, comunidad autónoma, años de experiencia y modalidad de trabajo.
+
+**[Ver el ranking completo →](https://spanishtoptechcompanies.com/es/)**
+
+### Qué hay en la web
+
+- **Ranking de empresas tech** ordenado por sueldo base mediano, con buscador.
+- **Sueldos por rol**: ingeniería de software, producto, datos, diseño, gestión y más de 30 roles.
+- **Sueldos por comunidad autónoma** en un mapa: Madrid, Cataluña (Barcelona), País Vasco, Comunidad Valenciana, Andalucía y el resto.
+- **Sueldo según la experiencia**, de 0 a más de 20 años.
+- **Remoto, híbrido o presencial**.
+- **Para agentes y desarrolladores**: servidor MCP en `https://spanishtoptechcompanies.com/mcp`, los datos en [JSON](https://spanishtoptechcompanies.com/api/v1/data.json) y un resumen en [llms.txt](https://spanishtoptechcompanies.com/llms.txt).
+
+### Cómo se calcula
+
+Cada salario viene de [Levels.fyi](https://www.levels.fyi) y solo cuenta si la ubicación de esa persona está en España. Una empresa aparece si la mediana del sueldo base de todos sus salarios llega a 45.000 €. Ninguna cifra sale de menos de 5 personas, así que nadie es identificable, y los salarios individuales no se publican.
+
+### Añade tu salario
+
+Súbelo a [Levels.fyi](https://www.levels.fyi/salaries/add). La lista se rehace con los salarios de España que hay allí, así que cuenta desde la siguiente actualización. Es anónimo. Si sabes de primera mano lo que paga una empresa, o tienes una oferta por escrito, abre un [issue](../../issues/new?template=update-band.yml).
+
+## English
+
+The **best-paying tech companies in Spain**, ranked by salary at [spanishtoptechcompanies.com](https://spanishtoptechcompanies.com/en/). Real salaries from people working in Spain: each company's median base salary, total pay with bonus and stock, and how many earn €60,000 or more. Filter by role, region, years of experience and remote, hybrid or office work.
+
+**[See the full ranking →](https://spanishtoptechcompanies.com/en/)**
+
+### On the site
+
+- **Tech companies ranked** by median base salary, with search.
+- **Salaries by role**: software engineering, product, data, design, management and 30+ more roles.
+- **Salaries by region** on a map: Madrid, Catalonia (Barcelona), the Basque Country, Valencia, Andalusia and the rest.
+- **Pay by experience**, from 0 to 20+ years.
+- **Remote, hybrid or office**.
+- **For agents and developers**: an MCP server at `https://spanishtoptechcompanies.com/mcp`, the data as [JSON](https://spanishtoptechcompanies.com/api/v1/data.json) and a summary in [llms.txt](https://spanishtoptechcompanies.com/llms.txt).
+
+### How it is calculated
+
+Every salary comes from [Levels.fyi](https://www.levels.fyi) and counts only if that person's location is in Spain. A company is listed when the median base salary over all its salaries reaches €45,000. No figure comes from fewer than 5 people, so nobody can be singled out, and individual salaries are not published.
+
+### Add your salary
+
+Submit it on [Levels.fyi](https://www.levels.fyi/salaries/add). The list is rebuilt from the Spanish salaries there, so yours counts from the next update. It is anonymous. If you know first-hand what a company pays, or have an offer letter, open an [issue](../../issues/new?template=update-band.yml).
+
+## Ingenieros de software con 5+ años · Software engineers with 5+ years
+
+La lista de este repositorio, solo para ingenieros de software con 5 años o más de experiencia. La web cubre todos los roles. Primero las empresas cuya mediana llega a 60.000 € y después las que están entre 50.000 € y 60.000 €. Sueldos brutos anuales. "46% (6)" quiere decir que 6 de sus 13 ingenieros cobran 60.000 € o más de base.
+
+This repository's list, for software engineers with 5+ years of experience only. The site covers every role. Companies whose median reaches €60,000 come first, then those between €50,000 and €60,000. Gross yearly pay. "46% (6)" means six of thirteen earn a base of €60,000 or more. [How salaries are picked](METHODOLOGY.md#who-counts).
 
 <!-- BEGIN:STATS -->
 **171 companies at 60k+** · 37 need to improve · 2175 engineers with 5+ years · 1639 of them at 60k+ · reported 2018-11 to 2026-10 · last run 2026-10-12
 <!-- END:STATS -->
-
-Each row is one company. Median base and median total comp are over every software engineer in Spain with 5 or more years of experience on file for it, paid whatever they are paid: gross annual base in euros before tax, and base plus bonus and equity. Engineers is how many that is. At 60k+ is how many of them have a base of 60.000 € or more: "46% (6)" means six of thirteen do, so it happens there and is not the norm; "100% (4)" means everyone reported does. Rows are sorted by median base, then by At 60k+; a company whose median is under 60k is in the second table, however well it pays its best, and one under 50k is not listed at all. Reported is when the salaries were submitted. Seniority is the years of experience, whatever the company calls the level ([how salaries are picked](METHODOLOGY.md#who-counts)).
 
 <!-- BEGIN:COMPANIES -->
 ## Median pay, software engineers with 5+ years
@@ -228,26 +276,22 @@ Each row is one company. Median base and median total comp are over every softwa
 | [SITA](https://www.linkedin.com/company/sita) | 50k | 55k | 1 | 0% (0) | 2026-08 | [levels.fyi](https://www.levels.fyi/companies/sita/salaries/software-engineer/locations/spain) | [open roles](https://www.linkedin.com/company/sita/jobs/) |
 <!-- END:COMPANIES -->
 
-## How to submit a salary
+## Contribuir · Contributing
 
-Add yours on [Levels.fyi](https://www.levels.fyi/salaries/add). That is all: the list is rebuilt from Levels.fyi's Spanish submissions, so a software engineer in Spain with 5 or more years is picked up on the next run, and a company that is not here yet gets a row once the median of its seniors reaches 50.000 €, and moves up to the main table at 60.000 €. Submissions are anonymous, and only the company, base, total, years of experience, level, city and month end up here.
+Los pull requests son bienvenidos: el pipeline, la metodología, la web o las comprobaciones. [METHODOLOGY.md](METHODOLOGY.md) explica las reglas y [docs/CONTEXT.md](docs/CONTEXT.md) lo que ha salido mal antes y por qué el código es como es.
 
-If you know first-hand what a company pays, or have an offer letter, open an [issue](../../issues/new?template=update-band.yml) instead. Those must be at 60.000 € or more, since they vouch that the company pays it, and they sort above the crowdsourced figures.
+Pull requests are welcome for the pipeline, the methodology, the site or the checks. Open an [issue](../../issues/new/choose) first if you want to talk it through.
 
-## Improving the repository
+## Licencia · Licence
 
-Pull requests are welcome for anything you think can be done better: the pipeline, the methodology, the README, the checks. Open an [issue](../../issues/new/choose) first if you want to talk it through. [METHODOLOGY.md](METHODOLOGY.md) has the rules about sources and seniority, and [docs/CONTEXT.md](docs/CONTEXT.md) records what has gone wrong before and why the code looks the way it does.
+El código es [MIT](LICENSE) y las tablas [CC BY-SA 4.0](LICENSE-DATA). Los salarios se leen de [Levels.fyi](https://www.levels.fyi) y siguen sujetos a sus condiciones.
 
-## Data
-
-The individual salaries behind each median are not published. They are kept privately by the maintainer, and the tables above are generated from them by `scripts/build.py`.
-
-## Licence
-
-Code is [MIT](LICENSE), the tables are [CC BY-SA 4.0](LICENSE-DATA). Salaries are read from [Levels.fyi](https://www.levels.fyi), and Levels.fyi's own terms still apply to them.
+Code is [MIT](LICENSE), the tables are [CC BY-SA 4.0](LICENSE-DATA). Salaries are read from Levels.fyi, and its terms still apply to them.
 
 > Data source: Levels.fyi (https://www.levels.fyi)
 
-## Disclaimer
+## Aviso · Disclaimer
 
-This is an independent project, not affiliated with or endorsed by Levels.fyi or any company listed. The figures are summaries of salaries other people reported. They can be incomplete, out of date or wrong, and they are not offers, guarantees, or financial or legal advice. Company names and logos belong to their owners. If you want something removed or corrected, whether about a company or about yourself, open an [issue](../../issues/new/choose) and it will be taken down.
+Proyecto independiente, sin relación con Levels.fyi ni con ninguna de las empresas. Las cifras resumen salarios que otras personas han reportado. Pueden estar incompletas, desactualizadas o mal, y no son ofertas ni asesoramiento financiero o legal. Si quieres que se quite o corrija algo, sobre una empresa o sobre ti, abre un [issue](../../issues/new/choose).
+
+This is an independent project, not affiliated with or endorsed by Levels.fyi or any company listed. The figures summarise salaries other people reported. They can be incomplete, out of date or wrong, and they are not offers, guarantees, or financial or legal advice. Company names belong to their owners. If you want something removed or corrected, whether about a company or about yourself, open an [issue](../../issues/new/choose) and it will be taken down.
