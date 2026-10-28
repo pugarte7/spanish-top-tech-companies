@@ -232,7 +232,7 @@ Each row is one company. Median base and median total comp are over every softwa
 
 Add yours on [Levels.fyi](https://www.levels.fyi/salaries/add). That is all: the list is rebuilt from Levels.fyi's Spanish submissions, so a software engineer in Spain with 5 or more years is picked up on the next run, and a company that is not here yet gets a row once the median of its seniors reaches 50.000 €, and moves up to the main table at 60.000 €. Submissions are anonymous, and only the company, base, total, years of experience, level, city and month end up here.
 
-If you know first-hand what a company pays, or have an offer letter, you can also add a row to [`companies.csv`](companies.csv) with `source` set to `community` or `offer-letter`. Those must be at 60.000 € or more, since they vouch that the company pays it, and they sort above the crowdsourced figures. [CONTRIBUTING.md](CONTRIBUTING.md) has the columns.
+If you know first-hand what a company pays, or have an offer letter, open an [issue](../../issues/new?template=update-band.yml) instead. Those must be at 60.000 € or more, since they vouch that the company pays it, and they sort above the crowdsourced figures.
 
 ## Improving the repository
 
@@ -240,16 +240,14 @@ Pull requests are welcome for anything you think can be done better: the pipelin
 
 ## Data
 
-Every median above is computed from [`companies.csv`](companies.csv), which keeps each salary behind it, one per row, and when it was read. The table is generated from it: edit the CSV, then rebuild.
-
-```bash
-python3 scripts/validate.py && python3 scripts/build.py
-```
+The individual salaries behind each median are not published. They are kept privately by the maintainer, and the tables above are generated from them by `scripts/build.py`.
 
 ## Licence
 
-Code is [MIT](LICENSE), data is [CC BY-SA 4.0](LICENSE-DATA). Salaries are read from [Levels.fyi](https://www.levels.fyi)'s public pages, and Levels.fyi's own terms still apply to them.
+Code is [MIT](LICENSE), the tables are [CC BY-SA 4.0](LICENSE-DATA). Salaries are read from [Levels.fyi](https://www.levels.fyi), and Levels.fyi's own terms still apply to them.
 
 > Data source: Levels.fyi (https://www.levels.fyi)
 
-These are salaries other people reported, not offers anyone is guaranteed.
+## Disclaimer
+
+This is an independent project, not affiliated with or endorsed by Levels.fyi or any company listed. The figures are summaries of salaries other people reported. They can be incomplete, out of date or wrong, and they are not offers, guarantees, or financial or legal advice. Company names and logos belong to their owners. If you want something removed or corrected, whether about a company or about yourself, open an [issue](../../issues/new/choose) and it will be taken down.

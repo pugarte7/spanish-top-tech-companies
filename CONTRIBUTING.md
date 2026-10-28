@@ -6,22 +6,19 @@ Two ways in. Pick whichever you're comfortable with.
 
 The easiest way, and anonymous. Add it at [levels.fyi/salaries/add](https://www.levels.fyi/salaries/add) with your city in Spain and your years of experience. The list is rebuilt from Levels.fyi's Spanish submissions, so a software engineer with 5 or more years is picked up on the next run, and a company that is not here yet gets its row once its seniors' median is 50k or more, on the main table at 60k.
 
-## 1. Open an issue (no CSV)
+## 1. Open an issue
 
-Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or update a salary**](../../issues/new?template=update-band.yml). Fill the form, we turn it into a PR. This is the right route if you're sharing your own numbers and would rather not use Levels.fyi.
+Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or update a salary**](../../issues/new?template=update-band.yml). Fill the form and the maintainer adds it to the data. This is the right route if you're sharing your own numbers and would rather not use Levels.fyi.
 
 **On anonymity:** anything you put in a public issue is public and tied to your GitHub account forever. If you're sharing your own salary, consider a throwaway account, or check whether your employer would care. We'd rather have the data than have you regret posting it.
 
 ## 2. Open a pull request
 
-All the data is one file, [`companies.csv`](companies.csv): one row per salary, with the company's own columns repeated on each of its rows. A company is on file only while the median of its rows is at 50k+, and on the main table at 60k+; a `Name,linkedin_id` row with the salary columns empty is how one is added by hand, and it stays only if the fetch finds a median at the floor. The README is generated from it, and shows each company's median over those salaries and the share at 60k+.
+Pull requests are welcome for the code, the checks and the docs. The salaries themselves are not in the repository: they are one row per person, so they live in a private `companies.csv` on the maintainer's machine (`lib.DATA`, or wherever `STC_DATA` points), and only the README's per-company tables are published. The rest of this section is for whoever holds that file.
+
+All the data is that one file: one row per salary, with the company's own columns repeated on each of its rows. A company is on file only while the median of its rows is at 50k+, and on the main table at 60k+; a `Name,linkedin_id` row with the salary columns empty is how one is added by hand, and it stays only if the fetch finds a median at the floor. The README is generated from it, and shows each company's median over those salaries and the share at 60k+.
 
 Every row is **one software engineer in Spain with 5 or more years of experience**, paid whatever they are paid. Nothing else goes in: no other job families, nobody under five years, and no averages. What their company calls the level does not matter. A company stays on file while the median base of its rows is 50.000 € or more, and on the main table at 60.000 €. [METHODOLOGY.md](METHODOLOGY.md#who-counts) explains why.
-
-```bash
-git clone https://github.com/pugarte7/spanish-top-tech-companies
-cd spanish-top-tech-companies
-```
 
 Nothing to install. The scripts use plain Python 3.9 or newer.
 
@@ -50,7 +47,7 @@ The id is the `f_C` number in a LinkedIn job search filtered to that company. [`
 | `level` | The level as the company names it (`L4`, `SDE II`, `Senior`). Informational only. |
 | `city`, `reported` | Where in Spain, and the month the salary was reported, `YYYY-MM`. |
 | `source`, `source_url`, `date` | Where the salary came from and when it was read, `YYYY-MM-DD`. |
-| `notes` | Anything a reader of the CSV needs to trust it, such as the contract type. |
+| `notes` | Anything needed to trust the row, such as the contract type. |
 | `website`, `careers_url`, `hq_city`, `hq_country`, `employees`, `sector`, `year_founded`, `about` | Company details from Levels.fyi. Written by `fetch_company.py`. |
 
 ### Fetching from Levels.fyi
@@ -106,7 +103,7 @@ python3 scripts/validate.py      # must pass
 python3 scripts/build.py         # regenerates the README and tidies companies.csv
 ```
 
-Commit the regenerated `README.md` and `companies.csv` along with your change. `build.py` rewrites the CSV in a fixed order, so the diff shows only what changed. CI runs all three and fails if either file is out of date.
+Commit the regenerated `README.md`, never `companies.csv`: it is private and git ignores it. CI has no data, so it runs only the tests; `validate.py` and `build.py` run wherever the file is, and in the weekly refresh.
 
 ## What makes a submission usable
 

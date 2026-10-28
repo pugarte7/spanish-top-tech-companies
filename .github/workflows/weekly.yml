@@ -3,7 +3,7 @@ name: weekly
 on:
   push:
     branches: [main]
-    paths: [companies.csv]
+    paths: [README.md]
   schedule:
     - cron: "0 12 * * 2"   # Tuesdays 12:00 UTC: did Monday's refresh land?
   workflow_dispatch:
@@ -24,16 +24,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
+      # The data is private, so the Mac computes the digest and sends it as
+      # the commit body.
       - name: Open this week's issue
         env:
           GH_TOKEN: ${{ github.token }}
-          BEFORE: ${{ github.event.before }}
         run: |
-          python3 scripts/digest.py "$BEFORE" > digest.md
+          git log -1 --format=%b > digest.md
           cat digest.md >> "$GITHUB_STEP_SUMMARY"
           gh issue create --title "Week of $(date -u +%F)" --body-file digest.md
 

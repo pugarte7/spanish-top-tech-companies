@@ -138,7 +138,8 @@ def check_company(where: str, company: dict) -> None:
 
 def main() -> int:
     if not lib.DATA.exists():
-        print(f"{lib.DATA.name} is missing.")
+        print(f"{lib.DATA} is missing. It is private and not in the repository; "
+              "set STC_DATA to where it is.")
         return 1
     companies, problems = lib.read()
     errors.extend(problems)
