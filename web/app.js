@@ -246,12 +246,22 @@ function kpis() {
   $("k-share").textContent = a ? pct(a.share) : "—";
   $("k-people").textContent = a ? a.n.toLocaleString(LOCALE) : "—";
   $("k-companies").textContent = (D.company_cells["||"] || []).length.toLocaleString(LOCALE);
-  $("eyebrow").textContent = S.all_roles;
 }
+
+// --- pay shades -----------------------------------------------------------------
+// One scale for pay on the map and in the matrix: two greys under the 60k bar,
+// the hue from it, so the colour itself says which side of the bar a figure is.
+const SHADE_EDGES = [50000, 60000, 70000, 85000];
+const shade = (v) => 1 + SHADE_EDGES.filter((t) => v >= t).length;
+const payLegend = () => [0, ...SHADE_EDGES].map((v, i, edges) => {
+  const to = edges[i + 1];
+  const label = !v ? `< ${short(to)}` : to ? `${short(v)}–${short(to)}` : `${short(v)}+`;
+  return `<span><i class="s${i + 1}"></i>${label}</span>`;
+}).join("") + `<span><i class="na"></i>${esc(S.map_empty)}</span>`;
 
 // --- map ------------------------------------------------------------------------
 // The map shows either pay or how many salaries each region has. Counts run
-// from a handful to thousands, so their colour classes are on a log scale.
+// from a handful to thousands, so their grey classes are on a log scale.
 let mapMetric = "pay";
 
 function map() {
@@ -263,14 +273,12 @@ function map() {
   }
   const pay = mapMetric === "pay";
   const value = (a) => pay ? a.median : a.n;
-  const scale = pay ? (v) => v : Math.log;
-  const unscale = pay ? (v) => v : Math.exp;
-  const vals = Object.values(stats).map((a) => scale(value(a)));
+  const vals = Object.values(stats).map((a) => Math.log(a.n));
   const lo = Math.min(...vals), hi = Math.max(...vals);
   const classes = vals.length ? 5 : 0;
   const step = (hi - lo) / classes || 1;
-  const cls = (a) => Math.min(classes, 1 + Math.floor((scale(value(a)) - lo) / step));
-  const fmt = pay ? short : (v) => Math.round(v).toLocaleString(LOCALE);
+  const fill = (a) => pay ? `var(--s${shade(a.median)})`
+    : `var(--c${hi === lo ? classes : Math.min(classes, 1 + Math.floor((Math.log(a.n) - lo) / step))})`;
 
   $("map-sub").textContent = pay ? S.map_pay_sub : S.map_count_sub;
   $("map-metric").querySelectorAll("button").forEach((b) => {
@@ -281,27 +289,30 @@ function map() {
   svg.querySelectorAll(".region").forEach((p) => {
     const code = p.dataset.code, a = stats[code];
     p.classList.toggle("has", !!a);
-    p.style.fill = a ? `var(--seq-${hi === lo ? classes : cls(a)})` : "";
+    p.style.fill = a ? fill(a) : "";
     p.onmousemove = (e) => showTip(e, a ? statTip(regionName(code), a)
       : `<b>${esc(regionName(code))}</b><br>${esc(S.map_empty)}`);
     p.onmouseleave = hideTip;
   });
 
   let legend = "";
-  if (classes && hi > lo) {
-    for (let i = 1; i <= classes; i++) {
-      const from = unscale(lo + step * (i - 1)), to = unscale(lo + step * i);
-      legend += `<span><i style="background:var(--seq-${i})"></i>${fmt(from)}–${fmt(to)}</span>`;
+  if (pay) legend = payLegend();
+  else {
+    const count = (v) => Math.round(Math.exp(v)).toLocaleString(LOCALE);
+    if (classes && hi > lo) {
+      for (let i = 1; i <= classes; i++) {
+        legend += `<span><i style="background:var(--c${i})"></i>${count(lo + step * (i - 1))}–${count(lo + step * i)}</span>`;
+      }
     }
+    legend += `<span><i class="na"></i>${esc(S.map_empty)}</span>`;
   }
-  legend += `<span><i style="background:var(--empty)"></i>${esc(S.map_empty)}</span>`;
   $("legend").innerHTML = legend;
 
   const ranked = Object.entries(stats).sort((x, y) => value(y[1]) - value(x[1]));
   const max = ranked.length ? value(ranked[0][1]) : 1;
   const ol = $("ranking");
   ol.innerHTML = ranked.map(([code, a]) =>
-    `<li data-code="${code}">` +
+    `<li data-code="${code}"${pay && a.median >= D.threshold ? ' class="hi"' : ""}>` +
     `<span>${esc(regionName(code))}<span class="n">${pay ? a.n : money(a.median)}</span></span>` +
     `<span class="v">${pay ? money(a.median) : a.n.toLocaleString(LOCALE)}</span>` +
     `<span class="bar"><i style="width:${(value(a) / max) * 100}%"></i></span></li>`).join("");
@@ -313,8 +324,6 @@ function map() {
 // The roles with most salaries against the experience bands, one median per
 // cell. A cell sets the table below to that role and band.
 const MATRIX_ROLES = 8;
-const SHADE_EDGES = [50000, 60000, 70000, 85000];
-const shade = (v) => 1 + SHADE_EDGES.filter((t) => v >= t).length;
 
 function matrix() {
   const roles = D.roles.filter((r) => cell({ role: r.slug }) && roleTree().some((t) => t.slug === r.slug))
@@ -340,12 +349,7 @@ function matrix() {
       $("companies-card").scrollIntoView({ behavior: "smooth", block: "start" });
     };
   });
-  const edges = [0, ...SHADE_EDGES];
-  $("matrix-legend").innerHTML = edges.map((v, i) => {
-    const to = edges[i + 1];
-    const label = !v ? `< ${short(to)}` : to ? `${short(v)}–${short(to)}` : `${short(v)}+`;
-    return `<span><i class="s${i + 1}"></i>${label}</span>`;
-  }).join("") + `<span><i class="na"></i>${esc(S.map_empty)}</span>`;
+  $("matrix-legend").innerHTML = payLegend();
 }
 
 // --- summary ------------------------------------------------------------------
@@ -367,14 +371,15 @@ function summary() {
     return `<span class="col" data-i="${i}"><i class="${high ? "hi" : ""}${c === null ? " wh" : ""}"` +
       ` style="height:${c ? Math.max(4, (c / max) * 100) : 4}%"></i></span>`;
   }).join("");
+  const bar = ((1 + (D.threshold - low) / step) / a.hist.length) * 100;
   el.innerHTML =
     `<dl><dt>${S.col_median}</dt><dd>${money(a.median)}</dd></dl>` +
     `<dl><dt>${S.sum_range}</dt><dd>${range(a)}</dd></dl>` +
     `<dl><dt>${S.col_share}</dt><dd>${pct(a.share)}</dd></dl>` +
     `<dl><dt>${S.col_n}</dt><dd>${a.n.toLocaleString(LOCALE)}</dd></dl>` +
-    `<div class="dist" aria-hidden="true"><div class="bars">${bars}</div>` +
+    `<div class="dist" aria-hidden="true"><div class="bars">${bars}<span class="ref" style="left:${bar}%"></span></div>` +
     `<div class="axis"><span>${short(low)}</span>` +
-    `<span style="left:${((1 + (D.threshold - low) / step) / a.hist.length) * 100}%">${short(D.threshold)}</span>` +
+    `<span style="left:${bar}%">${short(D.threshold)}</span>` +
     `<span>${short(D.hist.high)}+</span></div></div>`;
   el.querySelectorAll(".dist .col").forEach((col) => {
     const i = +col.dataset.i, c = a.hist[i];
@@ -404,8 +409,8 @@ const ICONS = {
     `<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c2.8 2.7 4.2 6 4.2 10s-1.4 7.3-4.2 10` +
     `c-2.8-2.7-4.2-6-4.2-10S9.2 4.7 12 2z"/></svg>`,
   levels: `<svg viewBox="0 0 24 24" aria-hidden="true" shape-rendering="crispEdges">` +
-    `<path fill="#788995" d="M0 24v-6h6v-6h6V6h6V0h6v24z"/></svg>`,
-  linkedin: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#0a66c2" d="M20.447 20.452h-3.554v-5.569` +
+    `<path fill="currentColor" d="M0 24v-6h6v-6h6V6h6V0h6v24z"/></svg>`,
+  linkedin: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.447 20.452h-3.554v-5.569` +
     `c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85` +
     ` 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125z` +
     `m1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451` +
@@ -445,7 +450,7 @@ function detail(a) {
   const bands = companyYears(a.c);
   const max = Math.max(...bands.map(([, y]) => y ? y.median : 0)) || 1;
   const bars = bands.map(([b, y]) => `<div class="yb${state.years.includes(b) ? " on" : ""}">` +
-    (y ? `<b>${short(y.median)}</b><i style="height:${(y.median / max) * 72}px"></i>`
+    (y ? `<b>${short(y.median)}</b><i${y.median >= D.threshold ? ' class="hi"' : ""} style="height:${(y.median / max) * 72}px"></i>`
        : `<span class="na">–</span><i class="none"></i>`) +
     `<span>${yearsLabel(b)}</span></div>`).join("");
   // A company with no band of MIN_GROUP people would show six empty bars.
