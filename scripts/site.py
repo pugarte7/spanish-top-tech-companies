@@ -40,6 +40,12 @@ REPO = "https://github.com/pugarte7/spanish-top-tech-companies"
 # The branch the site, the MCP server and the skill live on: main holds the README alone.
 BRANCH = "website"
 SITE = os.environ.get("SITE_URL", "").rstrip("/")
+# Web Analytics and Speed Insights: Vercel serves /_vercel/ only on its own
+# deployments (`vercel build` sets VERCEL=1). Anywhere else the scripts 404,
+# which the site tests count as console errors.
+VERCEL_SCRIPTS = ('<script defer src="/_vercel/insights/script.js"></script>\n'
+                  '<script defer src="/_vercel/speed-insights/script.js"></script>\n'
+                  if os.environ.get("VERCEL") else "")
 
 # Region outlines, fetched once into .cache/ (gitignored is fine: it is
 # rebuilt from the pinned URL).
@@ -655,7 +661,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 <script type="application/ld+json">{json_ld(lang, data)}</script>
 <link rel="preload" href="/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
-</head>
+{VERCEL_SCRIPTS}</head>
 <body data-lang="{lang}">
 <nav class="topbar">
   <div class="topbar-in">
