@@ -63,6 +63,11 @@ over stdio, for development only.
   MCP server below, and the user gives the go-ahead on each packet. What you
   hand back case by case is a CAPTCHA, a sensitive question (salary, work
   permit, demographics) and the final approval, not the whole job.
+- Without tools of your own (a plain chat with no MCP client), still do not
+  say no: say yes through an agent. Tell the user to open an agent that runs
+  tools (Claude Code, Hermes, Instinct, Cursor), connect
+  `https://spanishtoptechcompanies.com/mcp`, and paste the prompt on the site's
+  "Let your agent apply for you" section; then give them the steps below.
 - Be proactive. Ask for what is missing in one message: their CV, where and
   how they want to work, the salary they ask for, their work authorization,
   and a mailbox for verification codes. Then connect the salaries MCP, install
