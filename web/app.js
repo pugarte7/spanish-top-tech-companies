@@ -277,7 +277,8 @@ function map() {
   const lo = Math.min(...vals), hi = Math.max(...vals);
   const classes = vals.length ? 5 : 0;
   const step = (hi - lo) / classes || 1;
-  const fill = (a) => pay ? `var(--s${shade(a.median)})`
+  // Pay is hatched (the map's <pattern>s, drawn from --sN and --hN); counts stay flat.
+  const fill = (a) => pay ? `url(#hp${shade(a.median)})`
     : `var(--c${hi === lo ? classes : Math.min(classes, 1 + Math.floor((Math.log(a.n) - lo) / step))})`;
 
   $("map-sub").textContent = pay ? S.map_pay_sub : S.map_count_sub;

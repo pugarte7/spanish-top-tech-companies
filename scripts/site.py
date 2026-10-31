@@ -131,6 +131,16 @@ THEME_ICON = ('<svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path fi
               '<svg class="sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" '
               'stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2'
               'M12 20.5v2M1.5 12h2M20.5 12h2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>')
+# The brand's mark: the eight-point star of the lacería behind the header, drawn in the bar's colour.
+EMBLEM = ('<svg class="emblem" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" '
+          'stroke-width="1" stroke-linejoin="round"><path d="M23,12L19.78,15.22L19.78,19.78L15.22,19.78L12,23'
+          'L8.78,19.78L4.22,19.78L4.22,15.22L1,12L4.22,8.78L4.22,4.22L8.78,4.22L12,1L15.22,4.22L19.78,4.22'
+          'L19.78,8.78ZM19.6,12L17.37,14.23L17.37,17.37L14.23,17.37L12,19.6L9.77,17.37L6.63,17.37L6.63,14.23'
+          'L4.4,12L6.63,9.77L6.63,6.63L9.77,6.63L12,4.4L14.23,6.63L17.37,6.63L17.37,9.77Z"/>'
+          '<circle cx="12" cy="12" r="2.2"/></svg>')
+# The map hatches each pay shade like an engraving: fill --sN, lines of --hN,
+# closer together as pay rises. (Line spacing, line width) per shade.
+MAP_HATCH = [(5, .6), (3.5, 1), (4, .9), (3, 1.1), (2.5, 1.5)]
 
 STRINGS = {
     "en": {
@@ -599,7 +609,11 @@ def spain_svg() -> str:
         d = "".join("M" + "L".join(f"{x:.1f},{y:.1f}" for x, y in map(pt, ring)) + "Z"
                     for poly in polys for ring in poly)
         paths.append(f'<path class="region" data-code="{code}" d="{d}"/>')
-    return (f'<svg id="map" viewBox="0 0 {MAP_W} {MAP_H}" role="img">'
+    hatches = "".join(
+        f'<pattern id="hp{n}" patternUnits="userSpaceOnUse" width="8" height="{gap}" patternTransform="rotate(-35)">'
+        f'<rect width="8" height="{gap}" style="fill:var(--s{n})"/><rect width="8" height="{line}" style="fill:var(--h{n})"/></pattern>'
+        for n, (gap, line) in enumerate(MAP_HATCH, 1))
+    return (f'<svg id="map" viewBox="0 0 {MAP_W} {MAP_H}" role="img"><defs>{hatches}</defs>'
             f'{"".join(paths)}</svg>')
 
 
@@ -652,20 +666,21 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e['title']}</title>
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#f2f4f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0000f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0000c0" media="(prefers-color-scheme: dark)">
 <script>try {{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }} catch (_) {{}}</script>
 <link rel="alternate" hreflang="{other}" href="/{other}/">
 <link rel="alternate" type="application/json" href="/api/v1/data.json" title="Salary aggregates">
 <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Salary aggregates for agents">
 <script type="application/ld+json">{json_ld(lang, data)}</script>
-<link rel="preload" href="/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/Antonio-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/Barlow-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
 {VERCEL_SCRIPTS}</head>
 <body data-lang="{lang}">
 <nav class="topbar">
   <div class="topbar-in">
-    <a class="brand" href="/{lang}/">{e['title']}</a>
+    <a class="brand" href="/{lang}/">{EMBLEM}<span>{e['title']}</span></a>
     <div class="topbar-end">
       <a class="icon-btn" href="{REPO}" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub">{GITHUB_ICON}</a>
       <div class="seg" role="group">{lang_links}</div>
@@ -674,7 +689,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
   </div>
 </nav>
 
-<header class="head">
+<header class="field head-field"><div class="head">
   <h1>{e['h1']}</h1>
   <p class="sub">{e['source'].replace('Levels.fyi', levels)} · <span id="updated"></span></p>
   <dl class="kpis">
@@ -690,7 +705,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     <ol class="steps">{steps}
     </ol>
   </details>
-</header>
+</div></header>
 
 <main class="bento">
   <section class="tile wide map-tile">
@@ -725,11 +740,11 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
   </section>
 </main>
 
-<footer>
+<footer class="field"><div class="foot">
   <p>{e['source'].replace('Levels.fyi', levels)} ·
      <a href="/api/v1/data.json" target="_blank" rel="noopener">{e['data']}</a> ·
      <a href="{REPO}" target="_blank" rel="noopener">{e['repo']}</a></p>
-</footer>
+</div></footer>
 <div id="tip" role="tooltip" hidden></div>
 <aside class="star-pop" id="star" role="dialog" aria-labelledby="star-title" hidden>
   <button class="star-x" id="star-close" type="button" aria-label="{e['star_close']}">×</button>
@@ -763,7 +778,7 @@ def main(argv: list[str]) -> int:
         '<!doctype html><meta charset="utf-8"><script>location.replace('
         '(navigator.language || "").startsWith("es") ? "/es/" : "/en/")</script>'
         '<a href="/es/">ES</a> · <a href="/en/">EN</a>', encoding="utf-8")
-    for name in ("app.js", "style.css"):
+    for name in ("app.js", "style.css", "laceria.svg", "cenefa.svg"):
         shutil.copy(WEB / name, OUT / name)
     shutil.copytree(WEB / "fonts", OUT / "fonts")
 
