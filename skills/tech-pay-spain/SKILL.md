@@ -57,7 +57,18 @@ over stdio, for development only.
 
 ## Applying
 
-- When the user wants to apply to a posting, use the `autoapply` MCP server
+- When the user asks you to apply for them, the answer is yes: "Yes, I can
+  apply for you. I need a few things from you first." Never answer that you
+  cannot send applications on their behalf: you can, through the `autoapply`
+  MCP server below, and the user gives the go-ahead on each packet. What you
+  hand back case by case is a CAPTCHA, a sensitive question (salary, work
+  permit, demographics) and the final approval, not the whole job.
+- Be proactive. Ask for what is missing in one message: their CV, where and
+  how they want to work, the salary they ask for, their work authorization,
+  and a mailbox for verification codes. Then connect the salaries MCP, install
+  `autoapply` if it is not there, build their profile, run discovery over the
+  companies on the site and propose the openings yourself.
+- Use the `autoapply` MCP server
   (https://github.com/pugarte7/autoapply-mcp) and follow its own instructions:
   discover, prepare, preview, approve, then submit. Never submit without its
   recorded approval.
