@@ -46,6 +46,19 @@ SITE = os.environ.get("SITE_URL", "").rstrip("/")
 VERCEL_SCRIPTS = ('<script defer src="/_vercel/insights/script.js"></script>\n'
                   '<script defer src="/_vercel/speed-insights/script.js"></script>\n'
                   if os.environ.get("VERCEL") else "")
+# Written out, not from SITE_URL: readers paste it into their agent, so it is
+# the public address whatever host built the page.
+MCP_URL = "https://spanishtoptechcompanies.com/mcp"
+# The agents section and its prompt: (name, maker, logo in web/agents/, how
+# the logo fills its tile, tile colour). The first is the one shown before
+# the page's script runs. Logos are the ones the maintainer picked.
+AGENTS = [
+    ("Instinct", "Instinct", "instinct.jpg", "cover", "#ffffff"),
+    ("Hermes", "Nous Research", "hermes.png", "cover", "#ffffff"),
+    ("dots", "OpenAI", "dots.jpg", "wide", "#ffffff"),
+    ("Grok", "xAI", "grok.jpg", "mark", "#ffffff"),
+    ("Muse", "Meta", "muse.jpg", "cover", "#ffff00"),
+]
 
 # Region outlines, fetched once into .cache/ (gitignored is fine: it is
 # rebuilt from the pinned URL).
@@ -204,6 +217,32 @@ STRINGS = {
         "role_label": "Role", "mode_label": "Work",
         "mode_remote": "Remote", "mode_hybrid": "Hybrid", "mode_office": "Office",
         "any": "Any", "loading": "Loading…", "from": "From", "to": "To",
+        "agents_title": "Let your agent apply for you",
+        "agents_lede": "Connect it and apply to the companies on this page without filling in a form: "
+                       "it finds their openings, fills them in with your profile and sends the "
+                       "application. It saves you hours.",
+        "agents_call": "Let {name} apply for you",
+        "agents_pick": "Pick your agent",
+        "agents_s1_t": "Connect the salaries",
+        "agents_s1": "Paste this address into {name}'s connectors, so it knows which companies pay most.",
+        "agents_s2_t": "Give it your CV and what you want",
+        "agents_s2": "Only once. {name} installs what it needs on its own and asks you for a "
+                     "mailbox for verification codes.",
+        "agents_needs": "Your CV|Where and how you want to work|The salary you ask for|A mailbox for the codes",
+        "agents_s3_t": "Tell it to apply",
+        "agents_s3": "Paste this or ask in your own words. You only give the go-ahead.",
+        "agents_prompt": "Apply for me to openings at the companies on spanishtoptechcompanies.com "
+                         "that pay 60,000 € or more to someone with my experience in Madrid.",
+        "agents_examples_t": "For example:",
+        "agents_examples": "Apply to 5 backend openings in Barcelona|Which companies on the list "
+                           "haven't I applied to?|Prepare them and show me before sending",
+        "agents_note": "Sensitive questions, like salary or work permit, it always asks you. If a "
+                       "form asks for a CAPTCHA, it hands that application back for you to finish.",
+        "copy": "Copy", "copied": "Copied",
+        "agent_pop_title": "Let your agent apply for you",
+        "agent_pop_text": "Connect {name}: it finds these companies' openings, fills in the forms "
+                          "and sends them. It saves you hours.",
+        "agent_pop_go": "How to do it", "agent_pop_later": "Not now",
     },
     "es": {
         "title": "Spanish Top Tech Companies", "theme": "Modo claro u oscuro",
@@ -266,6 +305,33 @@ STRINGS = {
         "role_label": "Rol", "mode_label": "Modalidad",
         "mode_remote": "Remoto", "mode_hybrid": "Híbrido", "mode_office": "Presencial",
         "any": "Cualquiera", "loading": "Cargando…", "from": "Desde", "to": "Hasta",
+        "agents_title": "Deja que tu agente aplique por ti",
+        "agents_lede": "Conéctalo y aplica a las empresas de esta página sin tocar un formulario: "
+                       "busca sus ofertas, las rellena con tu perfil y envía la solicitud. "
+                       "Te ahorras horas.",
+        "agents_call": "Que {name} aplique por ti",
+        "agents_pick": "Elige tu agente",
+        "agents_s1_t": "Conecta los sueldos",
+        "agents_s1": "Pega esta dirección en los conectores de {name}. Así sabe qué empresas pagan más.",
+        "agents_s2_t": "Dale tu CV y lo que buscas",
+        "agents_s2": "Una sola vez. {name} instala lo que necesita por su cuenta y te pide un "
+                     "correo para los códigos de verificación.",
+        "agents_needs": "Tu CV|Dónde y cómo quieres trabajar|El sueldo que pides|Un correo para los códigos",
+        "agents_s3_t": "Dile que aplique",
+        "agents_s3": "Pégale esto o pídeselo con tus palabras. Tú solo das el visto bueno.",
+        "agents_prompt": "Aplica por mí a las ofertas de las empresas de spanishtoptechcompanies.com "
+                         "que pagan 60.000 € o más a alguien con mi experiencia en Madrid.",
+        "agents_examples_t": "Por ejemplo:",
+        "agents_examples": "Aplica a 5 ofertas de backend en Barcelona|¿A qué empresas de la "
+                           "lista no he aplicado?|Prepáralas y enséñamelas antes de enviar",
+        "agents_note": "Las preguntas delicadas, como sueldo o permiso de trabajo, siempre te las "
+                       "hace a ti. Si un formulario pide un CAPTCHA, te devuelve esa solicitud "
+                       "para que la termines tú.",
+        "copy": "Copiar", "copied": "Copiado",
+        "agent_pop_title": "Deja que tu agente aplique por ti",
+        "agent_pop_text": "Conecta {name}: busca las ofertas de estas empresas, rellena los "
+                          "formularios y los envía. Te ahorras horas.",
+        "agent_pop_go": "Cómo hacerlo", "agent_pop_later": "Ahora no",
     },
 }
 
@@ -650,6 +716,76 @@ def strings(lang: str, data: dict) -> dict:
     return out
 
 
+def agent_tile(i: int, cls: str = "agent-tile") -> str:
+    _, _, logo, fit, bg = AGENTS[i]
+    return (f'<span class="{cls}" style="background:{bg}">'
+            f'<img class="fit-{fit}" src="/agents/{logo}" alt="" decoding="async"></span>')
+
+
+def agent_stack() -> str:
+    """Every agent's logo stacked in one box; the script shows one at a time."""
+    tiles = "".join(agent_tile(i, "agent-tile on" if i == 0 else "agent-tile") for i in range(len(AGENTS)))
+    return f'<span class="agent-stack" aria-hidden="true">{tiles}</span>'
+
+
+def agents_section(e: dict) -> str:
+    name = f'<span class="agent-name">{html.escape(AGENTS[0][0])}</span>'
+    with_name = lambda k: e[k].replace("{name}", name)
+    tabs = "".join(
+        f'<button class="agent-tab" type="button" data-name="{html.escape(n)}" data-by="{html.escape(by)}" '
+        f'aria-label="{html.escape(n)}" aria-pressed="{str(i == 0).lower()}">{agent_tile(i)}</button>'
+        for i, (n, by, *_) in enumerate(AGENTS))
+    items = lambda k: "".join(f"<li>{x}</li>" for x in e[k].split("|"))
+    copy = lambda target: (f'<button class="copy-btn" type="button" data-copy="{target}">'
+                           f'{e["copy"]}</button>')
+    return f"""
+  <section class="tile wide agents" id="agents" aria-labelledby="agents-title">
+    <h2 id="agents-title" tabindex="-1">{e['agents_title']}</h2>
+    <p class="lede">{e['agents_lede']}</p>
+    <div class="agents-grid">
+      <div class="agents-stage field">
+        {agent_stack()}
+        <div><p class="agent-call">{with_name('agents_call')}</p><p class="agent-by" id="agent-by">{html.escape(AGENTS[0][1])}</p></div>
+        <div class="agent-tabs" role="group" aria-label="{e['agents_pick']}">{tabs}</div>
+      </div>
+      <div class="agents-how">
+        <ol class="agent-steps">
+          <li><span class="step-n" aria-hidden="true">1</span><div>
+            <h3>{e['agents_s1_t']}</h3><p>{with_name('agents_s1')}</p>
+            <div class="copy-row"><code id="agent-mcp">{MCP_URL.replace('/mcp', '<wbr>/mcp')}</code>{copy('agent-mcp')}</div>
+          </div></li>
+          <li><span class="step-n" aria-hidden="true">2</span><div>
+            <h3>{e['agents_s2_t']}</h3><p>{with_name('agents_s2')}</p>
+            <ul class="agent-needs">{items('agents_needs')}</ul>
+          </div></li>
+          <li><span class="step-n" aria-hidden="true">3</span><div>
+            <h3>{e['agents_s3_t']}</h3><p>{e['agents_s3']}</p>
+            <div class="copy-row"><blockquote id="agent-prompt">{e['agents_prompt']}</blockquote>{copy('agent-prompt')}</div>
+            <p class="agent-ex-t">{e['agents_examples_t']}</p>
+            <ul class="agent-examples">{items('agents_examples')}</ul>
+          </div></li>
+        </ol>
+        <p class="agents-note">{e['agents_note']}</p>
+      </div>
+    </div>
+  </section>"""
+
+
+def agent_pop(e: dict) -> str:
+    name = f'<b class="agent-name">{html.escape(AGENTS[0][0])}</b>'
+    bars = "".join('<i class="on"></i>' if i == 0 else "<i></i>" for i in range(len(AGENTS)))
+    return f"""<aside class="star-pop agent-pop field" id="agent-pop" role="dialog" aria-labelledby="agent-pop-title" hidden>
+  <button class="star-x" id="agent-pop-close" type="button" aria-label="{e['star_close']}">×</button>
+  <div class="agent-pop-head">{agent_stack()}<p class="star-title" id="agent-pop-title">{e['agent_pop_title']}</p></div>
+  <p class="star-text">{e['agent_pop_text'].replace('{name}', name)}</p>
+  <span class="agent-bars" aria-hidden="true">{bars}</span>
+  <div class="agent-pop-actions">
+    <a class="agent-pop-go" id="agent-pop-go" href="#agents">{e['agent_pop_go']}</a>
+    <button class="agent-pop-later" id="agent-pop-later" type="button">{e['agent_pop_later']}</button>
+  </div>
+</aside>"""
+
+
 def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     s = strings(lang, data)
     e = {k: html.escape(v) for k, v in s.items()}
@@ -740,6 +876,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     <div class="table-wrap"><table id="companies"></table></div>
     <button class="more" id="more" hidden></button>
   </section>
+{agents_section(e)}
 </main>
 
 <footer class="field"><div class="foot">
@@ -754,6 +891,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
   <p class="star-text">{e['star_text']}</p>
   <a class="star-btn" id="star-go" href="{REPO}" target="_blank" rel="noopener" aria-label="{e['star_button']}" title="{e['star_button']}">{STAR_ICON}</a>
 </aside>
+{agent_pop(e)}
 <script>window.S={json.dumps(s, ensure_ascii=False)};window.DATA_V="{data_version}";</script>
 <script src="/app.js?v={asset_version("app.js")}"></script>
 </body>
@@ -783,6 +921,7 @@ def main(argv: list[str]) -> int:
     for name in ("app.js", "style.css", "laceria.svg", "cenefa.svg"):
         shutil.copy(WEB / name, OUT / name)
     shutil.copytree(WEB / "fonts", OUT / "fonts")
+    shutil.copytree(WEB / "agents", OUT / "agents")
 
     for name, text in files.items():
         path = OUT / "api" / "v1" / name

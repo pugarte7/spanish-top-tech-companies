@@ -241,9 +241,10 @@ test("an open row shows how total pay splits, adding up to 100%", async ({ page 
 
 test("links that leave the page open in a new tab", async ({ page, context }) => {
   await open(page);
-  // Every link except the brand and the language switch (hreflang).
+  // Every link except the brand, the language switch (hreflang) and links
+  // within the page.
   const stay = await page.locator("a[href]").evaluateAll((as) => as
-    .filter((a) => !a.matches(".brand, [hreflang]") && a.target !== "_blank")
+    .filter((a) => !a.matches(".brand, [hreflang], [href^='#']") && a.target !== "_blank")
     .map((a) => a.outerHTML.slice(0, 80)));
   expect(stay).toEqual([]);
 
@@ -256,6 +257,8 @@ test("links that leave the page open in a new tab", async ({ page, context }) =>
 test.describe("star prompt", () => {
   test.beforeEach(async ({ page }) => {
     await page.clock.install();
+    // The agents card comes first and would hold the star back.
+    await page.addInitScript(() => localStorage.setItem("agent-prompt", "done"));
   });
   const wait = (page) => page.clock.fastForward(41_000);
 
@@ -316,6 +319,98 @@ test.describe("star prompt", () => {
     await expect(rows(page).first()).toBeVisible();
     await wait(page);
     await expect(page.locator("#star")).toBeHidden();
+  });
+});
+
+test.describe("agents", () => {
+  const MCP = "https://spanishtoptechcompanies.com/mcp";
+  const tabs = (page) => page.locator(".agent-tab");
+  const pressed = (page) => page.locator('.agent-tab[aria-pressed="true"]');
+  test.beforeEach(async ({ page }) => {
+    await page.clock.install();
+  });
+
+  test("the section shows every agent's logo and turns to the next", async ({ page }) => {
+    await open(page);
+    await expect(tabs(page)).toHaveCount(5);
+    for (const img of await page.locator("#agents img").all())
+      await expect.poll(() => img.evaluate((el) => el.complete && el.naturalWidth > 0)).toBe(true);
+    await expect(pressed(page)).toHaveAttribute("data-name", "Instinct");
+    await expect(page.locator("#agents .agent-call")).toHaveText("Que Instinct aplique por ti");
+    await page.clock.fastForward(3_100);
+    await expect(pressed(page)).toHaveAttribute("data-name", "Hermes");
+    await expect(page.locator("#agents .agent-call")).toHaveText("Que Hermes aplique por ti");
+    await expect(page.locator("#agent-by")).toHaveText("Nous Research");
+  });
+
+  test("picking an agent stops the turn", async ({ page }) => {
+    await open(page);
+    await page.locator('.agent-tab[data-name="Grok"]').click();
+    await page.clock.fastForward(10_000);
+    await expect(pressed(page)).toHaveAttribute("data-name", "Grok");
+    await expect(page.locator(".agent-stack .agent-tile.on")).toHaveCount(2);
+  });
+
+  test("nothing turns for readers who ask for less motion", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await open(page);
+    await page.clock.fastForward(10_000);
+    await expect(pressed(page)).toHaveAttribute("data-name", "Instinct");
+  });
+
+  test("copy puts the MCP address on the clipboard", async ({ page, context }) => {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await open(page);
+    await page.locator('.copy-btn[data-copy="agent-mcp"]').click();
+    await expect(page.locator('.copy-btn[data-copy="agent-mcp"]')).toHaveText("Copiado");
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(MCP);
+  });
+
+  test("the card appears after a while and leads to the section", async ({ page }) => {
+    await open(page);
+    await expect(page.locator("#agent-pop")).toBeHidden();
+    await page.clock.fastForward(16_000);
+    await expect(page.locator("#agent-pop")).toBeVisible();
+    await page.locator("#agent-pop-go").click();
+    await expect(page.locator("#agent-pop")).toBeHidden();
+    await expect(page.locator("#agents-title")).toBeInViewport();
+    await expect(page.locator("#agents-title")).toBeFocused();
+    await page.reload();
+    await expect(rows(page).first()).toBeVisible();
+    await page.clock.fastForward(16_000);
+    await expect(page.locator("#agent-pop")).toBeHidden();
+  });
+
+  test("Not now hides the card until the next day", async ({ page }) => {
+    await open(page);
+    await page.clock.fastForward(16_000);
+    await page.locator("#agent-pop-later").click();
+    await expect(page.locator("#agent-pop")).toBeHidden();
+    await page.reload();
+    await expect(rows(page).first()).toBeVisible();
+    await page.clock.fastForward(16_000);
+    await expect(page.locator("#agent-pop")).toBeHidden();
+    await page.clock.fastForward(24 * 3600_000);
+    await page.reload();
+    await expect(rows(page).first()).toBeVisible();
+    await page.clock.fastForward(16_000);
+    await expect(page.locator("#agent-pop")).toBeVisible();
+  });
+
+  test("the star card waits while the agents card is open", async ({ page }) => {
+    await open(page);
+    await page.clock.fastForward(41_000);
+    await expect(page.locator("#agent-pop")).toBeVisible();
+    await expect(page.locator("#star")).toBeHidden();
+    await page.locator("#agent-pop-close").click();
+    await page.clock.fastForward(2_100);
+    await expect(page.locator("#star")).toBeVisible();
+  });
+
+  test("the English page asks in English", async ({ page }) => {
+    await open(page, "/en/");
+    await expect(page.locator("#agents-title")).toHaveText("Let your agent apply for you");
+    await expect(page.locator("#agents .agent-call")).toHaveText("Let Instinct apply for you");
   });
 });
 
