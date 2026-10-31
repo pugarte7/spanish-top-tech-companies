@@ -351,3 +351,9 @@ test("the top bar is one row on a phone @mobile", async ({ page }) => {
   await open(page);
   expect((await page.locator(".topbar").boundingBox()).height).toBeLessThan(60);
 });
+
+test("the top bar scrolls away on a phone @mobile", async ({ page }) => {
+  await open(page);
+  await page.locator("#companies-card").scrollIntoViewIfNeeded();
+  expect((await page.locator(".topbar").boundingBox()).y).toBeLessThan(0);
+});

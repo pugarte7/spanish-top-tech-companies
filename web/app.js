@@ -277,9 +277,9 @@ function map() {
   const lo = Math.min(...vals), hi = Math.max(...vals);
   const classes = vals.length ? 5 : 0;
   const step = (hi - lo) / classes || 1;
-  // Pay is hatched (the map's <pattern>s, drawn from --sN and --hN); counts stay flat.
+  // Both views are hatched: the map's <pattern>s #hpN (pay) and #hcN (counts).
   const fill = (a) => pay ? `url(#hp${shade(a.median)})`
-    : `var(--c${hi === lo ? classes : Math.min(classes, 1 + Math.floor((Math.log(a.n) - lo) / step))})`;
+    : `url(#hc${hi === lo ? classes : Math.min(classes, 1 + Math.floor((Math.log(a.n) - lo) / step))})`;
 
   $("map-sub").textContent = pay ? S.map_pay_sub : S.map_count_sub;
   $("map-metric").querySelectorAll("button").forEach((b) => {
@@ -313,7 +313,7 @@ function map() {
   const max = ranked.length ? value(ranked[0][1]) : 1;
   const ol = $("ranking");
   ol.innerHTML = ranked.map(([code, a]) =>
-    `<li data-code="${code}"${pay && a.median >= D.threshold ? ' class="hi"' : ""}>` +
+    `<li data-code="${code}"${!pay || a.median >= D.threshold ? ' class="hi"' : ""}>` +
     `<span>${esc(regionName(code))}<span class="n">${pay ? a.n : money(a.median)}</span></span>` +
     `<span class="v">${pay ? money(a.median) : a.n.toLocaleString(LOCALE)}</span>` +
     `<span class="bar"><i style="width:${(value(a) / max) * 100}%"></i></span></li>`).join("");
