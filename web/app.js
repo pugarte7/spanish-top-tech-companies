@@ -536,9 +536,9 @@ function companies() {
 // --- star prompt ----------------------------------------------------------------
 // After a while on the page, a small card asks for a GitHub star. The star
 // opens the repo, where the reader stars it themselves: a page cannot star a
-// repo for someone. Closing it waits a month; a click, never again.
+// repo for someone. Closing it waits a day; a click, never again.
 const STAR_DELAY_MS = 40_000;
-const STAR_SNOOZE_DAYS = 30;
+const STAR_SNOOZE_DAYS = 1;
 // A new key since the blue redesign, so a reader who closed the old card sees
 // the new one once. Whoever starred from the old card is still never asked.
 const STAR_KEY = "star-prompt-2";
