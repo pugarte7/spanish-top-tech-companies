@@ -397,21 +397,25 @@ footer { margin-top: 48px; color: var(--field-muted); font-size: 12px; line-heig
 footer p { margin: 4px 0; }
 footer a { color: var(--field-ink); }
 
-/* Star prompt: it floats, so it is the one card with a shadow. */
+/* Star prompt: a piece of the blue field, lacería and all. It floats, so it
+   is the one card with a shadow. After .field, so it stays fixed. */
 .star-pop { position: fixed; z-index: 25; width: 320px; max-width: calc(100vw - 32px);
             right: max(20px, env(safe-area-inset-right, 0px)); bottom: max(20px, env(safe-area-inset-bottom, 0px));
-            padding: 16px 20px; border-radius: var(--radius-card); background: var(--surface); color: var(--text);
-            border: 1px solid var(--border); box-shadow: var(--float); animation: star-in .25s ease-out; }
+            padding: 18px 20px 20px; border-radius: var(--radius-card); border: 1px solid var(--field-line);
+            box-shadow: var(--float); animation: star-in .25s ease-out; }
+/* The card is small and nearly all text, so its lacería is lighter. */
+.star-pop::before { opacity: .55; }
 @keyframes star-in { from { opacity: 0; transform: translateY(12px); } }
-.star-title { margin: 0 24px 4px 0; font: 300 24px/28px var(--display); }
-.star-text { margin: 0 0 12px; color: var(--muted); }
+.star-title { margin: 0 28px 6px 0; font: 300 28px/32px var(--display); color: #ffffff; }
+.star-text { margin: 0 0 16px; color: var(--field-soft); }
+/* The one action: a flat light square with GitHub's star in the field's blue. */
 .star-btn { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto;
-            border: 1px solid var(--control); border-radius: var(--radius-control); color: var(--text); }
-.star-btn:hover { border-color: var(--text); background: var(--raised); }
+            border-radius: var(--radius-control); background: var(--field-ink); color: var(--field); }
+.star-btn:hover { background: #ffffff; }
 .star-btn svg { width: 24px; height: 24px; }
 .star-x { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: 0; border-radius: 2px;
-          background: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; }
-.star-x:hover { background: var(--raised); color: var(--text); }
+          background: none; color: var(--field-muted); font-size: 20px; line-height: 1; cursor: pointer; }
+.star-x:hover { background: rgba(242, 242, 242, .16); color: #ffffff; }
 @media (prefers-reduced-motion: reduce) { .star-pop { animation: none; } }
 
 #tip { position: fixed; z-index: 30; pointer-events: none; font-size: 12px; line-height: 18px;

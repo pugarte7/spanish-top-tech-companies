@@ -748,7 +748,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
      <a href="{REPO}" target="_blank" rel="noopener">{e['repo']}</a></p>
 </div></footer>
 <div id="tip" role="tooltip" hidden></div>
-<aside class="star-pop" id="star" role="dialog" aria-labelledby="star-title" hidden>
+<aside class="star-pop field" id="star" role="dialog" aria-labelledby="star-title" hidden>
   <button class="star-x" id="star-close" type="button" aria-label="{e['star_close']}">×</button>
   <p class="star-title" id="star-title">{e['star_title']}</p>
   <p class="star-text">{e['star_text']}</p>

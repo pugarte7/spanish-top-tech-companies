@@ -282,6 +282,20 @@ test.describe("star prompt", () => {
     await expect(page.locator("#star")).toBeHidden();
   });
 
+  test("the redesigned card asks again those who only closed the old one", async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("star-prompt", String(Date.now() + 30 * 864e5)));
+    await open(page);
+    await wait(page);
+    await expect(page.locator("#star")).toBeVisible();
+  });
+
+  test("whoever starred from the old card is never asked", async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("star-prompt", "starred"));
+    await open(page);
+    await wait(page);
+    await expect(page.locator("#star")).toBeHidden();
+  });
+
   test("closing it hides it on later visits too", async ({ page }) => {
     await open(page);
     await wait(page);
