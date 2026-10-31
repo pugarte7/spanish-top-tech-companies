@@ -61,6 +61,28 @@ over stdio, for development only.
   (https://github.com/pugarte7/autoapply-mcp) and follow its own instructions:
   discover, prepare, preview, approve, then submit. Never submit without its
   recorded approval.
+- If it is not connected, install it (Node.js 22.5 or newer):
+
+  ```bash
+  git clone https://github.com/pugarte7/autoapply-mcp
+  cd autoapply-mcp && npm install && npm run build
+  npm install playwright && npx playwright install chromium   # assisted and auto modes
+  npm install imapflow                                         # reading verification codes
+  npm run init                                                 # creates ~/.autoapply from the examples
+  ```
+
+  Then have the user fill `~/.autoapply/profile.json`, `campaign.json` and
+  `companies.json`, run `node dist/cli/doctor.js --probe`, and register the
+  server in the MCP client over stdio:
+
+  ```json
+  { "mcpServers": { "autoapply": {
+      "command": "node", "args": ["/absolute/path/to/autoapply-mcp/dist/index.js"],
+      "env": { "AUTOAPPLY_OTP_IMAP_USER": "...", "AUTOAPPLY_OTP_IMAP_PASSWORD": "..." } } } }
+  ```
+
+  A fresh install cannot contact an employer: `submission.mode` starts at
+  `manual` and `submission.allowedCompanies` empty.
 - Before the first submission, have the user link a mailbox for verification
   codes. Greenhouse emails a one-time code and Workday a verification link,
   both bound to the submit that requested them, so a run has to read them

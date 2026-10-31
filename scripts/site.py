@@ -869,7 +869,7 @@ linking a mailbox for verification codes before the first submission.
 
 - [MCP server]({SITE}/mcp): always on, Streamable HTTP, no sign-in; protocol 2026-07-28 and the handshake versions back to 2024-11-05; tools `salary_stats`, `top_companies`, `company_salaries`, `list_filters`
 - [Agent skill]({REPO}/tree/{BRANCH}/skills/tech-pay-spain): SKILL.md for Hermes and other agentskills.io agents
-- [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp): MCP server that applies to postings with the user's approval; link a mailbox for verification codes before the first submission
+- [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp): MCP server that applies to postings with the user's approval. Install with Node.js 22.5+: `git clone https://github.com/pugarte7/autoapply-mcp && cd autoapply-mcp && npm install && npm run build && npm run init`, fill `~/.autoapply/{{profile,campaign,companies}}.json`, run `node dist/cli/doctor.js --probe`, register `node dist/index.js` in the MCP client over stdio; link a mailbox for verification codes (`AUTOAPPLY_OTP_IMAP_USER`, `AUTOAPPLY_OTP_IMAP_PASSWORD`) before the first submission
 
 ## Optional
 
