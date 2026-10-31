@@ -138,8 +138,9 @@ EMBLEM = ('<svg class="emblem" viewBox="0 0 24 24" aria-hidden="true" fill="none
           'L19.78,8.78ZM19.6,12L17.37,14.23L17.37,17.37L14.23,17.37L12,19.6L9.77,17.37L6.63,17.37L6.63,14.23'
           'L4.4,12L6.63,9.77L6.63,6.63L9.77,6.63L12,4.4L14.23,6.63L17.37,6.63L17.37,9.77Z"/>'
           '<circle cx="12" cy="12" r="2.2"/></svg>')
-# The map hatches each pay shade like an engraving: fill --sN, lines of --hN,
-# closer together as pay rises. (Line spacing, line width) per shade.
+# The map hatches each shade like an engraving, lines closer together as the
+# value rises: pay fills --sN with lines of --hN (#hpN), counts fill --cN with
+# lines of --chN (#hcN). (Line spacing, line width) per shade.
 MAP_HATCH = [(5, .6), (3.5, 1), (4, .9), (3, 1.1), (2.5, 1.5)]
 
 STRINGS = {
@@ -610,8 +611,9 @@ def spain_svg() -> str:
                     for poly in polys for ring in poly)
         paths.append(f'<path class="region" data-code="{code}" d="{d}"/>')
     hatches = "".join(
-        f'<pattern id="hp{n}" patternUnits="userSpaceOnUse" width="8" height="{gap}" patternTransform="rotate(-35)">'
-        f'<rect width="8" height="{gap}" style="fill:var(--s{n})"/><rect width="8" height="{line}" style="fill:var(--h{n})"/></pattern>'
+        f'<pattern id="{pid}{n}" patternUnits="userSpaceOnUse" width="8" height="{gap}" patternTransform="rotate(-35)">'
+        f'<rect width="8" height="{gap}" style="fill:var(--{ground}{n})"/><rect width="8" height="{line}" style="fill:var(--{lines}{n})"/></pattern>'
+        for pid, ground, lines in (("hp", "s", "h"), ("hc", "c", "ch"))
         for n, (gap, line) in enumerate(MAP_HATCH, 1))
     return (f'<svg id="map" viewBox="0 0 {MAP_W} {MAP_H}" role="img"><defs>{hatches}</defs>'
             f'{"".join(paths)}</svg>')

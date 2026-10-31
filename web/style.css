@@ -39,8 +39,10 @@
   --s1: #e2e2ea; --s2: #c9c9d6; --s3: #a8a8ff; --s4: #6b6bff; --s5: #0000c4;
   --s1-ink: #0000f2; --s2-ink: #0000f2; --s3-ink: #0000c4; --s4-ink: #000040; --s5-ink: #f2f2f2;
   --h1: #cdcddb; --h2: #a3a3bb; --h3: #6b6bff; --h4: #2e2ef7; --h5: #00009a;
-  /* Counts are not pay, so they get no blue. */
-  --c1: #e2e2ea; --c2: #c4c4d4; --c3: #9a9ab4; --c4: #6a6a8a; --c5: #3a3a5a;
+  /* Counts run light to dark blue and are hatched too, so the map keeps one
+     look in both views; the toggle and the legend say which one is shown. */
+  --c1: #e3e3ff; --c2: #c4c4ff; --c3: #8f8fff; --c4: #4d4dff; --c5: #0000c4;
+  --ch1: #c8c8f0; --ch2: #a0a0f0; --ch3: #6b6bff; --ch4: #2e2ef7; --ch5: #00009a;
   --float: 0 8px 24px rgba(0, 0, 60, .14);
   --radius-card: 4px; --radius-control: 3px;
   --gap: 16px; --pad: 24px; --control-height: 36px;
@@ -55,7 +57,8 @@
     --s1: #1a1a3a; --s2: #2a2a55; --s3: #2e2ec8; --s4: #5c5cff; --s5: #a8a8ff;
     --s1-ink: #ececff; --s2-ink: #ececff; --s3-ink: #ffffff; --s4-ink: #ffffff; --s5-ink: #05051c;
     --h1: #262648; --h2: #3c3c6c; --h3: #5c5cff; --h4: #9c9cff; --h5: #e0e0ff;
-    --c1: #1c1c34; --c2: #33334f; --c3: #55557a; --c4: #8a8aae; --c5: #d0d0ec;
+    --c1: #1a1a3a; --c2: #23236a; --c3: #2e2ec8; --c4: #5c5cff; --c5: #a8a8ff;
+    --ch1: #262648; --ch2: #34348a; --ch3: #5c5cff; --ch4: #9c9cff; --ch5: #e0e0ff;
     --float: 0 8px 24px rgba(0, 0, 0, .6);
   }
 }
@@ -68,7 +71,8 @@
   --s1: #1a1a3a; --s2: #2a2a55; --s3: #2e2ec8; --s4: #5c5cff; --s5: #a8a8ff;
   --s1-ink: #ececff; --s2-ink: #ececff; --s3-ink: #ffffff; --s4-ink: #ffffff; --s5-ink: #05051c;
   --h1: #262648; --h2: #3c3c6c; --h3: #5c5cff; --h4: #9c9cff; --h5: #e0e0ff;
-  --c1: #1c1c34; --c2: #33334f; --c3: #55557a; --c4: #8a8aae; --c5: #d0d0ec;
+  --c1: #1a1a3a; --c2: #23236a; --c3: #2e2ec8; --c4: #5c5cff; --c5: #a8a8ff;
+  --ch1: #262648; --ch2: #34348a; --ch3: #5c5cff; --ch4: #9c9cff; --ch5: #e0e0ff;
   --float: 0 8px 24px rgba(0, 0, 0, .6);
 }
 * { box-sizing: border-box; }
@@ -427,13 +431,15 @@ footer a { color: var(--field-ink); }
   .map-grid { grid-template-columns: 1fr; gap: 24px; }
 }
 @media (max-width: 640px) {
-  :root { --pad: 16px; }
-  /* One row, so the sticky bar takes 48px of a phone's screen, not 90. */
-  .topbar-in { height: 48px; gap: 8px; padding-right: 8px; }
+  :root { --pad: 12px; }
+  /* One row of 48px, and it scrolls away with the page: a phone's screen is
+     short and nothing in the bar is needed halfway down. */
+  .topbar { position: static; }
+  .topbar-in { height: 48px; gap: 8px; padding-right: 4px; }
   .brand { gap: 8px; font-size: 13px; letter-spacing: .12em; }
   .brand .emblem { width: 18px; height: 18px; }
   .topbar-end { gap: 2px; flex: none; }
-  .head { padding-top: 54px; padding-bottom: 40px; }
+  .head { padding-top: 44px; padding-bottom: 32px; }
   .kpis div { padding: 12px 16px; }
   .kpis .lead dd { font-size: 44px; line-height: 46px; }
   /* The companies table fits a phone: the links move into the open row and
@@ -443,7 +449,8 @@ footer a { color: var(--field-ink); }
   #companies th { white-space: normal; line-height: 16px; padding: 8px 6px; }
   #companies td { padding: 12px 6px; }
   #companies td.chev, #companies th.chev { width: 12px; padding-left: 0; padding-right: 0; }
-  .tile { padding: 20px 16px; }
+  .tile { padding: 18px 12px; }
+  .bento { gap: 12px; padding-top: 24px; }
   h2 { font-size: 26px; line-height: 30px; }
   input[type=search] { width: 100%; }
   tr.det td { padding-left: 6px; }
