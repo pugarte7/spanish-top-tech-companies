@@ -472,6 +472,14 @@ test("the top bar is one row on a phone @mobile", async ({ page }) => {
   expect((await page.locator(".topbar").boundingBox()).height).toBeLessThan(60);
 });
 
+test("the tab shows the tile favicon", async ({ page }) => {
+  await open(page);
+  for (const sel of ['link[rel=icon][type="image/svg+xml"]', 'link[rel=icon][sizes="32x32"]', "link[rel=apple-touch-icon]"]) {
+    const href = await page.locator(sel).getAttribute("href");
+    expect((await page.request.get(href)).status(), href).toBe(200);
+  }
+});
+
 test("the top bar scrolls away on a phone @mobile", async ({ page }) => {
   await open(page);
   await page.locator("#companies-card").scrollIntoViewIfNeeded();

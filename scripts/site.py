@@ -811,6 +811,9 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 <link rel="alternate" type="application/json" href="/api/v1/data.json" title="Salary aggregates">
 <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Salary aggregates for agents">
 <script type="application/ld+json">{json_ld(lang, data)}</script>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/fonts/Antonio-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/Barlow-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
@@ -918,7 +921,10 @@ def main(argv: list[str]) -> int:
         '<!doctype html><meta charset="utf-8"><script>location.replace('
         '(navigator.language || "").startsWith("es") ? "/es/" : "/en/")</script>'
         '<a href="/es/">ES</a> · <a href="/en/">EN</a>', encoding="utf-8")
-    for name in ("app.js", "style.css", "laceria.svg", "cenefa.svg"):
+    # The favicon is a tile of the lacería with an S: favicon.svg for browsers that
+    # take SVG, the .ico for the rest, and a square PNG for a phone's home screen.
+    for name in ("app.js", "style.css", "laceria.svg", "cenefa.svg",
+                 "favicon.svg", "favicon.ico", "apple-touch-icon.png"):
         shutil.copy(WEB / name, OUT / name)
     shutil.copytree(WEB / "fonts", OUT / "fonts")
     shutil.copytree(WEB / "agents", OUT / "agents")
