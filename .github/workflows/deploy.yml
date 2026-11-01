@@ -14,7 +14,7 @@ name: deploy
 
 on:
   push:
-    branches: [website]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:

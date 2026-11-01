@@ -2,7 +2,7 @@ name: weekly
 
 on:
   push:
-    branches: [website]
+    branches: [main]
     paths: [README.md, "data/**"]
   schedule:
     - cron: "0 12 * * 2"   # Tuesdays 12:00 UTC: did Monday's refresh land?
@@ -40,7 +40,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: website
           fetch-depth: 0
 
       - name: Open an issue if no refresh landed this week
