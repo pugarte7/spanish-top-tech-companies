@@ -1,7 +1,7 @@
-// api/mcp.js and scripts/mcp_server.py must answer alike, over stdio and over
-// HTTP, for both eras of the protocol. Run after site.py:
+// The MCP server (api/mcp.js) answers each call as the protocol and the data
+// say, over stdio (scripts/mcp-stdio.mjs) and over HTTP. Run after site.py:
 //     node tests/mcp.test.mjs
-import { execFileSync, spawn } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import mcp, { respond } from "../api/mcp.js";
 
@@ -31,10 +31,13 @@ const calls = [
   tool("company_salaries", { name: "glovo", role: "software-engineer" }),
   tool("company_salaries", { name: "glovo", region: "CT", years: "5-7" }),
   tool("company_salaries", { name: "a" }),
+  tool("company_salaries", {}),
+  tool("salary_stats", { role: "  ", region: "" }),
   tool("salary_stats", { role: "astronaut" }),
   tool("salary_stats", { years: "many" }),
   tool("list_filters", {}),
   tool("no_such_tool", {}),
+  tool("constructor", {}),
   tool("salary_stats", "x"),
   { method: "tools/call", params: [] },
   { method: "nope" },
@@ -49,41 +52,78 @@ const calls = [
 const odd = ['"hello"', "[]", JSON.stringify([calls[3], { jsonrpc: "2.0", method: "notifications/initialized" }]), "{"];
 const lines = [...calls.map((c) => JSON.stringify(c)), ...odd];
 
-// Text content is the JSON of structuredContent; compare it parsed, not as spacing.
-const canon = (r) => {
-  for (const one of [r].flat()) {
-    for (const c of one?.result?.content ?? []) {
-      try { c.text = JSON.parse(c.text); } catch { /* an error message */ }
-    }
-  }
-  return JSON.stringify(r);
-};
 let failed = 0;
 const report = (label, ok, detail = "") => {
   if (!ok) failed++;
   console.log(`  ${ok ? "pass" : "FAIL"}  ${label}${ok ? "" : ` ${detail}`}`);
 };
 
-const py = execFileSync("python3", ["scripts/mcp_server.py", "--data", DATA], { input: lines.join("\n") + "\n" })
+// --- stdio --------------------------------------------------------------------
+const replies = execFileSync("node", ["scripts/mcp-stdio.mjs", DATA], { input: lines.join("\n") + "\n" })
   .toString().trim().split("\n").map((l) => JSON.parse(l));
-report(`stdio answers all ${lines.length} lines`, py.length === lines.length, `(got ${py.length})`);
+report(`stdio answers all ${lines.length} lines`, replies.length === lines.length, `(got ${replies.length})`);
+
+// What each call must come back with. `out` is the tool's structured result.
+const out = (r) => r.result?.structuredContent;
+const toolError = (r) => r.result?.isError === true;
+const code = (r) => r.error?.code;
+const expected = [
+  ["initialize keeps a known version", (r) => r.result.protocolVersion === "2025-06-18" && r.result.instructions],
+  ["initialize offers the newest handshake version", (r) => r.result.protocolVersion === "2025-11-25"],
+  ["tools/list lists the four tools", (r) => r.result.tools.map((t) => t.name).join() ===
+    "salary_stats,top_companies,company_salaries,list_filters"],
+  ["ping", (r) => JSON.stringify(r.result) === "{}"],
+  ["all of Spain", (r) => out(r).result.people === data.cells["||"].n],
+  ["names resolve and years are bucketed", (r) => JSON.stringify(out(r).selection) ===
+    JSON.stringify({ role: "software-engineer", region: "CT", years: "5-7" })],
+  ["a small selection is withheld, not guessed", (r) => out(r).result === null && /widen/.test(out(r).reason)],
+  ["years as a string of digits", (r) => out(r).selection.years === "5-7"],
+  ["5.9 years is refused", toolError],
+  ["true is not a number of years", toolError],
+  ["top companies honour the limit", (r) => out(r).result.length <= 5 && out(r).selection.region === "MD"],
+  ["search narrows by name", (r) => out(r).result.every((c) => /glo/i.test(c.company))],
+  ["a limit that is not a number is refused", toolError],
+  ["a null limit is the default", (r) => out(r).result.length <= 20],
+  ["3.0 is a whole limit", (r) => out(r).result.length <= 3],
+  ["one company", (r) => out(r).company === "Glovo" && out(r).groups.length > 0],
+  ["a company by role keeps to that role", (r) => out(r).groups.every((g) => g.role === "software-engineer")],
+  ["a company by region and years", (r) => out(r).groups.every((g) => g.region === "CT" && g.years === "5-7")],
+  ["an ambiguous name lists the matches", (r) => toolError(r) && /several companies match/.test(r.result.content[0].text)],
+  ["a company needs a name", (r) => toolError(r) && /name is required/.test(r.result.content[0].text)],
+  ["a blank role is all roles", (r) => out(r).selection.role === null && out(r).result.people === data.cells["||"].n],
+  ["an unknown role is a tool error", toolError],
+  ["unreadable years are a tool error", toolError],
+  ["list_filters", (r) => out(r).roles.length === data.roles.length && out(r).data_as_of],
+  ["an unknown tool is invalid params", (r) => code(r) === -32602],
+  ["a prototype name is no tool", (r) => code(r) === -32602],
+  ["arguments must be an object", (r) => code(r) === -32602],
+  ["params must be an object", (r) => code(r) === -32602],
+  ["an unknown method", (r) => code(r) === -32601],
+  ["modern discovery", (r) => r.result.supportedVersions.includes("2026-07-28") && r.result.instructions],
+  ["modern tools/list can be cached", (r) => r.result.resultType === "complete" && r.result.ttlMs > 0],
+  ["modern call", (r) => out(r).selection.role === "data-scientist" && r.result.resultType === "complete"],
+  ["modern call, refused years", toolError],
+  ["modern ping is not a method", (r) => code(r) === -32601],
+  ["an unsupported modern version", (r) => code(r) === -32022],
+  ["odd line: a string", (r) => code(r) === -32600],
+  ["odd line: an empty batch", (r) => code(r) === -32600],
+  ["odd line: a batch answers its requests only", (r) => Array.isArray(r) && r.length === 1],
+  ["odd line: bad JSON", (r) => code(r) === -32700],
+];
 lines.forEach((line, i) => {
-  let js;
-  try { js = respond(data, JSON.parse(line)); } catch { js = { jsonrpc: "2.0", id: null, error: { code: -32700, message: "parse error" } }; }
-  const label = i < calls.length ? `stdio ${calls[i].method} ${calls[i].params?.name ?? ""}` : `stdio odd line ${line.slice(0, 24)}`;
-  report(label, canon(js) === canon(py[i]), `\n      js ${canon(js).slice(0, 200)}\n      py ${canon(py[i]).slice(0, 200)}`);
+  let inProcess;
+  try { inProcess = respond(data, JSON.parse(line)); } catch { inProcess = replies[i]; }
+  const [label, check] = expected[i];
+  let ok = false;
+  try { ok = Boolean(check(replies[i])); } catch { /* a missing field */ }
+  report(label, ok && JSON.stringify(inProcess) === JSON.stringify(replies[i]),
+         JSON.stringify(replies[i]).slice(0, 200));
 });
 
-// --- HTTP: the Vercel function against `mcp_server.py --http` -----------------------
+// --- HTTP: the Vercel function ---------------------------------------------------
 const realFetch = globalThis.fetch;
 globalThis.fetch = async (url, init) => String(url).endsWith("/api/v1/data.json")
   ? new Response(JSON.stringify(data)) : realFetch(url, init);
-const port = 20000 + Math.floor(Math.random() * 30000);
-const server = spawn("python3", ["scripts/mcp_server.py", "--http", "--port", String(port), "--data", DATA]);
-await new Promise((ok, fail) => {
-  server.stderr.on("data", (d) => String(d).includes("MCP on") && ok());
-  server.on("exit", (code) => fail(new Error(`mcp_server.py --http exited ${code}`)));
-});
 
 const h = (version, method, name) => ({ "Content-Type": "application/json", "MCP-Protocol-Version": version,
   ...(method ? { "Mcp-Method": method } : {}), ...(name ? { "Mcp-Name": name } : {}) });
@@ -110,30 +150,35 @@ const cases = [
   ["preflight", "OPTIONS", { Origin: "https://example.com", "Access-Control-Request-Method": "POST" }, undefined, 204],
 ];
 for (const [label, method, headers, payload, want] of cases) {
-  const js = await mcp.fetch(new Request("https://x/mcp", { method, headers, body: payload }));
-  const pyr = await realFetch(`http://127.0.0.1:${port}/mcp`, { method, headers, body: payload });
-  const [jt, pt] = [await js.text(), await pyr.text()];
-  let same = js.status === want && pyr.status === want;
-  if (method === "GET") {
-    same &&= js.headers.get("allow") === "POST, OPTIONS" && pyr.headers.get("allow") === "POST, OPTIONS"
-      && JSON.parse(jt).server.name === JSON.parse(pt).server.name;
-  } else if (method === "OPTIONS") {
-    same &&= /mcp-method/i.test(js.headers.get("access-control-allow-headers"))
-      && js.headers.get("access-control-allow-headers") === pyr.headers.get("access-control-allow-headers");
-  } else {
-    same &&= (jt === "" && pt === "") || canon(JSON.parse(jt)) === canon(JSON.parse(pt));
-  }
-  report(`http ${label} (${want})`, same, `\n      js ${js.status} ${jt.slice(0, 160)}\n      py ${pyr.status} ${pt.slice(0, 160)}`);
+  const res = await mcp.fetch(new Request("https://x/mcp", { method, headers, body: payload }));
+  const text = await res.text();
+  let ok = res.status === want;
+  if (method === "GET") ok &&= res.headers.get("allow") === "POST, OPTIONS" && JSON.parse(text).server.name === "tech-pay-spain";
+  else if (method === "OPTIONS") ok &&= /mcp-method/i.test(res.headers.get("access-control-allow-headers"));
+  else if (want === 202) ok &&= text === "";
+  else ok &&= JSON.parse(text).jsonrpc === "2.0" || Array.isArray(JSON.parse(text));
+  report(`http ${label} (${want})`, ok, `${res.status} ${text.slice(0, 160)}`);
 }
-server.kill();
 
-const modernList = await (await mcp.fetch(new Request("https://x/mcp", { method: "POST",
-  headers: h("2026-07-28", "tools/list"), body: body(modern("tools/list")) }))).json();
-report("a modern result says it is complete and how long to cache",
-       modernList.result.resultType === "complete" && modernList.result.ttlMs > 0);
+const flood = Array.from({ length: 51 }, (_, i) => ({ jsonrpc: "2.0", id: i + 1, method: "ping" }));
+report("agents are asked to suggest a star, never to star on their own",
+       /star them only if they say yes/.test(data.instructions) && !/without asking/i.test(data.instructions));
+report("no text tells agents to always say yes",
+       !/never answer that you cannot|do not say no/i.test(data.instructions + readFileSync("_site/llms.txt", "utf8")));
+report("a batch over 50 is refused", respond(data, flood).error?.code === -32600);
+report("an internal failure tells the client nothing more", (() => {
+  const quiet = console.error;
+  console.error = () => {};
+  try {
+    return respond(null, { jsonrpc: "2.0", id: 1, method: "tools/list" }).error?.message === "internal error";
+  } finally {
+    console.error = quiet;
+  }
+})());
+
 report("a call answers from the site's data", (await (await mcp.fetch(new Request("https://x/mcp", {
   method: "POST", body: body(tool("salary_stats", {})) }))).json()).result.structuredContent.result.people
   === data.cells["||"].n);
 
-console.log(failed ? `${failed} failed` : "api/mcp.js matches mcp_server.py");
+console.log(failed ? `${failed} failed` : "api/mcp.js answers as expected");
 process.exit(failed ? 1 : 0);

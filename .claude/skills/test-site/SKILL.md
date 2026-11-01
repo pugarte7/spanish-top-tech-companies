@@ -5,7 +5,7 @@ description: Test the salary website (web/app.js, web/style.css, scripts/site.py
 
 # Testing the site
 
-The site is static: `scripts/site.py` writes `_site/` from `companies.csv`,
+The site is static: `scripts/site.py` writes `_site/` from the aggregates in `data/`,
 and `web/app.js` draws everything in the browser. Python tests do not reach
 that code; these do.
 

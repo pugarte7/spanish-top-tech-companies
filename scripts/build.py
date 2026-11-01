@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild README.md from companies.csv, and rewrite the CSV in canonical order."""
+"""Rebuild README.md from the private companies.csv, and rewrite the CSV in canonical order."""
 from __future__ import annotations
 
 import re

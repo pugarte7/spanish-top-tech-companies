@@ -6,15 +6,17 @@ Two ways in. Pick whichever you're comfortable with.
 
 The easiest way, and anonymous. Add it at [levels.fyi/salaries/add](https://www.levels.fyi/salaries/add) with your city in Spain and your years of experience, in whichever job family fits. The dataset is rebuilt from Levels.fyi's Spanish submissions, so any role and any seniority is picked up on the next run — and a company that is not here yet arrives with it. The README's tables list software engineers only, at any experience: median of 50k+ to appear, 60k+ for the main table.
 
-## 1. Open an issue (no CSV)
+## 1. Open an issue
 
-Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or update a salary**](../../issues/new?template=update-band.yml). Fill the form, we turn it into a PR. This is the right route if you're sharing your own numbers and would rather not use Levels.fyi.
+Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or update a salary**](../../issues/new?template=update-band.yml). Fill the form and the maintainer adds it to the data. This is the right route if you're sharing your own numbers and would rather not use Levels.fyi.
 
 **On anonymity:** anything you put in a public issue is public and tied to your GitHub account forever. If you're sharing your own salary, consider a throwaway account, or check whether your employer would care. We'd rather have the data than have you regret posting it.
 
 ## 2. Open a pull request
 
-All the data is one file, [`companies.csv`](companies.csv): one row per salary, with the company's own columns repeated on each of its rows. A company is on file while it has any salary on file; the README is generated from it and lists software engineers only. A `Name,linkedin_id` row with the salary columns empty is how one is added by hand.
+Pull requests are welcome for the code, the checks and the docs. The salaries themselves are not in the repository: they are one row per person, so they live in a private `companies.csv` on the maintainer's machine (`lib.DATA`, or wherever `STC_DATA` points), and only aggregates are published: the README's tables and the site's `data/`. The rest of this section is for whoever holds that file.
+
+All the data is that one file: one row per salary, with the company's own columns repeated on each of its rows. A company is on file while it has any salary on file; the README is generated from it and lists software engineers only. A `Name,linkedin_id` row with the salary columns empty is how one is added by hand.
 
 Every row is **one person in Spain, in any job family, at any seniority**, paid whatever they are paid — the file feeds the website as well as the README, so juniors and other roles belong in it. What a company calls the level does not matter. Only the README is narrow: software engineers, median of 50.000 € or more to be listed, 60.000 € for the main table. [METHODOLOGY.md](METHODOLOGY.md#who-counts) explains why.
 
@@ -120,9 +122,10 @@ The details themselves come from Levels.fyi, which gets some of them wrong (it l
 python3 tests/test_pipeline.py   # regressions we have actually shipped
 python3 scripts/validate.py      # must pass
 python3 scripts/build.py         # regenerates the README and tidies companies.csv
+python3 scripts/site.py --refresh  # rewrites data/ and builds the site
 ```
 
-Commit the regenerated `README.md` and `companies.csv` along with your change. `build.py` rewrites the CSV in a fixed order, so the diff shows only what changed. CI runs all three and fails if either file is out of date.
+Commit the regenerated `README.md` and `data/`, never `companies.csv`: it is private and git ignores it. CI has no data, so it runs the tests and builds the site from `data/`; `validate.py` and `build.py` run wherever the file is, and in the weekly refresh.
 
 ## What makes a submission usable
 
