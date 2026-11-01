@@ -7,7 +7,8 @@
 The site publishes aggregates only: every number on it comes from at least
 lib.MIN_GROUP people, quartiles from lib.QUARTILE_MIN, and every euro figure
 is rounded to lib.ROUND_EUR. The CSV stays row-level; a city x role x years
-cell of a few people would name them.
+cell of a few people would name them. The one exception is a company's own
+bars per experience band, which go down to one person: see company_years().
 
 Pages come in English and Spanish under /en/ and /es/. The page's look lives
 in web/ (app.js, style.css); this script renders the HTML shell, the map of
@@ -180,7 +181,8 @@ STRINGS = {
         "how_groups_t": "Groups of {min} or more.",
         "how_groups": "By role, region and years of experience. No figure comes from fewer than "
                       "{min} salaries, the middle half needs {qmin}, and every amount is rounded "
-                      "to the nearest {round}, so nobody's pay can be read off a figure.",
+                      "to the nearest {round}. The one exception is the experience bars inside "
+                      "a company: each band shows its median even if only one person reported it.",
         "how_figures_t": "What you see.",
         "how_figures": "Median base, the middle half (p25–p75), median total pay (base + bonus + stock) "
                        "and the share with a base of {bar} or more. They describe these companies, "
@@ -283,7 +285,8 @@ STRINGS = {
         "how_groups_t": "Grupos de {min} o más.",
         "how_groups": "Por rol, comunidad y años de experiencia. Ninguna cifra sale de menos de "
                       "{min} salarios, la mitad central necesita {qmin} y todos los importes se "
-                      "redondean a {round}, para que no se pueda deducir el sueldo de nadie.",
+                      "redondean a {round}. La excepción son las barras por experiencia de cada "
+                      "empresa: cada banda muestra su mediana aunque solo la haya reportado una persona.",
         "how_figures_t": "Qué se muestra.",
         "how_figures": "Sueldo base mediano, la mitad central (p25–p75), el total mediano (base + bonus "
                        "+ acciones) y el porcentaje con una base de {bar} o más. Son cifras de estas "
@@ -550,6 +553,33 @@ def _spans(values: list[str]) -> list[tuple[str, ...]]:
             for j in range(i + 1, len(values) + 1) if j - i < len(values)]
 
 
+def company_years(cells: dict, bands: list[str], index: dict) -> dict[str, dict[int, list]]:
+    """Each listed company's median base and count per experience band, keyed
+    by arrangements and then by the company's index in data.json.
+
+    The one exception to MIN_GROUP: a band of one or two people gets its
+    median too, so every company row has its bars (maintainer, 2026-11-01).
+    It is still rounded to ROUND_EUR. Only companies on the table for those
+    arrangements, with MIN_GROUP people over all bands, get any."""
+    out = {}
+    for key, by_company in cells.items():
+        modes, span = key.split("|")
+        if span:
+            continue
+        per = {}
+        for i, entries in by_company.items():
+            if sum(1 for e in entries if e.get("base")) < lib.MIN_GROUP:
+                continue
+            row = []
+            for b in bands:
+                bases = [e["base"] for e in cells.get(f"{modes}|{b}", {}).get(i, ()) if e.get("base")]
+                row.append([rounded(statistics.median(bases)), len(bases)] if bases else None)
+            per[index[i]] = row
+        if per:
+            out[modes] = per
+    return out
+
+
 def company_filters(rows: list, index: dict) -> dict[str, dict]:
     """The companies table for any role or specialization, any span of
     experience bands and any set of work arrangements.
@@ -563,7 +593,8 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
     a median of a union cannot be built from the medians of its parts, so
     every combination is aggregated here. Each is still a group of MIN_GROUP
     or more people, the same rule as data.json; region is left out, which
-    keeps the files small.
+    keeps the files small. The bars in a company's row are the exception,
+    see company_years().
     """
     bands, modes = bucket_labels(), list(lib.WORK_ARRANGEMENTS)
     band_sets = [("",)] + _spans(bands)
@@ -606,7 +637,8 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
                 out[key] = [[a[f] for f in fields] for a in found]
         if out:
             files[name] = {"fields": fields, "cells": out,
-                           "summary_fields": summary_fields, "summary": summary}
+                           "summary_fields": summary_fields, "summary": summary,
+                           "years": company_years(cells, bands, index)}
 
     # The role menu, most salaries first, each role with its specializations.
     # Only tables that exist are offered.

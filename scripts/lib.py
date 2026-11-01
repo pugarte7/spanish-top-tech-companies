@@ -32,6 +32,7 @@ FLOOR_EUR = 50_000
 # median and the quartiles give back all three salaries (x0 = 2·p25 - median),
 # which was true of every three-person group the site published. So quartiles
 # need QUARTILE_MIN people, and every euro figure is rounded to ROUND_EUR.
+# The bars in a company's row are the one exception: see site.company_years().
 MIN_GROUP = 5
 QUARTILE_MIN = 10
 ROUND_EUR = 1_000

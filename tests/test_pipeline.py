@@ -751,6 +751,25 @@ def test_agents_see_only_groups_of_five() -> None:
     check("llms-full.txt renders", "## By region" in site_build.llms_full(data), True)
 
 
+def test_company_bars_show_every_band() -> None:
+    """A company's row has a bar for every band someone reported, even one person
+    (maintainer, 2026-11-01); the table and its filters keep MIN_GROUP."""
+    print("a company's bars go down to one person")
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
+    site_build = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(site_build)
+    rows = [entry(PER_LOCATION, base=b, region="MD", city="Madrid", years_experience="8")
+            for b in (70000, 75000, 82600, 90000)]
+    rows.append(entry(PER_LOCATION, base=61400, region="MD", city="Madrid", years_experience="3"))
+    with temp_data(acme(*rows)):
+        _, files = site_build.build_site(lib.load_companies())
+    check("one person's band has a rounded median, empty bands none",
+          files[""]["years"][""][0], [None, [61000, 1], None, [79000, 4], None, None])
+    check("the table filtered to that band leaves the company out",
+          "|2-4" in files[""]["cells"], False)
+
+
 def test_site_dates_and_minimum_base() -> None:
     """The page's date is when the salaries were read, and a base under the minimum wage
     is no salary: once it held a company's median down and moved small groups."""
@@ -787,6 +806,7 @@ def main() -> int:
                  test_rows_compare_with_empty_cells,
                  test_median_and_share_over_every_senior,
                  test_agents_see_only_groups_of_five,
+                 test_company_bars_show_every_band,
                  test_site_dates_and_minimum_base,
                  test_floor_aliases_and_exclusions,
                  test_normalization,

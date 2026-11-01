@@ -442,21 +442,31 @@ function table(o) {
     Object.fromEntries(t.fields.map((f, i) => [f, row[i]])));
 }
 
-// A company's own median per experience band, under the role and arrangements
-// chosen; null where the band has fewer than MIN_GROUP people.
-const companyYears = (id) => bands().map((b) =>
-  [b, table({ years: [b] }).find((a) => a.c === id) || null]);
+// A company's own [median, count] per experience band, under the role and
+// arrangements chosen; null where nobody in the band reported. Unlike every
+// other figure, a band of one person has its median: see company_years() in
+// site.py.
+const companyYears = (id) => {
+  const per = T[state.role]?.years?.[KEY_MODES.filter((m) => state.modes.includes(m)).join(",")]?.[id];
+  return bands().map((b, i) => [b, per?.[i] || null]);
+};
 
 function detail(a) {
-  const bands = companyYears(a.c);
-  const max = Math.max(...bands.map(([, y]) => y ? y.median : 0)) || 1;
-  const bars = bands.map(([b, y]) => `<div class="yb${state.years.includes(b) ? " on" : ""}">` +
-    (y ? `<b>${short(y.median)}</b><i${y.median >= D.threshold ? ' class="hi"' : ""} style="height:${(y.median / max) * 72}px"></i>`
-       : `<span class="na">–</span><i class="none"></i>`) +
-    `<span>${yearsLabel(b)}</span></div>`).join("");
-  // A company with no band of MIN_GROUP people would show six empty bars.
+  const years = companyYears(a.c);
+  // 60k is always on the scale, so its line is drawn to it.
+  const max = Math.max(D.threshold, ...years.map(([, y]) => y ? y[0] : 0));
+  const h = (v) => (v / max) * 72;
+  const bars = years.map(([, y]) => y
+    ? `<div class="yb" title="n = ${y[1]}"><b>${short(y[0])}</b>` +
+      `<i${y[0] >= D.threshold ? ' class="hi"' : ""} style="height:${h(y[0])}px"></i></div>`
+    : `<div class="yb"><span class="na">–</span><i class="none"></i></div>`).join("");
+  const labels = years.map(([b]) =>
+    `<span${state.years.includes(b) ? ' class="on"' : ""}>${yearsLabel(b)}</span>`).join("");
+  const chart = `<div class="ybars"><div class="yplot">${bars}` +
+    `<span class="ref" style="bottom:${h(D.threshold)}px"><em>${short(D.threshold)}</em></span></div>` +
+    `<div class="yaxis">${labels}</div></div>`;
   // The links repeat here for phones, where the row has no room for them.
-  return `<div class="detail">${bands.some(([, y]) => y) ? `<div class="ybars">${bars}</div>` : ""}` +
+  return `<div class="detail">${years.some(([, y]) => y) ? chart : ""}` +
     split(a) + `<span class="links">${companyLinks(D.companies[a.c])}</span></div>`;
 }
 
