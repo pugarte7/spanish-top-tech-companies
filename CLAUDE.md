@@ -43,6 +43,16 @@ only data file: one row per salary, company columns repeated. Never slim the
 README by moving data into side files, and never go back to one file per
 company. Both were tried and the maintainer rejected them.
 
+**`companies.csv` is private.** Since 2026-10-25 it is not in the repository
+on this branch either: one row per person is personal data and a copy of
+Levels.fyi's database. It lives at `lib.DATA`
+(`~/.local/share/spanish-top-tech-companies-data/website/companies.csv`, or
+`STC_DATA`), git ignores it, and only aggregates are published: the README
+and `data/` (`site.py --refresh` writes it; CI and deploys build the site from
+it). Never commit the CSV, link to it, or put a single person's salary in
+anything public: the weekly digest and its issue carry company aggregates
+only.
+
 The five things that will bite you:
 
 1. **Levels.fyi serves another country's salaries when it has no Spanish data**,
@@ -110,7 +120,7 @@ normalized columns (`lib.ENTRY_COLUMNS`): role, specialization and title are
 the taxonomy's official slugs or empty — never free text, which is how a row
 still cannot point at a person. Keep no submission ids, exact days, teams or
 free-text detail, keep the attribution, and remove anything someone asks to
-have removed. The CSV is row-level; the website and MCP publish only
+have removed. The CSV is row-level and private; the website and MCP publish only
 aggregates of five or more people (`lib.MIN_GROUP`), quartiles only from ten
 (`lib.QUARTILE_MIN`) and every euro figure rounded to 1.000 € (`lib.ROUND_EUR`):
 with three people, a median and its quartiles gave back all three salaries.
@@ -151,5 +161,6 @@ day: once the median decided the table, it put one-person 60k rows above N26 at
 76.6k); first-hand rows come first. A first-hand row must itself be at 60k+, since it is the
 maintainer vouching that the company pays that.
 
-After any data change: `python3 scripts/validate.py && python3 scripts/build.py`,
-and commit the regenerated `README.md` and `companies.csv` — CI fails otherwise.
+After any data change: `python3 scripts/validate.py && python3 scripts/build.py &&
+python3 scripts/site.py --refresh`, and commit the regenerated `README.md` and
+`data/`, never `companies.csv`.

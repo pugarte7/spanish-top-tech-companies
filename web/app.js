@@ -542,6 +542,7 @@ function openPop(el) {
   if (pops.open) { if (!pops.queue.includes(el)) pops.queue.push(el); return; }
   pops.open = el;
   el.hidden = false;
+  if (el.querySelector(".agent-name")) steadyAgents();
 }
 
 function closePop(el) {
@@ -571,18 +572,42 @@ function remember(key, value) {
 const AGENT_TURN_MS = 3000;
 const STILL = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// Names differ in length: "Claude Code" wrapped a line the others did not, so
+// the page grew at every turn and the browser scrolled to make up for it.
+// Every box that holds a name keeps the height of its longest one. Set by
+// agents(); run again when the card opens, since a hidden box has no height.
+let steadyAgents = () => {};
+
 function agents() {
   const tabs = [...document.querySelectorAll(".agent-tab")];
+  const names = [...document.querySelectorAll(".agent-name")];
   let at = 0, picked = false;
+  const name = (k) => names.forEach((n) => { n.textContent = tabs[k].dataset.name; });
   const show = (k) => {
     at = k;
     document.querySelectorAll(".agent-stack, .agent-bars").forEach((box) =>
       [...box.children].forEach((el, j) => el.classList.toggle("on", j === k)));
     tabs.forEach((t, j) => t.setAttribute("aria-pressed", String(j === k)));
-    document.querySelectorAll(".agent-name").forEach((n) => { n.textContent = tabs[k].dataset.name; });
+    name(k);
     $("agent-by").textContent = tabs[k].dataset.by;
     $("agent-get").href = tabs[k].dataset.url;
   };
+  steadyAgents = () => {
+    const boxes = [...document.querySelectorAll(".agent-say, .agent-steps p, .agent-pop .star-text")]
+      .filter((b) => b.querySelector(".agent-name") && b.getClientRects().length);
+    boxes.forEach((b) => { b.style.minHeight = ""; });
+    const tall = boxes.map(() => 0);
+    tabs.forEach((_, k) => {
+      name(k);
+      boxes.forEach((b, i) => { tall[i] = Math.max(tall[i], b.getBoundingClientRect().height); });
+    });
+    name(at);
+    boxes.forEach((b, i) => { b.style.minHeight = `${tall[i]}px`; });
+  };
+  steadyAgents();
+  document.fonts.ready.then(steadyAgents);
+  let width = innerWidth;
+  addEventListener("resize", () => { if (innerWidth !== width) { width = innerWidth; steadyAgents(); } });
   tabs.forEach((t, k) => { t.onclick = () => { picked = true; show(k); }; });
   if (!STILL) setInterval(() => { if (!picked && !document.hidden) show((at + 1) % tabs.length); }, AGENT_TURN_MS);
   document.querySelectorAll(".copy-btn").forEach((b) => {

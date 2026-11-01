@@ -15,7 +15,9 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import os
 import pathlib
+import subprocess
 import sys
 import tempfile
 
@@ -710,7 +712,6 @@ def test_agents_see_only_groups_of_five() -> None:
     unrounded euro: with three people, median and quartiles gave back every salary."""
     print("published aggregates cannot be turned back into salaries")
     import importlib.util
-    import mcp_server
     spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
     site_build = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(site_build)
@@ -723,31 +724,23 @@ def test_agents_see_only_groups_of_five() -> None:
     with temp_data(acme(*rows)):
         data = site_build.build_data(lib.load_companies())
 
-    def ask(tool, **args):
-        reply = mcp_server.handle(data, {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
-                                         "params": {"name": tool, "arguments": args}})
-        return reply["result"].get("structuredContent")
+    def quartiles(region: str) -> list:
+        a = data["cells"][f"|{region}|"]
+        return [a["median"], a["p25"], a["p75"]]
 
-    got = ask("salary_stats", region="Madrid")["result"]
     check("Madrid's ten: median and quartiles, rounded to 1,000",
-          [got["median_base_eur"], got["p25_base_eur"], got["p75_base_eur"]], [66000, 52000, 81000])
-    got = ask("salary_stats", region="Valencia")["result"]
-    check("Valencia's five: a rounded median, no quartiles",
-          [got["median_base_eur"], got["p25_base_eur"], got["p75_base_eur"]], [70000, None, None])
-    check("Barcelona's four give nothing", ask("salary_stats", region="Cataluña")["result"], None)
+          quartiles("MD"), [66000, 52000, 81000])
+    check("Valencia's five: a rounded median, no quartiles", quartiles("VC"), [70000, None, None])
+    check("Barcelona's four give nothing", data["cells"].get("|CT|"), None)
     published = list(data["cells"].values()) + [a for v in data["company_cells"].values() for a in v]
     check("no published group under five", min(a["n"] for a in published), 5)
     check("every published euro figure is a multiple of 1,000",
           [a for a in published for k in ("median", "p25", "p75", "total")
            if a[k] is not None and a[k] % 1000], [])
-    check("years are bucketed", ask("salary_stats", years=8)["selection"]["years"], "8-11")
+    check("years are bucketed", site_build.year_bucket(8), "8-11")
     check("a company's groups leave Barcelona out",
-          sorted(g["region"] or "" for g in ask("company_salaries", name="acme")["groups"]
-                 if g["years"] is None and g["role"] is None), ["", "MD", "VC"])
-    check("an unknown role is a tool error, not a crash",
-          mcp_server.handle(data, {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {
-              "name": "salary_stats", "arguments": {"role": "astronaut"}}})["result"]["isError"],
-          True)
+          sorted(key.split("|")[1] for key, found in data["company_cells"].items()
+                 if key.split("|")[0] == key.split("|")[2] == "" and found), ["", "MD", "VC"])
     check("llms-full.txt renders", "## By region" in site_build.llms_full(data), True)
 
 
@@ -773,8 +766,27 @@ def test_site_dates_and_minimum_base() -> None:
     check("llms.txt says when", "reported from 2021-03 to 2026-10" in site_build.llms_txt(data), True)
 
 
+def test_aggregates_ignore_the_hash_seed() -> None:
+    """A refresh of the same salaries writes the same data/: once the per-role tables
+    came out in PYTHONHASHSEED order and every weekly run committed a diff of nothing."""
+    print("data/ is the same whatever the hash seed")
+    rows = [entry(PER_LOCATION, base=60000 + 1000 * i, region="MD", city="Madrid",
+                  specialization=spec) for spec in ("backend", "frontend") for i in range(6)]
+    script = ("import importlib.util, json, sys; sys.path.insert(0, 'scripts'); import lib; "
+              "spec = importlib.util.spec_from_file_location('site_build', 'scripts/site.py'); "
+              "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); "
+              "data, tables = m.build_site(lib.load_companies()); "
+              "print(json.dumps([list(data['cells']), list(tables)]))")
+    with temp_data(acme(*rows)):
+        runs = {subprocess.run([sys.executable, "-c", script], cwd=ROOT, capture_output=True, text=True,
+                               env={**os.environ, "STC_DATA": str(lib.DATA), "PYTHONHASHSEED": seed},
+                               check=True).stdout
+                for seed in ("1", "2", "3", "4")}
+    check("four seeds, one order of cells and tables", len(runs), 1)
+
+
 def main() -> int:
-    for test in (test_location_guard, test_unscoped_classifier,
+    for test in (test_aggregates_ignore_the_hash_seed, test_location_guard, test_unscoped_classifier,
                  test_purge_runs_even_when_spain_data_exists,
                  test_figures_are_converted_to_euros,
                  test_every_year_is_kept_the_readme_filters,

@@ -392,7 +392,7 @@ tr.det td { background: var(--tint); padding: 8px 12px 24px 48px; }
         font: 500 14px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
 .more:hover { background: var(--s5); }
 
-footer { margin-top: 48px; color: var(--field-muted); font-size: 12px; line-height: 18px; }
+footer { margin-top: 48px; color: var(--field-muted); font-size: 16px; line-height: 26px; text-align: center; }
 .foot { padding-top: 26px; padding-bottom: 30px; }
 footer p { margin: 4px 0; }
 footer a { color: var(--field-ink); }
@@ -436,6 +436,9 @@ footer a { color: var(--field-ink); }
 .agent-tile img { display: block; }
 .fit-cover { width: 100%; height: 100%; object-fit: cover; }
 .fit-mark { width: 76%; height: auto; }
+/* app.js gives it the height of the longest name; this keeps a shorter one
+   centred in that height. */
+.agent-say { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .agent-call { margin: 0; font: 200 40px/1.08 var(--display); color: #ffffff; }
 .agent-by { margin: 6px 0 0; color: var(--field-muted); }
 .agent-get { display: inline-flex; align-items: center; gap: 6px; height: 40px; margin-top: 16px; padding: 0 16px;

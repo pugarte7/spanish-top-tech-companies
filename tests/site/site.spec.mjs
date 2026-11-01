@@ -354,6 +354,25 @@ test.describe("agents", () => {
     await expect(page.locator(".agent-stack .agent-tile.on")).toHaveCount(2);
   });
 
+  // "Claude Code" wrapped a line the other names did not, and the page jumped.
+  const staysPut = async (page) => {
+    await open(page, "/en/");
+    await page.clock.fastForward(16_000);
+    await expect(page.locator("#agent-pop")).toBeVisible();
+    await page.locator("#agent-pop").evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
+    const where = () => page.evaluate(() => [
+      document.documentElement.scrollHeight,
+      Math.round(document.querySelector(".agent-tabs").getBoundingClientRect().top + scrollY),
+      Math.round(document.querySelector("#agent-pop").getBoundingClientRect().top)]);
+    const first = await where();
+    for (const tab of await tabs(page).all()) {
+      await tab.evaluate((t) => t.click());
+      expect(await where()).toEqual(first);
+    }
+  };
+  test("the page stays put whatever agent shows", async ({ page }) => staysPut(page));
+  test("the page stays put whatever agent shows on a phone @mobile", async ({ page }) => staysPut(page));
+
   test("nothing turns for readers who ask for less motion", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await open(page);

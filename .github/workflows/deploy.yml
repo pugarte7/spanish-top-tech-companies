@@ -1,10 +1,10 @@
 name: deploy
 
-# Builds _site/ from companies.csv and publishes it, with the MCP server at
-# /mcp (api/mcp.js), to Vercel. Built here and uploaded prebuilt: vercel.json
-# turns off Vercel's own Git deployments so a push is deployed once. Building
-# only reads the CSV, so it runs fine on GitHub; fetching from Levels.fyi
-# stays on the Mac.
+# Builds _site/ from the committed aggregates in data/ and publishes it, with
+# the MCP server at /mcp (api/mcp.js), to Vercel. Built here and uploaded
+# prebuilt: vercel.json turns off Vercel's own Git deployments so a push is
+# deployed once. companies.csv is private and never reaches GitHub; the Mac
+# fetches from Levels.fyi and commits data/ (site.py --refresh).
 #
 # Needs repository secrets VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID
 # (the last two from .vercel/project.json after `vercel link`), and
@@ -54,7 +54,7 @@ jobs:
           vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
           vercel build --prod --token="$VERCEL_TOKEN"
 
-      - name: /mcp answers like mcp_server.py
+      - name: /mcp answers
         run: node tests/mcp.test.mjs
 
       - name: Deploy to Vercel
