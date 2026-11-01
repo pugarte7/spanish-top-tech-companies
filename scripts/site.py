@@ -124,6 +124,26 @@ CITY_REGION = {
     "melilla": "ML",
 }
 
+# Levels.fyi writes Spanish cities without their accents; the page spells them
+# as Spain does. Keys are lib._norm_words() of the city.
+CITY_NAMES = {
+    "malaga": "Málaga", "cadiz": "Cádiz", "cordoba": "Córdoba", "almeria": "Almería",
+    "jaen": "Jaén", "leon": "León", "a coruna": "A Coruña", "gijon": "Gijón",
+    "san sebastian": "San Sebastián", "castellon": "Castellón", "logrono": "Logroño",
+    "pozuelo de alarcon": "Pozuelo de Alarcón",
+    "el puerto de santa maria": "El Puerto de Santa María",
+}
+
+
+def city_name(city: str) -> str:
+    return CITY_NAMES.get(lib._norm_words(city), city)
+
+
+def city_place(region: str, city: str) -> str:
+    """The location filter's key for a city: its region and a slug, "CT-barcelona"."""
+    return f"{region}-{lib._norm_words(city).replace(' ', '-')}"
+
+
 # The site covers companies whose median base, over every salary on file at
 # any role and seniority, reaches this. The CSV keeps the rest.
 COMPANY_FLOOR_EUR = 45_000
@@ -231,7 +251,7 @@ STRINGS = {
         "star_text": "Give the repo a star on GitHub. It helps more people find it.",
         "star_button": "Star on GitHub", "star_close": "Close",
         "under": "Under", "over": "Over",
-        "role_label": "Role", "mode_label": "Work",
+        "role_label": "Role", "mode_label": "Work", "loc_label": "Location", "all_spain": "All of Spain",
         "mode_remote": "Remote", "mode_hybrid": "Hybrid", "mode_office": "Office",
         "any": "Any", "loading": "Loading…", "from": "From", "to": "To",
         "agents_title": "Let your agent apply for you",
@@ -335,7 +355,7 @@ STRINGS = {
         "star_text": "Dale una estrella al repo en GitHub. Ayuda a que lo encuentre más gente.",
         "star_button": "Dar una estrella en GitHub", "star_close": "Cerrar",
         "under": "Menos de", "over": "Más de",
-        "role_label": "Rol", "mode_label": "Modalidad",
+        "role_label": "Rol", "mode_label": "Modalidad", "loc_label": "Ubicación", "all_spain": "Toda España",
         "mode_remote": "Remoto", "mode_hybrid": "Híbrido", "mode_office": "Presencial",
         "any": "Cualquiera", "loading": "Cargando…", "from": "Desde", "to": "Hasta",
         "agents_title": "Deja que tu agente aplique por ti",
@@ -591,6 +611,35 @@ def company_years(cells: dict, bands: list[str], index: dict) -> dict[str, dict[
     return out
 
 
+def shared(cells: dict) -> dict:
+    """Each distinct value once: a key whose value repeats an earlier key's
+    holds that key instead. A small place gives the same rows under most
+    filters, and the location files were 47 MB before this."""
+    seen, out = {}, {}
+    for key, value in cells.items():
+        s = json.dumps(value, separators=(",", ":"))
+        if s in seen:
+            out[key] = seen[s]
+        else:
+            seen[s], out[key] = key, value
+    return out
+
+
+def place_lookup(place: dict, role: dict) -> dict:
+    """A place's file without the companies whose salaries for the role are all
+    in that place: their rows are the role file's own, so the file lists them
+    under `whole` and keeps rows, and bars, only for the rest. Most companies
+    are in one place; repeating them made the location files 20 MB."""
+    everywhere = {row[0]: row[1] for row in role["cells"]["|"]}
+    whole = sorted(row[0] for row in place["cells"]["|"] if everywhere.get(row[0]) == row[1])
+    out = set(whole)
+    cells = {k: [r for r in rows if r[0] not in out] for k, rows in place["cells"].items()}
+    return {"whole": whole, "cells": {k: rows for k, rows in cells.items() if rows},
+            "summary": place["summary"],
+            "years": {m: {c: y for c, y in per.items() if c not in out}
+                      for m, per in place["years"].items()}}
+
+
 def company_filters(rows: list, index: dict) -> dict[str, dict]:
     """The companies table for any role or specialization, any span of
     experience bands and any set of work arrangements.
@@ -602,8 +651,12 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
 
     The page lets a reader pick a span of years and several arrangements, and
     a median of a union cannot be built from the medians of its parts, so
-    every combination is aggregated here; region is left out, which keeps
-    the files small.
+    every combination is aggregated here.
+
+    The location filter adds one file per role and region ("all~CT") and per
+    role and city ("software-engineer~CT-barcelona"), each with the same
+    keys, loaded only when a reader picks the place. Each role's own file
+    carries `places`, its regions and their cities by salaries, for the menu.
 
     Unlike data.json, these files have no MIN_GROUP: a company with one
     salary under the filters is listed, and the summary above the table
@@ -617,12 +670,21 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
     groups: dict[str, dict[str, dict[int, list]]] = collections.defaultdict(
         lambda: collections.defaultdict(lambda: collections.defaultdict(list)))
     counts = collections.Counter()
-    for i, role, _, bucket, e in rows:
+    places: dict[str, collections.Counter] = collections.defaultdict(collections.Counter)
+    place_names = {}
+    for i, role, region, bucket, e in rows:
         spec = e.get("specialization") or ""
         # Ordered, not a set: a set's order follows PYTHONHASHSEED, and data/
         # would then change on every refresh with the same salaries.
-        tables = dict.fromkeys(("", role, f"{role}/{spec}" if role and spec else ""))
-        counts.update(t for t in tables if t)
+        roles = dict.fromkeys(("", role, f"{role}/{spec}" if role and spec else ""))
+        counts.update(t for t in roles if t)
+        where = [region] if region else []
+        if region and e.get("city"):
+            where.append(city_place(region, e["city"]))
+            place_names[where[-1]] = city_name(e["city"])
+        for t in roles:
+            places[t].update(where)
+        tables = list(roles) + [f"{t or 'all'}~{p}" for t in roles for p in where]
         mode = e.get("work_arrangement") or ""
         for ms in mode_sets:
             if ms != ("",) and mode not in ms:
@@ -663,20 +725,49 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
     def entry(slug: str, name: str) -> dict:
         return {"slug": slug, "name": name, "n": counts[slug]}
     menu = []
-    for role in sorted((t for t in files if t and "/" not in t), key=lambda t: -counts[t]):
+    for role in sorted((t for t in files if t and "/" not in t and "~" not in t),
+                       key=lambda t: -counts[t]):
         specs = taxonomy.SPECIALIZATIONS.get(role, {})
         item = entry(role, role_info(role)["name"])
         item["specs"] = [entry(t, specs.get(t.split("/")[1], (t.split("/")[1],))[0])
-                         for t in sorted((t for t in files if t.startswith(role + "/")),
+                         for t in sorted((t for t in files if t.startswith(role + "/") and "~" not in t),
                                          key=lambda t: -counts[t])]
         menu.append(item)
+    # A city that holds all of its region's salaries for a role (Barcelona,
+    # for most roles, is all of Cataluña) would repeat the region's file, so
+    # it has none and the menu points it at the region's.
+    same = set()
+    for name in [n for n in files if "-" in n.partition("~")[2]]:
+        base, _, place = name.partition("~")
+        region = files.get(f"{base}~{place.split('-')[0]}")
+        if region and all(region[k] == files[name][k] for k in ("cells", "summary", "years")):
+            del files[name]
+            same.add(name)
+    # Each role's location menu: regions by salaries, each with its cities as
+    # [key, name, salaries, the key of the file that holds them].
+    for name, f in files.items():
+        if "~" in name:
+            continue
+        c = places[name]
+        f["places"] = [
+            {"code": r, "n": n, "cities": sorted(
+                ([p, place_names[p], c[p], r if f"{name or 'all'}~{p}" in same else p]
+                 for p in c if p.startswith(r + "-")),
+                key=lambda x: (-x[2], x[1]))}
+            for r, n in sorted(((p, n) for p, n in c.items() if "-" not in p),
+                               key=lambda x: (-x[1], x[0]))]
+    for name in [n for n in files if "~" in n]:
+        role = name.partition("~")[0]
+        files[name] = place_lookup(files[name], files["" if role == "all" else role])
+    for f in files.values():
+        f["cells"], f["summary"] = shared(f["cells"]), shared(f["summary"])
     files[""]["roles"] = menu
     files[""]["bands"] = bands
     return files
 
 
 def company_info(company: dict) -> dict:
-    cities = collections.Counter(e["city"] for e in company["entries"] if e.get("city"))
+    cities = collections.Counter(city_name(e["city"]) for e in company["entries"] if e.get("city"))
     # "-" means checked and there is none. The careers page first: it is where to apply.
     web = next((u for u in (company.get("careers_url"), company.get("website")) if u and u != "-"), None)
     url = web
