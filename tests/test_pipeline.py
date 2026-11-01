@@ -206,8 +206,8 @@ def test_figures_are_converted_to_euros() -> None:
           (by_slug, skipped["not-euro"]), ({}, 1))
 
 
-def test_every_year_is_kept_the_readme_filters() -> None:
-    """The file keeps every seniority now; the README still counts seniors.
+def test_every_year_is_kept() -> None:
+    """The file keeps every seniority, and the medians count every engineer.
 
     Seniority is five or more years, whatever the level says: on 2026-09-15
     the list briefly counted only rungs named senior, which threw away an L4
@@ -215,9 +215,9 @@ def test_every_year_is_kept_the_readme_filters() -> None:
     decided who is a row either - until 2026-09-22 only seniors at 60k+ were
     kept, so two 90k engineers made Minsait read 90k while fourteen under 60k
     went unrecorded. Since 2026-10-14 juniors and other roles are kept for
-    the website, and since 2026-10-17 juniors reach the README's median too.
+    the website, and since 2026-10-17 juniors reach the engineers' median too.
     """
-    print("fetch_spain keeps every year of experience; readme_entries filters roles")
+    print("fetch_spain keeps every year of experience; engineer_entries filters roles")
 
     by_slug, skipped = fed([row(years=8, level="SDE I"),
                             row(years=4, level="Senior Software Engineer"),
@@ -228,10 +228,10 @@ def test_every_year_is_kept_the_readme_filters() -> None:
     check("every parseable year becomes a row, 'False' levels do not",
           sorted(e["years_experience"] for e in entries), ["2-4", "4", "5-10", "8"])
     check("a row with no years is skipped", skipped["no-years"], 1)
-    check("the README counts software engineers at any experience",
-          len(lib.readme_entries(acme(*entries))), 4)
-    check("the README counts no other role",
-          len(lib.readme_entries(acme(entry(None, role="product-manager")))), 0)
+    check("the median counts software engineers at any experience",
+          len(lib.engineer_entries(acme(*entries))), 4)
+    check("and no other role",
+          len(lib.engineer_entries(acme(entry(None, role="product-manager")))), 0)
     check("a bucket counts from its low end", lib.years("5-10"), 5)
     check("an open bucket counts from its number", lib.years("11+"), 11)
 
@@ -432,11 +432,11 @@ def test_an_unread_feed_changes_nothing() -> None:
 
 
 def test_companies_are_their_salaries() -> None:
-    """On file means having salaries; the README's bar is about the median.
+    """On file means having salaries; the floor and the bar are about the median.
 
     Until 2026-10-14 a company under the 50k floor was deleted. Now the file
     keeps every role and seniority for the website, so low-median data stays
-    on file - it just does not reach the README. What still disappears is a
+    on file - it is just not listed. What still disappears is a
     company with no rows at all after a full role read, and the feed still
     never writes a struck-off slug.
     """
@@ -491,80 +491,47 @@ def test_companies_are_their_salaries() -> None:
               [e["source"] for e in stored()["entries"]], ["community"])
 
 
-def test_median_and_share_over_every_senior() -> None:
-    """The statistic is the median over every senior, and the share at 60k+.
+def test_median_over_every_engineer() -> None:
+    """The statistic is the median over every software engineer, never a mean.
 
     Two of Minsait's sixteen seniors are at 90k. The mean of those two, which
-    the table showed until 2026-09-22, said Minsait pays 90k; the median over
-    all sixteen says 43.5k, and the share says 60k+ happens to 12% of them.
-    "Use all the data" was the criticism, and the maintainer took it, keeping
-    the 60k bar for which companies are listed and for the share only.
+    the README showed until 2026-09-22, said Minsait pays 90k; the median over
+    all sixteen says 43.5k. "Use all the data" was the criticism, and the
+    maintainer took it, keeping the 60k bar for which list a company is on.
     """
-    print("the README shows the median over every engineer and the share at 60k+")
-    import build
-
+    print("the median is over every engineer, juniors included, other roles never")
     company = acme(entry(PER_LOCATION, base=90000, total=95000), entry(PER_LOCATION, base=90000),
                    *[entry(PER_LOCATION, base=40000 + 1000 * i) for i in range(6)])
-    found = build.summary(company)
     check("median over all engineers, not the mean of the 60k+ ones",
-          (found["base"], found["engineers"], found["at_bar"]), (43500, 8, 2))
-    check("the share is at 60k+ over all engineers", build.share_cell(found), "25% (2)")
-    check("total has its own median", found["total"], 95000)
-    check("a share under 1% is not 0%",
-          build.share_cell({"share": 1 / 250, "at_bar": 1}), "<1% (1)")
+          (lib.median_base(company), len(lib.engineer_entries(company))), (43500, 8))
+    check("and a company with that median is not at the bar", lib.competitive(company), False)
 
     with_junior_and_pm = acme(
         entry(PER_LOCATION, base=90000), entry(PER_LOCATION, base=41000),
         entry(PER_LOCATION, base=30000, years_experience="2"),
         entry(DS_LOCATION, role="data-scientist", base=200000))
-    found = build.summary(with_junior_and_pm)
-    check("juniors reach the README's median, other roles never do",
-          (found["base"], found["engineers"]), (41000, 3))
-
-    def named(name: str, *entries: dict) -> dict:
-        return lib.blank_company(name) | {"entries": list(entries)}
-    table = build.render_companies([
-        named("Rare High", entry(PER_LOCATION, base=120000), entry(PER_LOCATION, base=40000)),
-        named("Everyone", entry(PER_LOCATION, base=70000)),
-        named("Everyone Paid More", entry(PER_LOCATION, base=90000)),
-        named("Vouched", entry(None, source="community", base=65000)),
-        named("Only Juniors", entry(PER_LOCATION, base=30000, years_experience="2")),
-        named("Only PMs", entry(DS_LOCATION, role="data-scientist", base=200000)),
-    ])
-    check("rows sort by median, then share, first-hand first",
-          [line.split(" | ")[0].lstrip("| ") for line in table.splitlines()[4:]],
-          ["Vouched", "Everyone Paid More", "Rare High", "Everyone"])
-    check("companies under the floor or without software engineers are not in the README",
-          "Only Juniors" in table or "Only PMs" in table, False)
+    check("juniors reach the median, other roles never do",
+          (lib.median_base(with_junior_and_pm), len(lib.engineer_entries(with_junior_and_pm))), (41000, 3))
 
 
 def test_floor_aliases_and_exclusions() -> None:
     """The maintainer's hand on the data, 2026-09-23.
 
     "I don't wanna lose all those companies": a median between 50k and 60k is
-    kept and shown under "Need to improve". "Timescale and Tiger Data are the
+    kept and listed as "need to improve". "Timescale and Tiger Data are the
     same": an alias slug's rows are filed under the canonical company, each
     row keeping the page it came from. "Remove Abracadabra as we don't know
     what company it is": a struck-off slug is never written or created.
     """
     print("floor, alias slugs and struck-off slugs")
-    import build
     import fetch_spain
     import validate
 
     def named(name: str, *entries: dict, **fields) -> dict:
         return lib.blank_company(name, **fields) | {"entries": list(entries)}
-    table = build.render_companies([
-        named("At Bar", entry(PER_LOCATION, base=70000)),
-        named("Nearly", entry(PER_LOCATION, base=55000), entry(PER_LOCATION, base=58000)),
-    ])
-    rows = [line.split(" | ")[0].lstrip("| ") for line in table.splitlines()
-            if line.startswith("| ") and not line.startswith(("| Company", "| ---"))]
-    check("a median under 60k lands in the second table", rows, ["At Bar", "Nearly"])
-    check("and the first table ends before it",
-          table.index("At Bar") < table.index("## Need to improve") < table.index("Nearly"), True)
-    check("the second table says what it is", "## Need to improve: median between 50k and 60k" in table, True)
-    check("under the floor is not on the README",
+    check("a median at 60k+ is at the bar",
+          lib.competitive(named("At Bar", entry(PER_LOCATION, base=70000))), True)
+    check("under the floor is not listed",
           lib.listed(named("Low", entry(PER_LOCATION, base=49000))), False)
     check("at the floor is listed but not competitive",
           (lib.listed(named("Mid", entry(PER_LOCATION, base=55000))),
@@ -817,7 +784,7 @@ def main() -> int:
     for test in (test_aggregates_ignore_the_hash_seed, test_location_guard, test_unscoped_classifier,
                  test_purge_runs_even_when_spain_data_exists,
                  test_figures_are_converted_to_euros,
-                 test_every_year_is_kept_the_readme_filters,
+                 test_every_year_is_kept,
                  test_one_submission_is_one_entry,
                  test_foreign_rows_are_skipped,
                  test_feed_is_read_to_the_end,
@@ -825,7 +792,7 @@ def main() -> int:
                  test_an_unread_feed_changes_nothing,
                  test_companies_are_their_salaries,
                  test_rows_compare_with_empty_cells,
-                 test_median_and_share_over_every_senior,
+                 test_median_over_every_engineer,
                  test_agents_see_only_groups_of_five,
                  test_companies_table_shows_any_data,
                  test_site_dates_and_minimum_base,

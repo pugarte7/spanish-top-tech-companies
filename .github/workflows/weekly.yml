@@ -3,7 +3,7 @@ name: weekly
 on:
   push:
     branches: [main]
-    paths: [README.md, "data/**"]
+    paths: ["data/**"]
   schedule:
     - cron: "0 12 * * 2"   # Tuesdays 12:00 UTC: did Monday's refresh land?
   workflow_dispatch:

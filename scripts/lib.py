@@ -20,14 +20,15 @@ DATA = pathlib.Path(os.environ.get("STC_DATA") or
                     pathlib.Path.home() / ".local" / "share" / "spanish-top-tech-companies-data"
                     / "website" / "companies.csv")
 
-# A company is on the main list while the median of its rows reaches this
-# base, and the share of its rows that do is shown beside the median. The bar
-# is applied to the aggregate, never to the rows the aggregate is of: filter
-# positions by role first, compute the median, then filter companies by it.
+# The weekly digest puts a company on its 60k+ list while the median base of
+# its software engineers reaches this, and the site reports the share of a
+# group at it. The bar is applied to the aggregate, never to the rows the
+# aggregate is of: filter positions by role first, compute the median, then
+# filter companies by it.
 THRESHOLD_EUR = 60_000
-# A company whose median lands between the floor and the bar is kept on file
-# and shown under "Need to improve": visible, and visibly under 60k. Below the
-# floor it is not on the list at all (maintainer, 2026-09-23).
+# Between the floor and the bar the digest lists a company under "need to
+# improve"; below the floor it is not on its list (maintainer, 2026-09-23).
+# Until 2026-11-01 the README showed both lists as tables.
 FLOOR_EUR = 50_000
 
 # The CSV is row-level by design. The website, the JSON API and the MCP
@@ -68,9 +69,9 @@ SOURCES = ["levels.fyi", "company-published", "offer-letter", "community",
 # crowdsourced, so it sorts above it however large the crowdsourced one is.
 VOUCHED = ("offer-letter", "community")
 
-# The README's question is about software engineers, at any experience since
-# 2026-10-17. The CSV holds every role; the README population is a filter over
-# the file, not the file itself.
+# The digest's question is about software engineers, at any experience since
+# 2026-10-17. The CSV holds every role; that population is a filter over the
+# file, not the file itself.
 SWE = "software-engineer"
 
 # One row per salary entry: one person in Spain, their role, years of
@@ -284,8 +285,8 @@ def years(raw) -> int | None:
     return int(found.group(1)) if found else None
 
 
-def readme_entries(company: dict) -> list[dict]:
-    """The population the README describes: software engineers with a base.
+def engineer_entries(company: dict) -> list[dict]:
+    """The population the digest's medians are of: software engineers with a base.
 
     Until 2026-10-17 only those with 5+ years counted; the maintainer dropped
     the cut once the feed carried every experience level ("I think we no
@@ -295,17 +296,13 @@ def readme_entries(company: dict) -> list[dict]:
             if entry.get("role") == SWE and entry.get("base")]
 
 
-def at_bar(entry: dict) -> bool:
-    return (entry.get("base") or 0) >= THRESHOLD_EUR
-
-
 def median_base(company: dict) -> int | None:
-    bases = [entry["base"] for entry in readme_entries(company)]
+    bases = [entry["base"] for entry in engineer_entries(company)]
     return round(statistics.median(bases)) if bases else None
 
 
 def competitive(company: dict) -> bool:
-    """On the main list: the median base of the engineers on file is at the bar.
+    """On the 60k+ list: the median base of the engineers on file is at the bar.
 
     The bar is a property of the company, not of a row, so it is applied after
     aggregating: "solo aquellas empresas donde el salario medio de las personas
@@ -318,7 +315,7 @@ def competitive(company: dict) -> bool:
 
 
 def listed(company: dict) -> bool:
-    """On the README at all: its software engineers median at the floor."""
+    """On the digest's lists at all: its software engineers median at the floor."""
     return (median_base(company) or 0) >= FLOOR_EUR
 
 
@@ -451,12 +448,6 @@ def save_companies(companies: list[dict], path: pathlib.Path | None = None) -> N
     temporary = path.with_name(path.name + ".tmp")
     temporary.write_text(buffer.getvalue(), encoding="utf-8")
     os.replace(temporary, path)
-
-
-def headline(company: dict) -> dict | None:
-    """The entry a company is ranked by: first-hand first, then the best-paid."""
-    entries = company.get("entries") or []
-    return min(entries, key=entry_order) if entries else None
 
 
 def parse_date(raw) -> dt.date | None:

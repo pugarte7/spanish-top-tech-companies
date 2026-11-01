@@ -4,7 +4,7 @@ Two ways in. Pick whichever you're comfortable with.
 
 ## 0. Add your salary on Levels.fyi
 
-The easiest way, and anonymous. Add it at [levels.fyi/salaries/add](https://www.levels.fyi/salaries/add) with your city in Spain and your years of experience, in whichever job family fits. The dataset is rebuilt from Levels.fyi's Spanish submissions, so any role and any seniority is picked up on the next run — and a company that is not here yet arrives with it. The README's tables list software engineers only, at any experience: median of 50k+ to appear, 60k+ for the main table.
+The easiest way, and anonymous. Add it at [levels.fyi/salaries/add](https://www.levels.fyi/salaries/add) with your city in Spain and your years of experience, in whichever job family fits. The dataset is rebuilt from Levels.fyi's Spanish submissions, so any role and any seniority is picked up on the next run — and a company that is not here yet arrives with it. The website shows a company once the median base over all its salaries reaches 45.000 €.
 
 ## 1. Open an issue
 
@@ -14,11 +14,11 @@ Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or 
 
 ## 2. Open a pull request
 
-Pull requests are welcome for the code, the checks and the docs. The salaries themselves are not in the repository: they are one row per person, so they live in a private `companies.csv` on the maintainer's machine (`lib.DATA`, or wherever `STC_DATA` points), and only aggregates are published: the README's tables and the site's `data/`. The rest of this section is for whoever holds that file.
+Pull requests are welcome for the code, the checks and the docs. The salaries themselves are not in the repository: they are one row per person, so they live in a private `companies.csv` on the maintainer's machine (`lib.DATA`, or wherever `STC_DATA` points), and only aggregates are published, in the site's `data/`. The rest of this section is for whoever holds that file.
 
-All the data is that one file: one row per salary, with the company's own columns repeated on each of its rows. A company is on file while it has any salary on file; the README is generated from it and lists software engineers only. A `Name,linkedin_id` row with the salary columns empty is how one is added by hand.
+All the data is that one file: one row per salary, with the company's own columns repeated on each of its rows. A company is on file while it has any salary on file; the site's `data/` is generated from it. A `Name,linkedin_id` row with the salary columns empty is how one is added by hand.
 
-Every row is **one person in Spain, in any job family, at any seniority**, paid whatever they are paid — the file feeds the website as well as the README, so juniors and other roles belong in it. What a company calls the level does not matter. Only the README is narrow: software engineers, median of 50.000 € or more to be listed, 60.000 € for the main table. [METHODOLOGY.md](METHODOLOGY.md#who-counts) explains why.
+Every row is **one person in Spain, in any job family, at any seniority**, paid whatever they are paid — the website covers every role, so juniors and other roles belong in it. What a company calls the level does not matter. [METHODOLOGY.md](METHODOLOGY.md#the-website-and-the-mcp-server) explains which salaries count.
 
 ```bash
 git clone https://github.com/pugarte7/spanish-top-tech-companies
@@ -42,7 +42,7 @@ The id is the `f_C` number in a LinkedIn job search filtered to that company. [`
 
 | Column | What goes in it |
 | --- | --- |
-| `company` | The name shown in the README. Every row of a company uses the same spelling. |
+| `company` | The name shown on the site. Every row of a company uses the same spelling. |
 | `linkedin_ids` | LinkedIn company ids, `\|`-separated when an employer has several (Amazon and AWS). |
 | `linkedin_url` | The company's LinkedIn page, if it has a vanity URL. |
 | `levels_slug`, `levels_status` | Its Levels.fyi page, and `resolved`, `review` or `unmatched` (not on Levels.fyi). Written by `resolve_slugs.py`. An employer with two Levels.fyi slugs keeps the canonical one here and the other in `lib.SLUG_ALIASES`; a slug nobody can put a company to goes in `lib.EXCLUDED_SLUGS`. |
@@ -113,11 +113,10 @@ The details themselves come from Levels.fyi, which gets some of them wrong (it l
 ```bash
 python3 tests/test_pipeline.py   # regressions we have actually shipped
 python3 scripts/validate.py      # must pass
-python3 scripts/build.py         # regenerates the README and tidies companies.csv
 python3 scripts/site.py --refresh  # rewrites data/ and builds the site
 ```
 
-Commit the regenerated `README.md` and `data/`, never `companies.csv`: it is private and git ignores it. CI has no data, so it runs the tests and builds the site from `data/`; `validate.py` and `build.py` run wherever the file is, and in the weekly refresh.
+Commit the regenerated `data/`, never `companies.csv`: it is private and git ignores it. CI has no data, so it runs the tests and builds the site from `data/`; `validate.py` and `site.py --refresh` run wherever the file is, and in the weekly refresh.
 
 ## What makes a submission usable
 

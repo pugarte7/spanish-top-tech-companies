@@ -45,7 +45,7 @@ OUT = lib.ROOT / "_site"
 AGGREGATES = lib.ROOT / "data"
 WEB = lib.ROOT / "web"
 REPO = "https://github.com/pugarte7/spanish-top-tech-companies"
-# The branch the site, the MCP server and the skill live on: main holds the README alone.
+# The branch the site, the MCP server and the skill live on, for links to the repository.
 BRANCH = "main"
 SITE = os.environ.get("SITE_URL", "").rstrip("/")
 # Web Analytics and Speed Insights: Vercel serves /_vercel/ only on its own
