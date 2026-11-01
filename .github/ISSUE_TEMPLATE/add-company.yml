@@ -1,5 +1,5 @@
 name: Add a company
-description: An employer paying a software engineer with 5+ years 60k+ gross in Spain that isn't listed yet.
+description: An employer paying a software engineer 60k+ gross in Spain that isn't listed yet.
 title: "Add: "
 labels: ["new company"]
 body:
@@ -72,7 +72,7 @@ body:
     id: years
     attributes:
       label: Years of experience
-      description: 5 or more. What the company calls the level does not matter.
+      description: Any. What the company calls the level does not matter.
       placeholder: "8"
     validations: { required: true }
 

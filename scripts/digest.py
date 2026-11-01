@@ -40,7 +40,7 @@ def median(company: dict) -> str:
 
 
 def post(date: str, on_main: int, change: int, arrived: list[dict], new: int) -> str:
-    head = (f"Senior software engineer pay in Spain, week of {date}: {on_main} companies "
+    head = (f"Software engineer pay in Spain, week of {date}: {on_main} companies "
             f"with a median base of 60k+ ({change:+d}).")
     tail = f"{new} new salaries. {REPO}"
     names: list[str] = []
@@ -78,13 +78,13 @@ def main(argv: list[str]) -> int:
     on_main = count(after.values(), MAIN)
     change = on_main - count(before.values(), MAIN)
     behind = count(after.values(), BEHIND)
-    engineers = sum(len(c["entries"]) for c in after.values())
+    engineers = sum(len(lib.readme_entries(c)) for c in after.values())
     date = lib.today_utc().isoformat()
 
     out = [f"## Week of {date}", "",
            f"{on_main} companies at 60k+ ({change:+d}), {behind} need to improve "
            f"({behind - count(before.values(), BEHIND):+d}), {engineers} engineers "
-           f"({engineers - sum(len(c['entries']) for c in before.values()):+d}): "
+           f"({engineers - sum(len(lib.readme_entries(c)) for c in before.values()):+d}): "
            f"{sum(new.values())} new salaries, {sum(gone.values())} no longer on file."]
 
     def section(title: str, lines: list[str]) -> None:

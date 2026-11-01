@@ -2,8 +2,8 @@ name: weekly
 
 on:
   push:
-    branches: [main]
-    paths: [README.md]
+    branches: [website]
+    paths: [README.md, "data/**"]
   schedule:
     - cron: "0 12 * * 2"   # Tuesdays 12:00 UTC: did Monday's refresh land?
   workflow_dispatch:
@@ -34,8 +34,6 @@ jobs:
           cat digest.md >> "$GITHUB_STEP_SUMMARY"
           gh issue create --title "Week of $(date -u +%F)" --body-file digest.md
 
-  # GitHub runs `schedule` only from the default branch, so this check lives
-  # on main, but since 2026-11-01 the refresh lands on `website`.
   missed:
     if: github.event_name != 'push'
     runs-on: ubuntu-latest

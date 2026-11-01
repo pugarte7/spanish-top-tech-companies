@@ -1,0 +1,66 @@
+name: deploy
+
+# Builds _site/ from the committed aggregates in data/ and publishes it, with
+# the MCP server at /mcp (api/mcp.js), to Vercel. Built here and uploaded
+# prebuilt: vercel.json turns off Vercel's own Git deployments so a push is
+# deployed once. companies.csv is private and never reaches GitHub; the Mac
+# fetches from Levels.fyi and commits data/ (site.py --refresh).
+#
+# Needs repository secrets VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID
+# (the last two from .vercel/project.json after `vercel link`), and
+# optionally the variable SITE_URL (e.g. https://tech-pay-spain.vercel.app)
+# for absolute links in llms.txt. Without the token it builds and tests but
+# does not deploy.
+
+on:
+  push:
+    branches: [website]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: ${{ vars.SITE_URL }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build site
+        if: env.VERCEL_TOKEN == ''
+        run: python3 scripts/site.py
+
+      - name: Build for Vercel
+        if: env.VERCEL_TOKEN != ''
+        run: |
+          npm install --global vercel@latest
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: /mcp answers
+        run: node tests/mcp.test.mjs
+
+      - name: Deploy to Vercel
+        if: env.VERCEL_TOKEN != ''
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+
+      - name: Not deployed
+        if: env.VERCEL_TOKEN == ''
+        run: echo "::warning::VERCEL_TOKEN is not set; built and tested, not deployed."

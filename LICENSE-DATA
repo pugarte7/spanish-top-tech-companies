@@ -1,6 +1,6 @@
 # Dataset license
 
-The tables in `README.md` are licensed
+The tables in `README.md` and the aggregates in `data/` are licensed
 **Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**.
 
 Full text: https://creativecommons.org/licenses/by-sa/4.0/legalcode
@@ -19,3 +19,7 @@ submissions are not published. This license does not cover levels.fyi's data:
 their own terms apply to it, and nothing here grants rights they do not. If
 you believe something here goes beyond them, open an issue and it will be
 removed.
+
+Company enrichment (offices, stack, careers pages, company type, CIF) comes
+from Spain Tech Radar, https://www.spaintechradar.com, published under CC BY
+4.0 — attribution: "Spain Tech Radar".

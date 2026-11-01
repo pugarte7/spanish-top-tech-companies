@@ -2,7 +2,14 @@
 __pycache__/
 *.pyc
 .DS_Store
-.claude/
+.claude/*
+!.claude/skills/
+test-results/
+playwright-report/
 *.tmp
+_site/
+.cache/
+.vercel/
+node_modules
 # One row per person: private, kept outside the repository (lib.DATA).
 companies.csv

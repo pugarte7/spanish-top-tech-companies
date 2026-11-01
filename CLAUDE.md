@@ -1,23 +1,24 @@
 # spanish-top-tech-companies
 
-What companies in Spain pay software engineers with 5+ years of experience:
-the median over every such engineer on file, at companies where that median
+What companies in Spain pay software engineers, at any experience:
+the median over every software engineer on file, at companies where that median
 is 60k+ base, with a "Need to improve" table for medians between 50k and 60k. Read [docs/CONTEXT.md](docs/CONTEXT.md) before
 changing anything in the data pipeline — it records why several
 obvious-looking approaches are wrong.
 
-**One median per company, over every senior.** `companies.csv` holds
-individual salaries: each row one software engineer in Spain with 5 or more
-years of experience (`lib.SENIOR_YEARS`), paid whatever they are paid. The
-README shows one row per company: the median base and total over all of them,
-how many there are, and what share are at 60k or more (`lib.THRESHOLD_EUR`).
-The bar decides which table a company is in (median at the bar: main;
-between `lib.FLOOR_EUR` 50k and the bar: "Need to improve"; under the floor:
-not on file) and is shown as the share; it never trims the rows the median is
-of. Filter positions by
-years, aggregate, then filter companies by the aggregate, in that order. Seniority
-is the years, never the level name: an L4 with eight years counts, a "Senior"
-with two does not. No other job families, no cap on years, no mean.
+**One median per company, over every software engineer.** `companies.csv` holds
+individual salaries: since 2026-10-14 each row is one person in Spain in any
+of Levels.fyi's job families, at any seniority, paid whatever they are paid —
+the file feeds a website now, not just the README. `lib.readme_entries()`
+picks the README's population, every software-engineer row with a base at
+any experience, and the README shows one row
+per company, the median base and total over those, how many there are, and
+what share are at 60k or more (`lib.THRESHOLD_EUR`). The bar decides which
+table a company is in (median at the bar: main; between `lib.FLOOR_EUR` 50k
+and the bar: "Need to improve"; under the floor: on file but unlisted) and is
+shown as the share; it never trims the rows the median is of. Filter
+positions by role, aggregate, then filter companies by the aggregate, in
+that order. No mean, and never another role in the README's median.
 
 How this was reached: on 2026-09-16 the maintainer rejected averages across
 levels, a filter on titles that said senior, and set "the mean of the 60k+
@@ -29,26 +30,30 @@ nothing). "At least one senior at 60k+" as the listing rule lasted a day: a
 reader pointed out that a company filter belongs on the aggregate, and it
 became median >= 60k, dropping 33 companies. On 2026-09-23 the maintainer
 brought the 24 with a median of 50k+ back under "Need to improve" ("I don't
-wanna lose all those companies"); the nine under 50k stayed out. Do not bring
-back the 60k-filtered mean, the any-row rule, or juniors and other families
+wanna lose all those companies"); the nine under 50k stayed out. On
+2026-10-17 the maintainer dropped the 5-year cut, which only existed because
+the old fetcher stored seniors only: "I think we no longer need to have the
+5+ exp data. If they pay more than 60K lets count it in." Do not bring back
+the 60k-filtered mean, the any-row rule, a years filter, or other families
 in the median.
 
 **The website is the product; the README introduces it.** Since 2026-11-01
-spanishtoptechcompanies.com (branch `website`) is what people use. `README.md`
-opens with the site in Spanish, then English, written for search, and keeps the
-senior software-engineer tables `scripts/build.py` writes between its markers.
-`companies.csv` is the only data file: one row per salary, company columns
-repeated. Never move the README's data into side files, and never go back to
-one file per company. Both were tried and the maintainer rejected them.
+spanishtoptechcompanies.com is what people use, and `website` is merged into
+`main`. `README.md` opens with the site in Spanish, then English, written for
+search, and keeps the software-engineer tables `scripts/build.py` writes
+between its markers. Never move the README's data into side files, and never
+go back to one file per company. Both were tried and the maintainer rejected
+them.
 
-**`companies.csv` is private.** Since 2026-10-21 it is not in the repository:
-one row per person is personal data and a copy of Levels.fyi's database, and
-the maintainer stopped publishing it. It lives at `lib.DATA`
-(`~/.local/share/spanish-top-tech-companies-data/companies.csv`, or
-`STC_DATA`), git ignores it, and only the README's per-company aggregates are
-published. Never commit it, link to it, or put a single person's salary in
+**`companies.csv` is private.** Since 2026-10-25 it is not in the repository
+on this branch either: one row per person is personal data and a copy of
+Levels.fyi's database. It lives at `lib.DATA`
+(`~/.local/share/spanish-top-tech-companies-data/website/companies.csv`, or
+`STC_DATA`), git ignores it, and only aggregates are published: the README
+and `data/` (`site.py --refresh` writes it; CI and deploys build the site from
+it). Never commit the CSV, link to it, or put a single person's salary in
 anything public: the weekly digest and its issue carry company aggregates
-only. CI has no data, so it runs only the tests.
+only.
 
 The five things that will bite you:
 
@@ -62,13 +67,15 @@ The five things that will bite you:
    which is the backstop that catches whatever a fetcher gets wrong — leave it
    in place. This trap has been paid for twice: 682 foreign bands, then 205
    more carried in by a branch cut before the first fix.
-2. **Submissions live in two places on the per-location page.** `averages`
-   carries up to twenty `samples` per level, each one engineer with a city,
-   years of experience and pay; `median` is one more, and the only one many
-   small companies have. It is often also a sample, so dedupe on `uuid`.
-   `percentiles` is an all-levels aggregate and is never an entry. A level's
-   `count` is usually higher than its samples: the page does not publish them
-   all.
+2. **The feed is read to the end, and a role's stored rows are replaced
+   wholesale.** `fetch_spain.feed()` pages one role's country feed until an
+   empty answer — `total` lies (caps at 250 while the API keeps serving) — so
+   a run that stops at `total` silently drops older submissions. The same
+   API without a token is the old trap: `fetch_spain.py` refuses to write
+   without one (`--audit` only). `write_role()` replaces only that role's
+   rows and only rows this script wrote: first-hand entries and other roles
+   are never touched, and a feed that could not be read to the end changes
+   nothing, because half a feed looks exactly like deletions.
 3. **`sampleSize > 0` does not mean anything is published.** Many companies
    report a count with every percentile null and no samples, and
    `generatedOccupationSchema.sampleSize` is the company's *global* count
@@ -83,10 +90,11 @@ The five things that will bite you:
    visitor's session token and shows anonymous visitors asterisks. Fever's page
    embedded one record and the README said "none with 5+ years at 60k+" while
    its table had 29 Spanish engineers, ten at 60k+. `fetch_spain.py` reads
-   the table when `LEVELS_TOKEN` or `~/.config/levels/token` holds the
-   maintainer's token (`localStorage.auth` on levels.fyi, lasts a day), or
-   mints one each run from the Cognito refresh token in
-   `~/.config/levels/refresh_token`, which is what lets it run unattended. A
+   the table with an id token it mints each run from the Cognito refresh token
+   in the macOS login Keychain (service `spanish-top-tech-companies`, stored
+   with `fetch_spain.py --login`), which is what lets it run unattended, or
+   with `LEVELS_TOKEN` for a one-off run. Since 2026-11-01 that is a burner
+   account's login, never kept in a file. A
    refused refresh token stops the run rather than falling back to the public
    page. Only a full table read (`Spain (table)` in the run report) has seen every
    submission; the other labels mean the page's subset. The token and the
@@ -103,42 +111,63 @@ no company at all, exits 1.
 
 The weekly refresh runs on the maintainer's Mac, not on GitHub: Levels.fyi
 serves GitHub's runners pages without data. `scripts/weekly.sh` runs from
-launchd every Monday at 08:00 and pushes a "Refresh salaries" commit;
+launchd every Monday at 08:00 and pushes a "Refresh salaries" commit to
+`website`, which deploys the site; main's README stopped changing on
+2026-11-01;
 `.github/workflows/weekly.yml` turns that push into an issue with
 `scripts/digest.py`'s summary of what changed. See docs/CONTEXT.md.
 
-Entries are individual Levels.fyi submissions. Keep the stored fields to what
-the README shows (no submission ids, exact days, titles or years at company),
-keep the attribution, and remove anything someone asks to have removed.
+Entries are individual Levels.fyi submissions. The stored fields are the
+normalized columns (`lib.ENTRY_COLUMNS`): role, specialization and title are
+the taxonomy's official slugs or empty — never free text, which is how a row
+still cannot point at a person. Keep no submission ids, exact days, teams or
+free-text detail, keep the attribution, and remove anything someone asks to
+have removed. The CSV is row-level and private; the website and MCP publish only
+aggregates of five or more people (`lib.MIN_GROUP`), quartiles only from ten
+(`lib.QUARTILE_MIN`) and every euro figure rounded to 1.000 € (`lib.ROUND_EUR`):
+with three people, a median and its quartiles gave back all three salaries.
+The one exception is the companies table: on 2026-11-01 the maintainer chose
+to list every company with data under the filters, one salary included, with
+its summary and its bars per experience band (`site.company_filters()`),
+still rounded. A role with 85 salaries had listed one company. data.json,
+the map, the matrix and the MCP keep MIN_GROUP.
 
 A row should ideally mean the maintainer knows someone in Spain doing that job,
 or was offered the position. Crowdsourced figures are placeholders; first-hand
 entries (`community`, `offer-letter`) sort above them.
 
-A company is on file only while its median base is at 50k+. There is no
-"nothing qualifying" section and no `spain_check` columns any more: the
-maintainer dropped 112 empty rows on 2026-09-21 ("get rid of the companies
-that don't have Spanish data", then "remove the nothing qualifies part").
-`fetch_spain.write()` removes a company whose median comes back under the
-floor unless a first-hand entry vouches for it, and `validate.py` fails on
-lasting rows with a median under it.
+On file means having salaries: a company stays in `companies.csv` while it
+has any row, however junior or underpaid — the website needs them all. What
+leaves is a company with no rows at all after a full role read (the feed says
+nobody there reported), or one struck off by hand. The README's bars are
+unchanged and apply to the aggregate only; `validate.py` refuses a company
+with no entries but no longer polices medians — a 40k median is data.
+
+Enrichment comes from two more sources, in this precedence: a value set by
+hand wins, then Spain Tech Radar (`fetch_radar.py`, offices/stack/careers/
+type/CIF, CC BY 4.0, only for companies with salaries), then Levels.fyi
+(`fetch_company.py`). No fetcher ever overwrites a filled field; a `-` cell
+means "checked, there is none", and counts as filled.
 
 Hand-made facts live in `lib.py`, not in the CSV: `SLUG_ALIASES` (two
 Levels.fyi slugs, one employer: `tiger-data` into `timescale`, `meta` into
 `facebook`; the alias is read with the canonical slug and each row keeps its
-own page URL) and `EXCLUDED_SLUGS` (struck off with a reason, never fetched or
-discovered). LinkedIn URLs the fetcher cannot find are typed into the CSV and
-never overwritten. New companies arrive by discovery: each signed-in run reads the
-country-wide feed of recent Spanish submissions and fetches every employer not
-yet on file, so "add your salary on Levels.fyi and it gets picked up" holds
-without anyone editing the CSV.
+own page URL), `EXCLUDED_SLUGS` (struck off with a reason, never fetched or
+discovered), `EXTRA_SPEC_ALIASES` (unambiguous shorthand like `DS` or `ML / AI`
+onto the taxonomy's slugs) and `CITY_FIXES`. `scripts/taxonomy.py` is
+generated by `fetch_taxonomy.py` from Levels.fyi's `/t` index — never edit it
+by hand; curations go in `lib.py` instead. LinkedIn URLs the fetcher cannot
+find are typed into the CSV and never overwritten. New companies arrive with
+the feed itself: every employer in a role's Spanish feed is written, so "add
+your salary on Levels.fyi and it gets picked up" holds without anyone editing
+the CSV.
 
 The "At 60k+" column is the share of a company's rows at the bar, computed
-from the rows, no stored count: "46% (6)" at BBVA is six of its thirteen
-seniors. Tables sort by median base first, then by that share (share first lasted a
+from the rows, no stored count: "46% (6)" is six of thirteen engineers. Tables sort by median base first, then by that share (share first lasted a
 day: once the median decided the table, it put one-person 60k rows above N26 at
 76.6k); first-hand rows come first. A first-hand row must itself be at 60k+, since it is the
 maintainer vouching that the company pays that.
 
-After any data change: `python3 scripts/validate.py && python3 scripts/build.py`,
-and commit the regenerated `README.md`, never `companies.csv`.
+After any data change: `python3 scripts/validate.py && python3 scripts/build.py &&
+python3 scripts/site.py --refresh`, and commit the regenerated `README.md` and
+`data/`, never `companies.csv`.
