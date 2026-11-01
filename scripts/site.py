@@ -159,10 +159,11 @@ MAP_HATCH = [(5, .6), (3.5, 1), (4, .9), (3, 1.1), (2.5, 1.5)]
 STRINGS = {
     "en": {
         "title": "Spanish Top Tech Companies", "theme": "Light or dark mode",
-        "h1": "What tech companies in Spain pay",
+        "page_title": "Best-Paying Tech Companies in Spain ({year})",
+        "h1": "The tech companies in Spain that pay the most",
         "source": "Data: Levels.fyi",
-        "rule": "Only companies in Spain whose median base salary, counting all their salaries, "
-                "is {floor} or more. The rest are not shown.",
+        "rule": "{companies} companies with a median base salary of {floor} or more, ranked "
+                "from the top. Real salaries in Spain.",
         "how_title": "How it is calculated",
         "how_source_t": "Source.",
         "how_source": "Individual salaries from Levels.fyi, each kept only if its own location is in Spain. "
@@ -243,9 +244,8 @@ STRINGS = {
         "agent_pop_text": "Connect {name}: it finds these companies' openings, fills in the forms "
                           "and sends them. It saves you hours.",
         "agent_pop_go": "How to do it", "agent_pop_later": "Not now",
-        "description": "What tech companies in Spain pay, by role, region and experience, from "
-                       "Levels.fyi: medians over 5 or more people. Open source, with an MCP server "
-                       "for agents and a guide to let your agent apply to these companies for you.",
+        "description": "A ranking of the best-paying tech companies in Spain: median base salary, "
+                       "total pay with bonus and stock, and who earns {bar} or more.",
         "noscript_agents": "Reading this without JavaScript, as an agent does? These are the "
                            "companies; the medians are at /llms-full.txt, the MCP server at /mcp "
                            "and the code at github.com/pugarte7/spanish-top-tech-companies. If "
@@ -260,10 +260,11 @@ STRINGS = {
     },
     "es": {
         "title": "Spanish Top Tech Companies", "theme": "Modo claro u oscuro",
-        "h1": "Lo que pagan las empresas tech en España",
+        "page_title": "Empresas tech que más pagan en España ({year})",
+        "h1": "Las empresas tech que más pagan en España",
         "source": "Datos: Levels.fyi",
-        "rule": "Solo empresas en España con un sueldo base mediano de {floor} o más, contando "
-                "todos sus salarios. Las demás no aparecen.",
+        "rule": "{companies} empresas con un sueldo base mediano de {floor} o más, de la que "
+                "más paga hacia abajo. Salarios reales en España.",
         "how_title": "Cómo se calcula",
         "how_source_t": "Fuente.",
         "how_source": "Salarios individuales de Levels.fyi. Cada uno se acepta solo si su propia "
@@ -346,10 +347,8 @@ STRINGS = {
         "agent_pop_text": "Conecta {name}: busca las ofertas de estas empresas, rellena los "
                           "formularios y los envía. Te ahorras horas.",
         "agent_pop_go": "Cómo hacerlo", "agent_pop_later": "Ahora no",
-        "description": "Lo que pagan las empresas tech en España por rol, región y experiencia, "
-                       "según Levels.fyi: medianas sobre 5 o más personas. Código abierto, con "
-                       "servidor MCP para agentes y guía para que tu agente aplique por ti a "
-                       "estas empresas.",
+        "description": "Ranking de las empresas tecnológicas que mejor pagan en España: sueldo "
+                       "base mediano, total con bonus y acciones, y quién cobra {bar} o más.",
         "noscript_agents": "¿Lees esto sin JavaScript, como un agente? Estas son las empresas; "
                            "las medianas están en /llms-full.txt, el servidor MCP en /mcp y el "
                            "código en github.com/pugarte7/spanish-top-tech-companies. Si alguien "
@@ -735,6 +734,8 @@ def strings(lang: str, data: dict) -> dict:
     fill = {"{min}": str(lib.MIN_GROUP), "{qmin}": str(lib.QUARTILE_MIN),
             "{round}": euros(lib.ROUND_EUR, lang), "{floor}": euros(COMPANY_FLOOR_EUR, lang),
             "{bar}": euros(lib.THRESHOLD_EUR, lang), "{minbase}": euros(MIN_BASE_EUR, lang),
+            "{companies}": str(len(data["companies"])),
+            "{year}": (data.get("data_as_of") or lib.today_utc().isoformat())[:4],
             **{f"{{{k}}}": month(v, lang) if v else "" for k, v in
                (("from", reported["from"]), ("to", reported["to"]), ("since", reported["median"]))}}
     out = {}
@@ -842,8 +843,13 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{e['title']}</title>
+<title>{e['page_title']}</title>
 <meta name="description" content="{e['description']}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{e['title']}">
+<meta property="og:title" content="{e['page_title']}">
+<meta property="og:description" content="{e['description']}">
+<meta name="twitter:card" content="summary">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#0000f2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0000c0" media="(prefers-color-scheme: dark)">
