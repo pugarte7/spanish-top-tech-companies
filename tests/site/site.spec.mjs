@@ -76,21 +76,22 @@ test("summary follows the table's filters", async ({ page }) => {
   expect(await figures()).toEqual(se);
 });
 
-test("map switches between pay and number of salaries", async ({ page }) => {
+test("map opens on number of salaries and switches to pay", async ({ page }) => {
   await open(page);
   const values = async () => (await page.locator("#ranking .v").allTextContents()).map(num);
   const sortedDesc = (v) => v.every((x, i) => i === 0 || v[i - 1] >= x);
 
-  await expect(page.locator("#map-metric [data-m=pay]")).toHaveAttribute("aria-pressed", "true");
-  expect(sortedDesc(await values())).toBe(true);
-  const sub = await page.locator("#map-sub").textContent();
-
-  await page.locator("#map-metric [data-m=count]").click();
   await expect(page.locator("#map-metric [data-m=count]")).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator("#map-sub")).not.toHaveText(sub);
+  await expect(page.locator("#map-sub")).toHaveText("Cuántos salarios se han recogido en cada comunidad.");
   const counts = await values();
   expect(sortedDesc(counts)).toBe(true);
   expect(counts[0]).toBeGreaterThan(1000);
+  const sub = await page.locator("#map-sub").textContent();
+
+  await page.locator("#map-metric [data-m=pay]").click();
+  await expect(page.locator("#map-metric [data-m=pay]")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#map-sub")).not.toHaveText(sub);
+  expect(sortedDesc(await values())).toBe(true);
 });
 
 test("the map draws every region and the ranking lists all of those with data", async ({ page }) => {
