@@ -744,6 +744,34 @@ def test_agents_see_only_groups_of_five() -> None:
     check("llms-full.txt renders", "## By region" in site_build.llms_full(data), True)
 
 
+def test_companies_table_shows_any_data() -> None:
+    """The companies table lists a company with any salary under the filters, and
+    its row has a bar for every band someone reported, even one person
+    (maintainer, 2026-11-01). data.json's groups keep MIN_GROUP; tests/mcp.test.mjs
+    checks the MCP does too."""
+    print("the companies table goes down to one person")
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
+    site_build = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(site_build)
+    rows = [entry(PER_LOCATION, base=b, region="MD", city="Madrid", years_experience="8")
+            for b in (70000, 75000, 82600, 90000)]
+    rows.append(entry(PER_LOCATION, base=61400, region="MD", city="Madrid", years_experience="3"))
+    beta_url = "https://www.levels.fyi/companies/beta/salaries/software-engineer/locations/spain"
+    beta = lib.blank_company("Beta", levels_slug="beta", levels_status="resolved") | {
+        "entries": [entry(beta_url, base=b, region="MD", city="Madrid") for b in (70000, 80000)]}
+    with temp_data(acme(*rows), beta):
+        data, files = site_build.build_site(lib.load_companies())
+    check("one person's band has a rounded median, empty bands none",
+          files[""]["years"][""][0], [None, [61000, 1], None, [79000, 4], None, None])
+    check("the table filtered to that band lists the company with one salary",
+          [r[:3] for r in files[""]["cells"]["|2-4"]], [[0, 1, 61000]])
+    check("a company with two salaries is listed",
+          [r[:2] for r in files[""]["cells"]["|"]], [[0, 5], [1, 2]])
+    check("but data.json has no group of it",
+          sorted(a["c"] for v in data["company_cells"].values() for a in v if a["c"] == 1), [])
+
+
 def test_site_dates_and_minimum_base() -> None:
     """The page's date is when the salaries were read, and a base under the minimum wage
     is no salary: once it held a company's median down and moved small groups."""
@@ -799,6 +827,7 @@ def main() -> int:
                  test_rows_compare_with_empty_cells,
                  test_median_and_share_over_every_senior,
                  test_agents_see_only_groups_of_five,
+                 test_companies_table_shows_any_data,
                  test_site_dates_and_minimum_base,
                  test_floor_aliases_and_exclusions,
                  test_normalization,

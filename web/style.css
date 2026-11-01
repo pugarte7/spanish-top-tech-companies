@@ -367,14 +367,24 @@ tr.open td { border-bottom-color: transparent; background: var(--tint); }
 td.pay b { font-weight: 700; }
 tr.det td { background: var(--tint); padding: 8px 12px 24px 48px; }
 .detail { display: flex; flex-wrap: wrap; gap: 20px 40px; align-items: end; }
-.ybars { display: grid; grid-template-columns: repeat(6, minmax(44px, 64px)); gap: 8px; align-items: end; }
+/* Room on the right for the 60k label. */
+.ybars { padding-right: 32px; }
+.yplot, .yaxis { display: grid; grid-template-columns: repeat(6, minmax(44px, 64px)); gap: 8px; }
+.yplot { position: relative; align-items: end; }
+.yaxis { margin-top: 4px; justify-items: center; font-size: 12px; color: var(--muted); }
+.yaxis .on { color: var(--text); font-weight: 600; }
 .yb { display: grid; gap: 4px; justify-items: center; font-size: 12px; color: var(--muted); }
-.yb b { font-weight: 500; color: var(--text); font-variant-numeric: tabular-nums; }
+/* Above the 60k line where the two cross. */
+.yb b { position: relative; z-index: 1; padding: 0 2px; background: var(--tint);
+        font-weight: 500; color: var(--text); font-variant-numeric: tabular-nums; }
 .yb i { display: block; width: 100%; background: var(--quiet); }
 .yb i.hi { background: var(--hue); }
-.yb.on span:last-child { color: var(--text); font-weight: 600; }
 .yb i.none { height: 2px; background: var(--control); }
 .yb .na { color: var(--muted); }
+/* The 60k bar, dashed like the histogram's: where the blue starts. */
+.yplot .ref { position: absolute; left: 0; right: -32px; border-top: 1px dashed var(--text); pointer-events: none; }
+.yplot .ref em { position: absolute; right: 0; bottom: 1px; font-size: 12px; line-height: 16px; font-style: normal;
+                 color: var(--text); }
 .split { display: grid; gap: 8px; width: 280px; max-width: 100%; }
 .split dl { margin: 0; display: grid; gap: 2px; }
 .split dt { font-size: 12px; color: var(--muted); }
@@ -539,7 +549,8 @@ footer a { color: var(--field-ink); }
   h2 { font-size: 26px; line-height: 30px; }
   input[type=search] { width: 100%; }
   tr.det td { padding-left: 6px; }
-  .ybars { grid-template-columns: repeat(6, 1fr); width: 100%; }
+  .ybars { width: 100%; }
+  .yplot, .yaxis { grid-template-columns: repeat(6, 1fr); }
   .hide-sm { display: none; }
   .summary { grid-template-columns: 1fr 1fr; }
   .filter-row { flex-wrap: wrap; }

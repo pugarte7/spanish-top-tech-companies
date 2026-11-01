@@ -12,7 +12,9 @@ served at /api/v1/. --refresh rewrites them; anything else only reads them.
 The site publishes aggregates only: every number on it comes from at least
 lib.MIN_GROUP people, quartiles from lib.QUARTILE_MIN, and every euro figure
 is rounded to lib.ROUND_EUR. The CSV stays row-level; a city x role x years
-cell of a few people would name them.
+cell of a few people would name them. The one exception is the companies
+table (its rows, its summary and each company's bars per experience band),
+which shows whatever there is, down to one person: see company_filters().
 
 Pages come in English and Spanish under /en/ and /es/. The page's look lives
 in web/ (app.js, style.css); this script renders the HTML shell, the map of
@@ -187,7 +189,9 @@ STRINGS = {
         "how_groups_t": "Groups of {min} or more.",
         "how_groups": "By role, region and years of experience. No figure comes from fewer than "
                       "{min} salaries, the middle half needs {qmin}, and every amount is rounded "
-                      "to the nearest {round}, so nobody's pay can be read off a figure.",
+                      "to the nearest {round}. The one exception is the companies table: a company "
+                      "is listed with whatever salaries it has, even one, and so are its bars "
+                      "by experience.",
         "how_figures_t": "What you see.",
         "how_figures": "Median base, the middle half (p25–p75), median total pay (base + bonus + stock) "
                        "and the share with a base of {bar} or more. They describe these companies, "
@@ -290,7 +294,9 @@ STRINGS = {
         "how_groups_t": "Grupos de {min} o más.",
         "how_groups": "Por rol, comunidad y años de experiencia. Ninguna cifra sale de menos de "
                       "{min} salarios, la mitad central necesita {qmin} y todos los importes se "
-                      "redondean a {round}, para que no se pueda deducir el sueldo de nadie.",
+                      "redondean a {round}. La excepción es la tabla de empresas: una empresa sale "
+                      "con los salarios que tenga, aunque sea uno, y lo mismo sus barras por "
+                      "experiencia.",
         "how_figures_t": "Qué se muestra.",
         "how_figures": "Sueldo base mediano, la mitad central (p25–p75), el total mediano (base + bonus "
                        "+ acciones) y el porcentaje con una base de {bar} o más. Son cifras de estas "
@@ -421,13 +427,14 @@ def rounded(eur: float) -> int:
     return int(math.floor(eur / lib.ROUND_EUR + 0.5)) * lib.ROUND_EUR
 
 
-def aggregate(entries: list[dict], hist: bool = False) -> dict | None:
-    """Median, quartiles and share at the bar, or None under MIN_GROUP.
+def aggregate(entries: list[dict], hist: bool = False,
+              min_group: int = lib.MIN_GROUP) -> dict | None:
+    """Median, quartiles and share at the bar, or None under min_group people.
 
     Quartiles are None under QUARTILE_MIN: in a small group they pin down the
     salaries around them."""
     bases = sorted(e["base"] for e in entries if e.get("base"))
-    if len(bases) < lib.MIN_GROUP:
+    if not bases or len(bases) < min_group:
         return None
     totals = [e["total"] for e in entries if e.get("total")]
     quartiles = (statistics.quantiles(bases, n=4, method="inclusive")
@@ -438,7 +445,8 @@ def aggregate(entries: list[dict], hist: bool = False) -> dict | None:
         "median": rounded(statistics.median(bases)),
         "p25": rounded(quartiles[0]) if quartiles else None,
         "p75": rounded(quartiles[2]) if quartiles else None,
-        "total": rounded(statistics.median(totals)) if len(totals) >= lib.MIN_GROUP else None,
+        "total": (rounded(statistics.median(totals))
+                  if totals and len(totals) >= min_group else None),
         "share": round(at_bar / len(bases), 3),
     }
     if hist:
@@ -513,7 +521,9 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
         company_stats[key] = found
 
     role_counts = collections.Counter(r for _, r, _, _, _ in rows if r)
-    used = sorted({i for v in company_stats.values() for a in v for i in [a["c"]]})
+    # Every company with a counted salary, not only those with MIN_GROUP: the
+    # companies table lists any of them (see company_filters()).
+    used = sorted({i for i, *_ in rows})
     index = {old: new for new, old in enumerate(used)}
     for found in company_stats.values():
         for a in found:
@@ -557,6 +567,29 @@ def _spans(values: list[str]) -> list[tuple[str, ...]]:
             for j in range(i + 1, len(values) + 1) if j - i < len(values)]
 
 
+def company_years(cells: dict, bands: list[str], index: dict) -> dict[str, dict[int, list]]:
+    """Each listed company's median base and count per experience band, keyed
+    by arrangements and then by the company's index in data.json. A band of
+    one person has its median too, rounded to ROUND_EUR."""
+    out = {}
+    for key, by_company in cells.items():
+        modes, span = key.split("|")
+        if span:
+            continue
+        per = {}
+        for i, entries in by_company.items():
+            if not any(e.get("base") for e in entries):
+                continue
+            row = []
+            for b in bands:
+                bases = [e["base"] for e in cells.get(f"{modes}|{b}", {}).get(i, ()) if e.get("base")]
+                row.append([rounded(statistics.median(bases)), len(bases)] if bases else None)
+            per[index[i]] = row
+        if per:
+            out[modes] = per
+    return out
+
+
 def company_filters(rows: list, index: dict) -> dict[str, dict]:
     """The companies table for any role or specialization, any span of
     experience bands and any set of work arrangements.
@@ -568,9 +601,14 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
 
     The page lets a reader pick a span of years and several arrangements, and
     a median of a union cannot be built from the medians of its parts, so
-    every combination is aggregated here. Each is still a group of MIN_GROUP
-    or more people, the same rule as data.json; region is left out, which
-    keeps the files small.
+    every combination is aggregated here; region is left out, which keeps
+    the files small.
+
+    Unlike data.json, these files have no MIN_GROUP: a company with one
+    salary under the filters is listed, and the summary above the table
+    covers any group (maintainer, 2026-11-01: a role with 85 salaries listed
+    one company). Quartiles still need QUARTILE_MIN, the histogram still
+    withholds bins under MIN_GROUP, and every euro figure is rounded.
     """
     bands, modes = bucket_labels(), list(lib.WORK_ARRANGEMENTS)
     band_sets = [("",)] + _spans(bands)
@@ -603,11 +641,12 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
     for name, cells in groups.items():
         out, summary = {}, {}
         for key, by_company in cells.items():
-            if a := aggregate([e for entries in by_company.values() for e in entries], hist=True):
+            if a := aggregate([e for entries in by_company.values() for e in entries],
+                              hist=True, min_group=1):
                 summary[key] = [a[f] for f in summary_fields]
             found = []
             for i, entries in by_company.items():
-                if a := aggregate(entries):
+                if a := aggregate(entries, min_group=1):
                     a["mix"] = pay_mix(entries)
                     found.append({"c": index[i], **a})
             if found:
@@ -615,7 +654,8 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
                 out[key] = [[a[f] for f in fields] for a in found]
         if out:
             files[name] = {"fields": fields, "cells": out,
-                           "summary_fields": summary_fields, "summary": summary}
+                           "summary_fields": summary_fields, "summary": summary,
+                           "years": company_years(cells, bands, index)}
 
     # The role menu, most salaries first, each role with its specializations.
     # Only tables that exist are offered.

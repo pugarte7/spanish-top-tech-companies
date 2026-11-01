@@ -165,6 +165,14 @@ report("agents are asked to suggest a star, never to star on their own",
        /star them only if they say yes/.test(data.instructions) && !/without asking/i.test(data.instructions));
 report("no text tells agents to always say yes",
        !/never answer that you cannot|do not say no/i.test(data.instructions + readFileSync("_site/llms.txt", "utf8")));
+// data.json names every company the table lists, down to one salary; the MCP
+// answers only for those with a published group.
+const published = new Set((data.company_cells["||"] || []).map((a) => a.c));
+const unpublished = data.companies.find((c, i) => !published.has(i) && !data.companies.some(
+  (o, j) => published.has(j) && o.name.toLowerCase().includes(c.name.toLowerCase())));
+report("no MCP answer for a company without a group of five", Boolean(unpublished) && toolError(
+  respond(data, { jsonrpc: "2.0", id: 1, ...tool("company_salaries", { name: unpublished.name }) })),
+  unpublished?.name);
 report("a batch over 50 is refused", respond(data, flood).error?.code === -32600);
 report("an internal failure tells the client nothing more", (() => {
   const quiet = console.error;

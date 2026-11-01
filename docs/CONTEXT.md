@@ -99,7 +99,10 @@ normalized set in `lib.ENTRY_COLUMNS`: role, specialization and title are the
 taxonomy's slugs or empty rather than free text, and a row still carries no
 submission id, exact day, team, free-text title or years at company. The CSV
 is public row by row; aggregates published elsewhere (the site, the MCP
-server) exist only for groups of `lib.MIN_GROUP` people or more.
+server) exist only for groups of `lib.MIN_GROUP` people or more, except the
+companies table, which lists any company with data under the filters, its
+bars by experience included (`site.company_filters()`, maintainer,
+2026-11-01).
 
 ### The README is the product
 
@@ -478,7 +481,8 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 - **One-person medians.** Nothing stops a company with a single senior on
   file from topping the table at "100% (1)". A minimum of three was offered
   and declined on 2026-09-22; the Engineers column is the reader's guard. The
-  website is stricter: it publishes no aggregate under `lib.MIN_GROUP`.
+  website is stricter: it publishes no aggregate under `lib.MIN_GROUP`, except
+  the companies table (one person and up, rounded).
 - **Titles and specializations are only as good as the taxonomy match.**
   Authors write free text; `title_slug()` and `specialization_slug()` store
   the official slug or leave the field empty rather than guess, so

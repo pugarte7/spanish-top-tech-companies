@@ -229,6 +229,19 @@ test("a row opens with the mouse and the keyboard", async ({ page }) => {
   await expect(detail).toBeHidden();
 });
 
+test("every open row has its experience bars and the 60k line", async ({ page }) => {
+  await open(page);
+  const n = await rows(page).count();
+  for (let i = 0; i < n; i++) {
+    const row = rows(page).nth(i);
+    await row.click();
+    const det = row.locator("xpath=following-sibling::tr[1]");
+    await expect(det.locator(".yplot .yb b").first()).toBeVisible();
+    await expect(det.locator(".yplot .ref")).toHaveText("60k");
+    await row.click();
+  }
+});
+
 test("an open row shows how total pay splits, adding up to 100%", async ({ page }) => {
   await open(page);
   const row = rows(page).first();
@@ -249,7 +262,8 @@ test("links that leave the page open in a new tab", async ({ page, context }) =>
   expect(stay).toEqual([]);
 
   const tab = context.waitForEvent("page");
-  await rows(page).first().locator('a[aria-label="LinkedIn"]').click();
+  // Not every company has a LinkedIn page; the first that does.
+  await rows(page).locator('a[aria-label="LinkedIn"]').first().click();
   expect((await tab).url()).not.toBe(page.url());
   await expect(rows(page).first()).toBeVisible();
 });
