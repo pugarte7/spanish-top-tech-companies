@@ -116,9 +116,12 @@ files, a backlog CSV, a benchmarks JSON and two exports. On 2026-09-14 the
 maintainer called that wrong, and it was rebuilt the other way round:
 
 - `README.md`: every salary for every company, generated.
-- `companies.csv`: the only data file. One row per salary, the company's own
-  columns repeated on each of its rows, and a single row with the salary
-  columns empty for a company with none.
+- `companies.csv`: the only data file, private: at `lib.DATA`, outside the
+  repository. One row per salary, the company's own columns repeated on each
+  of its rows, and a single row with the salary columns empty for a company
+  with none.
+- `data/`: what the site publishes, committed so CI can build it without the
+  CSV. `site.py --refresh` rewrites it.
 
 Do not move salaries out of the README to make it shorter, and do not split the
 CSV into per-company files or add a second data file.
@@ -419,10 +422,10 @@ priced in euros is dropped and counted, never guessed.
 | `resolve_slugs.py` | Company name → Levels.fyi slug, with verification and an alias table. Folds a company into the one already holding its slug. | Yes |
 | `build.py` | Regenerates the README and rewrites `companies.csv` in canonical order. | Yes |
 | `validate.py` | Column checks and sanity checks, including the location guard, the role-page guard, and that every company has a salary on file. | Yes |
-| `digest.py` | Markdown summary of what changed in `companies.csv` since a git revision (default `HEAD`), for the weekly issue. Rows have no submission id, so a new salary is a row that, minus its run date, was not there before. | Yes |
+| `digest.py` | Markdown summary of what changed in `companies.csv` since an earlier copy of it (the path is its argument), for the weekly commit body and issue; company aggregates only. Rows have no submission id, so a new salary is a row that, minus its run date, was not there before. | Yes |
 | `site.py` | Builds `_site/`: the page in Spanish and English, `/api/v1/data.json` (every aggregate of `lib.MIN_GROUP`+ people), `/llms.txt` and `/llms-full.txt` for agents that only read URLs. `SITE_URL` makes their links absolute. On Vercel (`VERCEL` set by `vercel build`) the pages also load Web Analytics and Speed Insights; nowhere else, since `/_vercel/` exists only there. | Yes |
-| `mcp_server.py` | MCP server (stdio, or stateless Streamable HTTP with `--http`) over `data.json` through `query.py`: `salary_stats`, `top_companies`, `company_salaries`, `list_filters`. Speaks both eras of the protocol: requests carrying `_meta` `io.modelcontextprotocol/protocolVersion` get 2026-07-28 answers (`server/discover`, `resultType`, cache hints, header checks over HTTP), `initialize` gets the handshake versions back to 2024-11-05. Bad input is a JSON-RPC error, never a crash. Reads only the published aggregates, so it can never return a group under `MIN_GROUP`. `skills/tech-pay-spain/SKILL.md` tells agents (Hermes, any agentskills.io client) how to use it. | Yes |
-| `api/mcp.js` | Vercel Function: the MCP server, public at `/mcp` through a rewrite in `vercel.json`; Vercel serves `_site/` as static files. A JS port of `query.py` and `mcp_server.py` that reads the deployment's own `data.json`; `tests/mcp.test.mjs` fails CI when the two answer differently over stdio or HTTP, for either era. Built and deployed by `.github/workflows/deploy.yml` on every push to `website` (`vercel build` then `vercel deploy --prebuilt`; Vercel's own Git deployments are off). | Deployed by CI |
+| `mcp-stdio.mjs` | The MCP server over stdio for local agents: the same `respond` as `api/mcp.js`, over `_site/`'s `data.json` when built, else the live one. `skills/tech-pay-spain/SKILL.md` tells agents (Hermes, any agentskills.io client) how to use it. | Yes |
+| `api/mcp.js` | Vercel Function: the MCP server, public at `/mcp` through a rewrite in `vercel.json`; Vercel serves `_site/` as static files. The only implementation: reads the deployment's own `data.json`, so it can never return a group under `MIN_GROUP`; tools `salary_stats`, `top_companies`, `company_salaries`, `list_filters`. Speaks both eras of the protocol: requests carrying `_meta` `io.modelcontextprotocol/protocolVersion` get 2026-07-28 answers (`server/discover`, `resultType`, cache hints, header checks over HTTP), `initialize` gets the handshake versions back to 2024-11-05. Bad input is a JSON-RPC error, never a crash; `tests/mcp.test.mjs` checks it over stdio and HTTP. Built and deployed by `.github/workflows/deploy.yml` on every push to `website` (`vercel build` then `vercel deploy --prebuilt`; Vercel's own Git deployments are off). | Deployed by CI |
 | `weekly.sh` | The Monday refresh launchd runs on the maintainer's Mac: taxonomy, salary feeds, company details, radar, test, validate, build, push. | Pushes to `main` |
 
 `lib.py` is the only code that reads or writes `companies.csv`. Writes go to a
@@ -517,9 +520,8 @@ No dependencies: everything is the Python standard library, plus the
 repository actually shipped, so a failure there means one of them is back rather
 than that the test needs updating.
 
-`build.py` is idempotent; CI rebuilds and fails if the result differs from
-what is committed, so always commit the regenerated `README.md` and
-`companies.csv`.
+`build.py` is idempotent. CI has no data, so it cannot check the README;
+commit the regenerated `README.md` and `data/`, never `companies.csv`.
 
 ## Conventions
 

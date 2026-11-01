@@ -13,7 +13,12 @@ import unicodedata
 import taxonomy
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-DATA = ROOT / "companies.csv"
+# One row per person: private, so it lives outside the repository, and only the
+# aggregates in data/ are published. STC_DATA points elsewhere. The parent
+# folder's own companies.csv is main's older dataset of senior engineers.
+DATA = pathlib.Path(os.environ.get("STC_DATA") or
+                    pathlib.Path.home() / ".local" / "share" / "spanish-top-tech-companies-data"
+                    / "website" / "companies.csv")
 
 # A company is on the main list while the median of its rows reaches this
 # base, and the share of its rows that do is shown beside the median. The bar
