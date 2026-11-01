@@ -151,6 +151,9 @@ GITHUB_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentC
                ' 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01'
                ' 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>')
 # Both glyphs ship; the stylesheet shows the moon in light mode and the sun in dark.
+# Drawn, not the ↗ character: iOS paints that as a blue emoji tile.
+OUT_ICON = ('<svg class="out" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.5 8.5l5-5M4.5 3.5h4v4" '
+            'fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>')
 THEME_ICON = ('<svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" '
               'd="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
               '<svg class="sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" '
@@ -830,7 +833,7 @@ def agents_section(e: dict) -> str:
       <div class="agents-stage field">
         {agent_stack()}
         <div class="agent-say"><p class="agent-call">{with_name('agents_call')}</p><p class="agent-by" id="agent-by">{html.escape(AGENTS[0][1])}</p>
-          <a class="agent-get" id="agent-get" href="{html.escape(AGENTS[0][5])}" target="_blank" rel="noopener">{with_name('agents_get')} <span aria-hidden="true">↗</span></a></div>
+          <a class="agent-get" id="agent-get" href="{html.escape(AGENTS[0][5])}" target="_blank" rel="noopener">{with_name('agents_get')} {OUT_ICON}</a></div>
         <div class="agent-tabs" role="group" aria-label="{e['agents_pick']}">{tabs}</div>
       </div>
       <div class="agents-how">

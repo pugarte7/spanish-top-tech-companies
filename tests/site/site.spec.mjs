@@ -359,6 +359,13 @@ test.describe("agents", () => {
     await expect(page.locator("#agent-get")).toHaveAttribute("href", "https://cursor.com/cli");
   });
 
+  // The ↗ character showed on iPhones as a blue emoji tile.
+  test("the get link draws its arrow instead of using a character", async ({ page }) => {
+    await open(page);
+    await expect(page.locator("#agent-get")).toHaveText("Consigue Codex");
+    await expect(page.locator("#agent-get svg.out")).toBeVisible();
+  });
+
   test("picking an agent stops the turn", async ({ page }) => {
     await open(page);
     await page.locator('.agent-tab[data-name="Grok CLI"]').click();
