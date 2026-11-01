@@ -1,37 +1,35 @@
 # Methodology
 
-## Who counts
+## The website and the MCP server
 
-The README shows **what each company pays a software engineer**: the median over every one on file for it, at any experience, and how many of them are at 60.000 € or more. The CSV underneath is wider: since 2026-10-14 it holds every Spanish submission the fetcher can read — every job family and every seniority — because the same file feeds the website. The README's slice of it:
+Every Spanish submission the fetcher can read is a row of one private file: every job family, every seniority, paid whatever they are paid. The website, its JSON and the MCP server read it this way:
 
-- **A software engineer.** Levels.fyi's software-engineer family only. Other roles are in the file — product managers, data scientists, engineering managers and the rest — but they never enter the README's medians.
+- **Every role, any experience.** Not only software engineers.
+- **Which companies.** A company counts while its median base over all its salaries, at any role and seniority, is 45.000 € or more (`COMPANY_FLOOR_EUR` in `scripts/site.py`). Below that it is left out entirely, so every figure describes better-paying employers, not all of Spain.
+- **Groups.** Salaries are grouped by role, region and years of experience (0-1, 2-4, 5-7, 8-11, 12-19, 20+). A group needs five people for any figure and ten for the middle half, and every amount is rounded to 1.000 €. With three people, the median and quartiles gave back every salary in the group. The companies table is the one exception, described under [Which companies are on the list](#which-companies-are-on-the-list).
+- **Figures.** Median base, the middle half (p25 to p75), median total (base plus bonus and stock) and the share with a base of 60.000 € or more. Never a mean.
+- **What is left out.** A base under 15.000 € a year (`MIN_BASE_EUR`): Spain's full-time minimum wage has been above it since 2023, so such a row is a monthly figure, a stipend or part-time.
+- **When.** Old salaries stay in. The page and llms.txt say the months they were reported in and the month by which half of them were, and the date shown is when the salaries were last read, not when the page was built.
+
+## Software engineers per company
+
+Until 2026-11-01 the README had a table of **what each company pays a software engineer**, and the weekly digest still reports it: the median over every one on file for it, at any experience, and how many of them are at 60.000 € or more. The CSV underneath is wider: since 2026-10-14 it holds every Spanish submission the fetcher can read — every job family and every seniority — because the same file feeds the website. The slice these medians are of:
+
+- **A software engineer.** Levels.fyi's software-engineer family only. Other roles are in the file — product managers, data scientists, engineering managers and the rest — but they never enter these medians.
 - **In Spain.** The submission names a Spanish city.
 - **Any experience.** Until 2026-10-17 only engineers with 5 or more years counted. That cut dated from when the fetcher only stored seniors; once every experience level was on file, the maintainer dropped it. A company's median now includes its juniors, so it reads lower than a seniors-only median would.
 
-Pay does not decide who is on file, and neither do role or seniority: every Spanish submission is a row. Only the README's filter is narrow.
+Pay does not decide who is on file, and neither do role or seniority: every Spanish submission is a row. Only this filter is narrow.
 
-The README then shows one row per company: the **median** base salary and median total compensation over all of its software engineers on file, how many that is, and **At 60k+**, the share of them with a base of 60.000 € or more. "46% (6)" says thirteen engineers reported and six are at 60k+, so 60k+ happens there and is not the norm; "100% (4)" says everyone who reported is. Levels.fyi's own figures, an all-levels median or a ladder mean, are never used: they mix countries and roles, and the median here is computed from the rows themselves.
+The README showed one row per company: the **median** base salary and median total compensation over all of its software engineers on file, how many that is, and **At 60k+**, the share of them with a base of 60.000 € or more. "46% (6)" says thirteen engineers reported and six are at 60k+, so 60k+ happens there and is not the norm; "100% (4)" says everyone who reported is. Levels.fyi's own figures, an all-levels median or a ladder mean, are never used: they mix countries and roles, and the median here is computed from the rows themselves.
 
-A company is on the main table while the median base of its software engineers on file is 60k or more. One whose median is between 50k and 60k is listed under **Need to improve**, so it is visible and visibly under the bar. Under 50k a company no longer leaves the file — the website needs every salary — but it stays off the README. The order is: filter positions by role, compute the median, filter companies by the median. The bar is a property of a company, not of a salary, so it is applied after aggregating and never to the rows the median is of.
+A company was on the main table while the median base of its software engineers on file was 60k or more. One whose median was between 50k and 60k was listed under **Need to improve**, so it was visible and visibly under the bar. Under 50k a company no longer leaves the file — the website needs every salary — but it stayed off the README. The order is: filter positions by role, compute the median, filter companies by the median. The bar is a property of a company, not of a salary, so it is applied after aggregating and never to the rows the median is of.
 
-A median of one salary is one person's pay, so read the Engineers column before the number.
-
-Each table is sorted by median base first and At 60k+ second, after any first-hand rows. Share first was the rule for a day, when shares ran from 4% to 100%; with the median deciding the table, every main-table share is 50% or more and the median is the number that separates rows. At 60k+ still tells one-person rows and lopsided companies apart.
+Each table was sorted by median base first and At 60k+ second, after any first-hand rows. Share first was the rule for a day, when shares ran from 4% to 100%; with the median deciding the table, every main-table share was 50% or more and the median was the number that separated rows. At 60k+ still told one-person rows and lopsided companies apart.
 
 ### How the rule was reached
 
 On 2026-09-16 the list became the **mean of each company's seniors at 60k+**, and only those. Readers pointed out, correctly, that filtering to 60k+ before averaging makes any company with one well-paid senior look competitive: Minsait showed 90k off two engineers while its fourteen other seniors, all under 60k, were not even on file. On 2026-09-22 the maintainer replaced it with the median over every senior, declined a 15-year cap on experience (it changed no company's median by more than 2k), and kept the 60k bar as the share column. For a day the listing rule was "at least one senior at 60k+", which still listed BBVA at a median of 55k; a reader put it plainly, the company filter has to be on the aggregate, and the rule became median ≥ 60k. Thirty-three companies left the main table that way. The next day the maintainer brought back the 24 of them with a median of 50k or more under "Need to improve" (EPAM, eDreams, BBVA, Thoughtworks, Freenow, Ocado...) rather than lose them; the nine under 50k (Accenture, Minsait, Inditex, NTT DATA, adidas...) stayed out. Earlier versions had published Levels.fyi's per-company averages across levels, every job family, only rungs whose names said senior, and every salary as its own row. All of those were replaced. On 2026-10-17 the 5-year cut went too: it existed because the old fetcher only stored seniors, and once the feed carried every experience level the maintainer counted every software engineer.
-
-## The website and the MCP server
-
-The website, its JSON and the MCP server read the same file under different rules from the README:
-
-- **Every role, any experience.** Not only software engineers.
-- **Which companies.** A company counts while its median base over all its salaries, at any role and seniority, is 45.000 € or more (`COMPANY_FLOOR_EUR` in `scripts/site.py`). Below that it is left out entirely, so every figure describes better-paying employers, not all of Spain.
-- **Groups.** Salaries are grouped by role, region and years of experience (0-1, 2-4, 5-7, 8-11, 12-19, 20+). A group needs five people for any figure and ten for the middle half, and every amount is rounded to 1.000 €. With three people, the median and quartiles gave back every salary in the group.
-- **Figures.** Median base, the middle half (p25 to p75), median total (base plus bonus and stock) and the share with a base of 60.000 € or more. Never a mean.
-- **What is left out.** A base under 15.000 € a year (`MIN_BASE_EUR`): Spain's full-time minimum wage has been above it since 2023, so such a row is a monthly figure, a stipend or part-time.
-- **When.** Old salaries stay in. The page and llms.txt say the months they were reported in and the month by which half of them were, and the date shown is when the salaries were last read, not when the page was built.
 
 ## What "gross annual" means here
 
@@ -84,7 +82,7 @@ A company whose Spanish software engineers' median is under 50k is not listed. L
 
 ### Which companies are on the list
 
-A company is on file while it has any Spanish salary on file, in any role at any seniority — the website needs the long tail. The README's bars are unchanged: main table at a software-engineer median of 60k, "Need to improve" between 50k and 60k, and nothing under 50k or without software engineers is shown there at all. What still leaves the file is a company with no rows after a full role read — the feed says nobody there reports — and a slug struck off by hand.
+A company is on file while it has any Spanish salary on file, in any role at any seniority — the website needs the long tail. The 60k bar and the 50k floor above only sort companies in the weekly digest; the website has its own rule. What still leaves the file is a company with no rows after a full role read — the feed says nobody there reports — and a slug struck off by hand.
 
 Companies get on the list with the feed itself: every employer named in a role's Spanish feed is written, so adding a salary on Levels.fyi is the whole submission process. A company can also be added by hand as a `Name,linkedin_id` row; it lasts while a fetch finds salaries for it.
 
@@ -94,7 +92,7 @@ Companies with salaries are enriched from [Spain Tech Radar](https://www.spainte
 
 When two sources disagree, the order is: a value typed by hand, then the radar, then Levels.fyi. No fetcher overwrites a filled field, and a `-` cell means "checked, there is none", not missing.
 
-Never include anything that identifies a person: no names, no team, no "the guy who joined in March". The CSV is public row by row, and the same field set applies: normalized values only. Anything the website or the API publishes on top is an aggregate of five people or more (`lib.MIN_GROUP`), with quartiles only from ten (`lib.QUARTILE_MIN`) and every euro figure rounded to 1.000 € (`lib.ROUND_EUR`). One exception: the companies table lists every company with data under the chosen filters, even one salary, with its median, its total and its bars by experience, rounded (maintainer's choice, 2026-11-01). A company or bar of one person shows that person's salary to the nearest 1.000 €. The map, the matrix, data.json and the MCP keep the minimum of five.
+Never include anything that identifies a person: no names, no team, no "the guy who joined in March". The CSV is private, and its fields are normalized values only. Anything the website or the API publishes on top is an aggregate of five people or more (`lib.MIN_GROUP`), with quartiles only from ten (`lib.QUARTILE_MIN`) and every euro figure rounded to 1.000 € (`lib.ROUND_EUR`). One exception: the companies table lists every company with data under the chosen filters, even one salary, with its median, its total and its bars by experience, rounded (maintainer's choice, 2026-11-01). A company or bar of one person shows that person's salary to the nearest 1.000 €. The map, the matrix, data.json and the MCP keep the minimum of five.
 
 ## Base salary versus total compensation
 
@@ -120,6 +118,6 @@ It has had to be enforced twice. The first sweep removed the 682 bands above; a 
 
 ## Freshness
 
-`reported` is the month an entry was submitted, and the README shows it, because a 2021 salary says less about today than a 2026 one. `date` is the day the entry was last read or confirmed; anything older than **365 days** is counted as stale in the README's summary line and shows up as a warning in `validate.py`.
+`reported` is the month an entry was submitted, and the site says which months its salaries span, because a 2021 salary says less about today than a 2026 one. `date` is the day the entry was last read or confirmed; anything older than **365 days** shows up as a warning in `validate.py`.
 
 Re-verifying is a real contribution: open the source, confirm the numbers, bump the date.

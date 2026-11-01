@@ -200,7 +200,7 @@ def main(argv: list[str]) -> int:
     print(f"{total_filled} metadata fields filled (no salary data: see the module docstring)")
     if ok:
         print(f"\n{ATTRIBUTION}")
-        print("Next: python3 scripts/validate.py && python3 scripts/build.py")
+        print("Next: python3 scripts/validate.py && python3 scripts/site.py --refresh")
     return 0
 
 

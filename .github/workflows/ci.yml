@@ -29,6 +29,6 @@ jobs:
       - name: Site builds and /mcp answers
         run: python3 scripts/site.py && node tests/mcp.test.mjs
 
-      # companies.csv is private, so validate.py and build.py run on the
-      # maintainer's Mac (scripts/weekly.sh); CI has the tests and the site,
+      # companies.csv is private, so validate.py and site.py --refresh run on
+      # the maintainer's Mac (scripts/weekly.sh); CI has the tests and the site,
       # built from the committed aggregates in data/.

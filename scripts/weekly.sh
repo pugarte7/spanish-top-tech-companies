@@ -4,9 +4,9 @@
 # connection. It works in a clone of its own, reset to origin/main on every
 # run, so it never touches a checkout someone is editing. The salaries are
 # private and live outside any clone (lib.DATA); the push carries only the
-# README and the site's public aggregates in data/, with the week's digest as
-# the commit body. On GitHub that push makes deploy.yml rebuild the site from
-# data/ and weekly.yml open the week's issue.
+# site's public aggregates in data/, with the week's digest as the commit
+# body. On GitHub that push makes deploy.yml rebuild the site from data/ and
+# weekly.yml open the week's issue.
 set -Eeuo pipefail
 
 BRANCH=main
@@ -42,10 +42,9 @@ main() {
   python3 scripts/fetch_radar.py
   python3 tests/test_pipeline.py
   python3 scripts/validate.py
-  python3 scripts/build.py
   python3 scripts/site.py --refresh
 
-  git add README.md data scripts/taxonomy.py
+  git add data scripts/taxonomy.py
   if git diff --cached --quiet; then
     echo "Nothing changed."
     return

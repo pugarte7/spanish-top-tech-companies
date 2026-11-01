@@ -59,9 +59,9 @@ def check_entry(where: str, entry: dict) -> None:
     base, total = entry.get("base"), entry.get("total")
     if base is None and total is None:
         errors.append(f"{where}: no base or total salary")
-    # Levels.fyi rows are whatever was reported. A first-hand row about the
-    # README's population - a software engineer - is the maintainer
-    # saying "I know they pay that", and "that" means the bar.
+    # Levels.fyi rows are whatever was reported. A first-hand row about a
+    # software engineer is the maintainer saying "I know they pay that", and
+    # "that" means the bar.
     elif (base is not None and base < lib.THRESHOLD_EUR
           and entry.get("source") in lib.VOUCHED and role == lib.SWE):
         errors.append(f"{where}: a first-hand entry under {lib.fmt_eur(lib.THRESHOLD_EUR)} "

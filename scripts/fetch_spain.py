@@ -637,7 +637,7 @@ def main(argv: list[str]) -> int:
     print(f"\nroles read: {read}, unreadable: {skipped_roles}")
     if not args.audit:
         print(f"\n{ATTRIBUTION}")
-        print("Next: python3 scripts/validate.py && python3 scripts/build.py")
+        print("Next: python3 scripts/validate.py && python3 scripts/site.py --refresh")
     if not read:
         print("\nNo role could be read: Levels.fyi is refusing this machine "
               "(GitHub's runners get exactly this).", file=sys.stderr)

@@ -14,13 +14,17 @@ import collections
 import pathlib
 import sys
 
-import build
 import lib
 
-REPO = "https://github.com/pugarte7/spanish-top-tech-companies"
+# The README no longer lists companies, so the post sends readers to the site.
+SITE = "https://spanishtoptechcompanies.com"
 POST_LIMIT = 280
 LINK_LENGTH = 23  # X counts every link as 23 characters
 MAIN, BEHIND = "60k+", "need to improve"
+
+
+def k(amount) -> str:
+    return "—" if amount is None else f"{amount / 1000:.1f}k".replace(".0k", "k")
 
 
 def table(company: dict | None) -> str | None:
@@ -36,18 +40,18 @@ def salaries(companies) -> collections.Counter:
 
 
 def median(company: dict) -> str:
-    return build.k(lib.median_base(company))
+    return k(lib.median_base(company))
 
 
 def post(date: str, on_main: int, change: int, arrived: list[dict], new: int) -> str:
     head = (f"Software engineer pay in Spain, week of {date}: {on_main} companies "
             f"with a median base of 60k+ ({change:+d}).")
-    tail = f"{new} new salaries. {REPO}"
+    tail = f"{new} new salaries. {SITE}"
     names: list[str] = []
     for company in arrived:
         candidate = names + [f"{company['company']} ({median(company)})"]
         text = f"{head} New: {', '.join(candidate)}. {tail}"
-        if len(text) - len(REPO) + LINK_LENGTH > POST_LIMIT:
+        if len(text) - len(SITE) + LINK_LENGTH > POST_LIMIT:
             break
         names = candidate
     return " ".join([head, *([f"New: {', '.join(names)}."] if names else []), tail])
@@ -78,13 +82,13 @@ def main(argv: list[str]) -> int:
     on_main = count(after.values(), MAIN)
     change = on_main - count(before.values(), MAIN)
     behind = count(after.values(), BEHIND)
-    engineers = sum(len(lib.readme_entries(c)) for c in after.values())
+    engineers = sum(len(lib.engineer_entries(c)) for c in after.values())
     date = lib.today_utc().isoformat()
 
     out = [f"## Week of {date}", "",
            f"{on_main} companies at 60k+ ({change:+d}), {behind} need to improve "
            f"({behind - count(before.values(), BEHIND):+d}), {engineers} engineers "
-           f"({engineers - sum(len(lib.readme_entries(c)) for c in before.values()):+d}): "
+           f"({engineers - sum(len(lib.engineer_entries(c)) for c in before.values()):+d}): "
            f"{sum(new.values())} new salaries, {sum(gone.values())} no longer on file."]
 
     def section(title: str, lines: list[str]) -> None:
@@ -98,7 +102,7 @@ def main(argv: list[str]) -> int:
     section("Down to need to improve", [f"- {name}: {median(after[name])}"
                                         for name in moved(MAIN, BEHIND)])
     section("Off the list", [f"- {name} (was {median(before[name])})" for name in left])
-    section("Median changes", [f"- {name}: {build.k(was)} → {build.k(now)}"
+    section("Median changes", [f"- {name}: {k(was)} → {k(now)}"
                                for name, was, now in changes[:15]])
     section("Draft post", ["> " + post(date, on_main, change, [after[n] for n in arrived],
                                        sum(new.values()))])

@@ -166,7 +166,7 @@ def main(argv: list[str]) -> int:
     if matched:
         lib.save_companies(companies)
     print(f"{filled} fields filled")
-    print("Next: python3 scripts/validate.py && python3 scripts/build.py")
+    print("Next: python3 scripts/validate.py && python3 scripts/site.py --refresh")
     return 0
 
 

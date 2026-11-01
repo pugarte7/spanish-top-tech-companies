@@ -1,24 +1,23 @@
 # spanish-top-tech-companies
 
-What companies in Spain pay software engineers, at any experience:
-the median over every software engineer on file, at companies where that median
-is 60k+ base, with a "Need to improve" table for medians between 50k and 60k. Read [docs/CONTEXT.md](docs/CONTEXT.md) before
+What tech companies in Spain pay, by role, region and experience: the website
+spanishtoptechcompanies.com, its JSON and its MCP server, built from Levels.fyi
+submissions. Read [docs/CONTEXT.md](docs/CONTEXT.md) before
 changing anything in the data pipeline — it records why several
 obvious-looking approaches are wrong.
 
 **One median per company, over every software engineer.** `companies.csv` holds
 individual salaries: since 2026-10-14 each row is one person in Spain in any
 of Levels.fyi's job families, at any seniority, paid whatever they are paid —
-the file feeds a website now, not just the README. `lib.readme_entries()`
-picks the README's population, every software-engineer row with a base at
-any experience, and the README shows one row
-per company, the median base and total over those, how many there are, and
-what share are at 60k or more (`lib.THRESHOLD_EUR`). The bar decides which
-table a company is in (median at the bar: main; between `lib.FLOOR_EUR` 50k
-and the bar: "Need to improve"; under the floor: on file but unlisted) and is
-shown as the share; it never trims the rows the median is of. Filter
-positions by role, aggregate, then filter companies by the aggregate, in
-that order. No mean, and never another role in the README's median.
+the file feeds the website. `lib.engineer_entries()` picks every
+software-engineer row with a base, at any experience, and the weekly digest
+reports one median per company over those and which list it is on (median at
+`lib.THRESHOLD_EUR` 60k: "60k+"; between `lib.FLOOR_EUR` 50k and the bar:
+"need to improve"; under the floor: on file but unlisted). Until 2026-11-01
+the README showed those lists as tables. The bar never trims the rows the
+median is of. Filter positions by role, aggregate, then filter companies by
+the aggregate, in that order. No mean, and never another role in these
+medians.
 
 How this was reached: on 2026-09-16 the maintainer rejected averages across
 levels, a filter on titles that said senior, and set "the mean of the 60k+
@@ -39,18 +38,18 @@ in the median.
 
 **The website is the product; the README introduces it.** Since 2026-11-01
 spanishtoptechcompanies.com is what people use, built and deployed from
-`main`. `README.md` opens with the site in Spanish, then English, written for
-search, and keeps the software-engineer tables `scripts/build.py` writes
-between its markers. Never move the README's data into side files, and never
-go back to one file per company. Both were tried and the maintainer rejected
-them.
+`main`. `README.md` introduces the site in Spanish, then English, written for
+search, and holds no data: on 2026-11-01 the maintainer had the
+software-engineer tables and `scripts/build.py` that wrote them removed
+("Elimina del readme todo lo que había antes"). Do not bring tables back to
+the README; the data is on the site and in `data/`.
 
 **`companies.csv` is private.** Since 2026-10-25 it is not in the repository
 on this branch either: one row per person is personal data and a copy of
 Levels.fyi's database. It lives at `lib.DATA`
 (`~/.local/share/spanish-top-tech-companies-data/website/companies.csv`, or
-`STC_DATA`), git ignores it, and only aggregates are published: the README
-and `data/` (`site.py --refresh` writes it; CI and deploys build the site from
+`STC_DATA`), git ignores it, and only aggregates are published, in
+`data/` (`site.py --refresh` writes it; CI and deploys build the site from
 it). Never commit the CSV, link to it, or put a single person's salary in
 anything public: the weekly digest and its issue carry company aggregates
 only.
@@ -93,8 +92,8 @@ The five things that will bite you:
    the table with an id token it mints each run from the Cognito refresh token
    in the macOS login Keychain (service `spanish-top-tech-companies`, stored
    with `fetch_spain.py --login`), which is what lets it run unattended, or
-   with `LEVELS_TOKEN` for a one-off run. Since 2026-11-01 that is a burner
-   account's login, never kept in a file. A
+   with `LEVELS_TOKEN` for a one-off run. Since 2026-11-01 that login lives only
+   in the Keychain, never in a file. A
    refused refresh token stops the run rather than falling back to the public
    page. Only a full table read (`Spain (table)` in the run report) has seen every
    submission; the other labels mean the page's subset. The token and the
@@ -139,8 +138,8 @@ entries (`community`, `offer-letter`) sort above them.
 On file means having salaries: a company stays in `companies.csv` while it
 has any row, however junior or underpaid — the website needs them all. What
 leaves is a company with no rows at all after a full role read (the feed says
-nobody there reported), or one struck off by hand. The README's bars are
-unchanged and apply to the aggregate only; `validate.py` refuses a company
+nobody there reported), or one struck off by hand. The digest's bar and floor
+apply to the aggregate only; `validate.py` refuses a company
 with no entries but no longer polices medians — a 40k median is data.
 
 Enrichment comes from two more sources, in this precedence: a value set by
@@ -162,12 +161,9 @@ the feed itself: every employer in a role's Spanish feed is written, so "add
 your salary on Levels.fyi and it gets picked up" holds without anyone editing
 the CSV.
 
-The "At 60k+" column is the share of a company's rows at the bar, computed
-from the rows, no stored count: "46% (6)" is six of thirteen engineers. Tables sort by median base first, then by that share (share first lasted a
-day: once the median decided the table, it put one-person 60k rows above N26 at
-76.6k); first-hand rows come first. A first-hand row must itself be at 60k+, since it is the
-maintainer vouching that the company pays that.
+A first-hand software-engineer row must itself be at 60k+, since it is the
+maintainer vouching that the company pays that; `validate.py` refuses one
+under.
 
-After any data change: `python3 scripts/validate.py && python3 scripts/build.py &&
-python3 scripts/site.py --refresh`, and commit the regenerated `README.md` and
-`data/`, never `companies.csv`.
+After any data change: `python3 scripts/validate.py && python3 scripts/site.py
+--refresh`, and commit the regenerated `data/`, never `companies.csv`.
