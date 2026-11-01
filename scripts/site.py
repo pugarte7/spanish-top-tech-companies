@@ -958,7 +958,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     <div class="tile-head">
       <div><h2>{e['map_title']}</h2><p class="lede" id="map-sub"></p></div>
       <div class="seg" id="map-metric" role="group" aria-label="{e['map_title']}">
-        <button data-m="pay">{e['map_pay']}</button><button data-m="count">{e['map_count']}</button>
+        <button data-m="count">{e['map_count']}</button><button data-m="pay">{e['map_pay']}</button>
       </div>
     </div>
     <div class="map-grid">
