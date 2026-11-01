@@ -32,6 +32,7 @@ import itertools
 import json
 import math
 import os
+import re
 import shutil
 import statistics
 import sys
@@ -159,6 +160,8 @@ THEME_ICON = ('<svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path fi
               '<svg class="sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" '
               'stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2'
               'M12 20.5v2M1.5 12h2M20.5 12h2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>')
+DOWN_ICON = ('<svg class="down" viewBox="0 0 12 12" aria-hidden="true" fill="none" stroke="currentColor" '
+             'stroke-width="1.5"><path d="M6 1v9M2 6.5 6 10.5l4-4"/></svg>')
 # The brand's mark: the eight-point star of the lacería behind the header, drawn in the bar's colour.
 EMBLEM = ('<svg class="emblem" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" '
           'stroke-width="1" stroke-linejoin="round"><path d="M23,12L19.78,15.22L19.78,19.78L15.22,19.78L12,23'
@@ -177,8 +180,10 @@ STRINGS = {
         "page_title": "Best-Paying Tech Companies in Spain ({year})",
         "h1": "The tech companies in Spain that pay the most",
         "source": "Data: Levels.fyi",
-        "rule": "{companies} companies with a median base salary of {floor} or more, ranked "
-                "from the top. Real salaries in Spain.",
+        "hero_lede": "**{people} real salaries** from {levels}, at **{companies} companies** in Spain. "
+                     "See what each one pays by role, years of experience and region.",
+        "hero_see": "See the companies", "hero_by_role": "By role", "hero_by_region": "By region",
+        "hero_cut": "{bar} or more",
         "how_title": "How it is calculated",
         "how_source_t": "Source.",
         "how_source": "Individual salaries from Levels.fyi, each kept only if its own location is in Spain. "
@@ -201,8 +206,8 @@ STRINGS = {
         "all_roles": "All roles", "all_years": "Any",
         "years_label": "Experience", "years_unit": "yrs",
         "hero_label": "Median base salary",
-        "kpi_total": "Median total comp", "kpi_people": "Salaries",
-        "kpi_share": "60k+ base", "kpi_companies": "Companies",
+        "kpi_share": "earn a base of {bar} or more", "kpi_total": "median total, with bonus and stock",
+        "kpi_companies": "companies with {min} or more salaries, of {companies}",
         "map_title": "By region",
         "map_pay": "Median base", "map_count": "No. of salaries",
         "map_pay_sub": "Median gross yearly base salary of everyone reported in each region.",
@@ -280,8 +285,10 @@ STRINGS = {
         "page_title": "Empresas tech que más pagan en España ({year})",
         "h1": "Las empresas tech que más pagan en España",
         "source": "Datos: Levels.fyi",
-        "rule": "{companies} empresas con un sueldo base mediano de {floor} o más, de la que "
-                "más paga hacia abajo. Salarios reales en España.",
+        "hero_lede": "**{people} salarios** reales de {levels}, de **{companies} empresas** en España. "
+                     "Mira cuánto paga cada una según el rol, los años de experiencia y la comunidad.",
+        "hero_see": "Ver las empresas", "hero_by_role": "Por rol", "hero_by_region": "Por comunidad",
+        "hero_cut": "{bar} o más",
         "how_title": "Cómo se calcula",
         "how_source_t": "Fuente.",
         "how_source": "Salarios individuales de Levels.fyi. Cada uno se acepta solo si su propia "
@@ -305,8 +312,8 @@ STRINGS = {
         "all_roles": "Todos los roles", "all_years": "Todas",
         "years_label": "Experiencia", "years_unit": "años",
         "hero_label": "Salario base mediano",
-        "kpi_total": "Total mediano", "kpi_people": "Salarios",
-        "kpi_share": "60k+ de base", "kpi_companies": "Empresas",
+        "kpi_share": "cobra {bar} o más de base", "kpi_total": "total mediano, con bonus y acciones",
+        "kpi_companies": "empresas con {min} o más salarios, de las {companies}",
         "map_title": "Por comunidad",
         "map_pay": "Base mediana", "map_count": "N. Salarios",
         "map_pay_sub": "Salario base bruto anual mediano de todos los salarios de cada comunidad.",
@@ -779,6 +786,53 @@ MONTHS = {"en": "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(),
           "es": "ene feb mar abr may jun jul ago sep oct nov dic".split()}
 
 
+def hankin(poly: list, angle: float) -> list:
+    """Hankin's polygons in contact: from each edge's midpoint, two rays at
+    `angle` to the edge cross inside the polygon. Returns the star they draw,
+    midpoint and crossing in turn. `poly` runs clockwise on screen (y down),
+    as angles that grow do."""
+    th, n, out = math.radians(angle), len(poly), []
+    mids, dirs = [], []
+    for i in range(n):
+        (ax, ay), (bx, by) = poly[i], poly[(i + 1) % n]
+        size = math.hypot(bx - ax, by - ay)
+        mids.append(((ax + bx) / 2, (ay + by) / 2))
+        dirs.append(((bx - ax) / size, (by - ay) / size))
+    for i in range(n):
+        j = (i + 1) % n
+        (mx, my), (dx, dy) = mids[i], dirs[i]
+        (nx, ny), (ex, ey) = mids[j], dirs[j]
+        # inward is the edge direction turned a quarter: (-dy, dx)
+        r1 = (math.cos(th) * dx - math.sin(th) * dy, math.cos(th) * dy + math.sin(th) * dx)
+        r2 = (-math.cos(th) * ex - math.sin(th) * ey, -math.cos(th) * ey + math.sin(th) * ex)
+        t = ((nx - mx) * r2[1] - (ny - my) * r2[0]) / (r1[0] * r2[1] - r1[1] * r2[0])
+        out += [(mx, my), (mx + t * r1[0], my + t * r1[1])]
+    return out
+
+
+def lazo_de_seis(size: float = 40, band: float = 5) -> str:
+    """The banner's tile: a "lazo de seis", six-point stars and hexagons in a
+    double band, drawn by Hankin's method on hexagons at 60 degrees. An SVG
+    pattern of one period; the band's inside takes --tile-band, so it follows
+    the theme, and a star's fill --tile-tint."""
+    w, h = math.sqrt(3) * size, 3 * size
+    stars = []
+    for i in range(-2, 4):
+        for j in range(-2, 4):
+            cx, cy = i * w + (j % 2) * w / 2, j * 1.5 * size
+            if -size * 1.2 <= cx <= w + size * 1.2 and -size * 1.2 <= cy <= h + size * 1.2:
+                hexagon = [(cx + size * math.cos(math.pi / 6 + k * math.pi / 3),
+                            cy + size * math.sin(math.pi / 6 + k * math.pi / 3)) for k in range(6)]
+                stars.append(hankin(hexagon, 60))
+    num = lambda v: f"{v:.2f}".rstrip("0").rstrip(".")
+    shapes = "".join(f'<polygon points="{" ".join(f"{num(x)},{num(y)}" for x, y in st)}"/>' for st in stars)
+    return (f'<svg class="tiles" aria-hidden="true"><defs><pattern id="lazo" patternUnits="userSpaceOnUse" '
+            f'width="{num(w)}" height="{num(h)}"><g class="tint">{shapes}</g>'
+            f'<g class="edge" style="stroke-width:{num(band + 1.4)}">{shapes}</g>'
+            f'<g class="band" style="stroke-width:{num(band)}">{shapes}</g></pattern></defs>'
+            f'<rect width="100%" height="100%" fill="url(#lazo)"/></svg>')
+
+
 def month(ym: str, lang: str) -> str:
     """"2024-11" as "Nov 2024" or "nov 2024"."""
     year, number = ym.split("-")
@@ -890,8 +944,11 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     e = {k: html.escape(v) for k, v in s.items()}
     other = "es" if lang == "en" else "en"
     levels = '<a href="https://www.levels.fyi" target="_blank" rel="noopener">Levels.fyi</a>'
-    steps = "".join(f"\n      <li><b>{e[f'how_{k}_t']}</b> {e[f'how_{k}']}</li>"
+    steps = "".join(f"\n          <li><b>{e[f'how_{k}_t']}</b> {e[f'how_{k}']}</li>"
                     for k in ("source", "when", "floor", "groups", "figures"))
+    # **bold** in the copy; the salary count is filled in by app.js.
+    lede = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", e["hero_lede"]).replace(
+        "{people}", '<span id="k-people"></span>').replace("{levels}", levels)
     lang_links = "".join(
         f'<a class="on" aria-current="page">{code.upper()}</a>' if code == lang
         else f'<a href="/{code}/" hreflang="{code}">{code.upper()}</a>'
@@ -935,26 +992,37 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
   </div>
 </nav>
 
-<header class="field head-field"><div class="head">
-  <h1>{e['h1']}</h1>
-  <p class="sub">{e['source'].replace('Levels.fyi', levels)} · <span id="updated"></span></p>
-  <dl class="kpis">
-    <div class="lead"><dt>{e['hero_label']}</dt><dd id="k-median"></dd></div>
-    <div class="money"><dt>{e['kpi_total']}</dt><dd id="k-total"></dd></div>
-    <div><dt>{e['kpi_share']}</dt><dd id="k-share"></dd></div>
-    <div><dt>{e['kpi_people']}</dt><dd id="k-people"></dd></div>
-    <div><dt>{e['kpi_companies']}</dt><dd id="k-companies"></dd></div>
-  </dl>
-  <p class="rule">{e['rule']}</p>
-  <details class="how">
-    <summary>{e['how_title']}</summary>
-    <ol class="steps">{steps}
-    </ol>
-  </details>
+<header class="field head-field">
+<div class="wall" aria-hidden="true">{lazo_de_seis()}</div>
+<div class="head">
+  <div class="pitch">
+    <h1>{e['h1']}</h1>
+    <p class="hero-lede">{lede}</p>
+    <nav class="cta" aria-label="{e['hero_see']}">
+      <a class="btn main wide" href="#companies-card">{e['hero_see']} {DOWN_ICON}</a>
+      <a class="btn alt" href="#matrix-card">{e['hero_by_role']}</a>
+      <a class="btn alt" href="#map-card">{e['hero_by_region']}</a>
+      <details class="how wide">
+        <summary class="btn main">{e['how_title']}</summary>
+        <ol class="steps">{steps}
+        </ol>
+      </details>
+    </nav>
+  </div>
+  <article class="hero-card" aria-label="{e['hero_label']}">
+    <div class="hero-card-head"><span>{e['hero_label']}</span><span id="updated"></span></div>
+    <p class="hero-median" id="k-median"></p>
+    <div class="hero-dist" id="k-dist"></div>
+    <dl class="hero-stats">
+      <div><dt><i aria-hidden="true"></i>{e['kpi_share']}</dt><dd id="k-share"></dd></div>
+      <div><dt>{e['kpi_total']}</dt><dd id="k-total"></dd></div>
+      <div><dt>{e['kpi_companies']}</dt><dd id="k-companies"></dd></div>
+    </dl>
+  </article>
 </div></header>
 
 <main class="bento">
-  <section class="tile wide map-tile">
+  <section class="tile wide map-tile" id="map-card">
     <div class="tile-head">
       <div><h2>{e['map_title']}</h2><p class="lede" id="map-sub"></p></div>
       <div class="seg" id="map-metric" role="group" aria-label="{e['map_title']}">

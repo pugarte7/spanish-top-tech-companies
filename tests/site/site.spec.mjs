@@ -33,6 +33,43 @@ test("loads with figures in every card", async ({ page }) => {
   await expect(page.locator("#summary dd").first()).not.toBeEmpty();
 });
 
+test("header card: the median, its histogram with the 60k line, figures with their unit", async ({ page }) => {
+  await open(page);
+  const data = await (await page.request.get("/api/v1/data.json")).json();
+  const all = data.cells["||"];
+  await expect(page.locator("#k-median")).toHaveText(`${all.median.toLocaleString("es-ES", { useGrouping: "always" })} €`);
+  await expect(page.locator("#k-dist .col")).toHaveCount(all.hist.length);
+  await expect(page.locator("#k-dist .cut")).toHaveText("60.000 € o más");
+  // Blue from the bar up: the bands from 60k on, and none under it.
+  const first = 1 + (data.threshold - data.hist.low) / data.hist.step;
+  await expect(page.locator("#k-dist .col i.hi")).toHaveCount(all.hist.length - first);
+  await expect(page.locator(`#k-dist .col:nth-child(${first}) i`)).not.toHaveClass(/hi/);
+  // Four digits keep their dot, as every other figure on the page.
+  await expect(page.locator("#k-dist .gl b").last()).toHaveText(/^\d{1,3}(\.\d{3})*$/);
+  await expect(page.locator("#k-people")).toHaveText(all.n.toLocaleString("es-ES", { useGrouping: "always" }));
+  await expect(page.locator(".hero-stats dt").first()).toHaveText("cobra 60.000 € o más de base");
+  await expect(page.locator(".hero-stats dt").last()).toContainText("empresas con 5 o más salarios");
+});
+
+test("header buttons: every row as wide, the pair half each, and each leads somewhere", async ({ page }) => {
+  await open(page);
+  const box = async (sel) => (await page.locator(sel).boundingBox());
+  const see = await box(".cta .btn.main.wide"), how = await box(".how summary");
+  const role = await box('.cta a[href="#matrix-card"]'), region = await box('.cta a[href="#map-card"]');
+  expect(how.width).toBeCloseTo(see.width, 0);
+  expect(role.width).toBeCloseTo(region.width, 0);
+  expect(role.x).toBeCloseTo(see.x, 0);
+  expect(region.x + region.width).toBeCloseTo(see.x + see.width, 0);
+  expect(how.y).toBeGreaterThan(role.y);
+
+  await page.locator(".how summary").click();
+  await expect(page.locator(".how .steps")).toBeVisible();
+  await page.locator('.cta a[href="#matrix-card"]').click();
+  await expect(page.locator("#matrix-card")).toBeInViewport();
+  await page.locator('.cta a[href="#companies-card"]').click();
+  await expect(page.locator("#companies-card")).toBeInViewport();
+});
+
 test("matrix: roles with most salaries, a cell filters the table", async ({ page }) => {
   await open(page);
   const counts = (await page.locator("#matrix tbody th small").allTextContents()).map(num);
