@@ -569,7 +569,15 @@ def role_page(role: str, delay: float) -> dict | None:
     not quoting EUR is not about Spain and its rate is unusable, which costs
     only the rows that have no rate of their own.
     """
-    body = get(f"{BASE}/t/{role}/locations/spain", delay)
+    try:
+        body = get(f"{BASE}/t/{role}/locations/spain", delay)
+    except Blocked as exc:
+        # The WAF challenges HTML pages while the API still answers (seen
+        # 2026-11-01). Only the rows paid in another currency need this page,
+        # so they are skipped and counted rather than the whole run stopped.
+        print(f"  {role}: public page blocked ({exc}); rows in other currencies "
+              "are skipped this run", file=sys.stderr)
+        return None
     props = page_props(body) if body else None
     if not props or props.get("locationCurrency") != "EUR":
         return None
