@@ -82,6 +82,7 @@ test("map opens on number of salaries and switches to pay", async ({ page }) => 
   const sortedDesc = (v) => v.every((x, i) => i === 0 || v[i - 1] >= x);
 
   await expect(page.locator("#map-metric [data-m=count]")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#map-metric [data-m=count]")).toHaveText("N. Salarios");
   await expect(page.locator("#map-sub")).toHaveText("Cuántos salarios se han recogido en cada comunidad.");
   const counts = await values();
   expect(sortedDesc(counts)).toBe(true);
