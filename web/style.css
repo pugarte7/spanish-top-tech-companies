@@ -35,14 +35,12 @@
   --quiet: #8a8aa4;
   --empty: #ececf2;
   /* Pay shades: two greys under 60k, three blues from it. The map hatches each
-     shade with lines of --hN, the way the Hermes engraving is drawn. */
+     shade with lines of --surface, cut through it like the Hermes engraving. */
   --s1: #e2e2ea; --s2: #c9c9d6; --s3: #a8a8ff; --s4: #6b6bff; --s5: #0000c4;
   --s1-ink: #0000f2; --s2-ink: #0000f2; --s3-ink: #0000c4; --s4-ink: #000040; --s5-ink: #f2f2f2;
-  --h1: #cdcddb; --h2: #a3a3bb; --h3: #6b6bff; --h4: #2e2ef7; --h5: #00009a;
   /* Counts run light to dark blue and are hatched too, so the map keeps one
      look in both views; the toggle and the legend say which one is shown. */
   --c1: #e3e3ff; --c2: #c4c4ff; --c3: #8f8fff; --c4: #4d4dff; --c5: #0000c4;
-  --ch1: #c8c8f0; --ch2: #a0a0f0; --ch3: #6b6bff; --ch4: #2e2ef7; --ch5: #00009a;
   --float: 0 8px 24px rgba(0, 0, 60, .14);
   --radius-card: 4px; --radius-control: 3px;
   --gap: 16px; --pad: 24px; --control-height: 36px;
@@ -56,9 +54,7 @@
     --text: #ececff; --muted: #a6a6ee; --hue: #8c8cff; --quiet: #5a5a7e; --empty: #121236;
     --s1: #1a1a3a; --s2: #2a2a55; --s3: #2e2ec8; --s4: #5c5cff; --s5: #a8a8ff;
     --s1-ink: #ececff; --s2-ink: #ececff; --s3-ink: #ffffff; --s4-ink: #ffffff; --s5-ink: #05051c;
-    --h1: #262648; --h2: #3c3c6c; --h3: #5c5cff; --h4: #9c9cff; --h5: #e0e0ff;
     --c1: #1a1a3a; --c2: #23236a; --c3: #2e2ec8; --c4: #5c5cff; --c5: #a8a8ff;
-    --ch1: #262648; --ch2: #34348a; --ch3: #5c5cff; --ch4: #9c9cff; --ch5: #e0e0ff;
     --float: 0 8px 24px rgba(0, 0, 0, .6);
   }
 }
@@ -70,9 +66,7 @@
   --text: #ececff; --muted: #a6a6ee; --hue: #8c8cff; --quiet: #5a5a7e; --empty: #121236;
   --s1: #1a1a3a; --s2: #2a2a55; --s3: #2e2ec8; --s4: #5c5cff; --s5: #a8a8ff;
   --s1-ink: #ececff; --s2-ink: #ececff; --s3-ink: #ffffff; --s4-ink: #ffffff; --s5-ink: #05051c;
-  --h1: #262648; --h2: #3c3c6c; --h3: #5c5cff; --h4: #9c9cff; --h5: #e0e0ff;
   --c1: #1a1a3a; --c2: #23236a; --c3: #2e2ec8; --c4: #5c5cff; --c5: #a8a8ff;
-  --ch1: #262648; --ch2: #34348a; --ch3: #5c5cff; --ch4: #9c9cff; --ch5: #e0e0ff;
   --float: 0 8px 24px rgba(0, 0, 0, .6);
 }
 * { box-sizing: border-box; }
