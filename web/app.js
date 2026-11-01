@@ -581,6 +581,7 @@ function agents() {
     tabs.forEach((t, j) => t.setAttribute("aria-pressed", String(j === k)));
     document.querySelectorAll(".agent-name").forEach((n) => { n.textContent = tabs[k].dataset.name; });
     $("agent-by").textContent = tabs[k].dataset.by;
+    $("agent-get").href = tabs[k].dataset.url;
   };
   tabs.forEach((t, k) => { t.onclick = () => { picked = true; show(k); }; });
   if (!STILL) setInterval(() => { if (!picked && !document.hidden) show((at + 1) % tabs.length); }, AGENT_TURN_MS);
