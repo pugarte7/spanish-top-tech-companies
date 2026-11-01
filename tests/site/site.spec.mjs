@@ -262,7 +262,8 @@ test("links that leave the page open in a new tab", async ({ page, context }) =>
   expect(stay).toEqual([]);
 
   const tab = context.waitForEvent("page");
-  await rows(page).first().locator('a[aria-label="LinkedIn"]').click();
+  // Not every company has a LinkedIn page; the first that does.
+  await rows(page).locator('a[aria-label="LinkedIn"]').first().click();
   expect((await tab).url()).not.toBe(page.url());
   await expect(rows(page).first()).toBeVisible();
 });

@@ -94,7 +94,7 @@ Companies with salaries are enriched from [Spain Tech Radar](https://www.spainte
 
 When two sources disagree, the order is: a value typed by hand, then the radar, then Levels.fyi. No fetcher overwrites a filled field, and a `-` cell means "checked, there is none", not missing.
 
-Never include anything that identifies a person: no names, no team, no "the guy who joined in March". The CSV is public row by row, and the same field set applies: normalized values only. Anything the website or the API publishes on top is an aggregate of five people or more (`lib.MIN_GROUP`), with quartiles only from ten (`lib.QUARTILE_MIN`) and every euro figure rounded to 1.000 € (`lib.ROUND_EUR`). One exception: the experience bars inside a company's row show each band's median, rounded, even when one or two people reported it, so every company has its bars (maintainer's choice, 2026-11-01). A bar of one person is that person's salary to the nearest 1.000 €.
+Never include anything that identifies a person: no names, no team, no "the guy who joined in March". The CSV is public row by row, and the same field set applies: normalized values only. Anything the website or the API publishes on top is an aggregate of five people or more (`lib.MIN_GROUP`), with quartiles only from ten (`lib.QUARTILE_MIN`) and every euro figure rounded to 1.000 € (`lib.ROUND_EUR`). One exception: the companies table lists every company with data under the chosen filters, even one salary, with its median, its total and its bars by experience, rounded (maintainer's choice, 2026-11-01). A company or bar of one person shows that person's salary to the nearest 1.000 €. The map, the matrix, data.json and the MCP keep the minimum of five.
 
 ## Base salary versus total compensation
 

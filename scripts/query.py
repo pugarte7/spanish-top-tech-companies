@@ -149,7 +149,11 @@ def company(data: dict, name: str, role=None, region=None, years=None) -> dict:
     combinations included; all of them at once came to ~9k tokens for Glovo."""
     _, selection = _key(data, role, region, years)
     want = _norm(name)
-    matches = [i for i, c in enumerate(data["companies"]) if want in _norm(c["name"])]
+    # data.json names every company the page lists; agents get only those
+    # with a published group.
+    published = {a["c"] for a in data["company_cells"].get("||", [])}
+    matches = [i for i, c in enumerate(data["companies"])
+               if i in published and want in _norm(c["name"])]
     exact = [i for i in matches if _norm(data["companies"][i]["name"]) == want]
     matches = exact or matches
     if not matches:

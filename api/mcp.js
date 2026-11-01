@@ -176,7 +176,11 @@ export function topCompanies(data, args = {}) {
 export function company(data, name, args = {}) {
   const [, selection] = select(data, args);
   const want = norm(name);
-  let matches = data.companies.map((c, i) => [c, i]).filter(([c]) => norm(c.name).includes(want));
+  // data.json names every company the page lists; agents get only those
+  // with a published group.
+  const published = new Set((data.company_cells["||"] || []).map((a) => a.c));
+  let matches = data.companies.map((c, i) => [c, i])
+    .filter(([c, i]) => published.has(i) && norm(c.name).includes(want));
   const exact = matches.filter(([c]) => norm(c.name) === want);
   if (exact.length) matches = exact;
   if (!matches.length)

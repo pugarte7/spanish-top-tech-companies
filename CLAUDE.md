@@ -111,9 +111,11 @@ have removed. The CSV is row-level; the website and MCP publish only
 aggregates of five or more people (`lib.MIN_GROUP`), quartiles only from ten
 (`lib.QUARTILE_MIN`) and every euro figure rounded to 1.000 € (`lib.ROUND_EUR`):
 with three people, a median and its quartiles gave back all three salaries.
-The one exception is the experience bars in a company's row: on 2026-11-01
-the maintainer chose a bar for every band with anyone in it, one person
-included (`site.company_years()`), still rounded. Keep it to those bars.
+The one exception is the companies table: on 2026-11-01 the maintainer chose
+to list every company with data under the filters, one salary included, with
+its summary and its bars per experience band (`site.company_filters()`),
+still rounded. A role with 85 salaries had listed one company. data.json,
+the map, the matrix and the MCP keep MIN_GROUP.
 
 A row should ideally mean the maintainer knows someone in Spain doing that job,
 or was offered the position. Crowdsourced figures are placeholders; first-hand
