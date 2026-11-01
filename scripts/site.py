@@ -50,14 +50,17 @@ VERCEL_SCRIPTS = ('<script defer src="/_vercel/insights/script.js"></script>\n'
 # the public address whatever host built the page.
 MCP_URL = "https://spanishtoptechcompanies.com/mcp"
 # The agents section and its prompt: (name, maker, logo in web/agents/, how
-# the logo fills its tile, tile colour). The first is the one shown before
-# the page's script runs. Logos are the ones the maintainer picked.
+# the logo fills its tile, tile colour, where to get it). The first is the one
+# shown before the page's script runs. Logos are the ones the maintainer
+# picked. Grok's link is the repository because x.ai/cli refuses non-browsers;
+# Instinct has no CLI, only its own sign-up.
 AGENTS = [
-    ("Instinct", "Instinct", "instinct.jpg", "cover", "#ffffff"),
-    ("Hermes", "Nous Research", "hermes.png", "cover", "#ffffff"),
-    ("dots", "OpenAI", "dots.jpg", "wide", "#ffffff"),
-    ("Grok", "xAI", "grok.jpg", "mark", "#ffffff"),
-    ("Muse", "Meta", "muse.jpg", "cover", "#ffff00"),
+    ("Codex", "OpenAI", "codex.png", "cover", "#ffffff", "https://developers.openai.com/codex/cli"),
+    ("Cursor", "Anysphere", "cursor.jpg", "cover", "#000000", "https://cursor.com/cli"),
+    ("Claude Code", "Anthropic", "claude-code.png", "mark", "#ffffff", "https://code.claude.com/docs/en/setup"),
+    ("Grok CLI", "xAI", "grok.jpg", "mark", "#ffffff", "https://github.com/xai-org/grok-build#installing-the-released-binary"),
+    ("Instinct", "Instinct", "instinct.jpg", "cover", "#ffffff", "https://instinct.com/"),
+    ("Hermes", "Nous Research", "hermes.png", "cover", "#ffffff", "https://hermes-agent.nousresearch.com/"),
 ]
 
 # Region outlines, fetched once into .cache/ (gitignored is fine: it is
@@ -223,6 +226,7 @@ STRINGS = {
                        "application. It saves you hours.",
         "agents_call": "Let {name} apply for you",
         "agents_pick": "Pick your agent",
+        "agents_get": "Get {name}",
         "agents_s1_t": "Connect the salaries",
         "agents_s1": "Paste this address into {name}'s connectors, so it knows which companies pay most.",
         "agents_s2_t": "Give it your CV and what you want",
@@ -325,6 +329,7 @@ STRINGS = {
                        "Te ahorras horas.",
         "agents_call": "Que {name} aplique por ti",
         "agents_pick": "Elige tu agente",
+        "agents_get": "Consigue {name}",
         "agents_s1_t": "Conecta los sueldos",
         "agents_s1": "Pega esta dirección en los conectores de {name}. Así sabe qué empresas pagan más.",
         "agents_s2_t": "Dale tu CV y lo que buscas",
@@ -746,7 +751,7 @@ def strings(lang: str, data: dict) -> dict:
 
 
 def agent_tile(i: int, cls: str = "agent-tile") -> str:
-    _, _, logo, fit, bg = AGENTS[i]
+    logo, fit, bg = AGENTS[i][2:5]
     return (f'<span class="{cls}" style="background:{bg}">'
             f'<img class="fit-{fit}" src="/agents/{logo}" alt="" decoding="async"></span>')
 
@@ -762,8 +767,9 @@ def agents_section(e: dict) -> str:
     with_name = lambda k: e[k].replace("{name}", name)
     tabs = "".join(
         f'<button class="agent-tab" type="button" data-name="{html.escape(n)}" data-by="{html.escape(by)}" '
-        f'aria-label="{html.escape(n)}" aria-pressed="{str(i == 0).lower()}">{agent_tile(i)}</button>'
-        for i, (n, by, *_) in enumerate(AGENTS))
+        f'data-url="{html.escape(url)}" aria-label="{html.escape(n)}" '
+        f'aria-pressed="{str(i == 0).lower()}">{agent_tile(i)}</button>'
+        for i, (n, by, *_, url) in enumerate(AGENTS))
     items = lambda k: "".join(f"<li>{x}</li>" for x in e[k].split("|"))
     copy = lambda target: (f'<button class="copy-btn" type="button" data-copy="{target}">'
                            f'{e["copy"]}</button>')
@@ -774,7 +780,8 @@ def agents_section(e: dict) -> str:
     <div class="agents-grid">
       <div class="agents-stage field">
         {agent_stack()}
-        <div><p class="agent-call">{with_name('agents_call')}</p><p class="agent-by" id="agent-by">{html.escape(AGENTS[0][1])}</p></div>
+        <div><p class="agent-call">{with_name('agents_call')}</p><p class="agent-by" id="agent-by">{html.escape(AGENTS[0][1])}</p>
+          <a class="agent-get" id="agent-get" href="{html.escape(AGENTS[0][5])}" target="_blank" rel="noopener">{with_name('agents_get')} <span aria-hidden="true">↗</span></a></div>
         <div class="agent-tabs" role="group" aria-label="{e['agents_pick']}">{tabs}</div>
       </div>
       <div class="agents-how">
