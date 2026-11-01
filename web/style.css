@@ -449,6 +449,7 @@ footer a { color: var(--field-ink); }
   border-radius: var(--radius-control); background: var(--field-ink); color: var(--field); text-decoration: none;
   font: 500 14px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; }
 .agent-get:hover { background: #ffffff; }
+.agent-get .out { width: 12px; height: 12px; flex: none; }
 /* Six 40px tabs fit one row of the 292px a narrow stage leaves. */
 .agent-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .agent-tab { width: 40px; height: 40px; padding: 0; border: 0; border-radius: 10px; background: none;
