@@ -747,9 +747,9 @@ def test_agents_see_only_groups_of_five() -> None:
 def test_companies_table_shows_any_data() -> None:
     """The companies table lists a company with any salary under the filters, and
     its row has a bar for every band someone reported, even one person
-    (maintainer, 2026-11-01). data.json's groups and the MCP keep MIN_GROUP."""
+    (maintainer, 2026-11-01). data.json's groups keep MIN_GROUP; tests/mcp.test.mjs
+    checks the MCP does too."""
     print("the companies table goes down to one person")
-    import mcp_server
     import importlib.util
     spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
     site_build = importlib.util.module_from_spec(spec)
@@ -770,9 +770,6 @@ def test_companies_table_shows_any_data() -> None:
           [r[:2] for r in files[""]["cells"]["|"]], [[0, 5], [1, 2]])
     check("but data.json has no group of it",
           sorted(a["c"] for v in data["company_cells"].values() for a in v if a["c"] == 1), [])
-    reply = mcp_server.handle(data, {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
-        "name": "company_salaries", "arguments": {"name": "beta"}}})
-    check("and the MCP does not answer for it", reply["result"]["isError"], True)
 
 
 def test_site_dates_and_minimum_base() -> None:
