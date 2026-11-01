@@ -194,8 +194,7 @@ STRINGS = {
                       "by experience.",
         "how_figures_t": "What you see.",
         "how_figures": "Median base, the middle half (p25–p75), median total pay (base + bonus + stock) "
-                       "and the share with a base of {bar} or more. They describe these companies, "
-                       "not all of Spain.",
+                       "and the share with a base of {bar} or more.",
         "all_roles": "All roles", "all_years": "Any",
         "years_label": "Experience", "years_unit": "yrs",
         "hero_label": "Median base salary",
@@ -299,8 +298,7 @@ STRINGS = {
                       "experiencia.",
         "how_figures_t": "Qué se muestra.",
         "how_figures": "Sueldo base mediano, la mitad central (p25–p75), el total mediano (base + bonus "
-                       "+ acciones) y el porcentaje con una base de {bar} o más. Son cifras de estas "
-                       "empresas, no de toda España.",
+                       "+ acciones) y el porcentaje con una base de {bar} o más.",
         "all_roles": "Todos los roles", "all_years": "Todas",
         "years_label": "Experiencia", "years_unit": "años",
         "hero_label": "Salario base mediano",
