@@ -88,10 +88,11 @@ The five things that will bite you:
    visitor's session token and shows anonymous visitors asterisks. Fever's page
    embedded one record and the README said "none with 5+ years at 60k+" while
    its table had 29 Spanish engineers, ten at 60k+. `fetch_spain.py` reads
-   the table when `LEVELS_TOKEN` or `~/.config/levels/token` holds the
-   maintainer's token (`localStorage.auth` on levels.fyi, lasts a day), or
-   mints one each run from the Cognito refresh token in
-   `~/.config/levels/refresh_token`, which is what lets it run unattended. A
+   the table with an id token it mints each run from the Cognito refresh token
+   in the macOS login Keychain (service `spanish-top-tech-companies`, stored
+   with `fetch_spain.py --login`), which is what lets it run unattended, or
+   with `LEVELS_TOKEN` for a one-off run. Since 2026-11-01 that is a burner
+   account's login, never kept in a file. A
    refused refresh token stops the run rather than falling back to the public
    page. Only a full table read (`Spain (table)` in the run report) has seen every
    submission; the other labels mean the page's subset. The token and the
@@ -108,7 +109,9 @@ no company at all, exits 1.
 
 The weekly refresh runs on the maintainer's Mac, not on GitHub: Levels.fyi
 serves GitHub's runners pages without data. `scripts/weekly.sh` runs from
-launchd every Monday at 08:00 and pushes a "Refresh salaries" commit;
+launchd every Monday at 08:00 and pushes a "Refresh salaries" commit to
+`website`, which deploys the site; main's README stopped changing on
+2026-11-01;
 `.github/workflows/weekly.yml` turns that push into an issue with
 `scripts/digest.py`'s summary of what changed. See docs/CONTEXT.md.
 

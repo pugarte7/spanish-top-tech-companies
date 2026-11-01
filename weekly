@@ -29,8 +29,8 @@ case "${1:-}" in
     ;;
   status)
     launchctl print "$job" | grep -E 'state =|runs =|last exit code'
-    git -C "$(dirname "$0")" fetch -q origin main
-    last=$(git -C "$(dirname "$0")" log -1 --format='%h %ad %s' --date=short --grep='^Refresh salaries' origin/main)
+    git -C "$(dirname "$0")" fetch -q origin website
+    last=$(git -C "$(dirname "$0")" log -1 --format='%h %ad %s' --date=short --grep='^Refresh salaries' origin/website)
     echo "last refresh: ${last:-none yet}"
     ;;
   log)

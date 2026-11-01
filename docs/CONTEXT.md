@@ -312,19 +312,26 @@ that state (`Spain (aggregate)`), with Levels.fyi's own aggregate showing 60k+
 bases existed at Aily Labs, Manychat, Perk, Factorial, Clarity AI, Fever,
 Exoticca and Cabify.
 
-Since 2026-09-21 `fetch_spain.py` reads the table when a token is in
-`LEVELS_TOKEN` or `~/.config/levels/token`. The token is `localStorage.auth`
-on levels.fyi while signed in, a Cognito id token good for about a day.
+Since 2026-09-21 `fetch_spain.py` reads the table with a token. An id token
+(`localStorage.auth` on levels.fyi while signed in, good for about a day) in
+`LEVELS_TOKEN` serves a one-off run.
 
-Since 2026-09-27 it mints that id token itself when
-`~/.config/levels/refresh_token` exists, so a run needs nobody to paste one.
+Since 2026-09-27 it mints that id token itself from a refresh token, so a run
+needs nobody to paste one. Until 2026-11-01 both lived in plaintext files
+under `~/.config/levels/`; since then the refresh token is a burner account's
+and lives only in the macOS login Keychain (service
+`spanish-top-tech-companies`, account `levels-refresh-token`).
+`fetch_spain.py --login` checks it with Cognito and stores it, reading stdin
+so it never lands in shell history or `ps`; the `security` tool that stores
+it is the only program the item trusts, so the launchd job reads it without
+a prompt while the user is logged in.
 The site is Amplify v6 over Cognito pool `us-west-2_fUcfzSGdv`, web client
 `76of0ich18hd8uehju7fniv2u1` (no client secret; both are the id token's `iss`
 and `aud`), and it keeps the refresh token in localStorage under
 `CognitoIdentityServiceProvider.76of0ich18hd8uehju7fniv2u1.<username>.refreshToken`.
 `refreshed()` makes the call Amplify makes, `GetTokensFromRefreshToken`
-against `cognito-idp.us-west-2.amazonaws.com`, and writes back a new refresh
-token if the pool rotates them (it did not on 2026-09-27, so one refresh
+against `cognito-idp.us-west-2.amazonaws.com`, and the Keychain item is
+replaced if the pool rotates them (it did not on 2026-09-27, so one refresh
 token serves a laptop and CI alike). A refused refresh token (expired or revoked)
 stops the run: falling back to the public page would replace every table
 entry on file with the page's handful. Its lifetime is the pool's setting and
@@ -423,7 +430,7 @@ priced in euros is dropped and counted, never guessed.
 | `site.py` | Builds `_site/`: the page in Spanish and English, `/api/v1/data.json` (every aggregate of `lib.MIN_GROUP`+ people), `/llms.txt` and `/llms-full.txt` for agents that only read URLs. `SITE_URL` makes their links absolute. On Vercel (`VERCEL` set by `vercel build`) the pages also load Web Analytics and Speed Insights; nowhere else, since `/_vercel/` exists only there. | Yes |
 | `mcp-stdio.mjs` | The MCP server over stdio for local agents: the same `respond` as `api/mcp.js`, over `_site/`'s `data.json` when built, else the live one. `skills/tech-pay-spain/SKILL.md` tells agents (Hermes, any agentskills.io client) how to use it. | Yes |
 | `api/mcp.js` | Vercel Function: the MCP server, public at `/mcp` through a rewrite in `vercel.json`; Vercel serves `_site/` as static files. The only implementation: reads the deployment's own `data.json`, so it can never return a group under `MIN_GROUP`; tools `salary_stats`, `top_companies`, `company_salaries`, `list_filters`. Speaks both eras of the protocol: requests carrying `_meta` `io.modelcontextprotocol/protocolVersion` get 2026-07-28 answers (`server/discover`, `resultType`, cache hints, header checks over HTTP), `initialize` gets the handshake versions back to 2024-11-05. Bad input is a JSON-RPC error, never a crash; `tests/mcp.test.mjs` checks it over stdio and HTTP. Built and deployed by `.github/workflows/deploy.yml` on every push to `website` (`vercel build` then `vercel deploy --prebuilt`; Vercel's own Git deployments are off). | Deployed by CI |
-| `weekly.sh` | The Monday refresh launchd runs on the maintainer's Mac: taxonomy, salary feeds, company details, radar, test, validate, build, push. | Pushes to `main` |
+| `weekly.sh` | The Monday refresh launchd runs on the maintainer's Mac: taxonomy, salary feeds, company details, radar, test, validate, build, the site's aggregates, push. | Pushes to `website` |
 
 `lib.py` is the only code that reads or writes `companies.csv`. Writes go to a
 temporary file first, because an interrupted fetch must not truncate the only
@@ -442,8 +449,11 @@ So:
   (`~/Library/LaunchAgents/`) runs `scripts/weekly.sh` from its own clone in
   `~/.local/share/spanish-top-tech-companies` every Monday at 08:00 local.
   launchd runs a missed slot when the Mac wakes, not when it was off.
-- `weekly.sh` resets that clone to `origin/main`, fetches, runs the tests,
-  `validate.py` and `build.py`, and pushes "Refresh salaries YYYY-MM-DD".
+- `weekly.sh` resets that clone to `origin/website` (until 2026-11-01 it
+  refreshed `main`'s README, which no longer changes), fetches, runs the
+  tests, `validate.py`, `build.py` and `site.py --refresh`, and pushes
+  "Refresh salaries YYYY-MM-DD" with the README and `data/`, never the
+  salaries themselves. That push is also what deploys the site.
   Its log is `~/Library/Logs/spanish-top-tech-companies/weekly.log`; a failure
   also raises a macOS notification.
 - `sh weekly run` (repo root) starts the same launchd job by hand and follows
