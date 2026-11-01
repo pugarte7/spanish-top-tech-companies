@@ -43,6 +43,7 @@ import base64
 import collections
 import getpass
 import hashlib
+import hmac
 import gzip
 import json
 import os
@@ -83,6 +84,23 @@ KEYCHAIN_SERVICE = "spanish-top-tech-companies"
 KEYCHAIN_ACCOUNT = "levels-refresh-token"
 COGNITO = "https://cognito-idp.us-west-2.amazonaws.com/"
 COGNITO_CLIENT = "76of0ich18hd8uehju7fniv2u1"
+COGNITO_POOL = "us-west-2_fUcfzSGdv"
+# The client allows only SRP sign-in (USER_PASSWORD_AUTH is "not enabled for
+# this client"), so --login with an email and password runs the same SRP the
+# site's own Amplify client does: RFC 5054 over the 3072-bit MODP group with
+# Cognito's key derivation ("Caldera Derived Key"). It is the standard
+# protocol, not a bot check: it talks to Cognito, never to levels.fyi.
+SRP_N = int(
+    "FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DD"
+    "EF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7ED"
+    "EE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F"
+    "83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3B"
+    "E39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA0510"
+    "15728E5A8AAAC42DAD33170D04507A33A85521ABDF1CBA64ECFB850458DBEF0A8AEA71575D060C7DB3970F85A6E1E4C7"
+    "ABF5AE8CDB0933D71E8C94E04A25619DCEE3D2261AD2EE6BF12FFA06D98A0864D87602733EC86A64521F2B18177B200C"
+    "BBE117577A615D6C770988C0BAD946E208E24FA074E5AB3143DB5BFCE0FD108E4B82D120A93AD2CAFFFFFFFFFFFFFFFF",
+    16)
+SRP_G = 2
 # Level names the API sends where the author left the field blank.
 NO_LEVEL = {"", "false", "none", "null"}
 
@@ -201,6 +219,21 @@ def keychain_write(secret: str) -> None:
                          f"(service {KEYCHAIN_SERVICE}, account {KEYCHAIN_ACCOUNT}).")
 
 
+def cognito(target: str, body: dict, what: str) -> dict:
+    """One call to the Cognito user pool. Its refusal names `what`, never a secret."""
+    request = urllib.request.Request(COGNITO, data=json.dumps(body).encode(), headers={
+        "Content-Type": "application/x-amz-json-1.1",
+        "X-Amz-Target": f"AWSCognitoIdentityProviderService.{target}"})
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return json.load(response)
+    except urllib.error.HTTPError as exc:
+        reason = re.search(r'"message"\s*:\s*"([^"]*)"', exc.read().decode("utf-8", "replace"))
+        raise SystemExit(f"Cognito refused {what} (HTTP {exc.code}"
+                         f"{': ' + reason.group(1) if reason else ''}). Sign in to levels.fyi "
+                         "again and store a fresh login with --login.") from exc
+
+
 def refreshed(secret: str) -> tuple[str, str]:
     """A fresh id token, and the refresh token to keep, from a refresh token.
 
@@ -210,26 +243,85 @@ def refreshed(secret: str) -> tuple[str, str]:
     token stops the run: falling back to public pages would replace every
     feed entry on file with a fraction of them.
     """
-    request = urllib.request.Request(COGNITO, data=json.dumps({
-        "ClientId": COGNITO_CLIENT, "RefreshToken": secret,
-    }).encode(), headers={
-        "Content-Type": "application/x-amz-json-1.1",
-        "X-Amz-Target": "AWSCognitoIdentityProviderService.GetTokensFromRefreshToken"})
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            result = json.load(response)["AuthenticationResult"]
-    except urllib.error.HTTPError as exc:
-        reason = re.search(r'"message"\s*:\s*"([^"]*)"', exc.read().decode("utf-8", "replace"))
-        raise SystemExit(f"Cognito refused the refresh token (HTTP {exc.code}"
-                         f"{': ' + reason.group(1) if reason else ''}). Sign in to levels.fyi "
-                         "again and store a fresh one with --login.") from exc
+    result = cognito("GetTokensFromRefreshToken", {
+        "ClientId": COGNITO_CLIENT, "RefreshToken": secret}, "the refresh token")
+    result = result["AuthenticationResult"]
     return result["IdToken"], result.get("RefreshToken") or secret
 
 
+def _srp_hex(value) -> str:
+    """A number, or a hex string, as even-length hex that reads as positive."""
+    text = value if isinstance(value, str) else f"{value:x}"
+    if len(text) % 2:
+        return "0" + text
+    return "00" + text if text[0] in "89abcdefABCDEF" else text
+
+
+def _srp_hash(data: bytes) -> int:
+    return int(hashlib.sha256(data).hexdigest(), 16)
+
+
+def password_login(email: str, password: str) -> str:
+    """A refresh token from the account's email and password, by SRP.
+
+    The password never leaves this machine: Cognito sends a challenge, the
+    client proves it knows the password with an HMAC, and the answer carries
+    the tokens. Mirrors amazon-cognito-identity-js's AuthenticationHelper.
+    """
+    pool = COGNITO_POOL.split("_")[1]
+    k = _srp_hash(bytes.fromhex("00" + f"{SRP_N:X}" + "0" + str(SRP_G)))
+    a = int.from_bytes(os.urandom(128), "big") % SRP_N
+    big_a = pow(SRP_G, a, SRP_N)
+    first = cognito("InitiateAuth", {
+        "AuthFlow": "USER_SRP_AUTH", "ClientId": COGNITO_CLIENT,
+        "AuthParameters": {"USERNAME": email, "SRP_A": f"{big_a:x}"}}, "the email")
+    if first.get("ChallengeName") != "PASSWORD_VERIFIER":
+        raise SystemExit(f"Cognito asked for {first.get('ChallengeName') or 'nothing'} instead "
+                         "of a password; this account needs a sign-in --login cannot do.")
+    challenge = first["ChallengeParameters"]
+    user_id = challenge["USER_ID_FOR_SRP"]
+    big_b = int(challenge["SRP_B"], 16)
+    u = _srp_hash(bytes.fromhex(_srp_hex(big_a) + _srp_hex(big_b)))
+    credentials = hashlib.sha256(f"{pool}{user_id}:{password}".encode()).hexdigest().zfill(64)
+    x = _srp_hash(bytes.fromhex(_srp_hex(challenge["SALT"]) + credentials))
+    s = pow(big_b - k * pow(SRP_G, x, SRP_N), a + u * x, SRP_N)
+    prk = hmac.new(bytes.fromhex(_srp_hex(u)), bytes.fromhex(_srp_hex(s)), hashlib.sha256).digest()
+    key = hmac.new(prk, b"Caldera Derived Key\x01", hashlib.sha256).digest()[:16]
+    now = time.gmtime()
+    stamp = time.strftime(f"%a %b {now.tm_mday} %H:%M:%S UTC %Y", now)
+    secret_block = challenge["SECRET_BLOCK"]
+    signature = hmac.new(key, pool.encode() + user_id.encode() + base64.b64decode(secret_block)
+                         + stamp.encode(), hashlib.sha256).digest()
+    second = cognito("RespondToAuthChallenge", {
+        "ClientId": COGNITO_CLIENT, "ChallengeName": "PASSWORD_VERIFIER",
+        **({"Session": first["Session"]} if first.get("Session") else {}),
+        "ChallengeResponses": {
+            "TIMESTAMP": stamp, "USERNAME": challenge.get("USERNAME", email),
+            "PASSWORD_CLAIM_SECRET_BLOCK": secret_block,
+            "PASSWORD_CLAIM_SIGNATURE": base64.b64encode(signature).decode()}}, "the password")
+    result = second.get("AuthenticationResult") or {}
+    if not result.get("RefreshToken"):
+        raise SystemExit(f"Cognito asked for {second.get('ChallengeName') or 'nothing'} after the "
+                         "password; this account needs a sign-in --login cannot do.")
+    return result["RefreshToken"]
+
+
 def login() -> int:
-    """Store a refresh token, read from stdin, in the Keychain once Cognito takes it."""
-    secret = (getpass.getpass("Levels.fyi refresh token (not shown): ") if sys.stdin.isatty()
-              else sys.stdin.read()).strip()
+    """Store a refresh token in the Keychain once Cognito takes it.
+
+    With LEVELS_EMAIL and LEVELS_PASSWORD set, or typed at the prompt, the
+    token comes from signing in; with an empty email, a refresh token copied
+    from the browser's localStorage is read instead. Nothing is echoed.
+    """
+    email = os.environ.get("LEVELS_EMAIL", "").strip()
+    password = os.environ.get("LEVELS_PASSWORD", "")
+    if not email and sys.stdin.isatty():
+        email = input("Levels.fyi email (empty to paste a refresh token instead): ").strip()
+    if email:
+        secret = password_login(email, password or getpass.getpass("Password (not shown): "))
+    else:
+        secret = (getpass.getpass("Levels.fyi refresh token (not shown): ") if sys.stdin.isatty()
+                  else sys.stdin.read()).strip()
     _, current = refreshed(secret)
     keychain_write(current)
     print(f"Stored in the login Keychain (service {KEYCHAIN_SERVICE}). Cognito accepted it.")
@@ -587,8 +679,9 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--audit", action="store_true",
                         help="Report what each role's feed serves, write nothing.")
     parser.add_argument("--login", action="store_true",
-                        help="Store a Levels.fyi refresh token, read from stdin, in the "
-                             "Keychain and exit.")
+                        help="Sign in to Levels.fyi (LEVELS_EMAIL and LEVELS_PASSWORD, or "
+                             "prompted; an empty email reads a refresh token instead), store "
+                             "the refresh token in the Keychain and exit.")
     args = parser.parse_args(argv)
     if args.login:
         return login()

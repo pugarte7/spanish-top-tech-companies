@@ -91,7 +91,9 @@ The five things that will bite you:
    its table had 29 Spanish engineers, ten at 60k+. `fetch_spain.py` reads
    the table with an id token it mints each run from the Cognito refresh token
    in the macOS login Keychain (service `spanish-top-tech-companies`, stored
-   with `fetch_spain.py --login`), which is what lets it run unattended, or
+   with `fetch_spain.py --login`, which signs in by SRP from `LEVELS_EMAIL`
+   and `LEVELS_PASSWORD` or a prompt, or takes a pasted refresh token when
+   the email is left empty), which is what lets it run unattended, or
    with `LEVELS_TOKEN` for a one-off run. Since 2026-11-01 that login lives only
    in the Keychain, never in a file. A
    refused refresh token stops the run rather than falling back to the public
