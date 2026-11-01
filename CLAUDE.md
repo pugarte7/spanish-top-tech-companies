@@ -38,7 +38,7 @@ the 60k-filtered mean, the any-row rule, a years filter, or other families
 in the median.
 
 **The website is the product; the README introduces it.** Since 2026-11-01
-spanishtoptechcompanies.com is what people use, and `website` is merged into
+spanishtoptechcompanies.com is what people use, built and deployed from
 `main`. `README.md` opens with the site in Spanish, then English, written for
 search, and keeps the software-engineer tables `scripts/build.py` writes
 between its markers. Never move the README's data into side files, and never
@@ -112,8 +112,8 @@ no company at all, exits 1.
 The weekly refresh runs on the maintainer's Mac, not on GitHub: Levels.fyi
 serves GitHub's runners pages without data. `scripts/weekly.sh` runs from
 launchd every Monday at 08:00 and pushes a "Refresh salaries" commit to
-`website`, which deploys the site; main's README stopped changing on
-2026-11-01;
+`main`, which deploys the site (since 2026-11-01, when `website` was
+merged into `main`);
 `.github/workflows/weekly.yml` turns that push into an issue with
 `scripts/digest.py`'s summary of what changed. See docs/CONTEXT.md.
 

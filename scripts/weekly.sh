@@ -1,7 +1,7 @@
 #!/bin/bash
 # The website's Monday refresh, run by launchd on the maintainer's Mac:
 # Levels.fyi refuses GitHub's runners, so the fetch has to come from a Spanish
-# connection. It works in a clone of its own, reset to origin/website on every
+# connection. It works in a clone of its own, reset to origin/main on every
 # run, so it never touches a checkout someone is editing. The salaries are
 # private and live outside any clone (lib.DATA); the push carries only the
 # README and the site's public aggregates in data/, with the week's digest as
@@ -9,7 +9,7 @@
 # data/ and weekly.yml open the week's issue.
 set -Eeuo pipefail
 
-BRANCH=website
+BRANCH=main
 before=""
 
 main() {
@@ -30,7 +30,7 @@ main() {
 
   cd "$HOME/.local/share/spanish-top-tech-companies"
   git fetch -q origin "$BRANCH"
-  # -B also moves a clone still on main, which this one followed until 2026-11.
+  # -B also moves a clone left on another branch.
   git checkout -q -f -B "$BRANCH" "origin/$BRANCH"
 
   before="$(mktemp)"
