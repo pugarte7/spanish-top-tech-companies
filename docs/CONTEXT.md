@@ -491,7 +491,16 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
   mechanical engineer at "DEKA", a name with nothing behind it. On that day
   1,446 of 1,753 companies had no link, most of them feed employers
   `fetch_company.py --missing` had not reached yet; the weekly runs it
-  before the list is written.
+  before the list is written, and the feed's `companyInfo.icon` carries the
+  employer's domain, which `write_role()` stores as the website.
+- **The world vouches for small companies.** `fetch_spain.screen()`: a
+  company-role pair under `MIN_GLOBAL` (5) submissions anywhere is not
+  written, and a Spanish base above everything the company pays the role
+  outside Spain (`ABROAD_MIN` 3 of them) is dropped. One API call per pair
+  with fewer than five Spanish rows (2,432 of 2,737 pairs on 2026-11-01,
+  about two hours at 3s), cached for 90 days in `global.json` beside the
+  CSV. The API answers `companySlug` + `jobFamilySlug` without a country;
+  without a job family it answers nothing.
 - **Titles and specializations are only as good as the taxonomy match.**
   Authors write free text; `title_slug()` and `specialization_slug()` store
   the official slug or leave the field empty rather than guess, so

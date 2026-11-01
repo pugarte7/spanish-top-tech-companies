@@ -272,6 +272,44 @@ def test_one_submission_is_one_entry() -> None:
           len(by_slug["acme"]["entries"]), 1)
 
 
+def test_the_world_vouches_for_a_company() -> None:
+    """A company-role pair under five submissions anywhere is nobody's employer,
+    and a Spanish base above everything the company pays abroad is not Spanish:
+    DEKA's 300k mechanical engineer was the only DEKA submission in the world
+    (maintainer, 2026-11-01). The company's domain from the feed is its website."""
+    print("fetch_spain asks the world about small companies")
+    import fetch_spain
+
+    by_slug, _ = fed([row("deka", base=335000), row("ghost", base=50000), row("ghost", base=52000),
+                      row("big", base=200000, uuid="b1"), row("big", base=90000, uuid="b2"),
+                      row("dark", base=60000)])
+    skipped = fetch_spain.screen(by_slug, {
+        "deka": {"total": 1, "abroad": []},
+        "ghost": {"total": 9, "abroad": [55000, 48000, 61000]},
+        "big": {"total": 120, "abroad": [150000, 160000, 170000]},
+        "dark": None})
+    check("one submission in the world drops the pair; an unreadable answer keeps it",
+          (sorted(by_slug), skipped["unproven"]), (["big", "dark", "ghost"], 1))
+    check("a base above every salary abroad goes, the other stays",
+          ([e["base"] for e in by_slug["big"]["entries"]], skipped["implausible"]), ([77400], 1))
+    check("a pair with enough everywhere is untouched", len(by_slug["ghost"]["entries"]), 2)
+
+    five = [row("many", base=70000 + i, uuid=f"m{i}") for i in range(5)]
+    by_slug, _ = fed(five)
+    check("five Spanish rows never ask the world",
+          fetch_spain.screen(by_slug, {}), {"unproven": 0, "implausible": 0})
+
+    by_slug, _ = fed([row("acme", companyInfo={"icon": "https://img.logo.dev/acme.example?token=x"})])
+    with temp_data(acme(entry(PER_LOCATION, base=80000))):
+        write_role("software-engineer", by_slug)
+        check("the feed's domain becomes the website of a company without one",
+              stored()["website"], "https://acme.example")
+    with temp_data(acme(entry(PER_LOCATION, base=80000), website="https://typed.example")):
+        by_slug, _ = fed([row("acme", companyInfo={"icon": "https://img.logo.dev/acme.example?token=x"})])
+        write_role("software-engineer", by_slug)
+        check("a website on file is never overwritten", stored()["website"], "https://typed.example")
+
+
 def test_foreign_rows_are_skipped() -> None:
     """Every row is checked for its own location, whatever feed it came in.
 
@@ -798,6 +836,7 @@ def main() -> int:
                  test_figures_are_converted_to_euros,
                  test_every_year_is_kept,
                  test_one_submission_is_one_entry,
+                 test_the_world_vouches_for_a_company,
                  test_foreign_rows_are_skipped,
                  test_feed_is_read_to_the_end,
                  test_a_role_past_the_ceiling_is_read_per_company,

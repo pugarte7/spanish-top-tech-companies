@@ -86,6 +86,8 @@ A company is on file while it has any Spanish salary on file, in any role at any
 
 A company has to exist somewhere other than Levels.fyi: one with neither a LinkedIn page nor a website is kept on file but published nowhere until someone finds it (`data/review.md` is the list, and an issue tracks it). A name with one salary behind it and nothing else is the easiest thing to invent.
 
+A small company also has to have been reported from somewhere: a company and role with fewer than five submissions on Levels.fyi anywhere in the world is left out, and a Spanish salary higher than everything the company reports for that role outside Spain is left out too. One made-up salary at a made-up or real employer is what both rules catch.
+
 A company is ranked among the others only from three salaries. With one or two, the "median" is one person's pay, and in November 2026 a third of the listed companies had exactly one. They stay in the website's companies table, with their count beside the median, but sort after every company with three or more, whichever column the table is sorted by.
 
 Companies get on the list with the feed itself: every employer named in a role's Spanish feed is written, so adding a salary on Levels.fyi is the whole submission process. A company can also be added by hand as a `Name,linkedin_id` row; it lasts while a fetch finds salaries for it.

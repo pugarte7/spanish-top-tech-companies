@@ -104,6 +104,22 @@ SRP_G = 2
 # Level names the API sends where the author left the field blank.
 NO_LEVEL = {"", "false", "none", "null"}
 
+# A company has to have been reported from somewhere. A company-role pair
+# with fewer than MIN_GLOBAL submissions in the whole world is one or two
+# people naming an employer: DEKA's 300k entry-level mechanical engineer in
+# Malaga was the only DEKA submission anywhere (maintainer, 2026-11-01: "que
+# la empresa tenga más de 5 salarios en todo el mundo"). Spanish rows are a
+# subset of the world's, so a pair with MIN_GLOBAL Spanish rows is never
+# looked up; the others cost one API call each, cached beside the CSV for
+# GLOBAL_DAYS. The same answer gives what the company pays the role outside
+# Spain: a Spanish base above every one of those, given ABROAD_MIN of them,
+# is not a Spanish salary. The API needs a job family; there is no
+# all-roles query.
+MIN_GLOBAL = 5
+GLOBAL_DAYS = 90
+ABROAD_MIN = 3
+GLOBAL_CACHE = lib.DATA.parent / "global.json"
+
 
 def unscoped(entry: dict) -> bool:
     """Was this entry read off a page that never named a location?
@@ -368,9 +384,7 @@ def feed(bearer: str, role: str, delay: float, company: str | None = None,
     Truncated when the query outgrows the offset ceiling.
     """
     rows: list[dict] = []
-    headers = {"Authorization": f"Bearer {bearer}", "x-agent": "levelsfyi_website",
-               "Accept": "application/json", "Origin": BASE,
-               "Referer": f"{BASE}/t/{role}/locations/spain"}
+    headers = _api_headers(bearer, f"{BASE}/t/{role}/locations/spain")
     for offset in range(0, MAX_OFFSET + 1, TABLE_PAGE):
         query = urllib.parse.urlencode(
             ([("companySlug", company)] if company else []) + [
@@ -394,6 +408,95 @@ def feed(bearer: str, role: str, delay: float, company: str | None = None,
         if not page:
             return rows
     raise Truncated(rows)
+
+
+def _api_headers(bearer: str, referer: str) -> dict:
+    return {"Authorization": f"Bearer {bearer}", "x-agent": "levelsfyi_website",
+            "Accept": "application/json", "Origin": BASE, "Referer": referer}
+
+
+def worldwide(bearer: str, slug: str, role: str, delay: float) -> dict | None:
+    """The company's newest submissions for the role from anywhere.
+
+    {"total": how many there are, "abroad": the USD bases of those outside
+    Spain among the newest TABLE_PAGE}. None when the page could not be
+    read, which judges nothing: the rows are kept and asked about next run.
+    """
+    query = urllib.parse.urlencode([
+        ("companySlug", slug), ("jobFamilySlug", role), ("offset", 0),
+        ("limit", TABLE_PAGE), ("sortBy", "offer_date"), ("sortOrder", "DESC")])
+    body = get(f"{API}?{query}", delay,
+               headers=_api_headers(bearer, f"{BASE}/companies/{slug}/salaries/{role}"))
+    if body is None:
+        return None
+    try:
+        data = json.loads(body)
+        if isinstance(data, dict) and "payload" in data:
+            data = decrypt(data["payload"])
+        rows = data["rows"]
+        total = int(data.get("total") or 0)
+    except (json.JSONDecodeError, ValueError, TypeError, KeyError, zlib.error,
+            subprocess.CalledProcessError):
+        return None
+    abroad = [r["baseSalary"] for r in rows
+              if not in_spain(r.get("location"))
+              and isinstance(r.get("baseSalary"), (int, float)) and r["baseSalary"] > 0]
+    return {"total": max(total, len(rows)), "abroad": abroad}
+
+
+def load_global_cache() -> dict:
+    try:
+        return json.loads(GLOBAL_CACHE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def world_of(bearer: str, cache: dict, slug: str, role: str, delay: float,
+             today: str) -> dict | None:
+    """worldwide(), remembered for GLOBAL_DAYS; the cache is written after
+    every answer so a blocked run keeps what it learned."""
+    key = f"{slug}|{role}"
+    found = cache.get(key)
+    checked = lib.parse_date((found or {}).get("checked"))
+    if found and checked and (lib.parse_date(today) - checked).days < GLOBAL_DAYS:
+        return found
+    found = worldwide(bearer, slug, role, delay)
+    if found is not None:
+        cache[key] = {**found, "checked": today}
+        GLOBAL_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        GLOBAL_CACHE.write_text(json.dumps(cache, sort_keys=True), encoding="utf-8")
+    return found
+
+
+def screen(by_slug: dict, world: dict) -> dict:
+    """Drop what the world's submissions say is not a Spanish salary.
+
+    Pure: `world` maps a canonical slug to worldwide()'s answer, or None
+    when it could not be read. A pair under MIN_GLOBAL submissions anywhere
+    goes whole ("unproven"); a row paid more than every submission from
+    outside Spain, given ABROAD_MIN of them, goes on its own ("implausible").
+    A dropped group leaves write_role() to remove the company's stored rows
+    for the role, exactly as a feed that no longer names it would.
+    """
+    skipped = {"unproven": 0, "implausible": 0}
+    for slug in list(by_slug):
+        group = by_slug[slug]
+        if len(group["entries"]) >= MIN_GLOBAL or world.get(slug) is None:
+            continue
+        found = world[slug]
+        if found["total"] < MIN_GLOBAL:
+            skipped["unproven"] += len(group["entries"])
+            del by_slug[slug]
+            continue
+        if len(found["abroad"]) >= ABROAD_MIN:
+            ceiling = max(found["abroad"])
+            kept = [e for e in group["entries"] if (e.get("_usd") or 0) <= ceiling]
+            skipped["implausible"] += len(group["entries"]) - len(kept)
+            if kept:
+                group["entries"] = kept
+            else:
+                del by_slug[slug]
+    return skipped
 
 
 def read_role(bearer: str, role: str, delay: float, companies: list[dict],
@@ -588,11 +691,21 @@ def entries_by_company(rows: list[dict], role: str, page_rate, today: str):
             "source_url": f"{BASE}/companies/{record['companySlug']}/salaries/{role}/locations/spain",
             "date": today,
             "notes": None,
+            # The payload's own figure, for screen(): never stored.
+            "_usd": record.get("baseSalary"),
         }
-        group = by_slug.setdefault(slug, {"name": None, "entries": []})
+        group = by_slug.setdefault(slug, {"name": None, "slug": record["companySlug"],
+                                          "domain": None, "entries": []})
+        info = record.get("companyInfo") or {}
         if not group["name"]:
-            name = record.get("company") or (record.get("companyInfo") or {}).get("name")
+            name = record.get("company") or info.get("name")
             group["name"] = name if isinstance(name, str) and name else slug
+        # Levels.fyi's company record carries the employer's domain in its
+        # logo URL, which is the website write_role() fills when the company
+        # has none: it is what makes most feed employers verifiable.
+        domain = re.search(r"logo\.dev/([a-z0-9.-]+\.[a-z]{2,})", str(info.get("icon") or ""))
+        if domain and not group["domain"]:
+            group["domain"] = domain.group(1)
         group["entries"].append(entry)
     for group in by_slug.values():
         group["entries"].sort(key=lib.entry_order)
@@ -629,7 +742,10 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
         if found is None and len(kept) == len(company["entries"]):
             continue
         updated = kept + (found["entries"] if found else [])
-        if _as_rows(company["entries"]) == _as_rows(updated):
+        domain = (found or {}).get("domain")
+        if domain and not company.get("website"):
+            company["website"] = f"https://{domain}"
+        elif _as_rows(company["entries"]) == _as_rows(updated):
             stats["unchanged"] += 1
             continue
         company["entries"] = updated
@@ -644,7 +760,8 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
                   "under another slug", file=sys.stderr)
             stats["refused"] += 1
             continue
-        company = lib.blank_company(group["name"], levels_slug=slug, levels_status="resolved")
+        company = lib.blank_company(group["name"], levels_slug=slug, levels_status="resolved",
+                                    website=f"https://{group['domain']}" if group.get("domain") else None)
         company["entries"] = group["entries"]
         companies.append(company)
         stats["created"] += 1
@@ -693,6 +810,7 @@ def main(argv: list[str]) -> int:
                          "--audit skips only the writes, not the reading.")
     only = {lib.canonical(slug) for slug in args.company} or None
     today = lib.today_utc().isoformat()
+    cache = load_global_cache()
     read = skipped_roles = 0
 
     try:
@@ -714,6 +832,10 @@ def main(argv: list[str]) -> int:
             by_slug, skipped = entries_by_company(rows, role,
                                                   (props or {}).get("locationExchangeRate"),
                                                   today)
+            # Audited too: --audit reads everything and writes nothing.
+            world = {slug: world_of(bearer, cache, group["slug"], role, args.delay, today)
+                     for slug, group in by_slug.items() if len(group["entries"]) < MIN_GLOBAL}
+            skipped.update(screen(by_slug, world))
             total = sum(len(group["entries"]) for group in by_slug.values())
             dropped = ", ".join(f"{k} {v}" for k, v in skipped.items() if v)
             print(f"  {role}: {total} entries at {len(by_slug)} companies"
