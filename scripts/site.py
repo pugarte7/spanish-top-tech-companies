@@ -56,7 +56,7 @@ MCP_URL = "https://spanishtoptechcompanies.com/mcp"
 # Instinct has no CLI, only its own sign-up.
 AGENTS = [
     ("Codex", "OpenAI", "codex.png", "cover", "#ffffff", "https://developers.openai.com/codex/cli"),
-    ("Cursor", "Anysphere", "cursor.jpg", "cover", "#000000", "https://cursor.com/cli"),
+    ("Cursor", "Anysphere", "cursor.png", "mark", "#ffffff", "https://cursor.com/cli"),
     ("Claude Code", "Anthropic", "claude-code.png", "mark", "#ffffff", "https://code.claude.com/docs/en/setup"),
     ("Grok CLI", "xAI", "grok.jpg", "mark", "#ffffff", "https://github.com/xai-org/grok-build#installing-the-released-binary"),
     ("Instinct", "Instinct", "instinct.jpg", "cover", "#ffffff", "https://instinct.com/"),
