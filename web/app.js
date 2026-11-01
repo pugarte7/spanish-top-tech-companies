@@ -261,8 +261,9 @@ const payLegend = () => [0, ...SHADE_EDGES].map((v, i, edges) => {
 
 // --- map ------------------------------------------------------------------------
 // The map shows either pay or how many salaries each region has. Counts run
-// from a handful to thousands, so their grey classes are on a log scale.
-let mapMetric = "pay";
+// from a handful to thousands, so their grey classes are on a log scale. Counts
+// are the default view.
+let mapMetric = "count";
 
 function map() {
   const svg = $("map");
