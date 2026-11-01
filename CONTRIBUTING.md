@@ -72,25 +72,17 @@ python3 scripts/fetch_spain.py --audit            # report only, writes nothing
 
 This is the only route for crowdsourced salaries. For each role it reads the country-wide feed — the same API that fills the "Latest Salary Submissions" table, with no company filter — paging until an empty answer rather than the reported total, and writes every submission naming a Spanish city, whatever the role, years or pay. See [METHODOLOGY.md](METHODOLOGY.md#an-entry-must-prove-it-is-spanish) for why the city check is not optional. A role's feed then replaces that role's stored Levels.fyi rows per company: first-hand rows and other roles are untouched, a feed that could not be read to the end changes nothing, and a company left with no rows at all is dropped. New companies arrive inside the feed — no separate discovery pass.
 
-The feed only exists for a signed-in visitor who has added a salary. Without a session the script only runs with `--audit`: the public page alone is a single record for most companies, and writing it would replace the feed entries on file. To give it your session: sign in on levels.fyi, open the browser console and run `copy(localStorage.getItem("auth"))`, then
-
-```bash
-mkdir -p ~/.config/levels && pbpaste > ~/.config/levels/token && chmod 600 ~/.config/levels/token
-```
-
-or export it as `LEVELS_TOKEN`. The token is a login: it lives outside the repository, nothing prints it, and it expires after a day, so copy a fresh one before a run.
-
-To stop copying one daily, give it the refresh token instead and it mints a fresh id token each run. Sign in on levels.fyi in a private window, run this in its console, then close the window without signing out, so that session stays its own and nothing revokes it:
+The feed only exists for a signed-in visitor who has added a salary. Without a session the script only runs with `--audit`: the public page alone is a single record for most companies, and writing it would replace the feed entries on file. To give it a session, use an account you can afford to lose and store its refresh token in the macOS Keychain; the script mints a fresh id token from it each run. Sign in on levels.fyi in a private window, run this in its console, then close the window without signing out, so that session stays its own and nothing revokes it:
 
 ```js
 copy(localStorage.getItem(Object.keys(localStorage).find(k => k.startsWith("CognitoIdentityServiceProvider.76of0ich18hd8uehju7fniv2u1.") && k.endsWith(".refreshToken"))))
 ```
 
 ```bash
-mkdir -p ~/.config/levels && pbpaste > ~/.config/levels/refresh_token && chmod 600 ~/.config/levels/refresh_token
+pbpaste | python3 scripts/fetch_spain.py --login; pbcopy </dev/null
 ```
 
-When that file exists it wins over the token file, and a refused refresh token stops the run instead of falling back to the public page. Reading the table this way is not something Levels.fyi's terms allow, and the account could be closed for it; that risk is the maintainer's to take, not a contributor's.
+That checks the token with Cognito, stores it in the login Keychain (service `spanish-top-tech-companies`) and empties the clipboard. It is never written to a file and nothing prints it. For a one-off run, an id token (`copy(localStorage.getItem("auth"))`, good for a day) in `LEVELS_TOKEN` also works. A refused refresh token stops the run instead of falling back to the public page. Reading the table this way is not something Levels.fyi's terms allow, and the account could be closed for it; that risk is the maintainer's to take, not a contributor's.
 
 Keep `--delay` at 2.5s or more. Levels.fyi answers 402, 403, 405, 429 and 503 when it decides you are a bot, and all five mean *slow down*, not *no such company*. A 401 means the token has expired.
 

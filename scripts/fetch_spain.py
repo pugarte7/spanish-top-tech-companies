@@ -15,12 +15,11 @@ discovery feed are both obsolete - at roughly 30 calls for software engineers
 and one or two for a family nobody in Spain has submitted to.
 
 The feed only exists behind a sign-in: the browser loads it with the
-visitor's Cognito id token, which LEVELS_TOKEN, ~/.config/levels/token or the
-refresh token in ~/.config/levels/refresh_token supplies (that last mints a
-fresh id token each run, which is what lets it run unattended). A refused
-refresh token stops the run rather than falling back to anything partial.
-The token is a session credential: it is never written anywhere and never
-printed.
+visitor's Cognito id token. A Cognito refresh token kept in the macOS
+Keychain mints a fresh one each run, which is what lets it run unattended;
+`--login` stores it there. LEVELS_TOKEN, an id token, serves a one-off run.
+A refused refresh token stops the run rather than falling back to anything
+partial. Neither token is ever written to a file or printed.
 
 Every row is checked for its own location ("Barcelona, CT, Spain"), never for
 the currency or the page's scope - a German salary in this list is worse than
@@ -42,11 +41,11 @@ from __future__ import annotations
 import argparse
 import base64
 import collections
+import getpass
 import hashlib
 import gzip
 import json
 import os
-import pathlib
 import re
 import subprocess
 import sys
@@ -68,18 +67,20 @@ MONTHS = {name: number for number, name in enumerate(
     ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 1)}
 
 # The signed-in table. Levels.fyi's own id for Spain, the API's page-size
-# ceiling (it answers 400 above it), and where the maintainer leaves a token.
+# ceiling (it answers 400 above it).
 SPAIN_COUNTRY_ID = 226
 TABLE_PAGE = 50
 # The API refuses an offset past 990 ("offset must not be greater than 990"),
 # so one query sees at most 1,000 rows. Software engineers in Spain are
 # several times that; read_role() works around it.
 MAX_OFFSET = 990
-TOKEN_FILE = pathlib.Path.home() / ".config" / "levels" / "token"
-# A Cognito refresh token for the same login mints a fresh id token each run,
-# so an unattended run needs nobody to paste one daily. The pool's region and
-# the site's web client are the `iss` and `aud` of Levels.fyi's id tokens.
-REFRESH_FILE = TOKEN_FILE.with_name("refresh_token")
+# A Cognito refresh token mints a fresh id token each run, so an unattended
+# run needs nobody to paste one daily. It lives in the login Keychain rather
+# than a file, so no backup, sync folder or tool reading ~/.config picks up a
+# live login in plaintext. The pool's region and the site's web client are
+# the `iss` and `aud` of Levels.fyi's id tokens.
+KEYCHAIN_SERVICE = "spanish-top-tech-companies"
+KEYCHAIN_ACCOUNT = "levels-refresh-token"
 COGNITO = "https://cognito-idp.us-west-2.amazonaws.com/"
 COGNITO_CLIENT = "76of0ich18hd8uehju7fniv2u1"
 # Level names the API sends where the author left the field blank.
@@ -150,7 +151,7 @@ def get(url: str, delay: float, attempts: int = 3, headers: dict | None = None) 
             time.sleep(delay)
             if exc.code == 401:
                 raise Blocked("Levels.fyi rejected the token (HTTP 401). Sign in again "
-                              f"and copy a fresh one to {TOKEN_FILE}.") from exc
+                              "and store a fresh one with --login.") from exc
             if exc.code in (402, 403, 405, 429, 503):
                 raise Blocked(f"Levels.fyi answered HTTP {exc.code}. Wait, then retry "
                               f"with a larger --delay.") from exc
@@ -166,30 +167,51 @@ def get(url: str, delay: float, attempts: int = 3, headers: dict | None = None) 
 def token() -> str | None:
     """The maintainer's Levels.fyi session, if one has been left for this run.
 
-    Minted from ~/.config/levels/refresh_token when that exists, else read from
-    LEVELS_TOKEN, then ~/.config/levels/token. Nothing in the repository stores
-    it, and nothing prints it: a run report that echoed the token would put a
-    live login into the terminal scrollback.
+    Minted from the refresh token in the Keychain when there is one, else read
+    from LEVELS_TOKEN. Nothing prints it: a run report that echoed the token
+    would put a live login into the terminal scrollback.
     """
-    if REFRESH_FILE.exists():
-        return refreshed(REFRESH_FILE)
-    found = os.environ.get("LEVELS_TOKEN", "").strip()
-    if not found and TOKEN_FILE.exists():
-        found = TOKEN_FILE.read_text(encoding="utf-8").strip()
-    return found or None
+    stored = keychain_read()
+    if stored:
+        bearer, current = refreshed(stored)
+        if current != stored:
+            keychain_write(current)
+        return bearer
+    return os.environ.get("LEVELS_TOKEN", "").strip() or None
 
 
-def refreshed(path: pathlib.Path) -> str:
-    """A fresh id token from the Cognito refresh token in `path`.
+def keychain_read() -> str | None:
+    try:
+        done = subprocess.run(["security", "find-generic-password", "-s", KEYCHAIN_SERVICE,
+                               "-a", KEYCHAIN_ACCOUNT, "-w"], capture_output=True, text=True)
+    except FileNotFoundError:
+        return None
+    return done.stdout.strip() if done.returncode == 0 else None
+
+
+def keychain_write(secret: str) -> None:
+    # Through `security -i` on stdin, because a -w argument would show the
+    # token to anyone running ps while it is stored.
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", secret):
+        raise SystemExit("That is not a Cognito refresh token (expected base64url and dots).")
+    subprocess.run(["security", "-i"], capture_output=True, text=True, input=(
+        f'add-generic-password -U -s {KEYCHAIN_SERVICE} -a {KEYCHAIN_ACCOUNT} -w "{secret}"\n'))
+    if keychain_read() != secret:
+        raise SystemExit(f"Could not store the refresh token in the Keychain "
+                         f"(service {KEYCHAIN_SERVICE}, account {KEYCHAIN_ACCOUNT}).")
+
+
+def refreshed(secret: str) -> tuple[str, str]:
+    """A fresh id token, and the refresh token to keep, from a refresh token.
 
     The same call the site's own Amplify client makes when its id token runs
     out. A pool that rotates refresh tokens answers with a new one and retires
-    the old, so a new one is written back over the file. A refused refresh
+    the old, which the caller must store in its place. A refused refresh
     token stops the run: falling back to public pages would replace every
     feed entry on file with a fraction of them.
     """
     request = urllib.request.Request(COGNITO, data=json.dumps({
-        "ClientId": COGNITO_CLIENT, "RefreshToken": path.read_text(encoding="utf-8").strip(),
+        "ClientId": COGNITO_CLIENT, "RefreshToken": secret,
     }).encode(), headers={
         "Content-Type": "application/x-amz-json-1.1",
         "X-Amz-Target": "AWSCognitoIdentityProviderService.GetTokensFromRefreshToken"})
@@ -198,12 +220,20 @@ def refreshed(path: pathlib.Path) -> str:
             result = json.load(response)["AuthenticationResult"]
     except urllib.error.HTTPError as exc:
         reason = re.search(r'"message"\s*:\s*"([^"]*)"', exc.read().decode("utf-8", "replace"))
-        raise SystemExit(f"Cognito refused the refresh token in {path} (HTTP {exc.code}"
+        raise SystemExit(f"Cognito refused the refresh token (HTTP {exc.code}"
                          f"{': ' + reason.group(1) if reason else ''}). Sign in to levels.fyi "
-                         "again and copy a fresh one there.") from exc
-    if result.get("RefreshToken"):
-        path.write_text(result["RefreshToken"], encoding="utf-8")
-    return result["IdToken"]
+                         "again and store a fresh one with --login.") from exc
+    return result["IdToken"], result.get("RefreshToken") or secret
+
+
+def login() -> int:
+    """Store a refresh token, read from stdin, in the Keychain once Cognito takes it."""
+    secret = (getpass.getpass("Levels.fyi refresh token (not shown): ") if sys.stdin.isatty()
+              else sys.stdin.read()).strip()
+    _, current = refreshed(secret)
+    keychain_write(current)
+    print(f"Stored in the login Keychain (service {KEYCHAIN_SERVICE}). Cognito accepted it.")
+    return 0
 
 
 def decrypt(payload: str) -> dict:
@@ -556,13 +586,18 @@ def main(argv: list[str]) -> int:
                         help="Seconds between requests. Below ~2.5 trips their WAF.")
     parser.add_argument("--audit", action="store_true",
                         help="Report what each role's feed serves, write nothing.")
+    parser.add_argument("--login", action="store_true",
+                        help="Store a Levels.fyi refresh token, read from stdin, in the "
+                             "Keychain and exit.")
     args = parser.parse_args(argv)
+    if args.login:
+        return login()
 
     bearer = token()
     if not bearer:
-        raise SystemExit(f"No token in LEVELS_TOKEN, {TOKEN_FILE} or {REFRESH_FILE}. The "
-                         "feed is the only source and it needs one; --audit skips only "
-                         "the writes, not the reading.")
+        raise SystemExit("No refresh token in the Keychain (store one with --login) and no "
+                         "LEVELS_TOKEN. The feed is the only source and it needs one; "
+                         "--audit skips only the writes, not the reading.")
     only = {lib.canonical(slug) for slug in args.company} or None
     today = lib.today_utc().isoformat()
     read = skipped_roles = 0
