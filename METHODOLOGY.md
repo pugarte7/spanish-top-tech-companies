@@ -84,6 +84,10 @@ A company whose Spanish software engineers' median is under 50k is not listed. L
 
 A company is on file while it has any Spanish salary on file, in any role at any seniority — the website needs the long tail. The 60k bar and the 50k floor above only sort companies in the weekly digest; the website has its own rule. What still leaves the file is a company with no rows after a full role read — the feed says nobody there reports — and a slug struck off by hand.
 
+A company has to exist somewhere other than Levels.fyi: one with neither a LinkedIn page nor a website is kept on file but published nowhere until someone finds it (`data/review.md` is the list, and an issue tracks it). A name with one salary behind it and nothing else is the easiest thing to invent.
+
+A company is ranked among the others only from three salaries. With one or two, the "median" is one person's pay, and in November 2026 a third of the listed companies had exactly one. They stay in the tables, with their count beside the median, but sort after every company with three or more; on the website the same rule holds whichever column the table is sorted by.
+
 Companies get on the list with the feed itself: every employer named in a role's Spanish feed is written, so adding a salary on Levels.fyi is the whole submission process. A company can also be added by hand as a `Name,linkedin_id` row; it lasts while a fetch finds salaries for it.
 
 A few employers need a hand. Levels.fyi files some under two slugs (`timescale` and `tiger-data`, `facebook` and `meta`); `lib.SLUG_ALIASES` reads both into one company, each salary keeping the page it was read from. And a slug nobody can put a company to (`abracadabra`, `data-native-systems-sl`) is struck off in `lib.EXCLUDED_SLUGS`: never fetched, never discovered, refused by `validate.py`.

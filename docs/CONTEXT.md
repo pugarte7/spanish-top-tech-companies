@@ -476,8 +476,22 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
   salaries reaches 45k.
 - **One-person medians.** The site's companies table lists a company from a
   single salary, rounded, with its count beside the median. A minimum of three
-  was offered and declined for the README on 2026-09-22. Every other
-  aggregate the site publishes needs `lib.MIN_GROUP` people.
+  was offered and declined for the README on 2026-09-22; on 2026-11-01, with
+  120 of 341 listed companies on one salary and 87 of them leading the main
+  table, the maintainer took the minimum for ranking instead: under
+  `lib.MIN_RANKED` (3) a company sorts after the rest in the site's companies
+  table, whichever column is sorted, and the salaries column is still the
+  reader's guard. Every other aggregate the site publishes needs
+  `lib.MIN_GROUP` people.
+- **Unverified companies.** A company with neither a LinkedIn page nor a
+  website (`lib.verified()`) is taken for not real until someone finds it:
+  on file, off the site entirely, listed by `scripts/review.py` in
+  `data/review.md` and in the "Companies to verify" issue the weekly keeps.
+  Chosen 2026-11-01 over a Levels.fyi row of 300k base for an entry-level
+  mechanical engineer at "DEKA", a name with nothing behind it. On that day
+  1,446 of 1,753 companies had no link, most of them feed employers
+  `fetch_company.py --missing` had not reached yet; the weekly runs it
+  before the list is written.
 - **Titles and specializations are only as good as the taxonomy match.**
   Authors write free text; `title_slug()` and `specialization_slug()` store
   the official slug or leave the field empty rather than guess, so

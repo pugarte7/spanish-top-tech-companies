@@ -688,7 +688,7 @@ def test_agents_see_only_groups_of_five() -> None:
              for b in (50200, 61400, 70400, 82600, 90000)]
     rows += [entry(PER_LOCATION, base=b, region="CT", city="Barcelona")
              for b in (60000, 65000, 70000, 80000)]
-    with temp_data(acme(*rows)):
+    with temp_data(acme(*rows, website="https://acme.example")):
         data = site_build.build_data(lib.load_companies())
 
     def quartiles(region: str) -> list:
@@ -725,18 +725,30 @@ def test_companies_table_shows_any_data() -> None:
             for b in (70000, 75000, 82600, 90000)]
     rows.append(entry(PER_LOCATION, base=61400, region="MD", city="Madrid", years_experience="3"))
     beta_url = "https://www.levels.fyi/companies/beta/salaries/software-engineer/locations/spain"
-    beta = lib.blank_company("Beta", levels_slug="beta", levels_status="resolved") | {
-        "entries": [entry(beta_url, base=b, region="MD", city="Madrid") for b in (70000, 80000)]}
-    with temp_data(acme(*rows), beta):
+    beta = lib.blank_company("Beta", levels_slug="beta", levels_status="resolved",
+                             linkedin_url="https://www.linkedin.com/company/beta") | {
+        "entries": [entry(beta_url, base=b, region="MD", city="Madrid") for b in (90000, 100000)]}
+    ghost_url = "https://www.levels.fyi/companies/ghost/salaries/software-engineer/locations/spain"
+    ghost = lib.blank_company("Ghost", levels_slug="ghost", levels_status="resolved") | {
+        "entries": [entry(ghost_url, base=b, region="MD", city="Madrid") for b in (90000,) * 6]}
+    with temp_data(acme(*rows, website="https://acme.example"), beta, ghost):
         data, files = site_build.build_site(lib.load_companies())
+        import review
+        review_md = review.render(lib.load_companies(), limit=1)
     check("one person's band has a rounded median, empty bands none",
           files[""]["years"][""][0], [None, [61000, 1], None, [79000, 4], None, None])
     check("the table filtered to that band lists the company with one salary",
           [r[:3] for r in files[""]["cells"]["|2-4"]], [[0, 1, 61000]])
-    check("a company with two salaries is listed",
-          [r[:2] for r in files[""]["cells"]["|"]], [[0, 5], [1, 2]])
+    check("a company with two salaries is listed, after one with three or more whatever the median",
+          [r[:3] for r in files[""]["cells"]["|"]], [[0, 5, 75000], [1, 2, 95000]])
     check("but data.json has no group of it",
           sorted(a["c"] for v in data["company_cells"].values() for a in v if a["c"] == 1), [])
+    check("a company with no LinkedIn and no website is on no table and in no group "
+          "(maintainer, 2026-11-01: unverified)",
+          ([c["name"] for c in data["companies"]], data["cells"]["||"]["n"]), (["Acme", "Beta"], 7))
+    check("review.py lists it for the maintainer, with a count and no salary",
+          ("| Ghost | [ghost](https://www.levels.fyi/companies/ghost/salaries) | 6 | software-engineer |"
+           in review_md, "90" in review_md, "Acme" in review_md), (True, False, False))
 
 
 def test_site_dates_and_minimum_base() -> None:
@@ -752,7 +764,7 @@ def test_site_dates_and_minimum_base() -> None:
                             (70000, "2026-10-17", "2025-01"), (82000, "2026-10-17", "2026-02"),
                             (90000, "2026-10-17", "2026-10"))]
     rows.append(entry(PER_LOCATION, base=1000, region="MD", city="Madrid", date="2026-10-18"))
-    with temp_data(acme(*rows)):
+    with temp_data(acme(*rows, website="https://acme.example")):
         data = site_build.build_data(lib.load_companies())
     check("the 1,000 EUR base is left out", data["cells"]["||"]["n"], 5)
     check("the date is the latest read of a counted salary", data["data_as_of"], "2026-10-17")
@@ -772,7 +784,7 @@ def test_aggregates_ignore_the_hash_seed() -> None:
               "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); "
               "data, tables = m.build_site(lib.load_companies()); "
               "print(json.dumps([list(data['cells']), list(tables)]))")
-    with temp_data(acme(*rows)):
+    with temp_data(acme(*rows, website="https://acme.example")):
         runs = {subprocess.run([sys.executable, "-c", script], cwd=ROOT, capture_output=True, text=True,
                                env={**os.environ, "STC_DATA": str(lib.DATA), "PYTHONHASHSEED": seed},
                                check=True).stdout

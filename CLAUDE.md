@@ -148,6 +148,17 @@ type/CIF, CC BY 4.0, only for companies with salaries), then Levels.fyi
 (`fetch_company.py`). No fetcher ever overwrites a filled field; a `-` cell
 means "checked, there is none", and counts as filled.
 
+**A company with no LinkedIn page and no website is unverified** (since
+2026-11-01: "si no encontramos LinkedIn o web de la empresa lo consideramos
+como falso"). `lib.verified()` decides; its rows stay in the CSV, the site
+publishes nothing of it, not even its rows in the role and region groups,
+and `scripts/review.py` lists it. The weekly writes that list to
+`data/review.md` and keeps the "Companies to verify" issue at it (`gh` from
+the Mac, as the maintainer); they find the company and type its
+`linkedin_url` or `website` into the CSV, or strike the slug off. A `-` cell
+counts as none. On 2026-11-01, before the fetchers had enriched the feed's new
+employers, 1,446 of 1,753 companies were unverified, 1,141 of them on one salary.
+
 Hand-made facts live in `lib.py`, not in the CSV: `SLUG_ALIASES` (two
 Levels.fyi slugs, one employer: `tiger-data` into `timescale`, `meta` into
 `facebook`; the alias is read with the canonical slug and each row keeps its
@@ -164,6 +175,12 @@ the CSV.
 A first-hand software-engineer row must itself be at 60k+, since it is the
 maintainer vouching that the company pays that; `validate.py` refuses one
 under.
+
+Since 2026-11-01 companies with fewer than `lib.MIN_RANKED` (3) salaries sort
+after the rest in the site's companies table, whichever column is sorted: 120
+of 341 listed companies had one salary, 87 of them topping the main table, and
+the maintainer chose to keep them listed but not ranked ("si limitamos
+empresas con más de 5 submisiones, sería demasiado").
 
 After any data change: `python3 scripts/validate.py && python3 scripts/site.py
 --refresh`, and commit the regenerated `data/`, never `companies.csv`.
