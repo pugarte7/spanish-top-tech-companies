@@ -227,8 +227,8 @@ STRINGS = {
         "how_groups": "The map, the role by experience table, the figures at the top and the "
                       "middle half (p25–p75) only come from groups of {min} salaries or more. "
                       "Every amount is rounded to the nearest {round}. The companies table is "
-                      "the exception: a company is listed even with a single salary, and then "
-                      "carries a note.",
+                      "the exception: a company is listed even with a single salary, and under "
+                      "{ranked} it carries a note.",
         "how_figures_t": "What you see.",
         "how_figures": "Median base, the middle half (p25–p75), median total pay (base + bonus + stock) "
                        "and the share with a base of {bar} or more.",
@@ -255,9 +255,18 @@ STRINGS = {
         "tip_share": "Share of salaries with a base of 60,000 € or more",
         "tip_n": "How many salaries this company has under the filters chosen. "
                  f"Under {lib.MIN_RANKED}, the company is listed after the rest",
-        "one_note": "Companies with a single salary in Spain. They are real ({global} or more "
-                    "salaries on Levels.fyi worldwide and their own website or LinkedIn page), "
-                    "but the figure is one person's pay and may not be fully reliable.",
+        "few_note": "Companies with fewer than {ranked} salaries in Spain. They are real ({global} "
+                    "or more salaries on Levels.fyi worldwide and their own website or LinkedIn "
+                    "page), but their figure comes from so few people that it may not be fully "
+                    "reliable.",
+        "ast_label": "Why the asterisk",
+        "ast_title_1": "1 salary in Spain", "ast_title_n": "{n} salaries in Spain",
+        "ast_body_1": "{name} is real: it has {global} or more salaries on Levels.fyi worldwide and "
+                      "its own website or LinkedIn page. But this is the only salary we found in "
+                      "Spain, so the figure may not be fully reliable.",
+        "ast_body_n": "{name} is real: it has {global} or more salaries on Levels.fyi worldwide and "
+                      "its own website or LinkedIn page. But we found only {n} in Spain, so the "
+                      "figure may not be fully reliable.",
         "split_base": "Base", "split_bonus": "Bonus", "split_stock": "Stock",
         "split_total": "Median total pay", "split_tip": "How much of these salaries' pay is base, bonus and stock",
         "show_all": "Show all {n}", "show_less": "Show less",
@@ -334,7 +343,7 @@ STRINGS = {
         "how_groups": "El mapa, la tabla de rol por experiencia, las cifras de arriba y el rango "
                       "p25–p75 solo salen de grupos de {min} salarios o más. Todos los importes "
                       "se redondean a {round}. La tabla de empresas es la excepción: una empresa "
-                      "sale aunque tenga un solo salario, y entonces lleva un aviso.",
+                      "sale aunque tenga un solo salario, y con menos de {ranked} lleva un aviso.",
         "how_figures_t": "Qué se muestra.",
         "how_figures": "Sueldo base mediano, la mitad central (p25–p75), el total mediano (base + bonus "
                        "+ acciones) y el porcentaje con una base de {bar} o más.",
@@ -361,9 +370,17 @@ STRINGS = {
         "tip_share": "Porcentaje de salarios con una base de 60.000 € o más",
         "tip_n": "Cuántos salarios de esta empresa hay con los filtros elegidos. "
                  f"Con menos de {lib.MIN_RANKED}, la empresa va después del resto",
-        "one_note": "Empresas con un solo salario en España. Existen ({global} o más salarios en "
-                    "Levels.fyi en todo el mundo y web o LinkedIn propios), pero su cifra es la "
-                    "de una persona y puede no ser del todo fiable.",
+        "few_note": "Empresas con menos de {ranked} salarios en España. Existen ({global} o más "
+                    "salarios en Levels.fyi en todo el mundo y web o LinkedIn propios), pero su "
+                    "cifra sale de tan pocas personas que puede no ser del todo fiable.",
+        "ast_label": "Por qué el asterisco",
+        "ast_title_1": "1 salario en España", "ast_title_n": "{n} salarios en España",
+        "ast_body_1": "{name} existe: tiene {global} o más salarios en Levels.fyi en todo el mundo y "
+                      "web o LinkedIn propios. Pero en España solo hemos encontrado este salario, "
+                      "así que la cifra puede no ser del todo fiable.",
+        "ast_body_n": "{name} existe: tiene {global} o más salarios en Levels.fyi en todo el mundo y "
+                      "web o LinkedIn propios. Pero en España solo hemos encontrado {n}, así que la "
+                      "cifra puede no ser del todo fiable.",
         "split_base": "Base", "split_bonus": "Bonus", "split_stock": "Acciones",
         "split_total": "Sueldo total mediano", "split_tip": "Qué parte del pago de estos salarios es base, bonus y acciones",
         "show_all": "Ver los {n}", "show_less": "Ver menos",
@@ -1147,7 +1164,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     </div>
     <div class="summary" id="summary" aria-live="polite"></div>
     <div class="table-wrap"><table id="companies"></table></div>
-    <p class="one-note" id="one-note" hidden><sup>*</sup>{e['one_note']}</p>
+    <p class="few-note" id="few-note" hidden><sup>*</sup>{e['few_note']}</p>
     <button class="more" id="more" hidden></button>
     {noscript_companies(e, data)}
   </section>
@@ -1161,6 +1178,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
      <a href="/{lang}/legal/" target="_blank" rel="noopener">{e['legal']}</a></p>
 </div></footer>
 <div id="tip" role="tooltip" hidden></div>
+<div id="asterisk-tip" class="asterisk-tip" hidden></div>
 <aside class="star-pop field" id="star" role="dialog" aria-labelledby="star-title" hidden>{WALL}
   <button class="star-x" id="star-close" type="button" aria-label="{e['star_close']}">×</button>
   <p class="star-title" id="star-title">{e['star_title']}</p>

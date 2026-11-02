@@ -604,6 +604,47 @@ function split(a) {
 
 const opened = new Set();
 
+// The asterisk opens a card about that company on a click or a tap, not a
+// hover, so a phone gets it too: how many salaries it has in Spain and why
+// its figure may be off. One card for every asterisk, under the one clicked,
+// following it as the page scrolls; a second click, a click elsewhere,
+// Escape or a redrawn table closes it. Not a scroll: Playwright's click, and
+// a tap at the end of a flick, scroll the page just after the card opens.
+const astTip = $("asterisk-tip");
+let astAt = null;
+function closeAsterisk() {
+  if (!astAt) return;
+  astAt.setAttribute("aria-expanded", "false");
+  astTip.hidden = true;
+  astAt = null;
+}
+function placeAsterisk() {
+  if (!astAt) return;
+  const b = astAt.getBoundingClientRect(), r = astTip.getBoundingClientRect();
+  const x = Math.min(Math.max(8, b.right - r.width), innerWidth - r.width - 8);
+  const y = b.bottom + 6 + r.height > innerHeight - 8 ? b.top - 6 - r.height : b.bottom + 6;
+  astTip.style.left = `${x}px`;
+  astTip.style.top = `${y}px`;
+}
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#asterisk-tip")) return;
+  const ast = e.target.closest(".asterisk");
+  const again = ast === astAt;
+  closeAsterisk();
+  if (!ast || again) return;
+  const c = D.companies[+ast.dataset.c], one = c.n === 1;
+  const fill = (s) => esc(s).replace("{name}", () => esc(c.name)).replace("{n}", c.n);
+  astTip.innerHTML = `<b>${fill(one ? S.ast_title_1 : S.ast_title_n)}</b>` +
+    `<p>${fill(one ? S.ast_body_1 : S.ast_body_n)}</p>`;
+  astAt = ast;
+  ast.setAttribute("aria-expanded", "true");
+  astTip.hidden = false;
+  placeAsterisk();
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAsterisk(); });
+addEventListener("scroll", placeAsterisk, { passive: true });
+addEventListener("resize", placeAsterisk);
+
 function companies() {
   summary();
   const all = table();
@@ -613,14 +654,18 @@ function companies() {
   // column: its "median" is one person's pay. Ascending is the exact reverse.
   // 3 until a refresh writes min_ranked into data.json.
   const thin = (a) => a.n < (D.min_ranked || 3);
-  // One salary in Spain, whatever the filters: the figure is one person's pay,
-  // starred, and the note under the table says so. A big company down to one
-  // salary under a filter is not starred; the note would be untrue of it.
-  const single = (a) => D.companies[a.c].n === 1;
+  // Under min_ranked salaries in Spain, whatever the filters: the figure is
+  // one or two people's pay, marked with an asterisk, and the note under the
+  // table says so. A big company down to one salary under a filter gets none;
+  // the note would be untrue of it.
+  const few = (a) => D.companies[a.c].n < (D.min_ranked || 3);
   const rows = (q ? all.filter((a) => D.companies[a.c].name.toLowerCase().includes(q)) : all)
     .slice().sort((x, y) => (state.asc ? -1 : 1) *
       (thin(x) - thin(y) || by(y) - by(x) || y.median - x.median));
   const shown = state.all ? rows : rows.slice(0, 15);
+  const asterisk = (a) => `<button class="asterisk" type="button" data-c="${a.c}" ` +
+    `aria-label="${esc(S.ast_label)}" aria-controls="asterisk-tip" aria-expanded="false">*</button>`;
+  closeAsterisk();
   const th = (k, label, tip, cls = "num") =>
     `<th class="${cls} sort${state.sort === k ? (state.asc ? " on asc" : " on") : ""}" data-sort="${k}"` +
     ` title="${esc(tip)}" aria-sort="${state.sort === k ? (state.asc ? "ascending" : "descending") : "none"}">${label}</th>`;
@@ -637,18 +682,20 @@ function companies() {
         `<td class="co"><div class="co-in"><div><span class="name">${esc(c.name)}</span>` +
         `<span class="cities">${esc(c.cities.join(", "))}</span></div>` +
         `<span class="links">${companyLinks(c)}</span></div></td>` +
-        `<td class="pay${single(a) ? " one" : ""}"><b>${money(a.median)}</b>${single(a) ? "<sup>*</sup>" : ""}</td>` +
+        `<td class="pay${few(a) ? " few" : ""}"><b>${money(a.median)}</b>${few(a) ? asterisk(a) : ""}</td>` +
         `<td class="num">${pct(a.share)}</td>` +
         `<td class="num">${a.n}</td></tr>` +
         `<tr class="det"${open ? "" : " hidden"}><td colspan="5">${open ? detail(a) : ""}</td></tr>`;
     }).join("") + `</tbody>`;
-  $("one-note").hidden = !shown.some(single);
+  $("few-note").hidden = !shown.some(few);
   $("companies").querySelectorAll("tr.main").forEach((tr, i) => {
     tr.onkeydown = (e) => {
+      // Keys on a link or the asterisk inside the row are theirs.
+      if (e.target !== tr) return;
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tr.click(); }
     };
     tr.onclick = (e) => {
-      if (e.target.closest("a")) return;
+      if (e.target.closest("a, .asterisk")) return;
       const id = shown[i].c, open = !opened.has(id);
       open ? opened.add(id) : opened.delete(id);
       tr.classList.toggle("open", open);

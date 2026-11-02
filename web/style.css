@@ -429,13 +429,22 @@ tr.main:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
 tr.open .chev span { transform: rotate(90deg); }
 tr.open td { border-bottom-color: transparent; background: var(--tint); }
 td.pay b { font-weight: 700; }
-/* A figure from one salary in Spain: quieter, and starred for the note under
-   the table. The star hangs in the padding, so the figures stay aligned. */
-td.pay.one b { font-weight: 500; color: var(--muted); }
-td.pay sup, .one-note sup { font-size: 11px; line-height: 0; font-weight: 600; color: var(--hue); }
-td.pay sup { position: absolute; margin: 2px 0 0 1px; }
-.one-note { margin: 14px 0 0; max-width: 72ch; font-size: 12px; line-height: 16px; color: var(--muted); }
-.one-note sup { margin-right: 4px; }
+/* A figure from one or two salaries in Spain: quieter, with an asterisk. The
+   asterisk is a button that opens a card about the company; it hangs in the
+   padding, so the figures stay aligned. */
+td.pay.few b { font-weight: 500; color: var(--muted); }
+td.pay .asterisk { position: absolute; margin: -6px 0 0 -2px; padding: 3px 5px; border: 0; border-radius: 2px;
+  background: none; color: var(--hue); font: 600 14px/1 var(--display); cursor: pointer; }
+td.pay .asterisk:hover, td.pay .asterisk[aria-expanded="true"] { background: var(--raised); }
+td.pay .asterisk:focus-visible { outline: 2px solid var(--text); outline-offset: 0; }
+.asterisk-tip { position: fixed; z-index: 30; max-width: min(300px, calc(100vw - 16px)); padding: 12px 14px;
+  font-size: 13px; line-height: 19px; background: var(--surface); color: var(--muted);
+  border: 1px solid var(--border); border-radius: var(--radius-control); box-shadow: var(--float); }
+.asterisk-tip b { display: block; margin-bottom: 4px; font: 500 13px/16px var(--display); letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text); }
+.asterisk-tip p { margin: 0; }
+.few-note sup { font-size: 11px; line-height: 0; font-weight: 600; color: var(--hue); margin-right: 4px; }
+.few-note { margin: 14px 0 0; max-width: 72ch; font-size: 12px; line-height: 16px; color: var(--muted); }
 tr.det td { background: var(--tint); padding: 8px 12px 24px 48px; }
 .detail { display: flex; flex-wrap: wrap; gap: 20px 40px; align-items: end; }
 /* Room on the right for the 60k label. */

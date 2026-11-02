@@ -319,27 +319,77 @@ test("companies under three salaries come after the rest", async ({ page }) => {
   expect(ns.slice(thin).every((n) => n < 3)).toBe(true);
 });
 
-test("a company with one salary in Spain is starred, and the note under the table says why", async ({ page }) => {
+test("a company with one or two salaries in Spain has an asterisk, and the note under the table says why", async ({ page }) => {
   const table = async () => page.locator("#companies tr.main").evaluateAll((trs) => trs.map((tr) =>
-    ({ n: Number(tr.lastElementChild.textContent), star: !!tr.querySelector("td.pay sup") })));
+    ({ n: Number(tr.lastElementChild.textContent), star: !!tr.querySelector("td.pay .asterisk") })));
   await open(page);
   // The first rows all have three salaries or more: nothing starred, no note.
-  await expect(page.locator("#companies td.pay sup")).toHaveCount(0);
-  await expect(page.locator("#one-note")).toBeHidden();
+  await expect(page.locator("#companies td.pay .asterisk")).toHaveCount(0);
+  await expect(page.locator("#few-note")).toBeHidden();
   await page.locator("#more").click();
   const all = await table();
-  expect(all.some((r) => r.star)).toBe(true);
-  expect(all.every((r) => r.star === (r.n === 1))).toBe(true);
-  await expect(page.locator("#one-note")).toBeVisible();
-  await expect(page.locator("#one-note")).toContainText("un solo salario en España");
-  // Under a role, a company down to one salary but with more in Spain is not starred.
+  expect(all.some((r) => r.star && r.n === 1)).toBe(true);
+  expect(all.some((r) => r.star && r.n === 2)).toBe(true);
+  expect(all.every((r) => r.star === (r.n < 3))).toBe(true);
+  await expect(page.locator("#few-note")).toBeVisible();
+  await expect(page.locator("#few-note")).toContainText("menos de 3 salarios en España");
+  // Under a role, a company down to one or two salaries but with more in Spain has none.
   await page.goto("about:blank");
   await open(page, "/es/#role=product-manager");
   await expect(filter(page, "role").locator(".txt")).toHaveText("Product Manager");
   await page.locator("#more").click();
   const pm = await table();
-  expect(pm.filter((r) => r.star).every((r) => r.n === 1)).toBe(true);
-  expect(pm.some((r) => r.n === 1 && !r.star)).toBe(true);
+  expect(pm.filter((r) => r.star).every((r) => r.n < 3)).toBe(true);
+  expect(pm.some((r) => r.n < 3 && !r.star)).toBe(true);
+});
+
+async function clickStar(page) {
+  await open(page);
+  await page.locator("#more").click();
+  const star = page.locator("#companies td.pay .asterisk").first();
+  await star.scrollIntoViewIfNeeded();
+  await star.click();
+  return star;
+}
+
+test("clicking the asterisk shows a card about that company, without opening the row", async ({ page }) => {
+  const star = await clickStar(page);
+  const row = star.locator("xpath=ancestor::tr");
+  const name = await row.locator(".name").textContent();
+  const tip = page.locator("#asterisk-tip");
+  await expect(tip).toBeVisible();
+  await expect(tip.locator("b")).toHaveText("1 salario en España");
+  await expect(tip).toContainText(`${name} existe`);
+  await expect(tip).toContainText("solo hemos encontrado este salario");
+  await expect(star).toHaveAttribute("aria-expanded", "true");
+  await expect(row).toHaveAttribute("aria-expanded", "false");
+  const [s, t] = [await star.boundingBox(), await tip.boundingBox()];
+  expect(Math.abs(t.y - (s.y + s.height)) < 12 || Math.abs(t.y + t.height - s.y) < 12).toBe(true);
+  // A second click, Escape or a click elsewhere closes it.
+  await star.click();
+  await expect(tip).toBeHidden();
+  await star.click();
+  await page.keyboard.press("Escape");
+  await expect(tip).toBeHidden();
+  await star.click();
+  await page.locator("#companies-card h2").click();
+  await expect(tip).toBeHidden();
+  await expect(star).toHaveAttribute("aria-expanded", "false");
+  // A company with two salaries says so.
+  const two = page.locator("#companies tr.main").filter({ has: page.locator("td.num", { hasText: /^2$/ }) })
+    .first().locator(".asterisk");
+  await two.scrollIntoViewIfNeeded();
+  await two.click();
+  await expect(tip.locator("b")).toHaveText("2 salarios en España");
+  await expect(tip).toContainText("solo hemos encontrado 2");
+});
+
+test("the asterisk's note fits a phone's screen @mobile", async ({ page }) => {
+  await clickStar(page);
+  const t = await page.locator("#asterisk-tip").boundingBox();
+  const width = page.viewportSize().width;
+  expect(t.x).toBeGreaterThanOrEqual(0);
+  expect(t.x + t.width).toBeLessThanOrEqual(width);
 });
 
 test("clicking a column sorts it, again reverses it", async ({ page }) => {
