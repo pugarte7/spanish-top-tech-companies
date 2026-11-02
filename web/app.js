@@ -537,11 +537,12 @@ function detail(a) {
     ? `<div class="yb" title="n = ${y[1]}"><b>${short(y[0])}</b>` +
       `<i${y[0] >= D.threshold ? ' class="hi"' : ""} style="height:${h(y[0])}px"></i></div>`
     : `<div class="yb"><span class="na">–</span><i class="none"></i></div>`).join("");
+  // On a phone the unit leaves each label for one caption under the axis.
   const labels = years.map(([b]) =>
-    `<span${state.years.includes(b) ? ' class="on"' : ""}>${yearsLabel(b)}</span>`).join("");
+    `<span${state.years.includes(b) ? ' class="on"' : ""}>${b.replace("-", "–")}<small> ${S.years_unit}</small></span>`).join("");
   const chart = `<div class="ybars"><div class="yplot">${bars}` +
     `<span class="ref" style="bottom:${h(D.threshold)}px"><em>${short(D.threshold)}</em></span></div>` +
-    `<div class="yaxis">${labels}</div></div>`;
+    `<div class="yaxis">${labels}</div><p class="yunit">${S.years_axis}</p></div>`;
   // The links repeat here for phones, where the row has no room for them.
   return `<div class="detail">${years.some(([, y]) => y) ? chart : ""}` +
     split(a) + `<span class="links">${companyLinks(D.companies[a.c])}</span></div>`;

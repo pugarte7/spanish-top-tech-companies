@@ -660,6 +660,33 @@ test("on a phone the title is centred and the text runs as wide as the buttons @
   for (const [left, right] of lines) expect(Math.abs(left - right), JSON.stringify(lines)).toBeLessThan(1.5);
 });
 
+test("an open company on a phone is centred, with a margin on both sides @mobile", async ({ page }) => {
+  await open(page);
+  await rows(page).first().click();
+  const m = await page.evaluate(() => {
+    const td = document.querySelector("#companies tr.det td").getBoundingClientRect(), mid = td.left + td.width / 2;
+    const r = document.createRange();
+    const centre = (e) => {
+      r.selectNodeContents(e);
+      const q = [...r.getClientRects()];
+      return (Math.min(...q.map((x) => x.left)) + Math.max(...q.map((x) => x.right))) / 2 - mid;
+    };
+    const plot = document.querySelector("#companies tr.det .yplot").getBoundingClientRect();
+    return {
+      margins: [plot.left - td.left, td.right - plot.right],
+      off: [".yplot", ".yaxis", ".yunit", ".split dl", ".mix-key", ".detail .links"]
+        .map((s) => [s, Math.round(centre(document.querySelector(`#companies tr.det ${s}`)))]),
+      // Each band's label on one line: the unit moves to one caption under the axis.
+      tall: [...document.querySelectorAll("#companies tr.det .yaxis span")].filter((x) => x.getBoundingClientRect().height > 20).length,
+    };
+  });
+  expect(Math.abs(m.margins[0] - m.margins[1]), JSON.stringify(m)).toBeLessThan(1);
+  expect(m.margins[0]).toBeGreaterThanOrEqual(20);
+  for (const [s, o] of m.off) expect(Math.abs(o), `${s} ${JSON.stringify(m)}`).toBeLessThanOrEqual(1);
+  expect(m.tall).toBe(0);
+  await expect(page.locator("#companies tr.det .yunit")).toHaveText("Años de experiencia");
+});
+
 test("filter menus stay on a phone's screen @mobile", async ({ page }) => {
   await open(page);
   const width = await page.evaluate(() => document.documentElement.clientWidth);
