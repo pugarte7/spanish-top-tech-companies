@@ -676,3 +676,9 @@ footer a { color: var(--field-ink); }
   .hero-stats dt { font-size: 10.5px; line-height: 14px; }
   .hero-card-head { font-size: 12px; letter-spacing: .1em; }
 }
+
+/* The legal and privacy page: one readable column of text. */
+.legal { max-width: 72ch; margin: 0 auto; padding: 24px var(--pad) 64px; }
+.legal h1 { margin: 24px 0 8px; font-size: clamp(32px, 6vw, 44px); }
+.legal h2 { margin: 28px 0 6px; font-size: 22px; line-height: 28px; }
+.legal p { margin: 0; overflow-wrap: anywhere; }
