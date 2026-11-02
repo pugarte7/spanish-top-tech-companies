@@ -213,7 +213,8 @@ export function filters(data) {
     regions: data.regions, years: data.years, min_group: data.min_group,
     quartile_min: data.quartile_min ?? null, round_eur: data.round_eur ?? null,
     threshold_eur: data.threshold, company_floor_eur: data.company_floor ?? null,
-    min_base_eur: data.min_base ?? null, reported: data.reported ?? null,
+    min_base_eur: data.min_base ?? null, min_global_submissions: data.min_global ?? null,
+    reported: data.reported ?? null,
     data_as_of: data.data_as_of || data.generated,
   };
 }

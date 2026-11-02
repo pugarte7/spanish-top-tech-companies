@@ -116,7 +116,7 @@ NO_LEVEL = {"", "false", "none", "null"}
 # the company's salaries abroad; with three or four of those from cheaper
 # countries it dropped real seniors (Stenn, Kiwi.com, Zooplus), so the
 # maintainer removed that rule.
-MIN_GLOBAL = 5
+MIN_GLOBAL = lib.MIN_GLOBAL
 GLOBAL_DAYS = 90
 GLOBAL_CACHE = lib.DATA.parent / "global.json"
 

@@ -41,6 +41,10 @@ server over stdio.
 - Only companies whose median base over all their salaries reaches a floor
   (`company_floor_eur` in `list_filters`) are counted, so figures leave out
   the lowest-paying employers. Say so when quoting a figure for Spain.
+- A company is listed only with a LinkedIn page or a website and at least 5
+  submissions on Levels.fyi from anywhere in the world over every role
+  (`min_global_submissions` in `list_filters`). A company missing from the
+  data may simply be unreported, not absent from Spain.
 - Give the data date and cite "Spanish Top Tech Companies (Levels.fyi data),
   CC BY-SA 4.0".
 - Answer in the user's language. Region names work in Spanish or English
