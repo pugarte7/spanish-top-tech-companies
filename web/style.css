@@ -437,6 +437,8 @@ tr.det td { background: var(--tint); padding: 8px 12px 24px 48px; }
 .yplot { position: relative; align-items: end; }
 .yaxis { margin-top: 4px; justify-items: center; font-size: 12px; color: var(--muted); }
 .yaxis .on { color: var(--text); font-weight: 600; }
+.yaxis small { font-size: inherit; }
+.yunit { display: none; margin: 6px 0 0; font-size: 12px; color: var(--muted); }
 .yb { display: grid; gap: 4px; justify-items: center; font-size: 12px; color: var(--muted); }
 /* Above the 60k line where the two cross. */
 .yb b { position: relative; z-index: 1; padding: 0 2px; background: var(--tint);
@@ -634,9 +636,21 @@ footer a { color: var(--field-ink); }
   .bento { gap: 12px; padding-top: 24px; }
   h2 { font-size: 26px; line-height: 30px; }
   input[type=search] { width: 100%; }
-  #companies tr.det td { padding-left: 12px; padding-right: 12px; }
-  .ybars { width: 100%; }
-  .yplot, .yaxis { grid-template-columns: repeat(6, 1fr); }
+  /* An open company on a phone: everything on one centred axis, with a margin on
+     both sides. The chart keeps a gutter on each side, the right one for the 60k
+     label, and its bands drop their unit for one caption under the axis. */
+  #companies tr.det td { padding: 20px 20px 28px; }
+  .detail { flex-direction: column; align-items: center; gap: 28px; text-align: center; }
+  .ybars { width: 100%; max-width: 360px; padding: 0 28px; box-sizing: border-box; }
+  .yplot, .yaxis { grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .yplot .ref { left: -28px; right: -28px; }
+  .yaxis small { display: none; }
+  .yunit { display: block; }
+  .split { width: 100%; max-width: 320px; justify-items: center; }
+  .mix { width: 100%; }
+  .mix-key { flex-wrap: wrap; justify-content: center; gap: 6px 14px; }
+  .detail .links { grid-template-columns: repeat(3, 20px); gap: 20px; }
+  .detail .links a, .detail .links svg { width: 20px; height: 20px; }
   .summary { grid-template-columns: 1fr 1fr; }
   .filter-row { flex-wrap: wrap; }
   .star-pop { width: auto; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }

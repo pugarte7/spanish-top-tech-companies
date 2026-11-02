@@ -208,7 +208,7 @@ STRINGS = {
         "how_figures": "Median base, the middle half (p25–p75), median total pay (base + bonus + stock) "
                        "and the share with a base of {bar} or more.",
         "all_roles": "All roles", "all_years": "Any",
-        "years_label": "Experience", "years_unit": "yrs",
+        "years_label": "Experience", "years_unit": "yrs", "years_axis": "Years of experience",
         "hero_label": "Median base salary",
         "kpi_share": "earn a base of {bar} or more", "kpi_total": "median total with bonus and stock",
         "kpi_companies": "companies with {min} or more salaries",
@@ -319,7 +319,7 @@ STRINGS = {
         "how_figures": "Sueldo base mediano, la mitad central (p25–p75), el total mediano (base + bonus "
                        "+ acciones) y el porcentaje con una base de {bar} o más.",
         "all_roles": "Todos los roles", "all_years": "Todas",
-        "years_label": "Experiencia", "years_unit": "años",
+        "years_label": "Experiencia", "years_unit": "años", "years_axis": "Años de experiencia",
         "hero_label": "Salario base mediano",
         "kpi_share": "cobra {bar} o más de base", "kpi_total": "total mediano con bonus y acciones",
         "kpi_companies": "empresas con {min} o más salarios",
