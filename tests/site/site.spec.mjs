@@ -628,6 +628,18 @@ test("the companies table fits a phone, links in the open row @mobile", async ({
   await expect(rows(page).first().locator("td.num").last()).toHaveText(/^\d+$/);
   await rows(page).first().click();
   await expect(rows(page).first().locator("xpath=following-sibling::tr[1]").locator(".links a").first()).toBeVisible();
+  // The open row is tinted to the card's edges, and its turned arrow is whole.
+  const m = await page.evaluate(() => {
+    const card = document.querySelector("#companies-card"), cs = getComputedStyle(card), c = card.getBoundingClientRect();
+    const wrap = document.querySelector(".table-wrap").getBoundingClientRect();
+    const row = document.querySelector("#companies tr.main.open").getBoundingClientRect();
+    const arrow = document.querySelector("#companies tr.main.open .chev span").getBoundingClientRect();
+    return { inner: [c.left + parseFloat(cs.borderLeftWidth), c.right - parseFloat(cs.borderRightWidth)],
+             row: [row.left, row.right], wrap: [wrap.left, wrap.right], arrow: [arrow.left, arrow.right] };
+  });
+  expect(Math.abs(m.row[0] - m.inner[0]), JSON.stringify(m)).toBeLessThan(1);
+  expect(Math.abs(m.row[1] - m.inner[1]), JSON.stringify(m)).toBeLessThan(1);
+  expect(m.arrow[0], JSON.stringify(m)).toBeGreaterThanOrEqual(m.wrap[0]);
 });
 
 test("on a phone the title is centred and the text runs as wide as the buttons @mobile", async ({ page }) => {
