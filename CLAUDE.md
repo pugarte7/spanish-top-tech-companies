@@ -138,9 +138,10 @@ to list every company with data under the filters, one salary included, with
 its summary and its bars per experience band (`site.company_filters()`),
 still rounded. A role with 85 salaries had listed one company. data.json,
 the map, the matrix and the MCP keep MIN_GROUP. Since 2026-11-02 a company
-with a single salary in Spain (`n` in data.json's `companies`) has its median
-starred and greyed, with a note under the table: real company, figure of one
-person.
+with fewer than MIN_RANKED salaries in Spain (`n` in data.json's `companies`)
+has its median greyed with an asterisk; the asterisk opens a card naming the
+company and its count (real company, figure from one or two people), and a
+note under the table says the same for all of them.
 
 A row should ideally mean the maintainer knows someone in Spain doing that job,
 or was offered the position. Crowdsourced figures are placeholders; first-hand
