@@ -409,6 +409,21 @@ never had salaries survives. Companies are discovered with no LinkedIn id and
 occasionally with a struck-off slug: `EXCLUDED_SLUGS` rows are skipped at
 entry time, before they can be filed.
 
+A role past the offset ceiling (`MAX_OFFSET` 990: software engineers) is
+read newest-first and oldest-first, and the years between the two windows
+only per company: every employer a window names and every company on file
+for the role. `read_role()` returns that set as the scope and `write_role()`
+touches only it. Two consequences. A company that leaves the file while its
+submissions sit in the gap is invisible to the next run — nothing names it —
+and only comes back when it is asked for by slug (`--company`, which since
+2026-11-02 reads it on its own even off file); Stenn, Creative Fabrica and
+D-EDGE left that way on 2026-11-02 and were read back by name. And an empty
+scope means nothing was read whole, not "no limit": on 2026-11-02 a
+`--company` run that found none of its slugs in the windows passed an empty
+set, which was falsy, and replaced every company's software engineers with
+the two windows' rows (1,685 for 4,665); the full read was repeated by slug.
+`write_role()` now tells `None` from an empty set.
+
 A feed row carries its own `exchangeRate` and `baseSalaryCurrency`, so euro
 submissions convert back at their own rate to exactly the figure typed, and
 non-euro rows go through the role page's `locationExchangeRate` — which is
