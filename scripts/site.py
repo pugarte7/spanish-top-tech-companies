@@ -206,8 +206,8 @@ STRINGS = {
         "all_roles": "All roles", "all_years": "Any",
         "years_label": "Experience", "years_unit": "yrs",
         "hero_label": "Median base salary",
-        "kpi_share": "earn a base of {bar} or more", "kpi_total": "median total, with bonus and stock",
-        "kpi_companies": "companies with {min} or more salaries, of {companies}",
+        "kpi_share": "earn a base of {bar} or more", "kpi_total": "median total with bonus and stock",
+        "kpi_companies": "companies with {min} or more salaries",
         "map_title": "By region",
         "map_pay": "Median base", "map_count": "No. of salaries",
         "map_pay_sub": "Median gross yearly base salary of everyone reported in each region.",
@@ -312,8 +312,8 @@ STRINGS = {
         "all_roles": "Todos los roles", "all_years": "Todas",
         "years_label": "Experiencia", "years_unit": "años",
         "hero_label": "Salario base mediano",
-        "kpi_share": "cobra {bar} o más de base", "kpi_total": "total mediano, con bonus y acciones",
-        "kpi_companies": "empresas con {min} o más salarios, de las {companies}",
+        "kpi_share": "cobra {bar} o más de base", "kpi_total": "total mediano con bonus y acciones",
+        "kpi_companies": "empresas con {min} o más salarios",
         "map_title": "Por comunidad",
         "map_pay": "Base mediana", "map_count": "N. Salarios",
         "map_pay_sub": "Salario base bruto anual mediano de todos los salarios de cada comunidad.",
@@ -811,10 +811,11 @@ def hankin(poly: list, angle: float) -> list:
 
 
 def lazo_de_seis(size: float = 40, band: float = 5) -> str:
-    """The banner's tile: a "lazo de seis", six-point stars and hexagons in a
+    """The site's tile: a "lazo de seis", six-point stars and hexagons in a
     double band, drawn by Hankin's method on hexagons at 60 degrees. An SVG
-    pattern of one period; the band's inside takes --tile-band, so it follows
-    the theme, and a star's fill --tile-tint."""
+    pattern of one period, defined once per page and filled into every blue
+    field's WALL; the band's inside takes --tile-band, so it follows the theme,
+    and a star's fill --tile-tint."""
     w, h = math.sqrt(3) * size, 3 * size
     stars = []
     for i in range(-2, 4):
@@ -826,11 +827,15 @@ def lazo_de_seis(size: float = 40, band: float = 5) -> str:
                 stars.append(hankin(hexagon, 60))
     num = lambda v: f"{v:.2f}".rstrip("0").rstrip(".")
     shapes = "".join(f'<polygon points="{" ".join(f"{num(x)},{num(y)}" for x, y in st)}"/>' for st in stars)
-    return (f'<svg class="tiles" aria-hidden="true"><defs><pattern id="lazo" patternUnits="userSpaceOnUse" '
+    return (f'<svg class="tile-defs" aria-hidden="true" focusable="false"><defs><pattern id="lazo" patternUnits="userSpaceOnUse" '
             f'width="{num(w)}" height="{num(h)}"><g class="tint">{shapes}</g>'
             f'<g class="edge" style="stroke-width:{num(band + 1.4)}">{shapes}</g>'
-            f'<g class="band" style="stroke-width:{num(band)}">{shapes}</g></pattern></defs>'
-            f'<rect width="100%" height="100%" fill="url(#lazo)"/></svg>')
+            f'<g class="band" style="stroke-width:{num(band)}">{shapes}</g></pattern></defs></svg>')
+
+
+# The tiles of a blue field, behind whatever it holds.
+WALL = ('<div class="wall" aria-hidden="true"><svg class="tiles">'
+        '<rect width="100%" height="100%" fill="url(#lazo)"/></svg></div>')
 
 
 def month(ym: str, lang: str) -> str:
@@ -884,9 +889,9 @@ def agents_section(e: dict) -> str:
     <h2 id="agents-title" tabindex="-1">{e['agents_title']}</h2>
     <p class="lede">{e['agents_lede']}</p>
     <div class="agents-grid">
-      <div class="agents-stage field">
+      <div class="agents-stage field tiled">{WALL}
         {agent_stack()}
-        <div class="agent-say"><p class="agent-call">{with_name('agents_call')}</p><p class="agent-by" id="agent-by">{html.escape(AGENTS[0][1])}</p>
+        <div class="agent-say veil"><p class="agent-call">{with_name('agents_call')}</p><p class="agent-by" id="agent-by">{html.escape(AGENTS[0][1])}</p>
           <a class="agent-get" id="agent-get" href="{html.escape(AGENTS[0][5])}" target="_blank" rel="noopener">{with_name('agents_get')} {OUT_ICON}</a></div>
         <div class="agent-tabs" role="group" aria-label="{e['agents_pick']}">{tabs}</div>
       </div>
@@ -927,7 +932,7 @@ def noscript_companies(e: dict, data: dict) -> str:
 def agent_pop(e: dict) -> str:
     name = f'<b class="agent-name">{html.escape(AGENTS[0][0])}</b>'
     bars = "".join('<i class="on"></i>' if i == 0 else "<i></i>" for i in range(len(AGENTS)))
-    return f"""<aside class="star-pop agent-pop field" id="agent-pop" role="dialog" aria-labelledby="agent-pop-title" hidden>
+    return f"""<aside class="star-pop agent-pop field" id="agent-pop" role="dialog" aria-labelledby="agent-pop-title" hidden>{WALL}
   <button class="star-x" id="agent-pop-close" type="button" aria-label="{e['star_close']}">×</button>
   <div class="agent-pop-head">{agent_stack()}<p class="star-title" id="agent-pop-title">{e['agent_pop_title']}</p></div>
   <p class="star-text">{e['agent_pop_text'].replace('{name}', name)}</p>
@@ -981,6 +986,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 <link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
 {VERCEL_SCRIPTS}</head>
 <body data-lang="{lang}">
+{lazo_de_seis()}
 <nav class="topbar">
   <div class="topbar-in">
     <a class="brand" href="/{lang}/">{EMBLEM}<span>{e['title']}</span></a>
@@ -992,10 +998,10 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
   </div>
 </nav>
 
-<header class="field head-field">
-<div class="wall" aria-hidden="true">{lazo_de_seis()}</div>
+<header class="field tiled head-field">
+{WALL}
 <div class="head">
-  <div class="pitch">
+  <div class="pitch veil">
     <h1>{e['h1']}</h1>
     <p class="hero-lede">{lede}</p>
     <nav class="cta" aria-label="{e['hero_see']}">
@@ -1056,13 +1062,13 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 {agents_section(e)}
 </main>
 
-<footer class="field"><div class="foot">
-  <p>{e['source'].replace('Levels.fyi', levels)} ·
+<footer class="field tiled">{WALL}<div class="foot">
+  <p class="veil">{e['source'].replace('Levels.fyi', levels)} ·
      <a href="/api/v1/data.json" target="_blank" rel="noopener">{e['data']}</a> ·
      <a href="{REPO}" target="_blank" rel="noopener">{e['repo']}</a></p>
 </div></footer>
 <div id="tip" role="tooltip" hidden></div>
-<aside class="star-pop field" id="star" role="dialog" aria-labelledby="star-title" hidden>
+<aside class="star-pop field" id="star" role="dialog" aria-labelledby="star-title" hidden>{WALL}
   <button class="star-x" id="star-close" type="button" aria-label="{e['star_close']}">×</button>
   <p class="star-title" id="star-title">{e['star_title']}</p>
   <p class="star-text">{e['star_text']}</p>
@@ -1114,7 +1120,7 @@ def main(argv: list[str]) -> int:
         '<a href="/es/">ES</a> · <a href="/en/">EN</a>', encoding="utf-8")
     # The favicon is a tile of the lacería with an S: favicon.svg for browsers that
     # take SVG, the .ico for the rest, and a square PNG for a phone's home screen.
-    for name in ("app.js", "style.css", "laceria.svg", "cenefa.svg",
+    for name in ("app.js", "style.css", "cenefa.svg",
                  "favicon.svg", "favicon.ico", "apple-touch-icon.png"):
         shutil.copy(WEB / name, OUT / name)
     shutil.copytree(WEB / "fonts", OUT / "fonts")
