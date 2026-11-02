@@ -106,7 +106,7 @@ The 60k bar is base salary. Total compensation is base plus bonus plus annualise
 
 ## Currency
 
-Levels.fyi publishes figures in **USD**; each page carries a `locationExchangeRate` that converts them to EUR, and that conversion is applied on the way in. A figure that skipped it would be roughly 16% too high, which is exactly what happened to all 141 bands `fetch_spain.py` wrote before 2026-09-09. The page's own FAQ text is the check: Glovo's Spanish median total of `79710.65` is published there as "€68,551".
+Levels.fyi publishes figures in **USD**, and the conversion to EUR is applied on the way in. Since 2026-11-02 the rate for a submission paid in another currency is the rate of the euro submissions reported nearest in month in the same feed (each euro submission carries the dollar-to-euro rate of its month); before that it was the `locationExchangeRate` of the role's public page, which Levels.fyi stopped serving to the fetcher. A figure that skipped it would be roughly 16% too high, which is exactly what happened to all 141 bands `fetch_spain.py` wrote before 2026-09-09. The page's own FAQ text is the check: Glovo's Spanish median total of `79710.65` is published there as "€68,551".
 
 The median record also carries the currency its author was paid in and the rate they typed it at, which round-trips to their exact figure: Glovo's median base of `64068.9615` at `0.85845` is exactly 55.000 €. That rate converts to *their* currency, so it is only used when that currency is EUR. Smile.io's submission was 105.000 USD at a rate of 1, and was listed as 105.000 € until 2026-09-15; it is 91.455 € at the page's rate.
 

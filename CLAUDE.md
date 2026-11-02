@@ -79,11 +79,14 @@ The five things that will bite you:
    report a count with every percentile null and no samples, and
    `generatedOccupationSchema.sampleSize` is the company's *global* count
    whenever `averages` is empty.
-4. **Every figure in the payload is USD.** Multiply by `locationExchangeRate`.
-   The median record's own `exchangeRate` converts to the currency its author
-   was paid in, so use it only when `baseSalaryCurrency` is EUR. Missing the
-   conversion once put all 141 bands on the front page 16% high; using the
-   record's rate for a dollar salary listed Smile.io's 105k USD as 105k EUR.
+4. **Every figure in the payload is USD.** A record's own `exchangeRate`
+   converts to the currency its author was paid in, so use it only when
+   `baseSalaryCurrency` is EUR; a dollar or pound row converts at the rate of
+   the feed's euro rows nearest in month (`fetch_spain.euro_rates()`, since
+   2026-11-02; before that the role page's `locationExchangeRate`, an HTML
+   page the WAF now blocks). Missing the conversion once put all 141 bands on
+   the front page 16% high; using the record's rate for a dollar salary
+   listed Smile.io's 105k USD as 105k EUR.
 5. **The public page is a subset; the submissions table needs a sign-in.**
    The browser fills "Latest Salary Submissions" from `api.levels.fyi` with the
    visitor's session token and shows anonymous visitors asterisks. Fever's page

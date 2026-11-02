@@ -195,7 +195,7 @@ def test_figures_are_converted_to_euros() -> None:
     check("a euro submission uses its own rate", by_slug["acme"]["entries"][0]["base"], 70000)
 
     by_slug, _ = fed([row(base=105000, baseSalaryCurrency="USD", exchangeRate=1)])
-    check("a dollar submission goes through the page's rate",
+    check("a dollar submission goes through the rate given",
           by_slug["acme"]["entries"][0]["base"], 90300)
     check("and is marked as paid in dollars",
           by_slug["acme"]["entries"][0]["currency"], "USD")
@@ -204,6 +204,24 @@ def test_figures_are_converted_to_euros() -> None:
                            rate=None)
     check("a dollar submission with no euro rate is dropped, not guessed",
           (by_slug, skipped["not-euro"]), ({}, 1))
+
+    # Since 2026-11-02 the rate comes from the feed itself, with the role
+    # page behind the WAF: the euro rows nearest in month, whose own rate is
+    # the dollar-to-euro rate of that month.
+    euros = ([row(uuid=f"e22-{i}", exchangeRate=1.04,
+                  offerDate="Mon Jun 20 2022 10:00:00 GMT+0000") for i in range(3)]
+             + [row(uuid=f"e25-{i}", exchangeRate=0.86,
+                    offerDate="Wed Jun 25 2025 10:00:00 GMT+0000") for i in range(3)])
+    dollars = [row("usd", base=100000, baseSalaryCurrency="USD", exchangeRate=1, uuid="d22",
+                   offerDate="Fri Jul 01 2022 10:00:00 GMT+0000"),
+               row("usd", base=100000, baseSalaryCurrency="USD", exchangeRate=1, uuid="d25",
+                   offerDate="Tue Jul 01 2025 10:00:00 GMT+0000")]
+    by_slug, skipped = fed(euros + dollars, rate=None)
+    check("a dollar row converts at the euro rows' rate of its own month",
+          (sorted(e["base"] for e in by_slug["usd"]["entries"]), skipped["not-euro"]),
+          ([86000, 104000], 0))
+    check("a feed with no euro rows prices nothing",
+          fetch_spain.rate_near(fetch_spain.euro_rates(dollars), None), None)
 
 
 def test_every_year_is_kept() -> None:
