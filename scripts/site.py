@@ -10,7 +10,7 @@ publishes instead: data/data.json and data/companies.json, the same files
 served at /api/v1/. --refresh rewrites them; anything else only reads them.
 
 The site publishes aggregates only: every number on it comes from at least
-lib.MIN_GROUP people, quartiles from lib.QUARTILE_MIN, and every euro figure
+lib.MIN_GROUP people, quartiles included, and every euro figure
 is rounded to lib.ROUND_EUR. The CSV stays row-level; a city x role x years
 cell of a few people would name them. The one exception is the companies
 table (its rows, its summary and each company's bars per experience band),
@@ -212,7 +212,7 @@ STRINGS = {
         "how_title": "How it is calculated",
         "how_source_t": "Source.",
         "how_source": "Individual salaries from Levels.fyi, each kept only if its own location is in Spain. "
-                      "A base under {minbase} a year, below the full-time minimum wage, is left out.",
+                      "A base under {minbase} a year is left out.",
         "how_when_t": "When.",
         "how_when": "Reported from {from} to {to}, half of them since {since}. Older salaries stay in, "
                     "so figures can trail what companies offer today.",
@@ -221,14 +221,14 @@ STRINGS = {
                      "experience. It is shown if that reaches {floor}; the rest are left out. "
                      "The company also has to exist beyond Levels.fyi, with a LinkedIn page or a "
                      "website, and have {global} or more salaries there from anywhere in the world, "
-                     "counting every role. With fewer than {ranked} salaries a company is listed "
+                     "counting every role. With fewer than {ranked} salaries in Spain a company is listed "
                      "after the rest, whichever column is sorted.",
-        "how_groups_t": "Groups of {min} or more.",
-        "how_groups": "By role, region and years of experience. No figure comes from fewer than "
-                      "{min} salaries, the middle half needs {qmin}, and every amount is rounded "
-                      "to the nearest {round}. The one exception is the companies table: a company "
-                      "is listed with whatever salaries it has, even one, and so are its bars "
-                      "by experience.",
+        "how_groups_t": "At least {min} salaries.",
+        "how_groups": "The map, the role by experience table, the figures at the top and the "
+                      "middle half (p25–p75) only come from groups of {min} salaries or more. "
+                      "Every amount is rounded to the nearest {round}. The companies table is "
+                      "the exception: a company is listed even with a single salary, and then "
+                      "carries a note.",
         "how_figures_t": "What you see.",
         "how_figures": "Median base, the middle half (p25–p75), median total pay (base + bonus + stock) "
                        "and the share with a base of {bar} or more.",
@@ -255,6 +255,9 @@ STRINGS = {
         "tip_share": "Share of salaries with a base of 60,000 € or more",
         "tip_n": "How many salaries this company has under the filters chosen. "
                  f"Under {lib.MIN_RANKED}, the company is listed after the rest",
+        "one_note": "Companies with a single salary in Spain. They are real ({global} or more "
+                    "salaries on Levels.fyi worldwide and their own website or LinkedIn page), "
+                    "but the figure is one person's pay and may not be fully reliable.",
         "split_base": "Base", "split_bonus": "Bonus", "split_stock": "Stock",
         "split_total": "Median total pay", "split_tip": "How much of these salaries' pay is base, bonus and stock",
         "show_all": "Show all {n}", "show_less": "Show less",
@@ -315,8 +318,8 @@ STRINGS = {
         "how_title": "Cómo se calcula",
         "how_source_t": "Fuente.",
         "how_source": "Salarios individuales de Levels.fyi. Cada uno se acepta solo si su propia "
-                      "ubicación está en España. Un sueldo base de menos de {minbase} al año, por "
-                      "debajo del salario mínimo a jornada completa, se descarta.",
+                      "ubicación está en España. Un sueldo base de menos de {minbase} al año se "
+                      "descarta.",
         "how_when_t": "Cuándo.",
         "how_when": "Publicados entre {from} y {to}, la mitad desde {since}. Los antiguos se "
                     "mantienen, así que las cifras pueden ir por detrás de lo que se ofrece hoy.",
@@ -325,14 +328,13 @@ STRINGS = {
                      "y experiencia. Entra si llega a {floor}; las demás se quedan fuera. La empresa "
                      "tiene que existir fuera de Levels.fyi, con página de LinkedIn o web, y tener "
                      "allí {global} salarios o más de cualquier país, sumando todos los roles. Con "
-                     "menos de {ranked} salarios, la empresa se lista después de las demás, se "
+                     "menos de {ranked} salarios en España, la empresa se lista después de las demás, se "
                      "ordene por la columna que se ordene.",
-        "how_groups_t": "Grupos de {min} o más.",
-        "how_groups": "Por rol, comunidad y años de experiencia. Ninguna cifra sale de menos de "
-                      "{min} salarios, la mitad central necesita {qmin} y todos los importes se "
-                      "redondean a {round}. La excepción es la tabla de empresas: una empresa sale "
-                      "con los salarios que tenga, aunque sea uno, y lo mismo sus barras por "
-                      "experiencia.",
+        "how_groups_t": "Mínimo de {min} salarios.",
+        "how_groups": "El mapa, la tabla de rol por experiencia, las cifras de arriba y el rango "
+                      "p25–p75 solo salen de grupos de {min} salarios o más. Todos los importes "
+                      "se redondean a {round}. La tabla de empresas es la excepción: una empresa "
+                      "sale aunque tenga un solo salario, y entonces lleva un aviso.",
         "how_figures_t": "Qué se muestra.",
         "how_figures": "Sueldo base mediano, la mitad central (p25–p75), el total mediano (base + bonus "
                        "+ acciones) y el porcentaje con una base de {bar} o más.",
@@ -359,6 +361,9 @@ STRINGS = {
         "tip_share": "Porcentaje de salarios con una base de 60.000 € o más",
         "tip_n": "Cuántos salarios de esta empresa hay con los filtros elegidos. "
                  f"Con menos de {lib.MIN_RANKED}, la empresa va después del resto",
+        "one_note": "Empresas con un solo salario en España. Existen ({global} o más salarios en "
+                    "Levels.fyi en todo el mundo y web o LinkedIn propios), pero su cifra es la "
+                    "de una persona y puede no ser del todo fiable.",
         "split_base": "Base", "split_bonus": "Bonus", "split_stock": "Acciones",
         "split_total": "Sueldo total mediano", "split_tip": "Qué parte del pago de estos salarios es base, bonus y acciones",
         "show_all": "Ver los {n}", "show_less": "Ver menos",
@@ -554,6 +559,7 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
     # Every company with a counted salary, not only those with MIN_GROUP: the
     # companies table lists any of them (see company_filters()).
     used = sorted({i for i, *_ in rows})
+    counts = collections.Counter(i for i, *_, e in rows if e.get("base"))
     index = {old: new for new, old in enumerate(used)}
     for found in company_stats.values():
         for a in found:
@@ -581,7 +587,9 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
         "years": [b for b in bucket_labels() if f"||{b}" in stats],
         "regions": {code: {"en": name, "es": REGIONS_ES[code]}
                     for code, name in lib.REGIONS.items()},
-        "companies": [company_info(companies[i]) for i in used],
+        # n: the company's salaries in Spain, which the table's one-salary note
+        # needs under any filter.
+        "companies": [{**company_info(companies[i]), "n": counts[i]} for i in used],
         "cells": stats,
         "company_cells": company_stats,
     }
@@ -943,7 +951,7 @@ def month(ym: str, lang: str) -> str:
 
 def strings(lang: str, data: dict) -> dict:
     reported = data.get("reported") or {"from": "", "to": "", "median": ""}
-    fill = {"{min}": str(lib.MIN_GROUP), "{qmin}": str(lib.QUARTILE_MIN),
+    fill = {"{min}": str(lib.MIN_GROUP),
             "{round}": euros(lib.ROUND_EUR, lang), "{floor}": euros(COMPANY_FLOOR_EUR, lang),
             "{bar}": euros(lib.THRESHOLD_EUR, lang), "{minbase}": euros(MIN_BASE_EUR, lang),
             "{companies}": str(len(data["companies"])),
@@ -1139,6 +1147,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     </div>
     <div class="summary" id="summary" aria-live="polite"></div>
     <div class="table-wrap"><table id="companies"></table></div>
+    <p class="one-note" id="one-note" hidden><sup>*</sup>{e['one_note']}</p>
     <button class="more" id="more" hidden></button>
     {noscript_companies(e, data)}
   </section>
@@ -1182,7 +1191,7 @@ LEGAL = {
              "are no ads."),
             ("What the site publishes", "Medians of salaries people reported on Levels.fyi for "
              "jobs in Spain, never a row per person: every figure on the map, the matrix, the "
-             "JSON and the MCP server comes from 5 or more people, the middle half from 10, "
+             "JSON and the MCP server comes from 5 or more people, the middle half included, "
              "and every euro figure is rounded to 1,000 €. The companies table also lists "
              "companies with fewer salaries, still rounded. Company details come from Spain "
              "Tech Radar (CC BY 4.0) and Levels.fyi. The project is not affiliated with "
@@ -1219,7 +1228,7 @@ LEGAL = {
             ("Qué publica la web", "Medianas de los sueldos que la gente ha reportado en "
              "Levels.fyi para trabajos en España, nunca una fila por persona: cada cifra del "
              "mapa, la matriz, el JSON y el servidor MCP sale de 5 personas o más, la mitad "
-             "central de 10, y todas las cifras en euros se redondean a 1.000 €. La tabla de "
+             "central incluida, y todas las cifras en euros se redondean a 1.000 €. La tabla de "
              "empresas también muestra empresas con menos sueldos, igualmente redondeados. Los "
              "datos de cada empresa vienen de Spain Tech Radar (CC BY 4.0) y Levels.fyi. El "
              "proyecto no tiene relación con Levels.fyi ni con ninguna empresa de la lista, y "
@@ -1428,8 +1437,8 @@ def mcp_instructions(data: dict) -> str:
     return (
         "Salaries of people working in Spain, from Levels.fyi submissions, in euros per year. "
         "Base is gross salary; total adds bonus and stock. "
-        f"Every figure comes from {data['min_group']} or more people, the middle half (p25-p75) "
-        f"from {data['quartile_min']}, and euro figures are rounded to the nearest "
+        f"Every figure, the middle half (p25-p75) included, comes from {data['min_group']} or "
+        "more people, and euro figures are rounded to the nearest "
         f"{data['round_eur']}; a selection with fewer returns no result, so widen it instead "
         "of guessing. Only companies whose median base over all their salaries reaches "
         "company_floor_eur (see list_filters) are counted; say so when quoting a figure for "
@@ -1450,9 +1459,8 @@ def llms_txt(data: dict) -> str:
 
 Base is gross yearly salary; total adds bonus and stock. Spain only: no
 salary from another country is ever mixed in. A selection with fewer than
-{data['min_group']} people has no figure; widen it rather than estimate. The
-middle half (p25-p75) needs {data['quartile_min']} people, and every euro
-figure is rounded to the nearest {data['round_eur']:,} EUR. A company counts
+{data['min_group']} people has no figure, the middle half (p25-p75) included;
+widen it rather than estimate. Every euro figure is rounded to the nearest {data['round_eur']:,} EUR. A company counts
 only when its median base over all its salaries reaches {data['company_floor']:,} EUR,
 it has a LinkedIn page or a website, and it has {data.get('min_global', lib.MIN_GLOBAL)} or
 more submissions on Levels.fyi from anywhere in the world over every role.

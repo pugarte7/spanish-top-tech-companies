@@ -127,14 +127,20 @@ the taxonomy's official slugs or empty — never free text, which is how a row
 still cannot point at a person. Keep no submission ids, exact days, teams or
 free-text detail, keep the attribution, and remove anything someone asks to
 have removed. The CSV is row-level and private; the website and MCP publish only
-aggregates of five or more people (`lib.MIN_GROUP`), quartiles only from ten
-(`lib.QUARTILE_MIN`) and every euro figure rounded to 1.000 € (`lib.ROUND_EUR`):
-with three people, a median and its quartiles gave back all three salaries.
+aggregates of five or more people (`lib.MIN_GROUP`), quartiles included, and
+every euro figure rounded to 1.000 € (`lib.ROUND_EUR`): with three people, a
+median and its quartiles gave back all three salaries. Quartiles needed ten
+until 2026-11-02, when the maintainer wanted one minimum across the site
+("que en un sitio no sea 1, en otro 3, en otro 5 y en otro 10");
+`lib.QUARTILE_MIN` is `MIN_GROUP` since.
 The one exception is the companies table: on 2026-11-01 the maintainer chose
 to list every company with data under the filters, one salary included, with
 its summary and its bars per experience band (`site.company_filters()`),
 still rounded. A role with 85 salaries had listed one company. data.json,
-the map, the matrix and the MCP keep MIN_GROUP.
+the map, the matrix and the MCP keep MIN_GROUP. Since 2026-11-02 a company
+with a single salary in Spain (`n` in data.json's `companies`) has its median
+starred and greyed, with a note under the table: real company, figure of one
+person.
 
 A row should ideally mean the maintainer knows someone in Spain doing that job,
 or was offered the position. Crowdsourced figures are placeholders; first-hand
