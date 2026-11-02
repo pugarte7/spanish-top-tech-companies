@@ -217,3 +217,10 @@ empresas con más de 5 submisiones, sería demasiado").
 
 After any data change: `python3 scripts/validate.py && python3 scripts/site.py
 --refresh`, and commit the regenerated `data/`, never `companies.csv`.
+
+`data/boards.json` is not regenerated: it maps a Levels.fyi slug to the
+company's job board, found by autoapply-mcp's preset builder (`npm run
+preset:spain -- --site-boards <this repo>/data/boards.json`). The site
+publishes it at `/api/v1/boards.json`, tiered by that day's ranking, and
+autoapply-mcp's `load_preset spain` downloads it (since 2026-11-02: "que
+saque las empresas de la web").
