@@ -43,6 +43,7 @@ main() {
   python3 tests/test_pipeline.py
   python3 scripts/validate.py
   python3 scripts/site.py --refresh
+  python3 scripts/review.py > data/review.md
 
   git add data scripts/taxonomy.py
   if git diff --cached --quiet; then
@@ -53,6 +54,25 @@ main() {
   # The fetch takes most of an hour; a PR merged meanwhile must not fail the push.
   git pull -q --rebase origin "$BRANCH"
   git push -q origin "HEAD:$BRANCH"
+  verify_issue
+}
+
+# One open issue, "Companies to verify", kept at the companies the fetchers
+# found no LinkedIn page or website for (scripts/review.py). Opened from the
+# Mac as the maintainer, so it never notifies them: it is their own checklist,
+# not news. The week's digest issue still comes from weekly.yml.
+verify_issue() {
+  local body number
+  body="$(mktemp)"
+  python3 scripts/review.py --limit 200 > "$body"
+  number="$(gh issue list --state open --search '"Companies to verify" in:title' \
+            --json number --jq '.[0].number')"
+  if [ -n "$number" ]; then
+    gh issue edit "$number" --body-file "$body"
+  else
+    gh issue create --title "Companies to verify" --body-file "$body"
+  fi
+  rm -f "$body"
 }
 
 # On one line so bash has read it before `git checkout` can rewrite this file.

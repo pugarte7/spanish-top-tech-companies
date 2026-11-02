@@ -262,14 +262,98 @@ async function applyFilters(patch) {
   companies();
 }
 
-// --- KPIs ---------------------------------------------------------------------
+// --- header ---------------------------------------------------------------------
+// A band of the salary histogram: under the first edge, over the last, or between two.
+function bandLabel(i, n) {
+  const { low, step } = D.hist;
+  return i === 0 ? `${S.under} ${short(low)}`
+    : i === n - 1 ? `${S.over} ${short(low + (i - 1) * step)}`
+    : `${short(low + (i - 1) * step)}–${short(low + i * step)}`;
+}
+const bandTip = (a, i) => {
+  const c = a.hist[i];
+  return `<b>${bandLabel(i, a.hist.length)} €</b><br>` + (c === null
+    ? `${S.under} ${D.min_group} ${S.people}`
+    : `${c.toLocaleString(LOCALE)} ${S.people} · ${share(c / a.n)}`);
+};
+
+// Grouped like the other figures: es-ES leaves four digits without a dot.
+const grouped = (n) => n.toLocaleString(LOCALE, { useGrouping: "always" });
+
+// Everyone in Spain: the median, the histogram and three figures, each with its unit.
 function kpis() {
   const a = cell();
   $("k-median").textContent = a ? money(a.median) : "—";
   $("k-total").textContent = a ? money(a.total) : "—";
   $("k-share").textContent = a ? pct(a.share) : "—";
-  $("k-people").textContent = a ? a.n.toLocaleString(LOCALE) : "—";
-  $("k-companies").textContent = (D.company_cells["||"] || []).length.toLocaleString(LOCALE);
+  $("k-people").textContent = a ? grouped(a.n) : "—";
+  $("k-companies").textContent = grouped((D.company_cells["||"] || []).length);
+  heroDist(a);
+}
+
+// Bars to scale on a 0..max+8% axis with round gridlines, one tick every 20k,
+// and the 60k line, the bar the whole site is drawn around.
+function heroDist(a) {
+  const el = $("k-dist");
+  if (!a) { el.innerHTML = ""; return; }
+  const { low, step, high } = D.hist, n = a.hist.length;
+  const top = Math.max(...a.hist.map((c) => c || 0)) * 1.08;
+  const every = [100, 200, 250, 500, 1000, 2000, 2500, 5000].find((g) => top / g <= 3) || 10000;
+  const x = (edge) => (edge / n) * 100;
+  const lines = [];
+  for (let v = every; v < top; v += every)
+    lines.push(`<span class="gl" style="bottom:${(v / top) * 100}%"><b>${grouped(v)}</b></span>`);
+  const bars = a.hist.map((c, i) => {
+    const high = i > 0 && low + (i - 1) * step >= D.threshold;
+    return `<span class="col" data-i="${i}"><i class="${high ? "hi" : ""}" style="height:${((c || 0) / top) * 100}%"></i></span>`;
+  }).join("");
+  const ticks = [];
+  for (let v = low; v < high - step; v += 2 * step)
+    ticks.push(`<span${v === D.threshold ? ' class="at"' : ""} style="left:${x(1 + (v - low) / step)}%">${short(v)}</span>`);
+  ticks.push(`<span style="left:${x(n - 0.5)}%">${short(high)}+</span>`);
+  el.innerHTML = `<div class="plot"><div class="area">${lines.join("")}` +
+    `<div class="bars" style="grid-template-columns:repeat(${n},minmax(0,1fr))">${bars}</div></div>` +
+    `<span class="cut" style="left:${x(1 + (D.threshold - low) / step)}%"><b>${esc(S.hero_cut)}</b></span></div>` +
+    `<div class="axis" aria-hidden="true">${ticks.join("")}</div>`;
+  el.querySelectorAll(".col").forEach((col) => hover(col, () => bandTip(a, +col.dataset.i)));
+}
+
+// The veil behind the banner's text hugs the text, so the tiles stop as far
+// from it on every side. Its box is the column, which is wider than a balanced
+// title, and the title's line box starts above its letters. The text and the
+// buttons take the width of the title's longest line, so nothing sticks out.
+function hugVeil() {
+  const v = document.querySelector(".pitch.veil");
+  if (!v) return;
+  const box = v.getBoundingClientRect(), h1 = v.querySelector("h1"), r = document.createRange();
+  // The title's lines are measured on the whole column, then the block takes their width.
+  v.style.removeProperty("--title-w");
+  r.selectNodeContents(h1);
+  const lines = [...r.getClientRects()];
+  const title = Math.max(...lines.map((q) => q.right)) - Math.min(...lines.map((q) => q.left));
+  v.style.setProperty("--title-w", `${Math.min(box.width, Math.ceil(title))}px`);
+  let right = v.querySelector(".cta").getBoundingClientRect().right;
+  for (const el of [h1, v.querySelector(".hero-lede")]) {
+    r.selectNodeContents(el);
+    for (const q of r.getClientRects()) right = Math.max(right, q.right);
+  }
+  // The words on the title's first line, and how far below their line's top their letters start.
+  const text = h1.firstChild;
+  let first = "", at = 0, top = null;
+  for (const w of text.data.split(" ")) {
+    r.setStart(text, at); r.setEnd(text, at + w.length);
+    const t = r.getBoundingClientRect().top;
+    if (top === null) top = t;
+    if (Math.abs(t - top) > 2) break;
+    first += (first ? " " : "") + w; at += w.length + 1;
+  }
+  const cs = getComputedStyle(h1), ctx = document.createElement("canvas").getContext("2d");
+  ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const m = ctx.measureText(first);
+  const ink = (parseFloat(cs.lineHeight) - m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2
+    + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent;
+  v.style.setProperty("--hug-right", `${Math.max(0, box.right - right)}px`);
+  v.style.setProperty("--hug-top", `${Math.max(0, ink) || 0}px`);
 }
 
 // --- pay shades -----------------------------------------------------------------
@@ -387,9 +471,6 @@ function summary() {
   if (!row) { el.innerHTML = `<p class="empty">${esc(S.none)}</p>`; return; }
   const a = Object.fromEntries(t.summary_fields.map((f, i) => [f, row[i]]));
   const { low, step } = D.hist, max = Math.max(...a.hist.map((c) => c || 0));
-  const band = (i) => i === 0 ? `${S.under} ${short(low)}`
-    : i === a.hist.length - 1 ? `${S.over} ${short(low + (i - 1) * step)}`
-    : `${short(low + (i - 1) * step)}–${short(low + i * step)}`;
   // Each band is a full-height column, so hovering above a short bar still
   // finds it.
   const bars = a.hist.map((c, i) => {
@@ -407,12 +488,7 @@ function summary() {
     `<div class="axis"><span>${short(low)}</span>` +
     `<span style="left:${bar}%">${short(D.threshold)}</span>` +
     `<span>${short(D.hist.high)}+</span></div></div>`;
-  el.querySelectorAll(".dist .col").forEach((col) => {
-    const i = +col.dataset.i, c = a.hist[i];
-    hover(col, () => `<b>${band(i)} €</b><br>` + (c === null
-      ? `${S.under} ${D.min_group} ${S.people}`
-      : `${c.toLocaleString(LOCALE)} ${S.people} · ${share(c / a.n)}`));
-  });
+  el.querySelectorAll(".dist .col").forEach((col) => hover(col, () => bandTip(a, +col.dataset.i)));
 }
 
 // --- companies ------------------------------------------------------------------
@@ -502,11 +578,12 @@ function detail(a) {
     ? `<div class="yb" title="n = ${y[1]}"><b>${short(y[0])}</b>` +
       `<i${y[0] >= D.threshold ? ' class="hi"' : ""} style="height:${h(y[0])}px"></i></div>`
     : `<div class="yb"><span class="na">–</span><i class="none"></i></div>`).join("");
+  // On a phone the unit leaves each label for one caption under the axis.
   const labels = years.map(([b]) =>
-    `<span${state.years.includes(b) ? ' class="on"' : ""}>${yearsLabel(b)}</span>`).join("");
+    `<span${state.years.includes(b) ? ' class="on"' : ""}>${b.replace("-", "–")}<small> ${S.years_unit}</small></span>`).join("");
   const chart = `<div class="ybars"><div class="yplot">${bars}` +
     `<span class="ref" style="bottom:${h(D.threshold)}px"><em>${short(D.threshold)}</em></span></div>` +
-    `<div class="yaxis">${labels}</div></div>`;
+    `<div class="yaxis">${labels}</div><p class="yunit">${S.years_axis}</p></div>`;
   // The links repeat here for phones, where the row has no room for them.
   return `<div class="detail">${years.some(([, y]) => y) ? chart : ""}` +
     split(a) + `<span class="links">${companyLinks(D.companies[a.c])}</span></div>`;
@@ -532,8 +609,13 @@ function companies() {
   const all = table();
   const q = state.q.trim().toLowerCase();
   const by = SORTS[state.sort];
+  // A company under min_ranked salaries goes after the rest whatever the
+  // column: its "median" is one person's pay. Ascending is the exact reverse.
+  // 3 until a refresh writes min_ranked into data.json.
+  const thin = (a) => a.n < (D.min_ranked || 3);
   const rows = (q ? all.filter((a) => D.companies[a.c].name.toLowerCase().includes(q)) : all)
-    .slice().sort((x, y) => (state.asc ? -1 : 1) * (by(y) - by(x) || y.median - x.median));
+    .slice().sort((x, y) => (state.asc ? -1 : 1) *
+      (thin(x) - thin(y) || by(y) - by(x) || y.median - x.median));
   const shown = state.all ? rows : rows.slice(0, 15);
   const th = (k, label, tip, cls = "num") =>
     `<th class="${cls} sort${state.sort === k ? (state.asc ? " on asc" : " on") : ""}" data-sort="${k}"` +
@@ -542,7 +624,7 @@ function companies() {
   $("companies").innerHTML = !rows.length ? `<tr><td class="empty">${esc(S.none)}</td></tr>` :
     `<thead><tr><th class="chev"></th><th>${S.col_company}</th>` +
     th("median", S.col_median, S.tip_median, "pay") +
-    `${th("share", S.col_share, S.tip_share)}${th("n", S.col_n, S.tip_n, "num hide-sm")}</tr></thead><tbody>` +
+    `${th("share", S.col_share, S.tip_share)}${th("n", S.col_n, S.tip_n)}</tr></thead><tbody>` +
     shown.map((a) => {
       const c = D.companies[a.c];
       const open = opened.has(a.c);
@@ -553,7 +635,7 @@ function companies() {
         `<span class="links">${companyLinks(c)}</span></div></td>` +
         `<td class="pay"><b>${money(a.median)}</b></td>` +
         `<td class="num">${pct(a.share)}</td>` +
-        `<td class="num hide-sm">${a.n}</td></tr>` +
+        `<td class="num">${a.n}</td></tr>` +
         `<tr class="det"${open ? "" : " hidden"}><td colspan="5">${open ? detail(a) : ""}</td></tr>`;
     }).join("") + `</tbody>`;
   $("companies").querySelectorAll("tr.main").forEach((tr, i) => {
@@ -742,6 +824,10 @@ async function main() {
   agentPrompt();
   starPrompt();
   kpis(); map();
+  // Again whenever the column changes width or the method opens, and once the fonts are in.
+  // After the observer's turn: hugVeil resizes what it observes.
+  new ResizeObserver(() => requestAnimationFrame(hugVeil)).observe(document.querySelector(".pitch"));
+  document.fonts.ready.then(hugVeil);
   await loadTable("");
   matrix();
   const h = new URLSearchParams(location.hash.slice(1));

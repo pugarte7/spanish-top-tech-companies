@@ -33,6 +33,118 @@ test("loads with figures in every card", async ({ page }) => {
   await expect(page.locator("#summary dd").first()).not.toBeEmpty();
 });
 
+test("header card: the median, its histogram with the 60k line, figures with their unit", async ({ page }) => {
+  await open(page);
+  const data = await (await page.request.get("/api/v1/data.json")).json();
+  const all = data.cells["||"];
+  await expect(page.locator("#k-median")).toHaveText(`${all.median.toLocaleString("es-ES", { useGrouping: "always" })} €`);
+  await expect(page.locator("#k-dist .col")).toHaveCount(all.hist.length);
+  await expect(page.locator("#k-dist .cut")).toHaveText("60.000 € o más");
+  // Blue from the bar up: the bands from 60k on, and none under it.
+  const first = 1 + (data.threshold - data.hist.low) / data.hist.step;
+  await expect(page.locator("#k-dist .col i.hi")).toHaveCount(all.hist.length - first);
+  await expect(page.locator(`#k-dist .col:nth-child(${first}) i`)).not.toHaveClass(/hi/);
+  // Four digits keep their dot, as every other figure on the page.
+  await expect(page.locator("#k-dist .gl b").last()).toHaveText(/^\d{1,3}(\.\d{3})*$/);
+  await expect(page.locator("#k-people")).toHaveText(all.n.toLocaleString("es-ES", { useGrouping: "always" }));
+  await expect(page.locator(".hero-stats dt").first()).toHaveText("cobra 60.000 € o más de base");
+  await expect(page.locator(".hero-stats dt").last()).toContainText("empresas con 5 o más salarios");
+});
+
+test("header card: the label left, the date top right, three equal figures whose labels break alike", async ({ page }) => {
+  await open(page);
+  for (const width of [1600, 1280, 800, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    const m = await page.evaluate(() => {
+      const card = document.querySelector(".hero-card"), cs = getComputedStyle(card), c = card.getBoundingClientRect();
+      const inner = { left: c.left + parseFloat(cs.borderLeftWidth) + parseFloat(cs.paddingLeft),
+                      right: c.right - parseFloat(cs.borderRightWidth) - parseFloat(cs.paddingRight) };
+      const label = document.querySelector(".hero-card-head span").getBoundingClientRect();
+      const date = document.querySelector("#updated").getBoundingClientRect();
+      return {
+        inner, label: { left: label.left, top: label.top }, date: { right: date.right, top: date.top },
+        widths: [...document.querySelectorAll(".hero-stats > div")].map((d) => d.getBoundingClientRect().width),
+        lines: [...document.querySelectorAll(".hero-stats dt")].map((d) =>
+          Math.round(d.getBoundingClientRect().height / parseFloat(getComputedStyle(d).lineHeight))),
+      };
+    });
+    const at = `at ${width}px: ${JSON.stringify(m)}`;
+    expect(Math.abs(m.label.left - m.inner.left), at).toBeLessThan(1);
+    expect(Math.abs(m.date.right - m.inner.right), at).toBeLessThan(1);
+    expect(Math.abs(m.date.top - m.label.top), at).toBeLessThan(1);
+    expect(Math.max(...m.widths) - Math.min(...m.widths), at).toBeLessThan(1.5);
+    expect(new Set(m.lines).size, at).toBe(1);
+    expect(m.lines[0]).toBeLessThanOrEqual(2);
+  }
+});
+
+test("every blue field is tiled from the one lazo, and text has no tiles behind it", async ({ page }) => {
+  await open(page);
+  await expect(page.locator("pattern#lazo")).toHaveCount(1);
+  for (const sel of ["header.field", ".agents-stage", "footer", "#star", "#agent-pop"])
+    await expect(page.locator(`${sel} > .wall rect`), sel).toHaveAttribute("fill", "url(#lazo)");
+  // The frieze and a veil of the field's blue behind the banner's, the agents' and the footer's text.
+  for (const sel of ["header.field", ".agents-stage", "footer"])
+    expect(await page.locator(sel).evaluate((e) => getComputedStyle(e, "::after").backgroundImage), sel).toContain("cenefa");
+  for (const sel of [".pitch", ".agent-say", "footer p"])
+    await expect(page.locator(sel)).toHaveClass(/\bveil\b/);
+});
+
+test("the banner's text is square: buttons end with the title, the veil clears both sides alike", async ({ page }) => {
+  for (const [path, width] of [["/es/", 1280], ["/en/", 1600], ["/es/", 800], ["/es/", 390]]) {
+    await page.setViewportSize({ width, height: 900 });
+    await open(page, path);
+    await page.evaluate(() => document.fonts.ready);
+    const m = await page.locator(".pitch").evaluate((v) => {
+      const b = v.getBoundingClientRect(), s = getComputedStyle(v, "::before"), r = document.createRange();
+      const far = (el) => { r.selectNodeContents(el); return Math.max(...[...r.getClientRects()].map((q) => q.right)); };
+      const title = far(v.querySelector("h1")), lede = far(v.querySelector(".hero-lede"));
+      const buttons = v.querySelector(".cta").getBoundingClientRect().right;
+      const right = Math.max(title, lede, buttons);
+      return { title, lede, buttons, left: -parseFloat(s.left), right: b.right - parseFloat(s.right) - right };
+    });
+    const at = `${path} at ${width}px: ${JSON.stringify(m)}`;
+    // On a phone the buttons take the whole column and the title is narrower.
+    if (width > 640) expect(Math.abs(m.buttons - m.title), at).toBeLessThan(1.5);
+    expect(m.lede, at).toBeLessThanOrEqual(m.buttons + 0.5);
+    expect(Math.abs(m.right - m.left), at).toBeLessThan(1);
+    // Every line of the title and of the text is centred on the buttons.
+    const off = await page.locator(".pitch").evaluate((v) => {
+      const cta = v.querySelector(".cta").getBoundingClientRect(), r = document.createRange(), out = [];
+      for (const el of v.querySelectorAll("h1, .hero-lede")) {
+        r.selectNodeContents(el);
+        const by = {};
+        for (const q of r.getClientRects()) {
+          const k = Math.round(q.top / 4);
+          by[k] = [Math.min(by[k]?.[0] ?? Infinity, q.left), Math.max(by[k]?.[1] ?? 0, q.right)];
+        }
+        for (const [l, right] of Object.values(by)) out.push((l - cta.left) - (cta.right - right));
+      }
+      return out;
+    });
+    for (const o of off) expect(Math.abs(o), `${at} line offsets ${off}`).toBeLessThan(1.5);
+  }
+});
+
+test("header buttons: every row as wide, the pair half each, and each leads somewhere", async ({ page }) => {
+  await open(page);
+  const box = async (sel) => (await page.locator(sel).boundingBox());
+  const see = await box(".cta .btn.main.wide"), how = await box(".how summary");
+  const role = await box('.cta a[href="#matrix-card"]'), region = await box('.cta a[href="#map-card"]');
+  expect(how.width).toBeCloseTo(see.width, 0);
+  expect(role.width).toBeCloseTo(region.width, 0);
+  expect(role.x).toBeCloseTo(see.x, 0);
+  expect(region.x + region.width).toBeCloseTo(see.x + see.width, 0);
+  expect(how.y).toBeGreaterThan(role.y);
+
+  await page.locator(".how summary").click();
+  await expect(page.locator(".how .steps")).toBeVisible();
+  await page.locator('.cta a[href="#matrix-card"]').click();
+  await expect(page.locator("#matrix-card")).toBeInViewport();
+  await page.locator('.cta a[href="#companies-card"]').click();
+  await expect(page.locator("#companies-card")).toBeInViewport();
+});
+
 test("matrix: roles with most salaries, a cell filters the table", async ({ page }) => {
   await open(page);
   const counts = (await page.locator("#matrix tbody th small").allTextContents()).map(num);
@@ -82,7 +194,9 @@ test("map opens on number of salaries and switches to pay", async ({ page }) => 
   const sortedDesc = (v) => v.every((x, i) => i === 0 || v[i - 1] >= x);
 
   await expect(page.locator("#map-metric [data-m=count]")).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator("#map-metric [data-m=count]")).toHaveText("N. Salarios");
+  await expect(page.locator("#map-metric button")).toHaveText(["N. Salarios", "Base mediana"]);
+  const [a, b] = await page.locator("#map-metric button").evaluateAll((bs) => bs.map((x) => x.getBoundingClientRect().width));
+  expect(Math.abs(a - b)).toBeLessThan(1);
   await expect(page.locator("#map-sub")).toHaveText("Cuántos salarios se han recogido en cada comunidad.");
   const counts = await values();
   expect(sortedDesc(counts)).toBe(true);
@@ -196,6 +310,15 @@ test("a link restores its filters", async ({ page }) => {
   await expect(filter(page, "modes").locator(".txt")).toHaveText("Remoto");
 });
 
+test("companies under three salaries come after the rest", async ({ page }) => {
+  await open(page);
+  await page.locator("#more").click();
+  const ns = (await page.locator("#companies tr.main td:last-child").allTextContents()).map(num);
+  const thin = ns.findIndex((n) => n < 3);
+  expect(thin).toBeGreaterThan(0);
+  expect(ns.slice(thin).every((n) => n < 3)).toBe(true);
+});
+
 test("clicking a column sorts it, again reverses it", async ({ page }) => {
   await open(page);
   const th = page.locator('#companies th[data-sort="n"]');
@@ -272,6 +395,17 @@ test("an open row shows how total pay splits, adding up to 100%", async ({ page 
   await expect(key).toHaveText([/^Base \d+%$/, /^Bonus \d+%$/, /^Acciones \d+%$/]);
   const sum = (await key.allTextContents()).reduce((s, t) => s + +t.match(/(\d+)%/)[1], 0);
   expect(sum).toBe(100);
+});
+
+test("the footer links to the legal and privacy page, which names who runs the site", async ({ page }) => {
+  await open(page);
+  const legal = page.locator("footer a[href='/es/legal/']");
+  await expect(legal).toHaveText("Aviso legal y privacidad");
+  await page.goto("/es/legal/");
+  await expect(page.locator("h1")).toHaveText("Aviso legal y privacidad");
+  await expect(page.locator("main")).toContainText("Pablo Ugarte");
+  await expect(page.locator("a[href^='mailto:']").first()).toHaveText("ugartep117@gmail.com");
+  await expect(page.locator("a[hreflang=en]")).toHaveAttribute("href", "/en/legal/");
 });
 
 test("links that leave the page open in a new tab", async ({ page, context }) => {
@@ -511,13 +645,77 @@ test("no sideways scroll on a phone @mobile", async ({ page }) => {
 
 test("the companies table fits a phone, links in the open row @mobile", async ({ page }) => {
   await open(page);
-  // The table once scrolled sideways inside its card, hiding the 60k+ column.
+  // The table once scrolled sideways inside its card, hiding the 60k+ column;
+  // later the number of salaries was hidden on phones, and readers missed it.
   const [inner, outer] = await page.locator(".table-wrap").evaluate((el) => [el.scrollWidth, el.clientWidth]);
   expect(inner).toBeLessThanOrEqual(outer);
-  const share = await page.locator('#companies th[data-sort="share"]').boundingBox();
-  expect(share.x + share.width).toBeLessThanOrEqual(await page.evaluate(() => innerWidth));
+  const width = await page.evaluate(() => innerWidth);
+  for (const k of ["share", "n"]) {
+    const th = page.locator(`#companies th[data-sort="${k}"]`);
+    await expect(th).toBeVisible();
+    const box = await th.boundingBox();
+    expect(box.x + box.width).toBeLessThanOrEqual(width);
+  }
+  await expect(rows(page).first().locator("td.num").last()).toHaveText(/^\d+$/);
   await rows(page).first().click();
   await expect(rows(page).first().locator("xpath=following-sibling::tr[1]").locator(".links a").first()).toBeVisible();
+  // The open row is tinted to the card's edges, and its turned arrow is whole.
+  const m = await page.evaluate(() => {
+    const card = document.querySelector("#companies-card"), cs = getComputedStyle(card), c = card.getBoundingClientRect();
+    const wrap = document.querySelector(".table-wrap").getBoundingClientRect();
+    const row = document.querySelector("#companies tr.main.open").getBoundingClientRect();
+    const arrow = document.querySelector("#companies tr.main.open .chev span").getBoundingClientRect();
+    return { inner: [c.left + parseFloat(cs.borderLeftWidth), c.right - parseFloat(cs.borderRightWidth)],
+             row: [row.left, row.right], wrap: [wrap.left, wrap.right], arrow: [arrow.left, arrow.right] };
+  });
+  expect(Math.abs(m.row[0] - m.inner[0]), JSON.stringify(m)).toBeLessThan(1);
+  expect(Math.abs(m.row[1] - m.inner[1]), JSON.stringify(m)).toBeLessThan(1);
+  expect(m.arrow[0], JSON.stringify(m)).toBeGreaterThanOrEqual(m.wrap[0]);
+});
+
+test("on a phone the title is centred and the text runs as wide as the buttons @mobile", async ({ page }) => {
+  await open(page);
+  const [lede, cta] = await page.evaluate(() =>
+    [".hero-lede", ".cta"].map((s) => document.querySelector(s).getBoundingClientRect().width));
+  expect(Math.abs(lede - cta)).toBeLessThan(1);
+  const lines = await page.locator(".pitch h1").evaluate((h) => {
+    const r = document.createRange(); r.selectNodeContents(h);
+    const by = {};
+    for (const q of r.getClientRects()) {
+      const k = Math.round(q.top / 4);
+      by[k] = [Math.min(by[k]?.[0] ?? Infinity, q.left), Math.max(by[k]?.[1] ?? 0, q.right)];
+    }
+    return Object.values(by).map(([l, right]) => [l, innerWidth - right]);
+  });
+  expect(lines.length).toBeGreaterThan(1);
+  for (const [left, right] of lines) expect(Math.abs(left - right), JSON.stringify(lines)).toBeLessThan(1.5);
+});
+
+test("an open company on a phone is centred, with a margin on both sides @mobile", async ({ page }) => {
+  await open(page);
+  await rows(page).first().click();
+  const m = await page.evaluate(() => {
+    const td = document.querySelector("#companies tr.det td").getBoundingClientRect(), mid = td.left + td.width / 2;
+    const r = document.createRange();
+    const centre = (e) => {
+      r.selectNodeContents(e);
+      const q = [...r.getClientRects()];
+      return (Math.min(...q.map((x) => x.left)) + Math.max(...q.map((x) => x.right))) / 2 - mid;
+    };
+    const plot = document.querySelector("#companies tr.det .yplot").getBoundingClientRect();
+    return {
+      margins: [plot.left - td.left, td.right - plot.right],
+      off: [".yplot", ".yaxis", ".yunit", ".split dl", ".mix-key", ".detail .links"]
+        .map((s) => [s, Math.round(centre(document.querySelector(`#companies tr.det ${s}`)))]),
+      // Each band's label on one line: the unit moves to one caption under the axis.
+      tall: [...document.querySelectorAll("#companies tr.det .yaxis span")].filter((x) => x.getBoundingClientRect().height > 20).length,
+    };
+  });
+  expect(Math.abs(m.margins[0] - m.margins[1]), JSON.stringify(m)).toBeLessThan(1);
+  expect(m.margins[0]).toBeGreaterThanOrEqual(20);
+  for (const [s, o] of m.off) expect(Math.abs(o), `${s} ${JSON.stringify(m)}`).toBeLessThanOrEqual(1);
+  expect(m.tall).toBe(0);
+  await expect(page.locator("#companies tr.det .yunit")).toHaveText("Años de experiencia");
 });
 
 test("filter menus stay on a phone's screen @mobile", async ({ page }) => {

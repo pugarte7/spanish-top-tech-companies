@@ -20,13 +20,13 @@ Funciona con Claude Code, Codex, Cursor, Grok CLI, Hermes e Instinct, o con cual
 
    En Claude Code: `claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp`
 
-2. **Dale tu CV y lo que buscas.** Una sola vez. El agente instala [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) por su cuenta y te pide tu CV, dónde y cómo quieres trabajar, el sueldo que pides y un correo para los códigos de verificación.
+2. **Dale tu CV y lo que buscas.** Una sola vez. El agente añade [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) con una línea, sin instalar nada, y te pide tu CV, dónde y cómo quieres trabajar y el sueldo que pides. Envía cada solicitud con su propio navegador; si una empresa manda un código por correo, lo lee de tu correo si se lo conectas, o te lo pide.
 
 3. **Dile que aplique.** Por ejemplo:
 
    > Aplica por mí a las ofertas de las empresas de spanishtoptechcompanies.com que pagan 60.000 € o más a alguien con mi experiencia en Madrid.
 
-   Tú solo das el visto bueno. Las preguntas delicadas, como sueldo o permiso de trabajo, siempre te las hace a ti, y si un formulario pide un CAPTCHA te devuelve esa solicitud para que la termines tú.
+   Lo apruebas una vez y envía las solicitudes él solo. Las preguntas delicadas, como sueldo o permiso de trabajo, te las hace una vez, todas en un mensaje, y las recuerda. Si un formulario pide un CAPTCHA, te pasa la página: lo resuelves y envía la solicitud.
 
 ### Qué hay en la web
 
@@ -39,7 +39,7 @@ Funciona con Claude Code, Codex, Cursor, Grok CLI, Hermes e Instinct, o con cual
 
 ### Cómo se calcula
 
-Cada salario viene de [Levels.fyi](https://www.levels.fyi) y solo cuenta si la ubicación de esa persona está en España. Una empresa aparece si la mediana del sueldo base de todos sus salarios llega a 45.000 €. Los salarios se resumen por empresa, rol, región y experiencia, y los importes de la web se redondean a 1.000 €. Los detalles están en [METHODOLOGY.md](METHODOLOGY.md#the-website-and-the-mcp-server).
+Cada salario viene de [Levels.fyi](https://www.levels.fyi) y solo cuenta si la ubicación de esa persona está en España. Una empresa aparece si la mediana del sueldo base de todos sus salarios llega a 45.000 €, tiene página de LinkedIn o web, y tiene en Levels.fyi al menos 5 salarios de cualquier país sumando todos los roles: una empresa que nadie más ha reportado no aparece. Las empresas con menos de 3 salarios se listan después de las demás. Los salarios se resumen por empresa, rol, región y experiencia, y los importes de la web se redondean a 1.000 €. Los detalles están en [METHODOLOGY.md](METHODOLOGY.md#the-website-and-the-mcp-server).
 
 ### Añade tu salario
 
@@ -65,13 +65,13 @@ Works with Claude Code, Codex, Cursor, Grok CLI, Hermes and Instinct, or any age
 
    In Claude Code: `claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp`
 
-2. **Give it your CV and what you want.** Only once. The agent installs [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) on its own and asks for your CV, where and how you want to work, the salary you ask for and a mailbox for verification codes.
+2. **Give it your CV and what you want.** Only once. The agent adds [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) with one line, with nothing to install, and asks for your CV, where and how you want to work and the salary you ask for. It sends each application with its own browser; if a board emails a code, it reads it from your mail if you connect it, or asks you.
 
 3. **Tell it to apply.** For example:
 
    > Apply for me to openings at the companies on spanishtoptechcompanies.com that pay €60,000 or more to someone with my experience in Madrid.
 
-   You only give the go-ahead. Sensitive questions, like salary or work permit, it always asks you, and if a form asks for a CAPTCHA it hands that application back for you to finish.
+   You approve once and it sends the applications itself. Sensitive questions, like salary or work permit, it asks you once, all in one message, and remembers. If a form asks for a CAPTCHA, it hands you the page: you solve it and it sends the application.
 
 ### On the site
 
@@ -84,7 +84,7 @@ Works with Claude Code, Codex, Cursor, Grok CLI, Hermes and Instinct, or any age
 
 ### How it is calculated
 
-Every salary comes from [Levels.fyi](https://www.levels.fyi) and counts only if that person's location is in Spain. A company is listed when the median base salary over all its salaries reaches €45,000. Salaries are summarised by company, role, region and experience, and the site rounds every amount to €1,000. The details are in [METHODOLOGY.md](METHODOLOGY.md#the-website-and-the-mcp-server).
+Every salary comes from [Levels.fyi](https://www.levels.fyi) and counts only if that person's location is in Spain. A company is listed when the median base salary over all its salaries reaches €45,000, it has a LinkedIn page or a website, and it has at least 5 salaries on Levels.fyi from anywhere in the world over every role: a company nobody else has reported is not shown. Companies with fewer than 3 salaries are listed after the rest. Salaries are summarised by company, role, region and experience, and the site rounds every amount to €1,000. The details are in [METHODOLOGY.md](METHODOLOGY.md#the-website-and-the-mcp-server).
 
 ### Add your salary
 
@@ -106,6 +106,6 @@ Code is [MIT](LICENSE), the data in `data/` is [CC BY-SA 4.0](LICENSE-DATA). Sal
 
 ## Aviso · Disclaimer
 
-Proyecto independiente, sin relación con Levels.fyi ni con ninguna de las empresas. Las cifras resumen salarios que otras personas han reportado. Pueden estar incompletas, desactualizadas o mal, y no son ofertas ni asesoramiento financiero o legal. Si quieres que se quite o corrija algo, sobre una empresa o sobre ti, abre un [issue](../../issues/new/choose).
+Proyecto independiente, sin relación con Levels.fyi ni con ninguna de las empresas. Las cifras resumen salarios que otras personas han reportado. Pueden estar incompletas, desactualizadas o mal, y no son ofertas ni asesoramiento financiero o legal. Si quieres que se quite o corrija algo, sobre una empresa o sobre ti, abre un [issue](../../issues/new/choose) o escribe a ugartep117@gmail.com. Quién está detrás y qué datos se tratan: [aviso legal y privacidad](https://spanishtoptechcompanies.com/es/legal/).
 
-This is an independent project, not affiliated with or endorsed by Levels.fyi or any company listed. The figures summarise salaries other people reported. They can be incomplete, out of date or wrong, and they are not offers, guarantees, or financial or legal advice. Company names belong to their owners. If you want something removed or corrected, whether about a company or about yourself, open an [issue](../../issues/new/choose) and it will be taken down.
+This is an independent project, not affiliated with or endorsed by Levels.fyi or any company listed. The figures summarise salaries other people reported. They can be incomplete, out of date or wrong, and they are not offers, guarantees, or financial or legal advice. Company names belong to their owners. If you want something removed or corrected, whether about a company or about yourself, open an [issue](../../issues/new/choose) or write to ugartep117@gmail.com and it will be taken down. Who runs this and what data it handles: [legal notice and privacy](https://spanishtoptechcompanies.com/en/legal/).

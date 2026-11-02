@@ -5,7 +5,7 @@
 Every Spanish submission the fetcher can read is a row of one private file: every job family, every seniority, paid whatever they are paid. The website, its JSON and the MCP server read it this way:
 
 - **Every role, any experience.** Not only software engineers.
-- **Which companies.** A company counts while its median base over all its salaries, at any role and seniority, is 45.000 € or more (`COMPANY_FLOOR_EUR` in `scripts/site.py`). Below that it is left out entirely, so every figure describes better-paying employers, not all of Spain.
+- **Which companies.** A company counts while its median base over all its salaries, at any role and seniority, is 45.000 € or more (`COMPANY_FLOOR_EUR` in `scripts/site.py`). Below that it is left out entirely, so every figure describes better-paying employers, not all of Spain. Since 2026-11-01 a company also has to exist beyond Levels.fyi (a LinkedIn page or a website) and have been reported there at least five times from anywhere in the world, counting every role, and a company with fewer than three salaries is listed after the rest. The reasons are under [Which companies are on the list](#which-companies-are-on-the-list).
 - **Groups.** Salaries are grouped by role, region and years of experience (0-1, 2-4, 5-7, 8-11, 12-19, 20+). A group needs five people for any figure and ten for the middle half, and every amount is rounded to 1.000 €. With three people, the median and quartiles gave back every salary in the group. The companies table is the one exception, described under [Which companies are on the list](#which-companies-are-on-the-list).
 - **Figures.** Median base, the middle half (p25 to p75), median total (base plus bonus and stock) and the share with a base of 60.000 € or more. Never a mean.
 - **What is left out.** A base under 15.000 € a year (`MIN_BASE_EUR`): Spain's full-time minimum wage has been above it since 2023, so such a row is a monthly figure, a stipend or part-time.
@@ -83,6 +83,12 @@ A company whose Spanish software engineers' median is under 50k is not listed. L
 ### Which companies are on the list
 
 A company is on file while it has any Spanish salary on file, in any role at any seniority — the website needs the long tail. The 60k bar and the 50k floor above only sort companies in the weekly digest; the website has its own rule. What still leaves the file is a company with no rows after a full role read — the feed says nobody there reports — and a slug struck off by hand.
+
+A company has to exist somewhere other than Levels.fyi: one with neither a LinkedIn page nor a website is kept on file but published nowhere until someone finds it (`data/review.md` is the list, and an issue tracks it). A name with one salary behind it and nothing else is the easiest thing to invent.
+
+A small company also has to have been reported from somewhere: a company with fewer than five submissions on Levels.fyi anywhere in the world, counting every role, is left out. One or two made-up salaries at a made-up employer is what the rule catches. A second rule, dropping a Spanish salary higher than everything the company reported for that role outside Spain, lasted one refresh: compared against three or four salaries from cheaper countries, it removed real senior engineers in Barcelona, so it was dropped on 2026-11-02.
+
+A company is ranked among the others only from three salaries. With one or two, the "median" is one person's pay, and in November 2026 a third of the listed companies had exactly one. They stay in the website's companies table, with their count beside the median, but sort after every company with three or more, whichever column the table is sorted by.
 
 Companies get on the list with the feed itself: every employer named in a role's Spanish feed is written, so adding a salary on Levels.fyi is the whole submission process. A company can also be added by hand as a `Name,linkedin_id` row; it lasts while a fetch finds salaries for it.
 

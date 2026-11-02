@@ -16,7 +16,7 @@ Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or 
 
 Pull requests are welcome for the code, the checks and the docs. The salaries themselves are not in the repository: they are one row per person, so they live in a private `companies.csv` on the maintainer's machine (`lib.DATA`, or wherever `STC_DATA` points), and only aggregates are published, in the site's `data/`. The rest of this section is for whoever holds that file.
 
-All the data is that one file: one row per salary, with the company's own columns repeated on each of its rows. A company is on file while it has any salary on file; the site's `data/` is generated from it. A `Name,linkedin_id` row with the salary columns empty is how one is added by hand.
+All the data is that one file: one row per salary, with the company's own columns repeated on each of its rows. A company is on file while it has any salary on file; the site's `data/` is generated from it, and publishes a company only once it has a LinkedIn page or a website and five submissions on Levels.fyi worldwide over every role (see [METHODOLOGY.md](METHODOLOGY.md#which-companies-are-on-the-list)). A `Name,linkedin_id` row with the salary columns empty is how one is added by hand.
 
 Every row is **one person in Spain, in any job family, at any seniority**, paid whatever they are paid — the website covers every role, so juniors and other roles belong in it. What a company calls the level does not matter. [METHODOLOGY.md](METHODOLOGY.md#the-website-and-the-mcp-server) explains which salaries count.
 

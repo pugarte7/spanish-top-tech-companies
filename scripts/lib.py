@@ -31,6 +31,20 @@ THRESHOLD_EUR = 60_000
 # Until 2026-11-01 the README showed both lists as tables.
 FLOOR_EUR = 50_000
 
+# A company ranks among its peers only from this many salaries: with one or
+# two, the median is that person's pay (or the mean of two), and on
+# 2026-11-01 120 of the README's 341 companies had one, 87 of them topping
+# the main table. They stay listed - the maintainer has twice refused to lose
+# companies - but sort after every company with three or more.
+MIN_RANKED = 3
+
+# A company the world has not reported is nobody's employer: fewer than
+# MIN_GLOBAL submissions on Levels.fyi anywhere, summed over every role, and
+# its rows are not kept (fetch_spain.prune_unproven). Here, not in
+# fetch_spain.py, because the site's "how it is calculated" and the MCP
+# instructions quote it.
+MIN_GLOBAL = 5
+
 # The CSV is row-level by design. The website, the JSON API and the MCP
 # server publish only aggregates, and an aggregate exists only when at least
 # MIN_GROUP people contribute to the cell - a city × role × arrangement group
@@ -317,6 +331,22 @@ def competitive(company: dict) -> bool:
 def listed(company: dict) -> bool:
     """On the digest's lists at all: its software engineers median at the floor."""
     return (median_base(company) or 0) >= FLOOR_EUR
+
+
+def verified(company: dict) -> bool:
+    """Is there a company behind the name: a LinkedIn page or a website.
+
+    Since 2026-11-01 one with neither is taken for unverified ("si no
+    encontramos LinkedIn o web de la empresa lo consideramos como falso"):
+    its rows stay in the CSV, the site publishes nothing of it, and
+    review.py lists it for the maintainer to find by hand. A "-" cell means
+    checked and there is none, which is the same as none here.
+    """
+    def filled(column: str) -> bool:
+        value = company.get(column)
+        return bool(value) and value != "-"
+    return (filled("linkedin_url") or bool(company.get("linkedin_ids"))
+            or filled("website") or filled("careers_url"))
 
 
 def canonical(slug: str) -> str:
