@@ -21,6 +21,13 @@ const cell = (o = {}) => D.cells[`${o.role || ""}|${o.region || ""}|${o.years ||
 const regionName = (code) => D.regions[code]?.[LANG] || code;
 const yearsLabel = (b) => `${b.replace("-", "–")} ${S.years_unit}`;
 
+// What readers use, to PostHog, which site.py loads on Vercel builds only:
+// anywhere else there is no window.posthog and nothing is sent.
+const track = (event, props) => window.posthog?.capture(event, props);
+const log = (level, message, attributes) => window.posthog?.logger?.[level]?.(message, attributes);
+// Once the reader stops: the span's handles and the search box fire on every move.
+const settle = (ms, f) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => f(...a), ms); }; };
+
 // --- tooltip ----------------------------------------------------------------
 $("theme").addEventListener("click", () => {
   const dark = getComputedStyle(document.documentElement).colorScheme === "dark";
@@ -227,17 +234,26 @@ async function pick(k, v) {
   filterBar();
   $("filters").querySelector(`.filter[data-k="${k}"] [data-v="${CSS.escape(v)}"]`)?.focus();
   await loadTables();
+  log("info", "salary filters applied", { filter: k, selection: v || "all" });
   filterBar();
   companies();
 }
 
-function saveHash() {
+const trackFilters = settle(1000, (via) => track("filter", {
+  role: state.role || null, years: state.years.join(",") || null,
+  work: state.modes.join(",") || null, loc: state.loc || null, via,
+}));
+
+// Every change of filters passes here: the hash keeps them for a shared link,
+// and PostHog hears of them once they settle. `via` is "menu" or "matrix".
+function saveHash(via = "menu") {
   const h = new URLSearchParams();
   if (state.role) h.set("role", state.role);
   if (state.years.length) h.set("years", state.years.join(","));
   if (state.modes.length) h.set("work", state.modes.join(","));
   if (state.loc) h.set("loc", state.loc);
   history.replaceState(null, "", h.toString() ? "#" + h : location.pathname);
+  trackFilters(via);
 }
 
 document.addEventListener("click", (e) => {
@@ -247,16 +263,24 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && menuOpen) { menuOpen = null; filterBar(); }
 });
 
+// Only a search that finds a company is sent: it is then part of a company's
+// name, never whatever else someone typed.
+const trackSearch = settle(1500, () => {
+  const q = state.q.trim().toLowerCase();
+  const results = q.length > 1 ? named(table(), q).length : 0;
+  if (results) track("search", { q, results });
+});
+
 function wire() {
-  $("search").oninput = (e) => { state.q = e.target.value; companies(); };
+  $("search").oninput = (e) => { state.q = e.target.value; companies(); trackSearch(); };
   $("more").onclick = () => { state.all = !state.all; companies(); };
 }
 
-// Set several filters at once, as a link or a matrix cell does.
+// Set several filters at once, as a matrix cell does.
 async function applyFilters(patch) {
   Object.assign(state, patch, { all: false });
   menuOpen = null;
-  saveHash();
+  saveHash("matrix");
   filterBar();
   await loadTables();
   companies();
@@ -532,6 +556,9 @@ async function loadTable(name) {
   const r = await fetch(`/api/v1/companies/${name || "all"}.json?v=${window.DATA_V}`);
   T[name] = r.ok ? await r.json() : { cells: {}, summary: {}, years: {}, whole: [] };
   if (T[name].whole) T[name].whole = new Set(T[name].whole);
+  log(r.ok ? "debug" : "warn", r.ok ? "salary table loaded" : "salary table unavailable", {
+    table: name || "all",
+  });
 }
 // The role's file first: its `places` name the place's file.
 async function loadTables() {
@@ -645,6 +672,9 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAster
 addEventListener("scroll", placeAsterisk, { passive: true });
 addEventListener("resize", placeAsterisk);
 
+// The rows whose company's name has the search in it, `q` lowercased.
+const named = (rows, q) => q ? rows.filter((a) => D.companies[a.c].name.toLowerCase().includes(q)) : rows;
+
 function companies() {
   summary();
   const all = table();
@@ -659,8 +689,7 @@ function companies() {
   // table says so. A big company down to one salary under a filter gets none;
   // the note would be untrue of it.
   const few = (a) => D.companies[a.c].n < (D.min_ranked || 3);
-  const rows = (q ? all.filter((a) => D.companies[a.c].name.toLowerCase().includes(q)) : all)
-    .slice().sort((x, y) => (state.asc ? -1 : 1) *
+  const rows = named(all, q).slice().sort((x, y) => (state.asc ? -1 : 1) *
       (thin(x) - thin(y) || by(y) - by(x) || y.median - x.median));
   const shown = state.all ? rows : rows.slice(0, 15);
   const asterisk = (a) => `<button class="asterisk" type="button" data-c="${a.c}" ` +
@@ -703,6 +732,7 @@ function companies() {
       const det = tr.nextElementSibling;
       det.hidden = !open;
       det.firstChild.innerHTML = open ? detail(shown[i]) : "";
+      if (open) track("company_open", { company: D.companies[id].name, role: state.role || null });
     };
   });
   $("companies").querySelectorAll("th.sort").forEach((t) =>
@@ -712,6 +742,7 @@ function companies() {
       state.asc = state.sort === t.dataset.sort ? !state.asc : false;
       state.sort = t.dataset.sort;
       companies();
+      track("sort", { by: state.sort, asc: state.asc });
     });
 
   const more = $("more");
@@ -758,11 +789,12 @@ function agents() {
   document.fonts.ready.then(steady);
   let width = innerWidth;
   addEventListener("resize", () => { if (innerWidth !== width) { width = innerWidth; steady(); } });
-  tabs.forEach((t, k) => { t.onclick = () => { picked = true; show(k); }; });
+  tabs.forEach((t, k) => { t.onclick = () => { picked = true; show(k); track("agent_pick", { agent: t.dataset.name }); }; });
   if (!STILL) setInterval(() => { if (!picked && !document.hidden) show((at + 1) % tabs.length); }, AGENT_TURN_MS);
   document.querySelectorAll(".copy-btn").forEach((b) => {
     b.onclick = async () => {
       try { await navigator.clipboard.writeText($(b.dataset.copy).textContent.trim()); } catch { return; }
+      track("copy", { what: b.dataset.copy, agent: tabs[at].dataset.name });
       b.textContent = S.copied;
       setTimeout(() => { b.textContent = S.copy; }, 2000);
     };
@@ -801,6 +833,7 @@ function starPrompt() {
 // --- render -------------------------------------------------------------------
 async function main() {
   D = await (await fetch(`/api/v1/data.json?v=${window.DATA_V}`)).json();
+  log("info", "salary site data loaded", { language: LANG });
   // The day the salaries were read, not the day the page was built.
   const asOf = new Date(`${D.data_as_of || D.generated}T00:00:00Z`);
   $("updated").textContent = S.updated.replace("{date}", asOf.toLocaleDateString(LOCALE,

@@ -11,5 +11,6 @@ _site/
 .cache/
 .vercel/
 node_modules
+.env
 # One row per person: private, kept outside the repository (lib.DATA).
 companies.csv

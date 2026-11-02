@@ -56,12 +56,33 @@ CONTACT = "ugartep117@gmail.com"
 # The branch the site, the MCP server and the skill live on, for links to the repository.
 BRANCH = "main"
 SITE = os.environ.get("SITE_URL", "").rstrip("/")
+# PostHog, for what readers use (web/app.js's track()): its project token is
+# public, every page carries it. Same Vercel-only rule, so local builds and the
+# site tests send nothing. It goes through /ingest on our own domain
+# (vercel.json), which ad blockers leave alone, to the EU region. Cookieless:
+# nothing is stored in the browser, which is what lets the legal page say no
+# cookies; the project must have cookieless tracking on, or PostHog drops
+# every event. No session recordings, no surveys.
+POSTHOG_TOKEN = os.environ.get("POSTHOG_PROJECT_TOKEN", "phc_pZPnNWRnbona6CeHA5pBjQBfLTPng4jetnXHbuSZyGaX")
+# posthog-js's loader, as https://posthog.com/docs/libraries/js gives it.
+POSTHOG_LOADER = ('!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);')
+POSTHOG_OPTIONS = {
+    "api_host": "/ingest", "ui_host": "https://eu.posthog.com", "defaults": "2026-08-30",
+    "cookieless_mode": "always", "disable_session_recording": True, "disable_surveys": True,
+    "logs": {
+        "serviceName": "spanish-top-tech-companies-web",
+        "environment": os.environ.get("VERCEL_ENV", "production"),
+    },
+}
+POSTHOG_SCRIPT = (f"<script>{POSTHOG_LOADER}\n"
+                  f"posthog.init({json.dumps(POSTHOG_TOKEN)}, {json.dumps(POSTHOG_OPTIONS)});</script>\n"
+                  if POSTHOG_TOKEN else "")
 # Web Analytics and Speed Insights: Vercel serves /_vercel/ only on its own
 # deployments (`vercel build` sets VERCEL=1). Anywhere else the scripts 404,
 # which the site tests count as console errors.
 VERCEL_SCRIPTS = ('<script defer src="/_vercel/insights/script.js"></script>\n'
                   '<script defer src="/_vercel/speed-insights/script.js"></script>\n'
-                  if os.environ.get("VERCEL") else "")
+                  + POSTHOG_SCRIPT if os.environ.get("VERCEL") else "")
 # Written out, not from SITE_URL: readers paste these into their agent, so they
 # are the public address whatever host built the page.
 PUBLIC = "https://spanishtoptechcompanies.com"
@@ -1261,7 +1282,11 @@ LEGAL = {
             ("What the site collects from you", "No account, no form and no cookies. The page "
              "is hosted on Vercel, which keeps standard request logs (IP address, time, page) "
              "to serve and protect it. Vercel Web Analytics and Speed Insights count visits "
-             "and page speed in aggregate, without cookies. Your browser keeps, in its own "
+             "and page speed in aggregate, without cookies. PostHog, on its servers in the EU, "
+             "records how the page is used: the filters picked, searches that find a company, "
+             "the companies opened and the buttons and links clicked. It sets no cookie, "
+             "stores nothing in your browser, keeps no IP address and records no sessions. "
+             "Your browser keeps, in its own "
              "storage, only the theme you chose and whether you closed a notice; that never "
              "leaves your device. The MCP server at /mcp receives the filters your agent asks "
              "for and stores nothing about you."),
@@ -1299,7 +1324,11 @@ LEGAL = {
              "cookie. La web está alojada en Vercel, que guarda los registros habituales de "
              "cada petición (dirección IP, hora, página) para servirla y protegerla. Vercel Web "
              "Analytics y Speed Insights cuentan visitas y velocidad de forma agregada, sin "
-             "cookies. Tu navegador guarda, en su propio almacenamiento, solo el tema que "
+             "cookies. PostHog, en sus servidores de la UE, registra cómo se usa la página: los "
+             "filtros que eliges, las búsquedas que encuentran una empresa, las empresas que "
+             "abres y los botones y enlaces que pulsas. No pone cookies ni guarda nada en tu "
+             "navegador, no conserva tu dirección IP y no graba sesiones. Tu navegador guarda, "
+             "en su propio almacenamiento, solo el tema que "
              "elegiste y si cerraste un aviso; eso no sale de tu dispositivo. El servidor MCP "
              "de /mcp recibe los filtros que pide tu agente y no guarda nada sobre ti."),
             ("autoapply-mcp", "autoapply-mcp ({autoapply}) se ejecuta en tu lado: lo arranca tu "
