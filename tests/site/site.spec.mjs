@@ -377,6 +377,17 @@ test("an open row shows how total pay splits, adding up to 100%", async ({ page 
   expect(sum).toBe(100);
 });
 
+test("the footer links to the legal and privacy page, which names who runs the site", async ({ page }) => {
+  await open(page);
+  const legal = page.locator("footer a[href='/es/legal/']");
+  await expect(legal).toHaveText("Aviso legal y privacidad");
+  await page.goto("/es/legal/");
+  await expect(page.locator("h1")).toHaveText("Aviso legal y privacidad");
+  await expect(page.locator("main")).toContainText("Pablo Ugarte");
+  await expect(page.locator("a[href^='mailto:']").first()).toHaveText("ugartep117@gmail.com");
+  await expect(page.locator("a[hreflang=en]")).toHaveAttribute("href", "/en/legal/");
+});
+
 test("links that leave the page open in a new tab", async ({ page, context }) => {
   await open(page);
   // Every link except the brand, the language switch (hreflang) and links

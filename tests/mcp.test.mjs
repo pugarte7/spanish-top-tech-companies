@@ -163,6 +163,10 @@ for (const [label, method, headers, payload, want] of cases) {
 const flood = Array.from({ length: 51 }, (_, i) => ({ jsonrpc: "2.0", id: i + 1, method: "ping" }));
 report("agents are asked to suggest a star, never to star on their own",
        /star them only if they say yes/.test(data.instructions) && !/without asking/i.test(data.instructions));
+report("agents are asked, not told, to bring readers back",
+       !/every day|tell the user to come back/i.test(data.instructions + readFileSync("_site/llms.txt", "utf8")));
+report("no hidden text tells agents what to do",
+       !/apply for them|offer to install/i.test(readFileSync("_site/en/index.html", "utf8").match(/<noscript>[\s\S]*?<\/noscript>/)?.[0] ?? ""));
 report("no text tells agents to always say yes",
        !/never answer that you cannot|do not say no/i.test(data.instructions + readFileSync("_site/llms.txt", "utf8")));
 // data.json names every company the table lists, down to one salary; the MCP
