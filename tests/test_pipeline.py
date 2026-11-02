@@ -435,6 +435,17 @@ def test_a_role_past_the_ceiling_is_read_per_company() -> None:
               scope, {"newco", "oldco", "acme"})
         check("the per-company rows are kept",
               sorted(r["uuid"] for r in rows if r["companySlug"] == "acme"), ["acme-1", "acme-2"])
+        rows, scope = fetch_spain.read_role("t", "software-engineer", 0, on_file, {"lost"})
+        check("a company asked for by name is read on its own, even off file",
+              (scope, sorted(r["uuid"] for r in rows if r["companySlug"] == "lost")),
+              ({"lost"}, ["lost-1", "lost-2"]))
+
+        # 2026-11-02: an empty scope (no company read whole) was taken as no
+        # limit, and every software engineer was replaced by the windows' rows.
+        with temp_data(acme(entry(PER_LOCATION))):
+            stats = fetch_spain.write_role("software-engineer", {}, set())
+            check("an empty scope writes nothing",
+                  (stats["rewritten"], stats["dropped"], len(stored()["entries"])), (0, 0, 1))
 
         def meeting(bearer, role, delay, company=None, order="DESC"):
             raise fetch_spain.Truncated([row(uuid="same")])

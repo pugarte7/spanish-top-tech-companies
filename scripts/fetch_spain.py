@@ -558,7 +558,12 @@ def read_role(bearer: str, role: str, delay: float, companies: list[dict],
             slugs.add(company["levels_slug"])
             slugs.update(lib.aliases_of(company["levels_slug"]))
     if only:
+        # A company asked for by name is read on its own even when it is no
+        # longer on file: that is how one that left the file comes back.
         slugs = {slug for slug in slugs if lib.canonical(slug) in only}
+        for slug in only:
+            slugs.add(slug)
+            slugs.update(lib.aliases_of(slug))
     print(f"  {role}: over {MAX_OFFSET + TABLE_PAGE} rows; reading {len(slugs)} "
           "companies one by one")
     read, unread = set(), set()
@@ -756,6 +761,11 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
     removed - on file means having salaries - but a hand-added row that never
     had any survives, because the fetcher may not have reached it yet. A slug
     struck off by hand is never written.
+
+    `only` is the set of companies read whole; an empty set means none was,
+    and nothing is written. On 2026-11-02 an empty scope was taken as "no
+    limit" and a run that read no company on its own replaced every software
+    engineer with the two windows' rows.
     """
     companies = lib.load_companies()
     stats = {"rewritten": 0, "unchanged": 0, "created": 0, "dropped": 0, "refused": 0}
@@ -763,7 +773,7 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
     for company in companies:
         slug = company.get("levels_slug")
         canonical = lib.canonical(slug) if slug else None
-        if (slug in lib.EXCLUDED_SLUGS) or (only and canonical not in only):
+        if (slug in lib.EXCLUDED_SLUGS) or (only is not None and canonical not in only):
             continue
         found = by_slug.pop(canonical, None) if canonical else None
         kept = [entry for entry in company["entries"]
@@ -782,7 +792,7 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
         touched.add(id(company))
         stats["rewritten"] += 1
     for slug in sorted(by_slug):
-        if slug in lib.EXCLUDED_SLUGS or (only and slug not in only):
+        if slug in lib.EXCLUDED_SLUGS or (only is not None and slug not in only):
             continue
         group = by_slug[slug]
         if lib.by_name(companies, group["name"]):
