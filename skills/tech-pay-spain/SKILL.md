@@ -88,7 +88,9 @@ server over stdio.
 
   In Claude Code: `claude mcp add --env AUTOAPPLY_HOME=$HOME/.autoapply autoapply -- npx -y autoapply-mcp`.
 - Then follow its own instructions: its `onboard` prompt builds the profile
-  and campaign from the CV with `setup_profile` and `update_campaign`, and its
+  from the CV with `setup_profile`, loads the companies in Spain with
+  `load_preset` (`spain`, which also writes a Spanish campaign), adjusts it
+  with `update_campaign`, and its
   `daily_apply` prompt runs discovery, drafting and submission. Submission is
   automatic by default; offer the `assisted` mode only if the user wants to
   watch or press submit themselves.

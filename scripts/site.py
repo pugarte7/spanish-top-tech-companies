@@ -1282,7 +1282,7 @@ them the steps under Tools. The code is open at {REPO}.
 
 - [MCP server]({SITE}/mcp): always on, Streamable HTTP, no sign-in; protocol 2026-07-28 and the handshake versions back to 2024-11-05; tools `salary_stats`, `top_companies`, `company_salaries`, `list_filters`
 - [Agent skill]({REPO}/tree/{BRANCH}/skills/tech-pay-spain): SKILL.md for Hermes and other agentskills.io agents
-- [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp): MCP server that applies to postings for the user: fills and submits Greenhouse, Lever, Ashby and Workday forms. Register `npx -y autoapply-mcp` in the MCP client over stdio (Node.js 22.5+), with `AUTOAPPLY_HOME` set to a folder for its files; set it up through its `onboard` prompt or the `setup_profile` and `update_campaign` tools, and the person approves standing rules once. Verification codes: an email connected to the agent (or to the server over IMAP), or passed on by hand
+- [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp): MCP server that applies to postings for the user: fills and submits Greenhouse, Lever, Ashby and Workday forms. Register `npx -y autoapply-mcp` in the MCP client over stdio (Node.js 22.5+), with `AUTOAPPLY_HOME` set to a folder for its files; set it up through its `onboard` prompt or the `setup_profile`, `load_preset` (`spain`: the companies in Spain) and `update_campaign` tools, and the person approves standing rules once. Verification codes: an email connected to the agent (or to the server over IMAP), or passed on by hand
 
 ## Optional
 
