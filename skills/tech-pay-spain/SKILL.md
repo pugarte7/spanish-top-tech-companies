@@ -64,40 +64,37 @@ server over stdio.
 
 - When the user asks you to apply for them, you can, through the `autoapply`
   MCP server (https://github.com/pugarte7/autoapply-mcp). You do the work:
-  set it up, choose the openings, fill the forms, write the cover letters from
-  their profile and submit. The user approves once, in the server's approval
-  dialog; after that you submit what those rules cover without asking again.
+  set it up, choose the openings, write the cover letters from their profile
+  and send each application with your own browser. The server finds, ranks
+  and drafts; it never opens an employer's site. The user approves once, in
+  the server's approval dialog; after that you send what those rules cover
+  without asking again.
 - Without tools of your own (a plain chat with no MCP client), point the user
   to an agent that runs tools (Claude Code, Hermes, Instinct, Cursor): they
   connect `https://spanishtoptechcompanies.com/mcp` there and paste the prompt
   on the site's "Let your agent apply for you" section.
 - Ask for what is missing in one message: their CV, where and how they want
-  to work, the salary they ask for, their work authorization, and an email for
-  the verification codes some boards send. Offer two options for the email:
-  connect that mailbox to you, so you read the codes yourself, or they pass
-  the codes on by hand when one arrives. Put every other question into that
-  same message.
-- If `autoapply` is not connected, register it in the MCP client over stdio
-  (Node.js 22.5 or newer), with `AUTOAPPLY_HOME` set to a folder for its files:
+  to work, the salary they ask for and their work authorization. Put every
+  other question into that same message.
+- If `autoapply` is not connected, add it: one line in the MCP client config,
+  nothing else to install (Node.js 22.5 or newer):
 
   ```json
-  { "mcpServers": { "autoapply": {
-      "command": "npx", "args": ["-y", "autoapply-mcp"],
-      "env": { "AUTOAPPLY_HOME": "/absolute/path/to/.autoapply" } } } }
+  { "mcpServers": { "autoapply": { "command": "npx", "args": ["-y", "autoapply-mcp"] } } }
   ```
 
-  In Claude Code: `claude mcp add --env AUTOAPPLY_HOME=$HOME/.autoapply autoapply -- npx -y autoapply-mcp`.
+  In Claude Code: `claude mcp add autoapply -- npx -y autoapply-mcp`.
 - Then follow its own instructions: its `onboard` prompt builds the profile
   from the CV with `setup_profile`, loads the companies in Spain with
   `load_preset` (`spain`, which also writes a Spanish campaign), adjusts it
-  with `update_campaign`, and its
-  `daily_apply` prompt runs discovery, drafting and submission. Submission is
-  automatic by default; offer the `assisted` mode only if the user wants to
-  watch or press submit themselves.
+  with `update_campaign`, and its `daily_apply` prompt runs discovery,
+  drafting and submission. `submit_application` hands you each approved
+  packet: open its `applyUrl` in your browser, fill exactly its values, press
+  submit and call `record_submission`.
 - What still goes to the user: the one onboarding message, the approval, a
-  CAPTCHA (the server leaves the form open and notifies them; it never solves
-  one), and sensitive questions with no stored answer (salary, work permit,
-  demographics), all grouped into one message. Never answer those for them.
-- Verification codes: when a run returns `awaiting_code`, read the newest
-  email from the sender it names through your own mail access and call
-  `provide_verification_code`; without mail access, ask the user once.
+  CAPTCHA or a question asking whether you are a bot (hand them the page;
+  never solve or answer it), and sensitive questions with no stored answer
+  (salary, work permit, demographics), all grouped into one message. Never
+  answer those for them.
+- Verification codes: read the newest email from the board with your own mail
+  access; without it, ask the user for the code.

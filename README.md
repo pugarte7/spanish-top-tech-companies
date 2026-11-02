@@ -20,13 +20,13 @@ Funciona con Claude Code, Codex, Cursor, Grok CLI, Hermes e Instinct, o con cual
 
    En Claude Code: `claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp`
 
-2. **Dale tu CV y lo que buscas.** Una sola vez. El agente instala [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) por su cuenta y te pide tu CV, dónde y cómo quieres trabajar, el sueldo que pides y un correo para los códigos de verificación: se lo conectas y los gestiona él, o se los pasas tú a mano.
+2. **Dale tu CV y lo que buscas.** Una sola vez. El agente añade [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) con una línea, sin instalar nada, y te pide tu CV, dónde y cómo quieres trabajar y el sueldo que pides. Envía cada solicitud con su propio navegador; si una empresa manda un código por correo, lo lee de tu correo si se lo conectas, o te lo pide.
 
 3. **Dile que aplique.** Por ejemplo:
 
    > Aplica por mí a las ofertas de las empresas de spanishtoptechcompanies.com que pagan 60.000 € o más a alguien con mi experiencia en Madrid.
 
-   Lo apruebas una vez y envía las solicitudes él solo. Las preguntas delicadas, como sueldo o permiso de trabajo, te las hace una vez, todas en un mensaje, y las recuerda. Si un formulario pide un CAPTCHA, deja el formulario abierto y te avisa: lo resuelves y sigue.
+   Lo apruebas una vez y envía las solicitudes él solo. Las preguntas delicadas, como sueldo o permiso de trabajo, te las hace una vez, todas en un mensaje, y las recuerda. Si un formulario pide un CAPTCHA, te pasa la página: lo resuelves y envía la solicitud.
 
 ### Qué hay en la web
 
@@ -65,13 +65,13 @@ Works with Claude Code, Codex, Cursor, Grok CLI, Hermes and Instinct, or any age
 
    In Claude Code: `claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp`
 
-2. **Give it your CV and what you want.** Only once. The agent installs [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) on its own and asks for your CV, where and how you want to work, the salary you ask for and an email for verification codes: connect it and the agent handles them, or pass them on by hand.
+2. **Give it your CV and what you want.** Only once. The agent adds [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) with one line, with nothing to install, and asks for your CV, where and how you want to work and the salary you ask for. It sends each application with its own browser; if a board emails a code, it reads it from your mail if you connect it, or asks you.
 
 3. **Tell it to apply.** For example:
 
    > Apply for me to openings at the companies on spanishtoptechcompanies.com that pay €60,000 or more to someone with my experience in Madrid.
 
-   You approve once and it sends the applications itself. Sensitive questions, like salary or work permit, it asks you once, all in one message, and remembers. If a form asks for a CAPTCHA, it leaves the form open and lets you know: you solve it and it carries on.
+   You approve once and it sends the applications itself. Sensitive questions, like salary or work permit, it asks you once, all in one message, and remembers. If a form asks for a CAPTCHA, it hands you the page: you solve it and it sends the application.
 
 ### On the site
 
