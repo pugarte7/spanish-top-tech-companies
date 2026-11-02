@@ -42,6 +42,9 @@
      look in both views; the toggle and the legend say which one is shown. */
   --c1: #e3e3ff; --c2: #c4c4ff; --c3: #8f8fff; --c4: #4d4dff; --c5: #0000c4;
   --float: 0 8px 24px rgba(0, 0, 60, .14);
+  /* The header's tile: fine lines, the band's inside a step deeper, so it follows the theme. */
+  --tile-line: rgba(242, 242, 242, .92); --tile-tint: rgba(0, 0, 0, .14); --tile-band: var(--field-deep);
+  --frieze-top: 6px; --frieze-end: calc(var(--frieze-top) + 22px); --tiles-top: calc(var(--frieze-end) + 10px);
   --radius-card: 4px; --radius-control: 3px;
   --gap: 16px; --pad: 24px; --control-height: 36px;
 }
@@ -99,7 +102,8 @@ button, select, input { font: inherit; color: inherit; }
 
 /* Not ".bar": the map ranking draws its bars with that class and would turn sticky too.
    The bar is plain blue, so nothing behind its controls looks clickable. */
-.topbar { position: sticky; top: 0; z-index: 20; background: var(--field); color: var(--field-ink); }
+.topbar { position: sticky; top: 0; z-index: 20; background: var(--field-deep); color: var(--field-ink);
+          border-bottom: 1px solid var(--field-rule); }
 .topbar-in { height: 56px; display: flex; align-items: center; gap: 16px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; min-width: 0; text-decoration: none;
          white-space: nowrap; font: 500 15px/20px var(--display); letter-spacing: .16em; text-transform: uppercase; }
@@ -136,46 +140,92 @@ button, select, input { font: inherit; color: inherit; }
 .topbar .seg a:hover { color: #ffffff; }
 .topbar .seg a.on { background: var(--field-ink); color: var(--field); font-weight: 600; }
 
-/* Header: the frieze along its top edge, then the title, where the figures come
-   from, and the five figures for everyone. The lacería is lighter on the left,
-   behind the title and the text, and full where nothing is written. */
-.head-field::before { top: 22px; -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, .62) 0%, rgba(0, 0, 0, .62) 38%, #000 72%);
-                      mask-image: linear-gradient(90deg, rgba(0, 0, 0, .62) 0%, rgba(0, 0, 0, .62) 38%, #000 72%); }
-.head-field::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 22px; z-index: -1;
-                     pointer-events: none; background: url("/cenefa.svg") 0 0 / 28px 22px repeat-x; }
-.head { padding-top: 66px; padding-bottom: 52px; }
-h1 { margin: 0; font: 200 clamp(36px, 5.4vw, 64px)/1.08 var(--display); letter-spacing: -0.005em; }
-.sub { margin: 12px 0 0; font-size: 13px; line-height: 18px; color: var(--field-muted); }
-/* Labels share one line and figures one baseline: each cell is two rows of the strip's grid. */
-.kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: auto auto;
-        margin: 32px 0 0; padding: 0; background: var(--field-deep); border: 1px solid var(--field-line);
-        border-radius: var(--radius-card); }
-.kpis div { grid-row: span 2; display: grid; grid-template-rows: subgrid; row-gap: 6px;
-            padding: 16px 22px; min-width: 0; }
-.kpis dd { align-self: last baseline; }
-.kpis div + div { border-left: 1px solid var(--field-rule); }
-.kpis dt { font: 400 13px/16px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--field-muted); }
-.kpis dd { margin: 0; font: 300 32px/36px var(--display); white-space: nowrap; }
-/* The answer leads: the median base, the only figure at 58px. */
-.kpis .lead dd { font-size: 58px; line-height: 58px; font-weight: 200; letter-spacing: -0.01em; color: #ffffff; }
-.rule { margin: 22px 0 0; color: var(--field-soft); max-width: 72ch; font-size: 15px; line-height: 22px; }
-.how { margin-top: 14px; }
-/* An outlined button on solid blue, so it never reads as part of the pattern. */
-.how summary { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px;
-               cursor: pointer; list-style: none; border: 1px solid rgba(242, 242, 242, .75);
-               border-radius: var(--radius-control); background: var(--field);
-               font: 500 14px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; }
-.how summary:hover { background: var(--field-deep); color: #ffffff; }
+/* Header: the frieze along its top edge, clear of the bar's hairline; under it
+   a "lazo de seis" over the whole banner, hidden only behind the text by a
+   veil of the field's own blue with feathered edges. The text and its buttons
+   on the left, the card with the figures for everyone on the right, both
+   centred between the frieze and the bottom. */
+.head-field::before { content: none; }
+.head-field::after { content: ""; position: absolute; left: 0; right: 0; top: var(--frieze-top); height: 22px;
+                     z-index: 1; pointer-events: none;
+                     background: url("/cenefa.svg") 0 0 / 28px 22px repeat-x var(--field); }
+.head-field .wall { position: absolute; inset: var(--tiles-top) 0 0 0; overflow: hidden; }
+.tiles { display: block; width: 100%; height: 100%; }
+.tiles .tint polygon { fill: var(--tile-tint); }
+.tiles .edge polygon { fill: none; stroke: var(--tile-line); stroke-linejoin: round; }
+.tiles .band polygon { fill: none; stroke: var(--tile-band); stroke-linejoin: round; }
+.head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 492px); column-gap: 104px;
+        align-items: center; padding-top: calc(64px + var(--frieze-end)); padding-bottom: 64px; }
+.pitch { position: relative; z-index: 1; display: grid; gap: 22px; min-width: 0; }
+.pitch::before { content: ""; position: absolute; z-index: -1; inset: -20px -28px; border-radius: 28px;
+                 background: var(--field); box-shadow: 0 0 44px 26px var(--field); pointer-events: none; }
+h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-spacing: -0.005em;
+     text-wrap: balance; }
+.hero-lede { margin: 0; max-width: 44ch; font-size: 17px; line-height: 26px; color: var(--field-soft); }
+.hero-lede b { font-weight: 600; color: var(--field-ink); }
+/* Two equal columns: the wide buttons span both, the pair takes one each, so
+   every row is as wide. Surfaces behind them are plain, never the pattern. */
+.cta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: min(100%, 400px);
+       margin-top: 6px; }
+.cta .wide { grid-column: 1 / -1; }
+.btn { display: flex; align-items: center; justify-content: center; gap: 10px; height: 44px; padding: 0 18px;
+       border-radius: var(--radius-control); text-decoration: none; white-space: nowrap; cursor: pointer;
+       font: 500 15px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; }
+.btn .down { width: 12px; height: 12px; flex: none; }
+.cta .btn.main { background: var(--field-ink); color: var(--field); font-weight: 600; }
+.cta .btn.main:hover { background: #ffffff; color: var(--field); }
+.cta .btn.alt { border: 1px solid rgba(242, 242, 242, .62); color: var(--field-ink); }
+.cta .btn.alt:hover { background: rgba(242, 242, 242, .14); border-color: var(--field-ink); color: #ffffff; }
+.how summary { list-style: none; }
 .how summary::-webkit-details-marker { display: none; }
-.how summary::after { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 0 2px;
+.how summary::after { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 0 3px;
   border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
-  transform: rotate(-45deg); transition: transform .15s; }
-.how[open] summary::after { transform: rotate(45deg); }
-.steps { margin: 14px 0 0; padding: 22px 28px 22px 46px; display: grid; gap: 10px; max-width: 780px;
+  transform: rotate(45deg); transition: transform .15s; }
+.how[open] summary::after { transform: rotate(-135deg); margin: 3px 0 0; }
+.steps { margin: 10px 0 0; padding: 18px 20px 18px 38px; display: grid; gap: 10px;
          background: var(--field-deep); border: 1px solid var(--field-line); border-radius: var(--radius-card);
          color: var(--field-soft); }
 .steps b { color: #ffffff; font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .how summary::after { transition: none; } }
+
+/* The card: a plain surface on the tiles, nothing drawn behind its text. */
+/* It holds the top of its row, so opening the method under the buttons never moves it. */
+.hero-card { align-self: start; position: relative; z-index: 1; display: grid; gap: 18px; min-width: 0; padding: 22px 24px 20px;
+             background: var(--surface); color: var(--text); border: 1px solid var(--border);
+             border-radius: var(--radius-card); }
+.hero-card-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px;
+                  font: 400 13px/16px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.hero-median { margin: -8px 0 0; font: 300 44px/48px var(--display); letter-spacing: -0.01em;
+               font-variant-numeric: tabular-nums; }
+/* Salaries per band of the base, to scale; blue from the 60k line, grey under it. */
+.hero-dist .plot { position: relative; padding-top: 20px; }
+.hero-dist .area { position: relative; height: 124px; border-bottom: 1px solid var(--quiet); }
+.hero-dist .gl { position: absolute; left: 0; right: 0; border-top: 1px solid var(--rule); }
+.hero-dist .gl b { position: absolute; left: 0; bottom: 2px; font-size: 11px; line-height: 12px; font-weight: 400;
+                   color: var(--muted); font-variant-numeric: tabular-nums; }
+.hero-dist .bars { position: absolute; inset: 0; display: grid; gap: 2px; }
+.hero-dist .col { display: flex; align-items: flex-end; min-width: 0; cursor: default; }
+.hero-dist .col i { flex: 1; min-height: 1px; background: var(--quiet); }
+.hero-dist .col i.hi { background: var(--hue); }
+.hero-dist .bars:hover i { opacity: .45; }
+.hero-dist .bars .col:hover i { opacity: 1; }
+.hero-dist .cut { position: absolute; top: 0; bottom: 0; border-left: 1px dashed var(--text); pointer-events: none; }
+.hero-dist .cut b { position: absolute; top: 0; left: 6px; white-space: nowrap; font-size: 12px; line-height: 14px;
+                    font-weight: 600; color: var(--text); }
+.hero-dist .axis { position: relative; height: 16px; margin-top: 4px; font-size: 11px; line-height: 14px;
+                   color: var(--muted); }
+.hero-dist .axis span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.hero-dist .axis .at { color: var(--text); font-weight: 600; }
+.hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding-top: 14px;
+              border-top: 1px solid var(--rule); }
+.hero-stats div { display: grid; align-content: start; gap: 4px; min-width: 0; padding: 0 12px; }
+.hero-stats div:first-child { padding-left: 0; }
+.hero-stats div + div { border-left: 1px solid var(--rule); }
+.hero-stats dd { margin: 0; font: 300 28px/30px var(--display); white-space: nowrap; }
+.hero-stats dt { order: 2; font-size: 13px; line-height: 17px; color: var(--muted); }
+.hero-stats dt i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; background: var(--hue); }
+/* The buttons jump past the sticky bar. */
+#map-card, #matrix-card, #companies-card { scroll-margin-top: 72px; }
 
 /* Cards */
 .bento { display: grid; gap: var(--gap); padding-top: 36px; }
@@ -513,11 +563,10 @@ footer a { color: var(--field-ink); }
 #tip .t-sub { color: var(--muted); }
 
 @media (max-width: 900px) {
-  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .kpis .lead { grid-column: 1 / -1; }
-  .kpis div + div { border-left: 0; }
-  .kpis div:not(.lead) { border-top: 1px solid var(--field-rule); }
-  .kpis div:nth-child(odd):not(.lead) { border-left: 1px solid var(--field-rule); }
+  /* The card goes under the text; the veil hugs the text closer. */
+  .head { grid-template-columns: minmax(0, 1fr); row-gap: 32px;
+          padding-top: calc(40px + var(--frieze-end)); padding-bottom: 40px; }
+  .pitch::before { inset: -14px -10px; box-shadow: 0 0 28px 18px var(--field); }
   .summary { grid-template-columns: repeat(4, 1fr); }
   .dist { grid-column: 1 / -1; }
   .map-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -531,9 +580,15 @@ footer a { color: var(--field-ink); }
   .brand { gap: 8px; font-size: 13px; letter-spacing: .12em; }
   .brand .emblem { width: 18px; height: 18px; }
   .topbar-end { gap: 2px; flex: none; }
-  .head { padding-top: 44px; padding-bottom: 32px; }
-  .kpis div { padding: 12px 16px; }
-  .kpis .lead dd { font-size: 44px; line-height: 46px; }
+  .pitch { gap: 18px; }
+  .hero-lede { font-size: 16px; line-height: 24px; }
+  .cta { width: 100%; }
+  .btn { padding: 0 12px; }
+  .hero-card { padding: 18px 16px 16px; }
+  .hero-median { font-size: 40px; line-height: 44px; }
+  .hero-stats div { padding: 0 8px; }
+  .hero-stats dd { font-size: 24px; line-height: 28px; }
+  .hero-stats dt { font-size: 12px; line-height: 16px; }
   /* The companies table fits a phone: the links move into the open row and
      headings wrap, so the median and the 60k+ share stay on screen. */
   td.co .co-in > .links { display: none; }
