@@ -1,4 +1,4 @@
-25 companies with salaries on file have neither a LinkedIn page nor a website, so the site shows nothing of them until someone finds the company. For each one, either type its `linkedin_url` or `website` into `companies.csv` (a value typed by hand is never overwritten) or strike the slug off in `lib.EXCLUDED_SLUGS` with the reason.
+27 companies with salaries on file have neither a LinkedIn page nor a website, so the site shows nothing of them until someone finds the company. For each one, either type its `linkedin_url` or `website` into `companies.csv` (a value typed by hand is never overwritten) or strike the slug off in `lib.EXCLUDED_SLUGS` with the reason.
 
 | Company | Levels.fyi | Salaries | Roles |
 | --- | --- | ---: | --- |
@@ -15,8 +15,10 @@
 | BMAT | [bmat](https://www.levels.fyi/companies/bmat/salaries) | 4 | software-engineer, information-technologist |
 | Dekra | [dekra](https://www.levels.fyi/companies/dekra/salaries) | 4 | data-scientist, project-manager, software-engineer |
 | Frontiers | [frontiers](https://www.levels.fyi/companies/frontiers/salaries) | 3 | revops, software-engineer, software-engineering-manager |
+| IN2 | [in2](https://www.levels.fyi/companies/in2/salaries) | 3 | software-engineer |
 | NPAW | [npaw](https://www.levels.fyi/companies/npaw/salaries) | 3 | software-engineer, product-manager |
 | Osapiens | [osapiens](https://www.levels.fyi/companies/osapiens/salaries) | 3 | software-engineer |
+| Plata | [plata](https://www.levels.fyi/companies/plata/salaries) | 3 | product-manager, software-engineer |
 | Extia | [extia](https://www.levels.fyi/companies/extia/salaries) | 2 | software-engineer, solution-architect |
 | Founda Health | [founda-health](https://www.levels.fyi/companies/founda-health/salaries) | 2 | software-engineer |
 | Okta | [okta](https://www.levels.fyi/companies/okta/salaries) | 2 | product-manager, security-analyst |
