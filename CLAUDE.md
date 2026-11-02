@@ -91,7 +91,9 @@ The five things that will bite you:
    its table had 29 Spanish engineers, ten at 60k+. `fetch_spain.py` reads
    the table with an id token it mints each run from the Cognito refresh token
    in the macOS login Keychain (service `spanish-top-tech-companies`, stored
-   with `fetch_spain.py --login`), which is what lets it run unattended, or
+   with `fetch_spain.py --login`, which signs in by SRP from `LEVELS_EMAIL`
+   and `LEVELS_PASSWORD` or a prompt, or takes a pasted refresh token when
+   the email is left empty), which is what lets it run unattended, or
    with `LEVELS_TOKEN` for a one-off run. Since 2026-11-01 that login lives only
    in the Keychain, never in a file. A
    refused refresh token stops the run rather than falling back to the public
@@ -148,6 +150,38 @@ type/CIF, CC BY 4.0, only for companies with salaries), then Levels.fyi
 (`fetch_company.py`). No fetcher ever overwrites a filled field; a `-` cell
 means "checked, there is none", and counts as filled.
 
+**A company with no LinkedIn page and no website is unverified** (since
+2026-11-01: "si no encontramos LinkedIn o web de la empresa lo consideramos
+como falso"). `lib.verified()` decides; its rows stay in the CSV, the site
+publishes nothing of it, not even its rows in the role and region groups,
+and `scripts/review.py` lists it. The weekly writes that list to
+`data/review.md` and keeps the "Companies to verify" issue at it (`gh` from
+the Mac, as the maintainer); they find the company and type its
+`linkedin_url` or `website` into the CSV, or strike the slug off. A `-` cell
+counts as none. On 2026-11-01, before the fetchers had enriched the feed's new
+employers, 1,446 of 1,753 companies were unverified, 1,141 of them on one salary.
+The feed's own company record carries the employer's domain (its logo URL),
+which `fetch_spain.write_role()` writes as `website` when there is none.
+
+**The world has to vouch for a small company.** Also since 2026-11-01: a
+company with fewer than `fetch_spain.MIN_GLOBAL` (5) submissions anywhere in
+the world, summed over every role it has rows for, loses its Levels.fyi rows
+after the last role is written (`prune_unproven()`, "unproven" in the run
+report). DEKA's 300k entry-level mechanical engineer in Malaga was the only
+DEKA submission on Levels.fyi. The sum is over roles, not per role, since
+2026-11-02: the per-role version dropped Repsol, Endesa and Bankinter, three
+engineers and three product managers each. The same day the maintainer
+removed a second rule that dropped a Spanish base above everything the
+company paid the role abroad: with three or four salaries from cheaper
+countries it took real seniors at Stenn, Kiwi.com and Zooplus, and caught no
+DEKA the count had not. Do not bring it back. The count
+comes from one API call per company-role pair (`companySlug` +
+`jobFamilySlug`, no country; the API refuses a query with no job family),
+cached in `global.json` beside the CSV for `GLOBAL_DAYS` (90); pairs with
+five Spanish rows, and every pair of a company with five Levels.fyi rows on
+file over its roles, are never looked up (Spain already vouches). A missing
+or stale answer judges nothing. First-hand rows are never screened.
+
 Hand-made facts live in `lib.py`, not in the CSV: `SLUG_ALIASES` (two
 Levels.fyi slugs, one employer: `tiger-data` into `timescale`, `meta` into
 `facebook`; the alias is read with the canonical slug and each row keeps its
@@ -164,6 +198,12 @@ the CSV.
 A first-hand software-engineer row must itself be at 60k+, since it is the
 maintainer vouching that the company pays that; `validate.py` refuses one
 under.
+
+Since 2026-11-01 companies with fewer than `lib.MIN_RANKED` (3) salaries sort
+after the rest in the site's companies table, whichever column is sorted: 120
+of 341 listed companies had one salary, 87 of them topping the main table, and
+the maintainer chose to keep them listed but not ranked ("si limitamos
+empresas con más de 5 submisiones, sería demasiado").
 
 After any data change: `python3 scripts/validate.py && python3 scripts/site.py
 --refresh`, and commit the regenerated `data/`, never `companies.csv`.

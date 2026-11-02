@@ -224,7 +224,8 @@ STRINGS = {
         "col_share": "Earning 60k+",
         "tip_median": "Gross yearly base salary: half earn more, half earn less",
         "tip_share": "Share of salaries with a base of 60,000 € or more",
-        "tip_n": "How many salaries this company has under the filters chosen",
+        "tip_n": "How many salaries this company has under the filters chosen. "
+                 f"Under {lib.MIN_RANKED}, the company is listed after the rest",
         "split_base": "Base", "split_bonus": "Bonus", "split_stock": "Stock",
         "split_total": "Median total pay", "split_tip": "How much of these salaries' pay is base, bonus and stock",
         "show_all": "Show all {n}", "show_less": "Show less",
@@ -330,7 +331,8 @@ STRINGS = {
         "col_share": "Cobran 60k o más",
         "tip_median": "Salario base bruto anual: la mitad cobra más y la mitad menos",
         "tip_share": "Porcentaje de salarios con una base de 60.000 € o más",
-        "tip_n": "Cuántos salarios de esta empresa hay con los filtros elegidos",
+        "tip_n": "Cuántos salarios de esta empresa hay con los filtros elegidos. "
+                 f"Con menos de {lib.MIN_RANKED}, la empresa va después del resto",
         "split_base": "Base", "split_bonus": "Bonus", "split_stock": "Acciones",
         "split_total": "Sueldo total mediano", "split_tip": "Qué parte del pago de estos salarios es base, bonus y acciones",
         "show_all": "Ver los {n}", "show_less": "Ver menos",
@@ -500,7 +502,9 @@ def build_site(companies: list[dict]) -> tuple[dict, dict[str, dict]]:
 def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
     rows = []
     for i, company in enumerate(companies):
-        if not pays_enough(company):
+        # Nothing of an unverified company reaches the site, not even its
+        # rows in the role and region groups.
+        if not lib.verified(company) or not pays_enough(company):
             continue
         for e in company["entries"]:
             if counted(e):
@@ -548,6 +552,7 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
                     if months else None,
         "min_base": MIN_BASE_EUR,
         "min_group": lib.MIN_GROUP,
+        "min_ranked": lib.MIN_RANKED,
         "quartile_min": lib.QUARTILE_MIN,
         "round_eur": lib.ROUND_EUR,
         "threshold": lib.THRESHOLD_EUR,
@@ -658,7 +663,9 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
                     a["mix"] = pay_mix(entries)
                     found.append({"c": index[i], **a})
             if found:
-                found.sort(key=lambda a: (-a["median"], -a["share"]))
+                # Under MIN_RANKED salaries after the rest; app.js keeps the
+                # same tiers when the reader re-sorts.
+                found.sort(key=lambda a: (a["n"] < lib.MIN_RANKED, -a["median"], -a["share"]))
                 out[key] = [[a[f] for f in fields] for a in found]
         if out:
             files[name] = {"fields": fields, "cells": out,

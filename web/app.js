@@ -529,8 +529,13 @@ function companies() {
   const all = table();
   const q = state.q.trim().toLowerCase();
   const by = SORTS[state.sort];
+  // A company under min_ranked salaries goes after the rest whatever the
+  // column: its "median" is one person's pay. Ascending is the exact reverse.
+  // 3 until a refresh writes min_ranked into data.json.
+  const thin = (a) => a.n < (D.min_ranked || 3);
   const rows = (q ? all.filter((a) => D.companies[a.c].name.toLowerCase().includes(q)) : all)
-    .slice().sort((x, y) => (state.asc ? -1 : 1) * (by(y) - by(x) || y.median - x.median));
+    .slice().sort((x, y) => (state.asc ? -1 : 1) *
+      (thin(x) - thin(y) || by(y) - by(x) || y.median - x.median));
   const shown = state.all ? rows : rows.slice(0, 15);
   const th = (k, label, tip, cls = "num") =>
     `<th class="${cls} sort${state.sort === k ? (state.asc ? " on asc" : " on") : ""}" data-sort="${k}"` +

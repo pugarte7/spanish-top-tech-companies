@@ -235,6 +235,15 @@ test("a link restores its filters", async ({ page }) => {
   await expect(filter(page, "modes").locator(".txt")).toHaveText("Remoto");
 });
 
+test("companies under three salaries come after the rest", async ({ page }) => {
+  await open(page);
+  await page.locator("#more").click();
+  const ns = (await page.locator("#companies tr.main td:last-child").allTextContents()).map(num);
+  const thin = ns.findIndex((n) => n < 3);
+  expect(thin).toBeGreaterThan(0);
+  expect(ns.slice(thin).every((n) => n < 3)).toBe(true);
+});
+
 test("clicking a column sorts it, again reverses it", async ({ page }) => {
   await open(page);
   const th = page.locator('#companies th[data-sort="n"]');
