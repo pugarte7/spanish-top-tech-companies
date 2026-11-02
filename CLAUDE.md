@@ -167,12 +167,14 @@ which `fetch_spain.write_role()` writes as `website` when there is none.
 company with fewer than `fetch_spain.MIN_GLOBAL` (5) submissions anywhere in
 the world, summed over every role it has rows for, loses its Levels.fyi rows
 after the last role is written (`prune_unproven()`, "unproven" in the run
-report), and a Spanish base above every salary the company reported for the
-role from outside Spain, given `ABROAD_MIN` (3) of them, is dropped
-("implausible", `screen()`). DEKA's 300k entry-level mechanical engineer in
-Malaga was the only DEKA submission on Levels.fyi. The sum is over roles,
-not per role, since 2026-11-02: the per-role version dropped Repsol, Endesa
-and Bankinter, three engineers and three product managers each. The count
+report). DEKA's 300k entry-level mechanical engineer in Malaga was the only
+DEKA submission on Levels.fyi. The sum is over roles, not per role, since
+2026-11-02: the per-role version dropped Repsol, Endesa and Bankinter, three
+engineers and three product managers each. The same day the maintainer
+removed a second rule that dropped a Spanish base above everything the
+company paid the role abroad: with three or four salaries from cheaper
+countries it took real seniors at Stenn, Kiwi.com and Zooplus, and caught no
+DEKA the count had not. Do not bring it back. The count
 comes from one API call per company-role pair (`companySlug` +
 `jobFamilySlug`, no country; the API refuses a query with no job family),
 cached in `global.json` beside the CSV for `GLOBAL_DAYS` (90); pairs with

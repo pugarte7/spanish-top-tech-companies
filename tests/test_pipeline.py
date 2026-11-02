@@ -273,40 +273,23 @@ def test_one_submission_is_one_entry() -> None:
 
 
 def test_the_world_vouches_for_a_company() -> None:
-    """A company-role pair under five submissions anywhere is nobody's employer,
-    and a Spanish base above everything the company pays abroad is not Spanish:
-    DEKA's 300k mechanical engineer was the only DEKA submission in the world
-    (maintainer, 2026-11-01). The company's domain from the feed is its website."""
+    """A company under five submissions anywhere, over every role, is nobody's
+    employer: DEKA's 300k mechanical engineer was the only DEKA submission in
+    the world (maintainer, 2026-11-01). Judged once every role is written, so
+    three engineers and three product managers count as six (2026-11-02).
+    The company's domain from the feed is its website."""
     print("fetch_spain asks the world about small companies")
     import fetch_spain
-
-    by_slug, _ = fed([row("deka", base=335000), row("ghost", base=50000), row("ghost", base=52000),
-                      row("big", base=200000, uuid="b1"), row("big", base=90000, uuid="b2"),
-                      row("dark", base=60000)])
-    skipped = fetch_spain.screen(by_slug, {
-        "deka": {"total": 1, "abroad": []},
-        "ghost": {"total": 9, "abroad": [55000, 48000, 61000]},
-        "big": {"total": 120, "abroad": [150000, 160000, 170000]},
-        "dark": None})
-    check("a base above every salary abroad goes, the other stays",
-          ([e["base"] for e in by_slug["big"]["entries"]], skipped["implausible"]), ([77400], 1))
-    check("screening a role drops rows, never a company",
-          sorted(by_slug), ["big", "dark", "deka", "ghost"])
-
-    five = [row("many", base=70000 + i, uuid=f"m{i}") for i in range(5)]
-    by_slug, _ = fed(five)
-    check("five Spanish rows never ask the world",
-          fetch_spain.screen(by_slug, {}), {"implausible": 0})
 
     def company(name, *entries):
         return lib.blank_company(name.title(), levels_slug=name,
                                  levels_status="resolved") | {"entries": list(entries)}
-    seen = {"checked": TODAY, "abroad": []}
+    seen = {"checked": TODAY}
     cache = {"deka|software-engineer": {"total": 1, **seen},
              "repsol|software-engineer": {"total": 3, **seen},
              "repsol|product-manager": {"total": 3, **seen},
              "hand|software-engineer": {"total": 1, **seen},
-             "stale|software-engineer": {"total": 1, "checked": "2025-01-01", "abroad": []}}
+             "stale|software-engineer": {"total": 1, "checked": "2025-01-01"}}
     with temp_data(
             company("deka", entry(PER_LOCATION, base=300000)),
             company("repsol", *[entry(PER_LOCATION, base=60000 + i) for i in range(3)],

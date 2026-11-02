@@ -496,8 +496,10 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 - **The world vouches for small companies.** `fetch_spain.prune_unproven()`,
   after the last role: a company under `MIN_GLOBAL` (5) submissions anywhere
   in the world, summed over the roles it has rows for, loses its Levels.fyi
-  rows. `screen()`, per role: a Spanish base above everything the company
-  pays the role outside Spain (`ABROAD_MIN` 3 of them) is dropped. One API
+  rows. A second rule, a Spanish base above everything the company paid the
+  role abroad, lasted one run: with three or four salaries from cheaper
+  countries it dropped 19 rows, real seniors at Stenn, Kiwi.com and Zooplus
+  among them, and the maintainer removed it on 2026-11-02. One API
   call per pair with fewer than five Spanish rows at a company with fewer
   than five on file (2,432 of 2,737 pairs on 2026-11-01, about two hours at
   3s; 742 of them were at companies Spain already vouched for), cached for
