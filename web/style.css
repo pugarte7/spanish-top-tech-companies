@@ -1,6 +1,6 @@
-/* Electric blue, after hermes-agent.nousresearch.com: the bar, the header and
-   the footer are a field of ultramarine with a fine line lacería (Alhambra
-   eight-point stars, /laceria.svg) and a frieze of linked stars (/cenefa.svg);
+/* Electric blue, after hermes-agent.nousresearch.com: the bar, the header,
+   the agents and the footer are a field of ultramarine tiled with a "lazo de
+   seis" (site.py's lazo_de_seis) and a frieze of linked stars (/cenefa.svg);
    below it blue is the ink. Pay is drawn in that blue only at or above the 60k
    bar (map, ranking, matrix, histogram, a company's years); under it, greys.
    Antonio, thin and condensed, sets titles and figures; Barlow sets the text. */
@@ -92,10 +92,29 @@ button, select, input { font: inherit; color: inherit; }
 .topbar-in, .head, .bento, .foot { max-width: calc(1088px + 2 * var(--pad)); margin: 0 auto;
   padding-left: var(--pad); padding-right: var(--pad); }
 
-/* The blue field: the pattern sits behind whatever the field holds. */
-.field { position: relative; isolation: isolate; background: var(--field); color: var(--field-ink); }
-.field::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-                 background: url("/laceria.svg") 0 0 / 96px 96px; }
+/* The blue field: its wall of tiles sits behind whatever the field holds, and it
+   clips, so a veil's feathered edge never spills past it. The pattern is defined
+   once per page, in a zero-size SVG that has to stay rendered for the walls to
+   fill from it. */
+.field { position: relative; isolation: isolate; overflow: hidden; background: var(--field); color: var(--field-ink); }
+.tile-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.field > .wall { position: absolute; inset: 0; z-index: -1; overflow: hidden; border-radius: inherit;
+                 pointer-events: none; }
+.tiles { display: block; width: 100%; height: 100%; }
+.tile-defs .tint polygon { fill: var(--tile-tint); }
+.tile-defs .edge polygon { fill: none; stroke: var(--tile-line); stroke-linejoin: round; }
+.tile-defs .band polygon { fill: none; stroke: var(--tile-band); stroke-linejoin: round; }
+/* A tiled field: the frieze along its top edge, clear of whatever line is above
+   it, and the tiles a little under the frieze. */
+.tiled::after { content: ""; position: absolute; left: 0; right: 0; top: var(--frieze-top); height: 22px;
+                z-index: 1; pointer-events: none;
+                background: url("/cenefa.svg") 0 0 / 28px 22px repeat-x var(--field); }
+.tiled > .wall { top: var(--tiles-top); }
+/* No tiles behind text: a veil of the field's own blue, its edges feathered
+   into the tiles by a shadow of the same colour. */
+.veil { position: relative; z-index: 1; }
+.veil::before { content: ""; position: absolute; z-index: -1; inset: -20px -28px; border-radius: 28px;
+                background: var(--field); box-shadow: 0 0 44px 26px var(--field); pointer-events: none; }
 .field a { text-decoration-color: rgba(242, 242, 242, .55); }
 .field a:hover { color: #ffffff; text-decoration-color: currentColor; }
 .field :focus-visible, .topbar :focus-visible { outline-color: var(--field-ink); }
@@ -140,32 +159,25 @@ button, select, input { font: inherit; color: inherit; }
 .topbar .seg a:hover { color: #ffffff; }
 .topbar .seg a.on { background: var(--field-ink); color: var(--field); font-weight: 600; }
 
-/* Header: the frieze along its top edge, clear of the bar's hairline; under it
-   a "lazo de seis" over the whole banner, hidden only behind the text by a
-   veil of the field's own blue with feathered edges. The text and its buttons
-   on the left, the card with the figures for everyone on the right, both
-   centred between the frieze and the bottom. */
-.head-field::before { content: none; }
-.head-field::after { content: ""; position: absolute; left: 0; right: 0; top: var(--frieze-top); height: 22px;
-                     z-index: 1; pointer-events: none;
-                     background: url("/cenefa.svg") 0 0 / 28px 22px repeat-x var(--field); }
-.head-field .wall { position: absolute; inset: var(--tiles-top) 0 0 0; overflow: hidden; }
-.tiles { display: block; width: 100%; height: 100%; }
-.tiles .tint polygon { fill: var(--tile-tint); }
-.tiles .edge polygon { fill: none; stroke: var(--tile-line); stroke-linejoin: round; }
-.tiles .band polygon { fill: none; stroke: var(--tile-band); stroke-linejoin: round; }
+/* Header: a tiled field, the tiles hidden only behind the text. The text and
+   its buttons on the left, the card with the figures for everyone on the
+   right, both centred between the frieze and the bottom. */
 .head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 492px); column-gap: 104px;
         align-items: center; padding-top: calc(64px + var(--frieze-end)); padding-bottom: 64px; }
-.pitch { position: relative; z-index: 1; display: grid; gap: 22px; min-width: 0; }
-.pitch::before { content: ""; position: absolute; z-index: -1; inset: -20px -28px; border-radius: 28px;
-                 background: var(--field); box-shadow: 0 0 44px 26px var(--field); pointer-events: none; }
+.pitch { display: grid; gap: 22px; min-width: 0; }
+/* app.js's hugVeil sets how far the text stops short of the column's right edge and
+   below the title's line top, so the veil clears the letters by the same on every side. */
+.pitch.veil::before { top: calc(var(--hug-top, 0px) - 20px); right: calc(var(--hug-right, 0px) - 28px); }
 h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-spacing: -0.005em;
      text-wrap: balance; }
-.hero-lede { margin: 0; max-width: 44ch; font-size: 17px; line-height: 26px; color: var(--field-soft); }
+/* The text and the buttons end where the title's longest line does (--title-w, from
+   app.js's hugVeil), so the block is square and no letter sticks out past the rest;
+   never under 300px, which the pair of buttons needs for its labels. */
+.hero-lede { margin: 0; max-width: max(300px, var(--title-w, 44ch)); font-size: 17px; line-height: 26px; color: var(--field-soft); }
 .hero-lede b { font-weight: 600; color: var(--field-ink); }
 /* Two equal columns: the wide buttons span both, the pair takes one each, so
    every row is as wide. Surfaces behind them are plain, never the pattern. */
-.cta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: min(100%, 400px);
+.cta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: min(100%, max(300px, var(--title-w, 400px)));
        margin-top: 6px; }
 .cta .wide { grid-column: 1 / -1; }
 .btn { display: flex; align-items: center; justify-content: center; gap: 10px; height: 44px; padding: 0 18px;
@@ -195,6 +207,8 @@ h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-s
              border-radius: var(--radius-card); }
 .hero-card-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px;
                   font: 400 13px/16px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+/* The date keeps the top right corner, on its own line too if the label leaves it no room. */
+#updated { margin-left: auto; }
 .hero-median { margin: -8px 0 0; font: 300 44px/48px var(--display); letter-spacing: -0.01em;
                font-variant-numeric: tabular-nums; }
 /* Salaries per band of the base, to scale; blue from the 60k line, grey under it. */
@@ -222,7 +236,8 @@ h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-s
 .hero-stats div:first-child { padding-left: 0; }
 .hero-stats div + div { border-left: 1px solid var(--rule); }
 .hero-stats dd { margin: 0; font: 300 28px/30px var(--display); white-space: nowrap; }
-.hero-stats dt { order: 2; font-size: 13px; line-height: 17px; color: var(--muted); }
+/* As wide as the narrowest column's, so every label breaks into the same two lines at any width. */
+.hero-stats dt { order: 2; max-width: 9.5em; font-size: 13px; line-height: 17px; color: var(--muted); text-wrap: balance; }
 .hero-stats dt i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; background: var(--hue); }
 /* The buttons jump past the sticky bar. */
 #map-card, #matrix-card, #companies-card { scroll-margin-top: 72px; }
@@ -449,8 +464,10 @@ tr.det td { background: var(--tint); padding: 8px 12px 24px 48px; }
 .more:hover { background: var(--s5); }
 
 footer { margin-top: 48px; color: var(--field-muted); font-size: 16px; line-height: 26px; text-align: center; }
-.foot { padding-top: 26px; padding-bottom: 30px; }
-footer p { margin: 4px 0; }
+.foot { padding-top: calc(44px + var(--frieze-end)); padding-bottom: 44px; }
+footer p { margin: 0; }
+footer .veil { width: fit-content; margin: 0 auto; }
+footer .veil::before { inset: -8px -20px; box-shadow: 0 0 28px 18px var(--field); }
 footer a { color: var(--field-ink); }
 
 /* Star prompt: a piece of the blue field, lacería and all. It floats, so it
@@ -459,8 +476,8 @@ footer a { color: var(--field-ink); }
             right: max(20px, env(safe-area-inset-right, 0px)); bottom: max(20px, env(safe-area-inset-bottom, 0px));
             padding: 18px 20px 20px; border-radius: var(--radius-card); border: 1px solid var(--field-line);
             box-shadow: var(--float); animation: star-in .25s ease-out; }
-/* The card is small and nearly all text, so its lacería is lighter. */
-.star-pop::before { opacity: .55; }
+/* The card is small and nearly all text, so its tiles are lighter. */
+.star-pop > .wall { opacity: .55; }
 @keyframes star-in { from { opacity: 0; transform: translateY(12px); } }
 .star-title { margin: 0 28px 6px 0; font: 300 28px/32px var(--display); color: #ffffff; }
 .star-text { margin: 0 0 16px; color: var(--field-soft); }
@@ -480,7 +497,7 @@ footer a { color: var(--field-ink); }
 .agents { scroll-margin-top: 72px; }
 .agents h2:focus { outline: none; }
 .agents-grid { display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch; }
-.agents-stage { flex: 1 1 340px; min-width: 0; min-height: 420px; padding: 36px 24px;
+.agents-stage { flex: 1 1 340px; min-width: 0; min-height: 420px; padding: calc(36px + var(--frieze-end)) 24px 36px;
                 border-radius: var(--radius-card); display: flex; flex-direction: column;
                 align-items: center; justify-content: center; gap: 22px; text-align: center; }
 .agent-stack { position: relative; display: block; flex: none; width: 132px; height: 132px; }
@@ -495,6 +512,9 @@ footer a { color: var(--field-ink); }
 /* app.js gives it the height of the longest name; this keeps a shorter one
    centred in that height. */
 .agent-say { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.agent-say::before { inset: -12px -18px; box-shadow: 0 0 32px 18px var(--field); }
+/* The logo and the tabs sit over the veil, so its feathered edge never dims them. */
+.agents-stage .agent-stack, .agent-tabs { position: relative; z-index: 2; }
 .agent-call { margin: 0; font: 200 40px/1.08 var(--display); color: #ffffff; }
 .agent-by { margin: 6px 0 0; color: var(--field-muted); }
 .agent-get { display: inline-flex; align-items: center; gap: 6px; height: 40px; margin-top: 16px; padding: 0 16px;
@@ -566,7 +586,8 @@ footer a { color: var(--field-ink); }
   /* The card goes under the text; the veil hugs the text closer. */
   .head { grid-template-columns: minmax(0, 1fr); row-gap: 32px;
           padding-top: calc(40px + var(--frieze-end)); padding-bottom: 40px; }
-  .pitch::before { inset: -14px -10px; box-shadow: 0 0 28px 18px var(--field); }
+  .pitch.veil::before { inset: calc(var(--hug-top, 0px) - 14px) calc(var(--hug-right, 0px) - 10px) -14px -10px;
+                       box-shadow: 0 0 28px 18px var(--field); }
   .summary { grid-template-columns: repeat(4, 1fr); }
   .dist { grid-column: 1 / -1; }
   .map-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -607,7 +628,8 @@ footer a { color: var(--field-ink); }
   .summary { grid-template-columns: 1fr 1fr; }
   .filter-row { flex-wrap: wrap; }
   .star-pop { width: auto; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
-  .agents-stage { min-height: 0; padding: 28px 16px; gap: 18px; }
+  .agents-stage { min-height: 0; padding: calc(28px + var(--frieze-end)) 16px 28px; gap: 18px; }
+  .agent-say::before { inset: -12px -14px; box-shadow: 0 0 28px 18px var(--field); }
   .agent-call { font-size: 32px; }
   .agent-steps > li { gap: 12px; }
   .matrix { min-width: 560px; }
@@ -617,4 +639,14 @@ footer a { color: var(--field-ink); }
 @media (max-width: 400px) {
   /* The footer and the star prompt link to GitHub too. */
   .topbar-end > a.icon-btn { display: none; }
+  /* The figures' labels keep their two lines on the narrowest phones. */
+  .hero-card { padding: 18px 12px 16px; }
+  .hero-stats div { padding: 0 6px; }
+  .hero-stats dt { font-size: 11px; line-height: 15px; }
+}
+@media (max-width: 345px) {
+  .hero-card { padding: 16px 8px 14px; }
+  .hero-stats div { padding: 0 4px; }
+  .hero-stats dt { font-size: 10.5px; line-height: 14px; }
+  .hero-card-head { font-size: 12px; letter-spacing: .1em; }
 }

@@ -294,6 +294,41 @@ function heroDist(a) {
   el.querySelectorAll(".col").forEach((col) => hover(col, () => bandTip(a, +col.dataset.i)));
 }
 
+// The veil behind the banner's text hugs the text, so the tiles stop as far
+// from it on every side. Its box is the column, which is wider than a balanced
+// title, and the title's line box starts above its letters. The text and the
+// buttons take the width of the title's longest line, so nothing sticks out.
+function hugVeil() {
+  const v = document.querySelector(".pitch.veil");
+  if (!v) return;
+  const box = v.getBoundingClientRect(), h1 = v.querySelector("h1"), r = document.createRange();
+  r.selectNodeContents(h1);
+  const title = Math.max(...[...r.getClientRects()].map((q) => q.right)) - box.left;
+  v.style.setProperty("--title-w", `${Math.min(box.width, Math.ceil(title))}px`);
+  let right = v.querySelector(".cta").getBoundingClientRect().right;
+  for (const el of [h1, v.querySelector(".hero-lede")]) {
+    r.selectNodeContents(el);
+    for (const q of r.getClientRects()) right = Math.max(right, q.right);
+  }
+  // The words on the title's first line, and how far below their line's top their letters start.
+  const text = h1.firstChild;
+  let first = "", at = 0, top = null;
+  for (const w of text.data.split(" ")) {
+    r.setStart(text, at); r.setEnd(text, at + w.length);
+    const t = r.getBoundingClientRect().top;
+    if (top === null) top = t;
+    if (Math.abs(t - top) > 2) break;
+    first += (first ? " " : "") + w; at += w.length + 1;
+  }
+  const cs = getComputedStyle(h1), ctx = document.createElement("canvas").getContext("2d");
+  ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const m = ctx.measureText(first);
+  const ink = (parseFloat(cs.lineHeight) - m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2
+    + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent;
+  v.style.setProperty("--hug-right", `${Math.max(0, box.right - right)}px`);
+  v.style.setProperty("--hug-top", `${Math.max(0, ink) || 0}px`);
+}
+
 // --- pay shades -----------------------------------------------------------------
 // One scale for pay on the map and in the matrix: two greys under the 60k bar,
 // the hue from it, so the colour itself says which side of the bar a figure is.
@@ -744,6 +779,9 @@ async function main() {
   agentPrompt();
   starPrompt();
   kpis(); map();
+  // Again whenever the column changes width or the method opens, and once the fonts are in.
+  new ResizeObserver(hugVeil).observe(document.querySelector(".pitch"));
+  document.fonts.ready.then(hugVeil);
   await loadTable("");
   matrix();
   const h = new URLSearchParams(location.hash.slice(1));

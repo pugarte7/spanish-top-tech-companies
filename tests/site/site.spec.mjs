@@ -51,6 +51,65 @@ test("header card: the median, its histogram with the 60k line, figures with the
   await expect(page.locator(".hero-stats dt").last()).toContainText("empresas con 5 o más salarios");
 });
 
+test("header card: the label left, the date top right, three equal figures whose labels break alike", async ({ page }) => {
+  await open(page);
+  for (const width of [1600, 1280, 800, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    const m = await page.evaluate(() => {
+      const card = document.querySelector(".hero-card"), cs = getComputedStyle(card), c = card.getBoundingClientRect();
+      const inner = { left: c.left + parseFloat(cs.borderLeftWidth) + parseFloat(cs.paddingLeft),
+                      right: c.right - parseFloat(cs.borderRightWidth) - parseFloat(cs.paddingRight) };
+      const label = document.querySelector(".hero-card-head span").getBoundingClientRect();
+      const date = document.querySelector("#updated").getBoundingClientRect();
+      return {
+        inner, label: { left: label.left, top: label.top }, date: { right: date.right, top: date.top },
+        widths: [...document.querySelectorAll(".hero-stats > div")].map((d) => d.getBoundingClientRect().width),
+        lines: [...document.querySelectorAll(".hero-stats dt")].map((d) =>
+          Math.round(d.getBoundingClientRect().height / parseFloat(getComputedStyle(d).lineHeight))),
+      };
+    });
+    const at = `at ${width}px: ${JSON.stringify(m)}`;
+    expect(Math.abs(m.label.left - m.inner.left), at).toBeLessThan(1);
+    expect(Math.abs(m.date.right - m.inner.right), at).toBeLessThan(1);
+    expect(Math.abs(m.date.top - m.label.top), at).toBeLessThan(1);
+    expect(Math.max(...m.widths) - Math.min(...m.widths), at).toBeLessThan(1.5);
+    expect(new Set(m.lines).size, at).toBe(1);
+    expect(m.lines[0]).toBeLessThanOrEqual(2);
+  }
+});
+
+test("every blue field is tiled from the one lazo, and text has no tiles behind it", async ({ page }) => {
+  await open(page);
+  await expect(page.locator("pattern#lazo")).toHaveCount(1);
+  for (const sel of ["header.field", ".agents-stage", "footer", "#star", "#agent-pop"])
+    await expect(page.locator(`${sel} > .wall rect`), sel).toHaveAttribute("fill", "url(#lazo)");
+  // The frieze and a veil of the field's blue behind the banner's, the agents' and the footer's text.
+  for (const sel of ["header.field", ".agents-stage", "footer"])
+    expect(await page.locator(sel).evaluate((e) => getComputedStyle(e, "::after").backgroundImage), sel).toContain("cenefa");
+  for (const sel of [".pitch", ".agent-say", "footer p"])
+    await expect(page.locator(sel)).toHaveClass(/\bveil\b/);
+});
+
+test("the banner's text is square: buttons end with the title, the veil clears both sides alike", async ({ page }) => {
+  for (const [path, width] of [["/es/", 1280], ["/en/", 1600], ["/es/", 800]]) {
+    await page.setViewportSize({ width, height: 900 });
+    await open(page, path);
+    await page.evaluate(() => document.fonts.ready);
+    const m = await page.locator(".pitch").evaluate((v) => {
+      const b = v.getBoundingClientRect(), s = getComputedStyle(v, "::before"), r = document.createRange();
+      const far = (el) => { r.selectNodeContents(el); return Math.max(...[...r.getClientRects()].map((q) => q.right)); };
+      const title = far(v.querySelector("h1")), lede = far(v.querySelector(".hero-lede"));
+      const buttons = v.querySelector(".cta").getBoundingClientRect().right;
+      const right = Math.max(title, lede, buttons);
+      return { title, lede, buttons, left: -parseFloat(s.left), right: b.right - parseFloat(s.right) - right };
+    });
+    const at = `${path} at ${width}px: ${JSON.stringify(m)}`;
+    expect(Math.abs(m.buttons - m.title), at).toBeLessThan(1.5);
+    expect(m.lede, at).toBeLessThanOrEqual(m.buttons + 0.5);
+    expect(Math.abs(m.right - m.left), at).toBeLessThan(1);
+  }
+});
+
 test("header buttons: every row as wide, the pair half each, and each leads somewhere", async ({ page }) => {
   await open(page);
   const box = async (sel) => (await page.locator(sel).boundingBox());
