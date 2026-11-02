@@ -115,9 +115,9 @@ NO_LEVEL = {"", "false", "none", "null"}
 # Spain: a Spanish base above every one of those, given ABROAD_MIN of them,
 # is not a Spanish salary. The API needs a job family; there is no
 # all-roles query.
-MIN_GLOBAL = 5
+MIN_GLOBAL = lib.MIN_GLOBAL
 GLOBAL_DAYS = 90
-ABROAD_MIN = 3
+ABROAD_MIN = lib.ABROAD_MIN
 GLOBAL_CACHE = lib.DATA.parent / "global.json"
 
 

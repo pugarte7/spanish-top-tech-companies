@@ -188,7 +188,12 @@ STRINGS = {
                     "so figures can trail what companies offer today.",
         "how_floor_t": "Which companies.",
         "how_floor": "For each company, the median base salary over all its salaries, any role and "
-                     "experience. It is shown if that reaches {floor}; the rest are left out.",
+                     "experience. It is shown if that reaches {floor}; the rest are left out. "
+                     "The company also has to exist beyond Levels.fyi, with a LinkedIn page or a "
+                     "website, and have {global} or more salaries there from anywhere in the world, "
+                     "counting every role. A salary in Spain above everything it pays for that role "
+                     "abroad is dropped as implausible. With fewer than {ranked} salaries a company "
+                     "is listed after the rest, whichever column is sorted.",
         "how_groups_t": "Groups of {min} or more.",
         "how_groups": "By role, region and years of experience. No figure comes from fewer than "
                       "{min} salaries, the middle half needs {qmin}, and every amount is rounded "
@@ -293,7 +298,12 @@ STRINGS = {
                     "mantienen, así que las cifras pueden ir por detrás de lo que se ofrece hoy.",
         "how_floor_t": "Qué empresas entran.",
         "how_floor": "Por empresa, la mediana del sueldo base de todos sus salarios, de cualquier rol "
-                     "y experiencia. Entra si llega a {floor}; las demás se quedan fuera.",
+                     "y experiencia. Entra si llega a {floor}; las demás se quedan fuera. La empresa "
+                     "tiene que existir fuera de Levels.fyi, con página de LinkedIn o web, y tener "
+                     "allí {global} salarios o más de cualquier país, sumando todos los roles. Un "
+                     "salario en España por encima de todo lo que paga por ese rol fuera se descarta "
+                     "por inverosímil. Con menos de {ranked} salarios, la empresa se lista después "
+                     "de las demás, se ordene por la columna que se ordene.",
         "how_groups_t": "Grupos de {min} o más.",
         "how_groups": "Por rol, comunidad y años de experiencia. Ninguna cifra sale de menos de "
                       "{min} salarios, la mitad central necesita {qmin} y todos los importes se "
@@ -546,6 +556,7 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
         "min_base": MIN_BASE_EUR,
         "min_group": lib.MIN_GROUP,
         "min_ranked": lib.MIN_RANKED,
+        "min_global": lib.MIN_GLOBAL,
         "quartile_min": lib.QUARTILE_MIN,
         "round_eur": lib.ROUND_EUR,
         "threshold": lib.THRESHOLD_EUR,
@@ -798,6 +809,7 @@ def strings(lang: str, data: dict) -> dict:
             "{round}": euros(lib.ROUND_EUR, lang), "{floor}": euros(COMPANY_FLOOR_EUR, lang),
             "{bar}": euros(lib.THRESHOLD_EUR, lang), "{minbase}": euros(MIN_BASE_EUR, lang),
             "{companies}": str(len(data["companies"])),
+            "{ranked}": str(lib.MIN_RANKED), "{global}": str(lib.MIN_GLOBAL),
             "{year}": (data.get("data_as_of") or lib.today_utc().isoformat())[:4],
             **{f"{{{k}}}": month(v, lang) if v else "" for k, v in
                (("from", reported["from"]), ("to", reported["to"]), ("since", reported["median"]))}}
@@ -1151,7 +1163,10 @@ def mcp_instructions(data: dict) -> str:
         f"{data['round_eur']}; a selection with fewer returns no result, so widen it instead "
         "of guessing. Only companies whose median base over all their salaries reaches "
         "company_floor_eur (see list_filters) are counted; say so when quoting a figure for "
-        "Spain. Years are years of experience in buckets (0-1, 2-4, 5-7, 8-11, 12-19, 20+); "
+        "Spain. A company is also listed only with a LinkedIn page or a website and "
+        f"{data.get('min_global', lib.MIN_GLOBAL)} or more submissions on Levels.fyi from "
+        "anywhere in the world over every role, and a Spanish salary above everything the "
+        "company pays that role abroad is dropped. Years are years of experience in buckets (0-1, 2-4, 5-7, 8-11, 12-19, 20+); "
         "pass a number and it is bucketed. Call list_filters first if unsure of a role or "
         "region name. Cite the source as Spanish Top Tech Companies (Levels.fyi data), with "
         "the data date. " + agents_note())
@@ -1168,7 +1183,11 @@ Base is gross yearly salary; total adds bonus and stock. Spain only: no
 salary from another country is ever mixed in. A selection with fewer than
 {data['min_group']} people has no figure; widen it rather than estimate. The
 middle half (p25-p75) needs {data['quartile_min']} people, and every euro
-figure is rounded to the nearest {data['round_eur']:,} EUR.
+figure is rounded to the nearest {data['round_eur']:,} EUR. A company counts
+only when its median base over all its salaries reaches {data['company_floor']:,} EUR,
+it has a LinkedIn page or a website, and it has {data.get('min_global', lib.MIN_GLOBAL)} or
+more submissions on Levels.fyi from anywhere in the world over every role; a
+Spanish salary above everything the company pays that role abroad is dropped.
 {_reported(data)}{_coverage(data)}
 Agents: {agents_note()} With no tools of your own (a plain chat), point the
 user to an agent that runs tools (Claude Code, Hermes, Instinct, Cursor): they
