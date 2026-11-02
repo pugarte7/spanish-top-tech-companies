@@ -427,6 +427,38 @@ test("a row opens with the mouse and the keyboard", async ({ page }) => {
   await expect(detail).toBeHidden();
 });
 
+// site.py loads PostHog on Vercel builds only; here a stand-in records what track() sends.
+test("what readers use reaches PostHog once it settles, and a search only when it finds a company", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.sent = [];
+    window.posthog = { capture: (event, props) => window.sent.push([event, props]) };
+  });
+  await open(page);
+  const sent = () => page.evaluate(() => window.sent);
+  const named = async (event) => (await sent()).filter(([e]) => e === event);
+
+  await page.locator('#matrix button[data-role="product-manager"][data-years="8-11"]').click();
+  await expect.poll(sent).toContainEqual(["filter",
+    { role: "product-manager", years: "8-11", work: null, loc: null, via: "matrix" }]);
+
+  const name = (await rows(page).first().locator(".name").textContent()).trim();
+  await page.locator("#search").fill("qqxzq");
+  await page.waitForTimeout(1_800);
+  expect(await named("search")).toEqual([]);
+  await page.locator("#search").fill(name.slice(0, 4).toUpperCase());
+  await expect.poll(() => named("search")).toEqual([["search",
+    { q: name.slice(0, 4).toLowerCase(), results: expect.any(Number) }]]);
+
+  await rows(page).first().click();
+  expect(await named("company_open")).toEqual([["company_open", { company: name, role: "product-manager" }]]);
+  await page.locator('#companies th[data-sort="n"]').click();
+  expect(await named("sort")).toEqual([["sort", { by: "n", asc: false }]]);
+  await page.locator('.agent-tab[data-name="Grok CLI"]').click();
+  expect(await named("agent_pick")).toEqual([["agent_pick", { agent: "Grok CLI" }]]);
+  // A link restoring its filters is the page view's URL, not a choice.
+  expect((await named("filter")).length).toBe(1);
+});
+
 test("the location filter narrows the table to a region and a city", async ({ page }) => {
   await open(page);
   const pickPlace = async (sel) => {
