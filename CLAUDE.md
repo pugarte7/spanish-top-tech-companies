@@ -164,16 +164,21 @@ The feed's own company record carries the employer's domain (its logo URL),
 which `fetch_spain.write_role()` writes as `website` when there is none.
 
 **The world has to vouch for a small company.** Also since 2026-11-01: a
-company-role pair with fewer than `fetch_spain.MIN_GLOBAL` (5) submissions
-anywhere in the world is not written ("unproven" in the run report), and a
-Spanish base above every salary the company reported for the role from
-outside Spain, given `ABROAD_MIN` (3) of them, is dropped ("implausible").
-DEKA's 300k entry-level mechanical engineer in Malaga was the only DEKA
-submission on Levels.fyi. Pairs with five Spanish rows are never looked up
-(Spanish rows are a subset of the world's); the rest cost one API call each
-(`companySlug` + `jobFamilySlug`, no country; the API refuses a query with
-no job family), cached in `global.json` beside the CSV for `GLOBAL_DAYS`
-(90). An unreadable answer judges nothing. First-hand rows are never screened.
+company with fewer than `fetch_spain.MIN_GLOBAL` (5) submissions anywhere in
+the world, summed over every role it has rows for, loses its Levels.fyi rows
+after the last role is written (`prune_unproven()`, "unproven" in the run
+report), and a Spanish base above every salary the company reported for the
+role from outside Spain, given `ABROAD_MIN` (3) of them, is dropped
+("implausible", `screen()`). DEKA's 300k entry-level mechanical engineer in
+Malaga was the only DEKA submission on Levels.fyi. The sum is over roles,
+not per role, since 2026-11-02: the per-role version dropped Repsol, Endesa
+and Bankinter, three engineers and three product managers each. The count
+comes from one API call per company-role pair (`companySlug` +
+`jobFamilySlug`, no country; the API refuses a query with no job family),
+cached in `global.json` beside the CSV for `GLOBAL_DAYS` (90); pairs with
+five Spanish rows, and every pair of a company with five Levels.fyi rows on
+file over its roles, are never looked up (Spain already vouches). A missing
+or stale answer judges nothing. First-hand rows are never screened.
 
 Hand-made facts live in `lib.py`, not in the CSV: `SLUG_ALIASES` (two
 Levels.fyi slugs, one employer: `tiger-data` into `timescale`, `meta` into

@@ -493,14 +493,20 @@ is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
   `fetch_company.py --missing` had not reached yet; the weekly runs it
   before the list is written, and the feed's `companyInfo.icon` carries the
   employer's domain, which `write_role()` stores as the website.
-- **The world vouches for small companies.** `fetch_spain.screen()`: a
-  company-role pair under `MIN_GLOBAL` (5) submissions anywhere is not
-  written, and a Spanish base above everything the company pays the role
-  outside Spain (`ABROAD_MIN` 3 of them) is dropped. One API call per pair
-  with fewer than five Spanish rows (2,432 of 2,737 pairs on 2026-11-01,
-  about two hours at 3s), cached for 90 days in `global.json` beside the
-  CSV. The API answers `companySlug` + `jobFamilySlug` without a country;
-  without a job family it answers nothing.
+- **The world vouches for small companies.** `fetch_spain.prune_unproven()`,
+  after the last role: a company under `MIN_GLOBAL` (5) submissions anywhere
+  in the world, summed over the roles it has rows for, loses its Levels.fyi
+  rows. `screen()`, per role: a Spanish base above everything the company
+  pays the role outside Spain (`ABROAD_MIN` 3 of them) is dropped. One API
+  call per pair with fewer than five Spanish rows at a company with fewer
+  than five on file (2,432 of 2,737 pairs on 2026-11-01, about two hours at
+  3s; 742 of them were at companies Spain already vouched for), cached for
+  90 days in `global.json` beside the CSV. The API answers `companySlug` +
+  `jobFamilySlug` without a country; without a job family it answers
+  nothing. The first run judged per role and dropped 1,268 of 1,753
+  companies, among them twelve with five or more Spanish rows spread over
+  roles (Repsol, Endesa, Bankinter, Vueling); since 2026-11-02 the sum is
+  over roles.
 - **Titles and specializations are only as good as the taxonomy match.**
   Authors write free text; `title_slug()` and `specialization_slug()` store
   the official slug or leave the field empty rather than guess, so

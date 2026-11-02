@@ -288,16 +288,43 @@ def test_the_world_vouches_for_a_company() -> None:
         "ghost": {"total": 9, "abroad": [55000, 48000, 61000]},
         "big": {"total": 120, "abroad": [150000, 160000, 170000]},
         "dark": None})
-    check("one submission in the world drops the pair; an unreadable answer keeps it",
-          (sorted(by_slug), skipped["unproven"]), (["big", "dark", "ghost"], 1))
     check("a base above every salary abroad goes, the other stays",
           ([e["base"] for e in by_slug["big"]["entries"]], skipped["implausible"]), ([77400], 1))
-    check("a pair with enough everywhere is untouched", len(by_slug["ghost"]["entries"]), 2)
+    check("screening a role drops rows, never a company",
+          sorted(by_slug), ["big", "dark", "deka", "ghost"])
 
     five = [row("many", base=70000 + i, uuid=f"m{i}") for i in range(5)]
     by_slug, _ = fed(five)
     check("five Spanish rows never ask the world",
-          fetch_spain.screen(by_slug, {}), {"unproven": 0, "implausible": 0})
+          fetch_spain.screen(by_slug, {}), {"implausible": 0})
+
+    def company(name, *entries):
+        return lib.blank_company(name.title(), levels_slug=name,
+                                 levels_status="resolved") | {"entries": list(entries)}
+    seen = {"checked": TODAY, "abroad": []}
+    cache = {"deka|software-engineer": {"total": 1, **seen},
+             "repsol|software-engineer": {"total": 3, **seen},
+             "repsol|product-manager": {"total": 3, **seen},
+             "hand|software-engineer": {"total": 1, **seen},
+             "stale|software-engineer": {"total": 1, "checked": "2025-01-01", "abroad": []}}
+    with temp_data(
+            company("deka", entry(PER_LOCATION, base=300000)),
+            company("repsol", *[entry(PER_LOCATION, base=60000 + i) for i in range(3)],
+                    *[entry(DS_LOCATION, role="product-manager", base=70000 + i) for i in range(3)]),
+            company("hand", entry(None, source="community", base=90000), entry(PER_LOCATION)),
+            company("stale", entry(PER_LOCATION)),
+            company("dark", entry(PER_LOCATION)),
+            company("many", *[entry(PER_LOCATION, base=70000 + i) for i in range(5)])):
+        stats = fetch_spain.prune_unproven(cache, TODAY)
+        left = {c["levels_slug"]: len(c["entries"]) for c in lib.load_companies()}
+        check("one submission in the world, over every role, drops the company",
+              (stats, "deka" in left), ({"unproven": 2, "companies": 1}, False))
+        check("three engineers and three product managers are six people",
+              left["repsol"], 6)
+        check("the first-hand row stays when the Levels.fyi one goes", left["hand"], 1)
+        check("a stale or missing answer judges nothing",
+              (left["stale"], left["dark"]), (1, 1))
+        check("five Spanish rows are five submissions", left["many"], 5)
 
     by_slug, _ = fed([row("acme", companyInfo={"icon": "https://img.logo.dev/acme.example?token=x"})])
     with temp_data(acme(entry(PER_LOCATION, base=80000))):

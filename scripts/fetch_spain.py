@@ -469,25 +469,20 @@ def world_of(bearer: str, cache: dict, slug: str, role: str, delay: float,
 
 
 def screen(by_slug: dict, world: dict) -> dict:
-    """Drop what the world's submissions say is not a Spanish salary.
+    """Drop the rows the world's submissions say are not Spanish salaries.
 
     Pure: `world` maps a canonical slug to worldwide()'s answer, or None
-    when it could not be read. A pair under MIN_GLOBAL submissions anywhere
-    goes whole ("unproven"); a row paid more than every submission from
-    outside Spain, given ABROAD_MIN of them, goes on its own ("implausible").
-    A dropped group leaves write_role() to remove the company's stored rows
-    for the role, exactly as a feed that no longer names it would.
+    when it could not be read. A row paid more than every submission from
+    outside Spain, given ABROAD_MIN of them, goes ("implausible"). Whether
+    the company exists at all is judged over every role at once, after the
+    last role is written: prune_unproven().
     """
-    skipped = {"unproven": 0, "implausible": 0}
+    skipped = {"implausible": 0}
     for slug in list(by_slug):
         group = by_slug[slug]
         if len(group["entries"]) >= MIN_GLOBAL or world.get(slug) is None:
             continue
         found = world[slug]
-        if found["total"] < MIN_GLOBAL:
-            skipped["unproven"] += len(group["entries"])
-            del by_slug[slug]
-            continue
         if len(found["abroad"]) >= ABROAD_MIN:
             ceiling = max(found["abroad"])
             kept = [e for e in group["entries"] if (e.get("_usd") or 0) <= ceiling]
@@ -497,6 +492,65 @@ def screen(by_slug: dict, world: dict) -> dict:
             else:
                 del by_slug[slug]
     return skipped
+
+
+def world_total(company: dict, cache: dict, today: str) -> int | None:
+    """How many submissions the company has anywhere, summed over the roles
+    of its Levels.fyi rows: the cached world count where one is fresh, the
+    Spanish rows themselves where the pair was never asked (five Spanish rows
+    are five submissions). None when a pair's answer is missing and the sum
+    without it stays under MIN_GLOBAL: that company is judged next run.
+    """
+    slugs = [company["levels_slug"]] + lib.aliases_of(company["levels_slug"])
+    spain = collections.Counter(entry.get("role") for entry in company["entries"]
+                                if ours(entry) and not unscoped(entry))
+    total, unknown = 0, False
+    for role, rows in spain.items():
+        found = next((cache.get(f"{slug}|{role}") for slug in slugs
+                      if cache.get(f"{slug}|{role}")), None)
+        checked = lib.parse_date((found or {}).get("checked"))
+        if rows >= MIN_GLOBAL or not found or not checked \
+                or (lib.parse_date(today) - checked).days >= GLOBAL_DAYS:
+            unknown = unknown or rows < MIN_GLOBAL
+            total += rows
+        else:
+            total += max(found["total"], rows)
+    return None if unknown and total < MIN_GLOBAL else total
+
+
+def prune_unproven(cache: dict, today: str, only: set | None = None) -> dict:
+    """Drop the Levels.fyi rows of every company the world cannot vouch for.
+
+    A company whose submissions sum under MIN_GLOBAL across every role,
+    anywhere in the world, is nobody's employer: DEKA's 300k entry-level
+    mechanical engineer was the only DEKA submission on Levels.fyi. Summed
+    over roles, not judged per role, because three engineers and three
+    product managers in Spain are six people at a real company (Repsol,
+    Endesa and Bankinter went that way on 2026-11-02). First-hand rows stay;
+    a company left with nothing goes, as on any other write.
+    """
+    companies = lib.load_companies()
+    stats = {"unproven": 0, "companies": 0}
+    kept_companies = []
+    for company in companies:
+        slug = company.get("levels_slug")
+        if not slug or slug in lib.EXCLUDED_SLUGS or (only and lib.canonical(slug) not in only):
+            kept_companies.append(company)
+            continue
+        total = world_total(company, cache, today)
+        if total is None or total >= MIN_GLOBAL:
+            kept_companies.append(company)
+            continue
+        kept = [entry for entry in company["entries"] if not ours(entry)]
+        stats["unproven"] += len(company["entries"]) - len(kept)
+        company["entries"] = kept
+        if kept:
+            kept_companies.append(company)
+        else:
+            stats["companies"] += 1
+    if stats["unproven"]:
+        lib.save_companies(kept_companies)
+    return stats
 
 
 def read_role(bearer: str, role: str, delay: float, companies: list[dict],
@@ -820,6 +874,13 @@ def main(argv: list[str]) -> int:
     today = lib.today_utc().isoformat()
     cache = load_global_cache()
     read = skipped_roles = 0
+    # Spain vouches for a company with MIN_GLOBAL rows on file over all its
+    # roles: its small roles are not asked about (and not screened).
+    spain_rows: collections.Counter = collections.Counter()
+    for company in lib.load_companies():
+        if company.get("levels_slug"):
+            spain_rows[lib.canonical(company["levels_slug"])] += sum(
+                1 for entry in company["entries"] if ours(entry) and not unscoped(entry))
 
     try:
         for role in roles_from_args(args):
@@ -842,7 +903,8 @@ def main(argv: list[str]) -> int:
                                                   today)
             # Audited too: --audit reads everything and writes nothing.
             world = {slug: world_of(bearer, cache, group["slug"], role, args.delay, today)
-                     for slug, group in by_slug.items() if len(group["entries"]) < MIN_GLOBAL}
+                     for slug, group in by_slug.items()
+                     if len(group["entries"]) < MIN_GLOBAL and spain_rows[slug] < MIN_GLOBAL}
             skipped.update(screen(by_slug, world))
             total = sum(len(group["entries"]) for group in by_slug.values())
             dropped = ", ".join(f"{k} {v}" for k, v in skipped.items() if v)
@@ -857,6 +919,10 @@ def main(argv: list[str]) -> int:
         print(f"\n{exc}", file=sys.stderr)
         print("Progress so far is saved.", file=sys.stderr)
 
+    if read and not args.audit:
+        pruned = prune_unproven(cache, today, only)
+        print(f"\nunproven: {pruned['unproven']} rows dropped, {pruned['companies']} "
+              "companies with under 5 submissions in the world over every role")
     print(f"\nroles read: {read}, unreadable: {skipped_roles}")
     if not args.audit:
         print(f"\n{ATTRIBUTION}")
