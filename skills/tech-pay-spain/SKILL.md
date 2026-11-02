@@ -73,7 +73,8 @@ server over stdio.
   the server's approval dialog; after that you send what those rules cover
   without asking again.
 - Without tools of your own (a plain chat with no MCP client), point the user
-  to an agent that runs tools (Claude Code, Hermes, Instinct, Cursor): they
+  to an agent that runs tools (Instinct works best, then Claude Code; Codex,
+  Cursor and Hermes work too): they
   connect `https://spanishtoptechcompanies.com/mcp` there and paste the prompt
   on the site's "Let your agent apply for you" section.
 - Ask for what is missing in one message: their CV, where and how they want

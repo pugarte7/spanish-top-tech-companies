@@ -503,20 +503,21 @@ test.describe("agents", () => {
     await expect(tabs(page)).toHaveCount(6);
     for (const img of await page.locator("#agents img").all())
       await expect.poll(() => img.evaluate((el) => el.complete && el.naturalWidth > 0)).toBe(true);
-    await expect(pressed(page)).toHaveAttribute("data-name", "Codex");
-    await expect(page.locator("#agents .agent-call")).toHaveText("Que Codex aplique por ti");
+    await expect(pressed(page)).toHaveAttribute("data-name", "Instinct");
+    await expect(page.locator("#agents .agent-call")).toHaveText("Que Instinct aplique por ti");
+    await expect(page.locator("#agent-get")).toHaveAttribute("href", "https://instinct.com/");
     await page.clock.fastForward(3_100);
-    await expect(pressed(page)).toHaveAttribute("data-name", "Cursor");
-    await expect(page.locator("#agents .agent-call")).toHaveText("Que Cursor aplique por ti");
-    await expect(page.locator("#agent-by")).toHaveText("Anysphere");
-    await expect(page.locator("#agent-get")).toHaveText(/Consigue Cursor/);
-    await expect(page.locator("#agent-get")).toHaveAttribute("href", "https://cursor.com/cli");
+    await expect(pressed(page)).toHaveAttribute("data-name", "Claude Code");
+    await expect(page.locator("#agents .agent-call")).toHaveText("Que Claude Code aplique por ti");
+    await expect(page.locator("#agent-by")).toHaveText("Anthropic");
+    await expect(page.locator("#agent-get")).toHaveText(/Consigue Claude Code/);
+    await expect(page.locator("#agent-get")).toHaveAttribute("href", "https://code.claude.com/docs/en/setup");
   });
 
   // The ↗ character showed on iPhones as a blue emoji tile.
   test("the get link draws its arrow instead of using a character", async ({ page }) => {
     await open(page);
-    await expect(page.locator("#agent-get")).toHaveText("Consigue Codex");
+    await expect(page.locator("#agent-get")).toHaveText("Consigue Instinct");
     await expect(page.locator("#agent-get svg.out")).toBeVisible();
   });
 
@@ -548,7 +549,7 @@ test.describe("agents", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await open(page);
     await page.clock.fastForward(10_000);
-    await expect(pressed(page)).toHaveAttribute("data-name", "Codex");
+    await expect(pressed(page)).toHaveAttribute("data-name", "Instinct");
   });
 
   test("copy puts the MCP address on the clipboard", async ({ page, context }) => {
@@ -562,7 +563,7 @@ test.describe("agents", () => {
   test("the English page asks in English", async ({ page }) => {
     await open(page, "/en/");
     await expect(page.locator("#agents-title")).toHaveText("Let your agent apply for you");
-    await expect(page.locator("#agents .agent-call")).toHaveText("Let Codex apply for you");
+    await expect(page.locator("#agents .agent-call")).toHaveText("Let Instinct apply for you");
   });
 });
 
