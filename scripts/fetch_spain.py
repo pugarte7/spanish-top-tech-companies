@@ -111,13 +111,13 @@ NO_LEVEL = {"", "false", "none", "null"}
 # la empresa tenga más de 5 salarios en todo el mundo"). Spanish rows are a
 # subset of the world's, so a pair with MIN_GLOBAL Spanish rows is never
 # looked up; the others cost one API call each, cached beside the CSV for
-# GLOBAL_DAYS. The same answer gives what the company pays the role outside
-# Spain: a Spanish base above every one of those, given ABROAD_MIN of them,
-# is not a Spanish salary. The API needs a job family; there is no
-# all-roles query.
+# GLOBAL_DAYS. The API needs a job family; there is no all-roles query.
+# Until 2026-11-02 the same answer also screened each Spanish base against
+# the company's salaries abroad; with three or four of those from cheaper
+# countries it dropped real seniors (Stenn, Kiwi.com, Zooplus), so the
+# maintainer removed that rule.
 MIN_GLOBAL = lib.MIN_GLOBAL
 GLOBAL_DAYS = 90
-ABROAD_MIN = lib.ABROAD_MIN
 GLOBAL_CACHE = lib.DATA.parent / "global.json"
 
 
@@ -416,11 +416,10 @@ def _api_headers(bearer: str, referer: str) -> dict:
 
 
 def worldwide(bearer: str, slug: str, role: str, delay: float) -> dict | None:
-    """The company's newest submissions for the role from anywhere.
+    """How many submissions the company has for the role from anywhere.
 
-    {"total": how many there are, "abroad": the USD bases of those outside
-    Spain among the newest TABLE_PAGE}. None when the page could not be
-    read, which judges nothing: the rows are kept and asked about next run.
+    {"total": that count}. None when the page could not be read, which
+    judges nothing: the rows are kept and asked about next run.
     """
     query = urllib.parse.urlencode([
         ("companySlug", slug), ("jobFamilySlug", role), ("offset", 0),
@@ -438,10 +437,7 @@ def worldwide(bearer: str, slug: str, role: str, delay: float) -> dict | None:
     except (json.JSONDecodeError, ValueError, TypeError, KeyError, zlib.error,
             subprocess.CalledProcessError):
         return None
-    abroad = [r["baseSalary"] for r in rows
-              if not in_spain(r.get("location"))
-              and isinstance(r.get("baseSalary"), (int, float)) and r["baseSalary"] > 0]
-    return {"total": max(total, len(rows)), "abroad": abroad}
+    return {"total": max(total, len(rows))}
 
 
 def load_global_cache() -> dict:
@@ -466,32 +462,6 @@ def world_of(bearer: str, cache: dict, slug: str, role: str, delay: float,
         GLOBAL_CACHE.parent.mkdir(parents=True, exist_ok=True)
         GLOBAL_CACHE.write_text(json.dumps(cache, sort_keys=True), encoding="utf-8")
     return found
-
-
-def screen(by_slug: dict, world: dict) -> dict:
-    """Drop the rows the world's submissions say are not Spanish salaries.
-
-    Pure: `world` maps a canonical slug to worldwide()'s answer, or None
-    when it could not be read. A row paid more than every submission from
-    outside Spain, given ABROAD_MIN of them, goes ("implausible"). Whether
-    the company exists at all is judged over every role at once, after the
-    last role is written: prune_unproven().
-    """
-    skipped = {"implausible": 0}
-    for slug in list(by_slug):
-        group = by_slug[slug]
-        if len(group["entries"]) >= MIN_GLOBAL or world.get(slug) is None:
-            continue
-        found = world[slug]
-        if len(found["abroad"]) >= ABROAD_MIN:
-            ceiling = max(found["abroad"])
-            kept = [e for e in group["entries"] if (e.get("_usd") or 0) <= ceiling]
-            skipped["implausible"] += len(group["entries"]) - len(kept)
-            if kept:
-                group["entries"] = kept
-            else:
-                del by_slug[slug]
-    return skipped
 
 
 def world_total(company: dict, cache: dict, today: str) -> int | None:
@@ -753,8 +723,6 @@ def entries_by_company(rows: list[dict], role: str, page_rate, today: str):
             "source_url": f"{BASE}/companies/{record['companySlug']}/salaries/{role}/locations/spain",
             "date": today,
             "notes": None,
-            # The payload's own figure, for screen(): never stored.
-            "_usd": record.get("baseSalary"),
         }
         group = by_slug.setdefault(slug, {"name": None, "slug": record["companySlug"],
                                           "domain": None, "entries": []})
@@ -901,11 +869,11 @@ def main(argv: list[str]) -> int:
             by_slug, skipped = entries_by_company(rows, role,
                                                   (props or {}).get("locationExchangeRate"),
                                                   today)
+            # Asked now, judged by prune_unproven() once every role is in.
             # Audited too: --audit reads everything and writes nothing.
-            world = {slug: world_of(bearer, cache, group["slug"], role, args.delay, today)
-                     for slug, group in by_slug.items()
-                     if len(group["entries"]) < MIN_GLOBAL and spain_rows[slug] < MIN_GLOBAL}
-            skipped.update(screen(by_slug, world))
+            for slug, group in by_slug.items():
+                if len(group["entries"]) < MIN_GLOBAL and spain_rows[slug] < MIN_GLOBAL:
+                    world_of(bearer, cache, group["slug"], role, args.delay, today)
             total = sum(len(group["entries"]) for group in by_slug.values())
             dropped = ", ".join(f"{k} {v}" for k, v in skipped.items() if v)
             print(f"  {role}: {total} entries at {len(by_slug)} companies"

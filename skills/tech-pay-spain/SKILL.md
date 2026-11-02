@@ -43,9 +43,8 @@ server over stdio.
   the lowest-paying employers. Say so when quoting a figure for Spain.
 - A company is listed only with a LinkedIn page or a website and at least 5
   submissions on Levels.fyi from anywhere in the world over every role
-  (`min_global_submissions` in `list_filters`), and a Spanish salary above
-  everything the company pays that role abroad is dropped. A company missing
-  from the data may simply be unreported, not absent from Spain.
+  (`min_global_submissions` in `list_filters`). A company missing from the
+  data may simply be unreported, not absent from Spain.
 - Give the data date and cite "Spanish Top Tech Companies (Levels.fyi data),
   CC BY-SA 4.0".
 - Answer in the user's language. Region names work in Spanish or English

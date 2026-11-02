@@ -40,12 +40,10 @@ MIN_RANKED = 3
 
 # A company the world has not reported is nobody's employer: fewer than
 # MIN_GLOBAL submissions on Levels.fyi anywhere, summed over every role, and
-# its rows are not kept (fetch_spain.prune_unproven). A Spanish base above
-# everything the company pays the role abroad, given ABROAD_MIN of those, is
-# dropped on its own. Here, not in fetch_spain.py, because the site's "how
-# it is calculated" and the MCP instructions quote them.
+# its rows are not kept (fetch_spain.prune_unproven). Here, not in
+# fetch_spain.py, because the site's "how it is calculated" and the MCP
+# instructions quote it.
 MIN_GLOBAL = 5
-ABROAD_MIN = 3
 
 # The CSV is row-level by design. The website, the JSON API and the MCP
 # server publish only aggregates, and an aggregate exists only when at least
