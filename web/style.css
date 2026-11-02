@@ -622,12 +622,19 @@ footer a { color: var(--field-ink); }
   .detail .links { display: grid; }
   #companies th { white-space: normal; line-height: 16px; padding: 8px 6px; }
   #companies td { padding: 12px 6px; }
-  #companies td.chev, #companies th.chev { width: 12px; padding-left: 0; padding-right: 0; }
+  #companies td.chev, #companies th.chev { width: 12px; padding-left: 0; padding-right: 0; text-align: center; }
+  /* The table runs to the card's edges, so an open row is tinted from side to side,
+     and the card's margin moves into its first and last cells, where the turned
+     arrow has room instead of being cut by the scrolling box. */
+  #companies-card .table-wrap { margin: 0 -12px; }
+  #companies tr > :first-child { padding-left: 12px; }
+  #companies tr > :last-child { padding-right: 12px; }
+  #companies td.chev, #companies th.chev { width: 24px; }
   .tile { padding: 18px 12px; }
   .bento { gap: 12px; padding-top: 24px; }
   h2 { font-size: 26px; line-height: 30px; }
   input[type=search] { width: 100%; }
-  tr.det td { padding-left: 6px; }
+  #companies tr.det td { padding-left: 12px; padding-right: 12px; }
   .ybars { width: 100%; }
   .yplot, .yaxis { grid-template-columns: repeat(6, 1fr); }
   .summary { grid-template-columns: 1fr 1fr; }
