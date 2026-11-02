@@ -10,7 +10,7 @@ El ranking de las empresas tecnológicas que mejor pagan en España, con salario
 
 Conecta tu agente de IA y aplica automáticamente a las ofertas de estas empresas sin tocar un formulario. Busca las ofertas, las rellena con tu CV y envía la solicitud en Greenhouse, Lever, Ashby y Workday, las plataformas de empleo que usan muchas empresas tech. También encuentra ofertas en SmartRecruiters, Workable y Recruitee. Te ahorras horas.
 
-Funciona con Claude Code, Codex, Cursor, Grok CLI, Hermes e Instinct, o con cualquier agente que admita MCP.
+Funciona mejor con Instinct y, si no, con Claude Code. También sirven Codex, Cursor, Grok CLI, Hermes o cualquier agente que admita MCP.
 
 1. **Conecta los sueldos.** Añade este servidor MCP a tu agente, sin registro:
 
@@ -55,7 +55,7 @@ The **best-paying tech companies in Spain**, ranked by salary at [spanishtoptech
 
 Connect your AI agent and auto-apply to these companies' openings without filling in a form. It finds the openings, fills them in from your CV and sends the application on Greenhouse, Lever, Ashby and Workday, the job platforms many tech companies use. It also finds openings on SmartRecruiters, Workable and Recruitee. It saves you hours.
 
-Works with Claude Code, Codex, Cursor, Grok CLI, Hermes and Instinct, or any agent that supports MCP.
+Works best with Instinct, or else Claude Code. Codex, Cursor, Grok CLI, Hermes or any agent that supports MCP work too.
 
 1. **Connect the salaries.** Add this MCP server to your agent, no sign-in:
 

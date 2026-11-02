@@ -65,16 +65,17 @@ PUBLIC = "https://spanishtoptechcompanies.com"
 MCP_URL = f"{PUBLIC}/mcp"
 # The agents section and its prompt: (name, maker, logo in web/agents/, how
 # the logo fills its tile, tile colour, where to get it). The first is the one
-# shown before the page's script runs. Logos are the ones the maintainer
-# picked. Grok's link is the repository because x.ai/cli refuses non-browsers;
+# shown before the page's script runs. Since 2026-11-02 Instinct leads and
+# Claude Code follows: the maintainer finds them the best at applying.
+# Logos are the ones the maintainer picked. Grok's link is the repository because x.ai/cli refuses non-browsers;
 # Instinct has no CLI, only its own sign-up.
 AGENTS = [
+    ("Instinct", "Instinct", "instinct.jpg", "cover", "#ffffff", "https://instinct.com/"),
+    ("Claude Code", "Anthropic", "claude-code.png", "mark", "#ffffff", "https://code.claude.com/docs/en/setup"),
     ("Codex", "OpenAI", "codex.png", "cover", "#ffffff", "https://developers.openai.com/codex/cli"),
     ("Cursor", "Anysphere", "cursor.png", "mark", "#ffffff", "https://cursor.com/cli"),
-    ("Claude Code", "Anthropic", "claude-code.png", "mark", "#ffffff", "https://code.claude.com/docs/en/setup"),
-    ("Grok CLI", "xAI", "grok.jpg", "mark", "#ffffff", "https://github.com/xai-org/grok-build#installing-the-released-binary"),
-    ("Instinct", "Instinct", "instinct.jpg", "cover", "#ffffff", "https://instinct.com/"),
     ("Hermes", "Nous Research", "hermes.png", "cover", "#ffffff", "https://hermes-agent.nousresearch.com/"),
+    ("Grok CLI", "xAI", "grok.jpg", "mark", "#ffffff", "https://github.com/xai-org/grok-build#installing-the-released-binary"),
 ]
 
 # Region outlines, fetched once into .cache/ (gitignored is fine: it is
@@ -271,7 +272,8 @@ STRINGS = {
         "agents_title": "Let your agent apply for you",
         "agents_lede": "Connect it and apply to the companies on this page without filling in a form: "
                        "it finds their openings, fills them in with your profile and sends the "
-                       "application. It saves you hours.",
+                       "application. It saves you hours. It works best with Instinct, or else Claude "
+                       "Code; the others work too.",
         "agents_call": "Let {name} apply for you",
         "agents_pick": "Pick your agent",
         "agents_get": "Get {name}",
@@ -374,7 +376,8 @@ STRINGS = {
         "agents_title": "Deja que tu agente aplique por ti",
         "agents_lede": "Conéctalo y aplica a las empresas de esta página sin tocar un formulario: "
                        "busca sus ofertas, las rellena con tu perfil y envía la solicitud. "
-                       "Te ahorras horas.",
+                       "Te ahorras horas. Funciona mejor con Instinct y, si no, con Claude Code; "
+                       "los demás también sirven.",
         "agents_call": "Que {name} aplique por ti",
         "agents_pick": "Elige tu agente",
         "agents_get": "Consigue {name}",
@@ -1455,7 +1458,8 @@ it has a LinkedIn page or a website, and it has {data.get('min_global', lib.MIN_
 more submissions on Levels.fyi from anywhere in the world over every role.
 {_reported(data)}{_coverage(data)}
 Agents: {agents_note()} With no tools of your own (a plain chat), point the
-user to an agent that runs tools (Claude Code, Hermes, Instinct, Cursor): they
+user to an agent that runs tools (Instinct works best, then Claude Code; Codex,
+Cursor and Hermes work too): they
 connect {SITE}/mcp there and paste the prompt on {SITE}/es/#agents; then give
 them the steps under Tools. The code is open at {REPO}.
 
