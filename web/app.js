@@ -15,7 +15,7 @@ const share = (x) => x > 0 && x < 0.001 ? `<${(0.1).toLocaleString(LOCALE)}%`
 
 let D;
 // Filters belong to the companies table only; the charts above it show everyone.
-const state = { role: "", years: [], modes: [], q: "", all: false, sort: "median", asc: false };
+const state = { role: "", years: [], modes: [], loc: "", q: "", all: false, sort: "median", asc: false };
 const MODES = ["remote", "hybrid", "office"];
 const cell = (o = {}) => D.cells[`${o.role || ""}|${o.region || ""}|${o.years || ""}`];
 const regionName = (code) => D.regions[code]?.[LANG] || code;
@@ -62,12 +62,21 @@ const FILTERS = {
     label: () => S.mode_label, active: () => state.modes.length > 0,
     text: () => state.modes.map((m) => S["mode_" + m]).join(", "),
   },
+  loc: { label: () => S.loc_label, active: () => !!state.loc, text: () => placeName(state.loc) },
 };
 let menuOpen = null;
 const expanded = new Set();
 
 const roleTree = () => T[""]?.roles || [];
 const bands = () => T[""]?.bands || D.years;
+// The role's places: regions by salaries, each with its cities as [key, name,
+// salaries, file]. A city whose salaries are all its region's has the
+// region's file.
+const places = () => T[state.role]?.places || [];
+const findCity = (key, from = places()) => from.flatMap((r) => r.cities).find((c) => c[0] === key);
+const placeName = (key) => key.includes("-")
+  ? (findCity(key) || findCity(key, T[""]?.places || []))?.[1] || key : regionName(key);
+const placeFile = () => `${state.role || "all"}~${findCity(state.loc)?.[3] || state.loc}`;
 function roleName(slug) {
   for (const r of roleTree()) {
     if (r.slug === slug) return r.name;
@@ -159,6 +168,19 @@ const MENUS = {
   modes: () => `<ul class="menu" role="listbox" aria-multiselectable="true">` +
     option("", esc(S.any), "any", !state.modes.length) +
     MODES.map((m) => option(m, esc(S["mode_" + m]), "check", state.modes.includes(m))).join("") + `</ul>`,
+  // Like the role menu: regions, and under the arrow the cities of those
+  // that have more than one.
+  loc: () => {
+    const open = (r) => expanded.has("loc:" + r.code) || state.loc.startsWith(r.code + "-");
+    return `<ul class="menu tree" role="listbox">` + option("", esc(S.all_spain), "", !state.loc) +
+      places().map((r) => option(r.code, `<span>${esc(regionName(r.code))}</span>${count(r.n)}`, "role",
+        state.loc === r.code, r.cities.length > 1
+          ? `<button class="twist${open(r) ? " open" : ""}" data-toggle="loc:${r.code}" ` +
+            `aria-label="${esc(regionName(r.code))}" aria-expanded="${open(r)}">›</button>` : "") +
+        (open(r) && r.cities.length > 1 ? r.cities.map(([key, name, n]) =>
+          option(key, `<span>${esc(name)}</span>${count(n)}`, "spec", state.loc === key)).join("") : "")).join("") +
+      `</ul>`;
+  },
 };
 
 // The two handles update the table as they move, without redrawing the panel
@@ -188,8 +210,8 @@ function wireSpan(el) {
 }
 
 async function pick(k, v) {
-  if (k === "role") {
-    state.role = v;
+  if (k === "role" || k === "loc") {
+    state[k] = v;
     menuOpen = null;
   } else if (k === "years") {
     state.years = [];
@@ -204,7 +226,8 @@ async function pick(k, v) {
   saveHash();
   filterBar();
   $("filters").querySelector(`.filter[data-k="${k}"] [data-v="${CSS.escape(v)}"]`)?.focus();
-  await loadTable(state.role);
+  await loadTables();
+  filterBar();
   companies();
 }
 
@@ -213,6 +236,7 @@ function saveHash() {
   if (state.role) h.set("role", state.role);
   if (state.years.length) h.set("years", state.years.join(","));
   if (state.modes.length) h.set("work", state.modes.join(","));
+  if (state.loc) h.set("loc", state.loc);
   history.replaceState(null, "", h.toString() ? "#" + h : location.pathname);
 }
 
@@ -234,7 +258,7 @@ async function applyFilters(patch) {
   menuOpen = null;
   saveHash();
   filterBar();
-  await loadTable(state.role);
+  await loadTables();
   companies();
 }
 
@@ -442,7 +466,7 @@ function matrix() {
 // Everyone under the table's filters, before search: the figures the old
 // experience and distribution cards gave, now for the case the reader picked.
 function summary() {
-  const t = T[state.role], row = t?.summary?.[tkey()];
+  const t = T[state.role], row = at((state.loc ? T[placeFile()] : t)?.summary, tkey());
   const el = $("summary");
   if (!row) { el.innerHTML = `<p class="empty">${esc(S.none)}</p>`; return; }
   const a = Object.fromEntries(t.summary_fields.map((f, i) => [f, row[i]]));
@@ -498,25 +522,41 @@ const iconLink = (url, kind, label) => url
   ? `<a href="${esc(url)}" target="_blank" rel="noopener" title="${label}" aria-label="${label}">${ICONS[kind]}</a>`
   : `<span></span>`;
 
-// One file per role, with every combination of bands and arrangements in it;
-// see company_filters() in site.py.
+// One file per role, with every combination of bands and arrangements in it,
+// and one per role and place ("all~CT", "software-engineer~AN-malaga"), loaded
+// when a place is picked; see company_filters() in site.py.
 const T = {};
-async function loadTable(role) {
-  if (T[role]) return;
+async function loadTable(name) {
+  if (T[name]) return;
   $("companies").innerHTML = `<tr><td class="empty">${esc(S.loading)}</td></tr>`;
-  const r = await fetch(`/api/v1/companies/${role || "all"}.json?v=${window.DATA_V}`);
-  T[role] = r.ok ? await r.json() : { fields: [], cells: {} };
+  const r = await fetch(`/api/v1/companies/${name || "all"}.json?v=${window.DATA_V}`);
+  T[name] = r.ok ? await r.json() : { cells: {}, summary: {}, years: {}, whole: [] };
+  if (T[name].whole) T[name].whole = new Set(T[name].whole);
+}
+// The role's file first: its `places` name the place's file.
+async function loadTables() {
+  await loadTable(state.role);
+  if (state.loc) await loadTable(placeFile());
 }
 // Keys list arrangements in lib.WORK_ARRANGEMENTS order, not the menu's.
 const KEY_MODES = ["office", "hybrid", "remote"];
+const modeKey = () => KEY_MODES.filter((m) => state.modes.includes(m)).join(",");
 const tkey = (o = {}) => {
   const modes = KEY_MODES.filter((m) => (o.modes || state.modes).includes(m));
   return `${modes.join(",")}|${(o.years || state.years).join(",")}`;
 };
+// A key whose value repeats an earlier key's holds that key; see shared().
+const at = (o, k) => { const v = o?.[k]; return typeof v === "string" ? o[v] : v; };
+// A place's file holds rows only for companies that are also elsewhere; the
+// ones whose salaries are all there (`whole`) keep the role file's rows.
 function table(o) {
-  const t = T[state.role];
-  return (t?.cells[tkey(o)] || []).map((row) =>
-    Object.fromEntries(t.fields.map((f, i) => [f, row[i]])));
+  const t = T[state.role], key = tkey(o);
+  let rows = at(t?.cells, key) || [];
+  if (state.loc) {
+    const p = T[placeFile()];
+    rows = p ? rows.filter((r) => p.whole.has(r[0])).concat(at(p.cells, key) || []) : [];
+  }
+  return rows.map((row) => Object.fromEntries(t.fields.map((f, i) => [f, row[i]])));
 }
 
 // A company's own [median, count] per experience band, under the role and
@@ -524,7 +564,8 @@ function table(o) {
 // other figure, a band of one person has its median: see company_years() in
 // site.py.
 const companyYears = (id) => {
-  const per = T[state.role]?.years?.[KEY_MODES.filter((m) => state.modes.includes(m)).join(",")]?.[id];
+  const p = state.loc && T[placeFile()];
+  const per = (p && !p.whole.has(id) ? p : T[state.role])?.years?.[modeKey()]?.[id];
   return bands().map((b, i) => [b, per?.[i] || null]);
 };
 
@@ -795,13 +836,16 @@ async function main() {
   state.role = roleTree().some((r) => r.slug === role || r.specs.some((x) => x.slug === role)) ? role : "";
   // A span is consecutive bands; anything else in the link falls back to any.
   const years = list("years", bands());
-  const at = bands().indexOf(years[0]);
-  const span = years.length && years.every((y, i) => bands()[at + i] === y);
+  const first = bands().indexOf(years[0]);
+  const span = years.length && years.every((y, i) => bands()[first + i] === y);
   state.years = span && years.length < bands().length ? years : [];
   state.modes = list("work", MODES);
   if (state.modes.length === MODES.length) state.modes = [];
-  filterBar();
   await loadTable(state.role);
+  const loc = h.get("loc") || "";
+  state.loc = places().some((r) => r.code === loc || r.cities.some((c) => c[0] === loc)) ? loc : "";
+  filterBar();
+  await loadTables();
   companies();
 }
 main();

@@ -354,6 +354,26 @@ test("a row opens with the mouse and the keyboard", async ({ page }) => {
   await expect(detail).toBeHidden();
 });
 
+test("the location filter narrows the table to a region and a city", async ({ page }) => {
+  await open(page);
+  const pickPlace = async (sel) => {
+    await page.locator('.filter[data-k="loc"] .pick').click();
+    const li = page.locator(`.filter[data-k="loc"] ${sel}`).first();
+    const [name, n] = [await li.locator("span").first().textContent(), await li.locator("small").textContent()];
+    await li.click();
+    await expect(page.locator('.filter[data-k="loc"] .txt')).toHaveText(name);
+    await expect(page.locator("#summary dd").nth(3)).toHaveText(n);
+    await expect(rows(page).first()).toBeVisible();
+  };
+  await pickPlace('li.role[data-v]');
+  await expect(page).toHaveURL(/#loc=[A-Z]{2}$/);
+  await page.locator('.filter[data-k="loc"] .pick').click();
+  await page.locator('.filter[data-k="loc"] .twist').first().click();
+  await page.keyboard.press("Escape");
+  await pickPlace("li.spec");
+  await expect(page).toHaveURL(/#loc=[A-Z]{2}-/);
+});
+
 test("every open row has its experience bars and the 60k line", async ({ page }) => {
   await open(page);
   const n = await rows(page).count();

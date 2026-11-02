@@ -770,6 +770,35 @@ def test_agents_see_only_groups_of_five() -> None:
     check("llms-full.txt renders", "## By region" in site_build.llms_full(data), True)
 
 
+def test_location_files_list_companies_all_there() -> None:
+    """A place's file keeps rows only for companies that are also elsewhere; one
+    whose salaries are all in the place is listed under `whole` and the page
+    takes its rows from the role's file. A city that is all of its region has
+    no file of its own."""
+    print("location files are a lookup on the role's file")
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
+    site_build = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(site_build)
+    madrid = dict(region="MD", city="Madrid")
+    acme_rows = [entry(PER_LOCATION, base=b, **madrid) for b in (70000, 80000, 90000)]
+    beta_url = "https://www.levels.fyi/companies/beta/salaries/software-engineer/locations/spain"
+    beta = lib.blank_company("Beta", levels_slug="beta", levels_status="resolved",
+                             website="https://beta.example") | {"entries": [
+        entry(beta_url, base=60000, **madrid), entry(beta_url, base=64000, **madrid),
+        entry(beta_url, base=99000, region="CT", city="Barcelona")]}
+    with temp_data(acme(*acme_rows, website="https://acme.example"), beta):
+        _, files = site_build.build_site(lib.load_companies())
+    place = files["all~MD"]
+    check("Acme, all in Madrid, is whole", place["whole"], [0])
+    check("Beta keeps its own Madrid row", [r[:3] for r in place["cells"]["|"]], [[1, 2, 62000]])
+    check("Madrid the city is Madrid the region, so it has no file", "all~MD-madrid" in files, False)
+    check("and the menu points it at the region's",
+          [r["cities"] for r in files[""]["places"] if r["code"] == "MD"],
+          [[["MD-madrid", "Madrid", 5, "MD"]]])
+    check("regions by salaries", [r["code"] for r in files[""]["places"]], ["MD", "CT"])
+
+
 def test_companies_table_shows_any_data() -> None:
     """The companies table lists a company with any salary under the filters, and
     its row has a bar for every band someone reported, even one person
@@ -796,8 +825,11 @@ def test_companies_table_shows_any_data() -> None:
         review_md = review.render(lib.load_companies(), limit=1)
     check("one person's band has a rounded median, empty bands none",
           files[""]["years"][""][0], [None, [61000, 1], None, [79000, 4], None, None])
+    cells = files[""]["cells"]
+    # A key whose rows repeat an earlier key's holds that key (site.shared()).
+    at = lambda k: cells[cells[k]] if isinstance(cells[k], str) else cells[k]
     check("the table filtered to that band lists the company with one salary",
-          [r[:3] for r in files[""]["cells"]["|2-4"]], [[0, 1, 61000]])
+          [r[:3] for r in at("|2-4")], [[0, 1, 61000]])
     check("a company with two salaries is listed, after one with three or more whatever the median",
           [r[:3] for r in files[""]["cells"]["|"]], [[0, 5, 75000], [1, 2, 95000]])
     check("but data.json has no group of it",
@@ -867,6 +899,7 @@ def main() -> int:
                  test_median_over_every_engineer,
                  test_agents_see_only_groups_of_five,
                  test_companies_table_shows_any_data,
+                 test_location_files_list_companies_all_there,
                  test_site_dates_and_minimum_base,
                  test_floor_aliases_and_exclusions,
                  test_normalization,
