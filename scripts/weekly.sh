@@ -36,9 +36,15 @@ main() {
   before="$(mktemp)"
   cp "$(python3 -c 'import sys; sys.path.insert(0, "scripts"); import lib; print(lib.DATA)')" "$before"
 
-  python3 scripts/fetch_taxonomy.py
+  # The two HTML readers are extras: Levels.fyi's WAF has answered 405 on
+  # its pages since 2026-11-01 while the API feed still works, and until
+  # 2026-11-02 their failure aborted the run before any salary was read.
+  # The repo's taxonomy and the companies' existing details stand in.
+  python3 scripts/fetch_taxonomy.py \
+    || echo "fetch_taxonomy failed; keeping scripts/taxonomy.py as it is"
   python3 scripts/fetch_spain.py --delay 3.0
-  python3 scripts/fetch_company.py --missing --delay 3.0
+  python3 scripts/fetch_company.py --missing --delay 3.0 \
+    || echo "fetch_company failed; company details stay as they are"
   python3 scripts/fetch_radar.py
   python3 tests/test_pipeline.py
   python3 scripts/validate.py
