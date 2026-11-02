@@ -302,8 +302,11 @@ function hugVeil() {
   const v = document.querySelector(".pitch.veil");
   if (!v) return;
   const box = v.getBoundingClientRect(), h1 = v.querySelector("h1"), r = document.createRange();
+  // The title's lines are measured on the whole column, then the block takes their width.
+  v.style.removeProperty("--title-w");
   r.selectNodeContents(h1);
-  const title = Math.max(...[...r.getClientRects()].map((q) => q.right)) - box.left;
+  const lines = [...r.getClientRects()];
+  const title = Math.max(...lines.map((q) => q.right)) - Math.min(...lines.map((q) => q.left));
   v.style.setProperty("--title-w", `${Math.min(box.width, Math.ceil(title))}px`);
   let right = v.querySelector(".cta").getBoundingClientRect().right;
   for (const el of [h1, v.querySelector(".hero-lede")]) {
@@ -579,7 +582,7 @@ function companies() {
   $("companies").innerHTML = !rows.length ? `<tr><td class="empty">${esc(S.none)}</td></tr>` :
     `<thead><tr><th class="chev"></th><th>${S.col_company}</th>` +
     th("median", S.col_median, S.tip_median, "pay") +
-    `${th("share", S.col_share, S.tip_share)}${th("n", S.col_n, S.tip_n, "num hide-sm")}</tr></thead><tbody>` +
+    `${th("share", S.col_share, S.tip_share)}${th("n", S.col_n, S.tip_n)}</tr></thead><tbody>` +
     shown.map((a) => {
       const c = D.companies[a.c];
       const open = opened.has(a.c);
@@ -590,7 +593,7 @@ function companies() {
         `<span class="links">${companyLinks(c)}</span></div></td>` +
         `<td class="pay"><b>${money(a.median)}</b></td>` +
         `<td class="num">${pct(a.share)}</td>` +
-        `<td class="num hide-sm">${a.n}</td></tr>` +
+        `<td class="num">${a.n}</td></tr>` +
         `<tr class="det"${open ? "" : " hidden"}><td colspan="5">${open ? detail(a) : ""}</td></tr>`;
     }).join("") + `</tbody>`;
   $("companies").querySelectorAll("tr.main").forEach((tr, i) => {
@@ -780,7 +783,8 @@ async function main() {
   starPrompt();
   kpis(); map();
   // Again whenever the column changes width or the method opens, and once the fonts are in.
-  new ResizeObserver(hugVeil).observe(document.querySelector(".pitch"));
+  // After the observer's turn: hugVeil resizes what it observes.
+  new ResizeObserver(() => requestAnimationFrame(hugVeil)).observe(document.querySelector(".pitch"));
   document.fonts.ready.then(hugVeil);
   await loadTable("");
   matrix();
