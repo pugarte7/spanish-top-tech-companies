@@ -8,6 +8,8 @@
 companies.csv is private (lib.DATA), so the repository carries what the site
 publishes instead: data/data.json and data/companies.json, the same files
 served at /api/v1/. --refresh rewrites them; anything else only reads them.
+data/boards.json (each company's job board, for autoapply-mcp) is written by
+autoapply-mcp's preset builder, not by --refresh: see job_boards().
 
 The site publishes aggregates only: every number on it comes from at least
 lib.MIN_GROUP people, quartiles included, and every euro figure
@@ -36,6 +38,7 @@ import re
 import shutil
 import statistics
 import sys
+import unicodedata
 import urllib.request
 
 import lib
@@ -817,6 +820,45 @@ def company_info(company: dict) -> dict:
             "cities": [c for c, _ in cities.most_common(3)]}
 
 
+def board_tag(city: str) -> str:
+    """autoapply-mcp's tag for a city: normalizeForMatch(), spaces as hyphens."""
+    text = "".join(ch for ch in unicodedata.normalize("NFD", city) if not unicodedata.combining(ch))
+    text = re.sub(r"[^a-z0-9+#./'\s-]", " ", text.lower().replace("‘", "'").replace("’", "'"))
+    return re.sub(r"\s+", "-", text.strip())
+
+
+def job_boards(data: dict, tables: dict) -> dict:
+    """/api/v1/boards.json: the companies listed here whose job board is known,
+    in autoapply-mcp's companies.json format, which its load_preset spain reads.
+
+    data/boards.json maps a Levels.fyi slug to its board; autoapply-mcp's
+    preset builder finds them (npm run preset:spain). The tier is the site's
+    own ranking, today's: A when the engineers' median reaches the bar over
+    min_ranked salaries, B at the bar on fewer or above the floor, C below it
+    or with no engineers."""
+    known = json.loads((AGGREGATES / "boards.json").read_text(encoding="utf-8"))
+    engineers = tables.get("software-engineer") or {"fields": [], "cells": {}}
+    col = {f: i for i, f in enumerate(engineers["fields"])}
+    rows = engineers["cells"].get("|") or []
+    rows = engineers["cells"][rows] if isinstance(rows, str) else rows
+    medians = {r[col["c"]]: (r[col["median"]], r[col["n"]]) for r in rows}
+    out = []
+    for i, company in enumerate(data["companies"]):
+        board = known.get(company.get("levels"))
+        if not board:
+            continue
+        median, n = medians.get(i, (None, 0))
+        tier = ("C" if median is None
+                else "A" if median >= data["threshold"] and n >= data["min_ranked"]
+                else "B" if median >= data["company_floor"] else "C")
+        cities = [t for t in map(board_tag, company.get("cities", [])[:3]) if t]
+        out.append({"name": company["name"], "ats": board["ats"], "board": board["board"],
+                    "tier": tier, "tags": list(dict.fromkeys(["spain", *cities])),
+                    **{k: board[k] for k in ("region", "query") if board.get(k)}})
+    return {"version": 1, "data_as_of": data["data_as_of"],
+            "companies": sorted(out, key=lambda e: e["name"].casefold())}
+
+
 # --- Map ---------------------------------------------------------------------
 
 def topojson() -> dict:
@@ -1336,7 +1378,7 @@ def main(argv: list[str]) -> int:
         shutil.rmtree(OUT)
     (OUT / "api" / "v1").mkdir(parents=True)
     data["instructions"] = mcp_instructions(data)
-    files = {"data.json": dump(data)}
+    files = {"data.json": dump(data), "boards.json": dump(job_boards(data, tables))}
     files.update({f"companies/{name or 'all'}.json": dump(t) for name, t in tables.items()})
     # Like asset_version, for the JSON the page fetches: a browser holding
     # yesterday's tables under the same URL would run new code on old fields.
@@ -1493,6 +1535,7 @@ them the steps under Tools. The code is open at {REPO}.
 
 - [All aggregates for agents (markdown)]({SITE}/llms-full.txt): national, per role, region, experience and the best-paying companies
 - [All aggregates (JSON)]({SITE}/api/v1/data.json): `cells["role|region|years"]` (empty part = all) gives n, median, p25, p75 (null under {data['quartile_min']} people), total, share at 60k+; `company_cells` the same per company, `c` indexing `companies`
+- [Job boards (JSON)]({SITE}/api/v1/boards.json): the companies listed here whose job board is known, as autoapply-mcp's companies.json (`ats`, `board`, `tier` A/B/C by the engineers' median, `tags`); its `load_preset` `spain` reads it
 
 ## Tools
 

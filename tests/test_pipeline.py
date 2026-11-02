@@ -817,6 +817,43 @@ def test_location_files_list_companies_all_there() -> None:
     check("regions by salaries", [r["code"] for r in files[""]["places"]], ["MD", "CT"])
 
 
+def test_job_boards_follow_the_ranking() -> None:
+    """/api/v1/boards.json lists the companies with a known board in autoapply-mcp's
+    companies.json format, tiered by today's engineers' median and tagged with
+    their cities the way autoapply-mcp writes tags."""
+    print("boards.json tiers companies by the site's ranking")
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
+    site_build = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(site_build)
+    madrid = dict(region="MD", city="Madrid")
+    beta_url = "https://www.levels.fyi/companies/beta/salaries/software-engineer/locations/spain"
+    beta = lib.blank_company("Beta", levels_slug="beta", levels_status="resolved",
+                             website="https://beta.example") | {"entries": [
+        entry(beta_url, base=99000, **madrid),
+        *(entry(beta_url, base=b, region="GA", city="A Coruña") for b in (50000, 52000))]}
+    gamma_url = "https://www.levels.fyi/companies/gamma/salaries/software-engineer/locations/spain"
+    gamma = lib.blank_company("Gamma", levels_slug="gamma", levels_status="resolved",
+                              website="https://gamma.example") | {"entries": [entry(gamma_url, **madrid)]}
+    with temp_data(acme(*[entry(PER_LOCATION, base=b, **madrid) for b in (70000, 80000, 90000)],
+                        website="https://acme.example"), beta, gamma):
+        data, tables = site_build.build_site(lib.load_companies())
+    with tempfile.TemporaryDirectory() as directory:
+        original, site_build.AGGREGATES = site_build.AGGREGATES, pathlib.Path(directory)
+        (site_build.AGGREGATES / "boards.json").write_text(json.dumps({
+            "acme": {"ats": "greenhouse", "board": "acme"},
+            "beta": {"ats": "lever", "board": "beta", "region": "eu"}}))
+        try:
+            boards = site_build.job_boards(data, tables)
+        finally:
+            site_build.AGGREGATES = original
+    check("one entry per company with a board, as autoapply-mcp writes them", boards["companies"], [
+        {"name": "Acme", "ats": "greenhouse", "board": "acme", "tier": "A", "tags": ["spain", "madrid"]},
+        {"name": "Beta", "ats": "lever", "board": "beta", "tier": "B",
+         "tags": ["spain", "a-coruna", "madrid"], "region": "eu"}])
+    check("in its list format", (boards["version"], boards["data_as_of"]), (1, data["data_as_of"]))
+
+
 def test_companies_table_shows_any_data() -> None:
     """The companies table lists a company with any salary under the filters, and
     its row has a bar for every band someone reported, even one person
@@ -918,6 +955,7 @@ def main() -> int:
                  test_agents_see_only_groups_of_five,
                  test_companies_table_shows_any_data,
                  test_location_files_list_companies_all_there,
+                 test_job_boards_follow_the_ranking,
                  test_site_dates_and_minimum_base,
                  test_floor_aliases_and_exclusions,
                  test_normalization,
