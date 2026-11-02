@@ -294,10 +294,6 @@ STRINGS = {
                        "one message, and remembers. If a form asks for a CAPTCHA, it hands you "
                        "the page: you solve it and it sends the application.",
         "copy": "Copy", "copied": "Copied",
-        "agent_pop_title": "Let your agent apply for you",
-        "agent_pop_text": "Connect {name}: it finds these companies' openings, fills in the forms "
-                          "and sends them. It saves you hours.",
-        "agent_pop_go": "How to do it", "agent_pop_later": "Not now",
         "description": "A ranking of the best-paying tech companies in Spain: median base salary, "
                        "total pay with bonus and stock, and who earns {bar} or more.",
         "noscript_agents": "Without JavaScript the charts and filters do not load. These are "
@@ -401,10 +397,6 @@ STRINGS = {
                        "una vez, todas en un mensaje, y las recuerda. Si un formulario pide un "
                        "CAPTCHA, te pasa la página: lo resuelves y envía la solicitud.",
         "copy": "Copiar", "copied": "Copiado",
-        "agent_pop_title": "Deja que tu agente aplique por ti",
-        "agent_pop_text": "Conecta {name}: busca las ofertas de estas empresas, rellena los "
-                          "formularios y los envía. Te ahorras horas.",
-        "agent_pop_go": "Cómo hacerlo", "agent_pop_later": "Ahora no",
         "description": "Ranking de las empresas tecnológicas que mejor pagan en España: sueldo "
                        "base mediano, total con bonus y acciones, y quién cobra {bar} o más.",
         "noscript_agents": "Sin JavaScript no cargan los gráficos ni los filtros. Estas son "
@@ -1032,21 +1024,6 @@ def noscript_companies(e: dict, data: dict) -> str:
             f'<ul class="noscript-companies">{rows}</ul></noscript>')
 
 
-def agent_pop(e: dict) -> str:
-    name = f'<b class="agent-name">{html.escape(AGENTS[0][0])}</b>'
-    bars = "".join('<i class="on"></i>' if i == 0 else "<i></i>" for i in range(len(AGENTS)))
-    return f"""<aside class="star-pop agent-pop field" id="agent-pop" role="dialog" aria-labelledby="agent-pop-title" hidden>{WALL}
-  <button class="star-x" id="agent-pop-close" type="button" aria-label="{e['star_close']}">×</button>
-  <div class="agent-pop-head">{agent_stack()}<p class="star-title" id="agent-pop-title">{e['agent_pop_title']}</p></div>
-  <p class="star-text">{e['agent_pop_text'].replace('{name}', name)}</p>
-  <span class="agent-bars" aria-hidden="true">{bars}</span>
-  <div class="agent-pop-actions">
-    <a class="agent-pop-go" id="agent-pop-go" href="#agents">{e['agent_pop_go']}</a>
-    <button class="agent-pop-later" id="agent-pop-later" type="button">{e['agent_pop_later']}</button>
-  </div>
-</aside>"""
-
-
 def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     s = strings(lang, data)
     e = {k: html.escape(v) for k, v in s.items()}
@@ -1178,7 +1155,6 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
   <p class="star-text">{e['star_text']}</p>
   <a class="star-btn" id="star-go" href="{REPO}" target="_blank" rel="noopener" aria-label="{e['star_button']}" title="{e['star_button']}">{STAR_ICON}</a>
 </aside>
-{agent_pop(e)}
 <script>window.S={json.dumps(s, ensure_ascii=False)};window.DATA_V="{data_version}";</script>
 <script src="/app.js?v={asset_version("app.js")}"></script>
 </body>

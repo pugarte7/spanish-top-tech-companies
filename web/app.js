@@ -667,50 +667,12 @@ function companies() {
   more.textContent = state.all ? S.show_less : S.show_all.replace("{n}", rows.length);
 }
 
-// --- floating cards -----------------------------------------------------------------
-// The agents prompt and the star prompt share the bottom corner: one at a
-// time, and a card whose turn comes while the other is open waits for it.
-const pops = { open: null, queue: [] };
-
-function openPop(el) {
-  if (pops.open) { if (!pops.queue.includes(el)) pops.queue.push(el); return; }
-  pops.open = el;
-  el.hidden = false;
-  if (el.querySelector(".agent-name")) steadyAgents();
-}
-
-function closePop(el) {
-  el.hidden = true;
-  pops.queue = pops.queue.filter((x) => x !== el);
-  if (pops.open !== el) return;
-  pops.open = null;
-  const next = pops.queue.shift();
-  if (next) setTimeout(() => openPop(next), 2000);
-}
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && pops.open) pops.open.querySelector(".star-x").click();
-});
-
-function remember(key, value) {
-  try {
-    if (value !== undefined) return localStorage.setItem(key, value);
-    return localStorage.getItem(key);
-  } catch { return null; }
-}
-
 // --- agents -------------------------------------------------------------------------
-// The section and its prompt show one agent at a time and turn to the next
-// every few seconds; picking one stops the turn. Nothing turns for readers
+// The section shows one agent at a time and turns to the next every few
+// seconds; picking one stops the turn. Nothing turns for readers
 // who ask for less motion.
 const AGENT_TURN_MS = 3000;
 const STILL = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-// Names differ in length: "Claude Code" wrapped a line the others did not, so
-// the page grew at every turn and the browser scrolled to make up for it.
-// Every box that holds a name keeps the height of its longest one. Set by
-// agents(); run again when the card opens, since a hidden box has no height.
-let steadyAgents = () => {};
 
 function agents() {
   const tabs = [...document.querySelectorAll(".agent-tab")];
@@ -719,16 +681,18 @@ function agents() {
   const name = (k) => names.forEach((n) => { n.textContent = tabs[k].dataset.name; });
   const show = (k) => {
     at = k;
-    document.querySelectorAll(".agent-stack, .agent-bars").forEach((box) =>
-      [...box.children].forEach((el, j) => el.classList.toggle("on", j === k)));
+    document.querySelectorAll(".agent-stack .agent-tile").forEach((el, j) => el.classList.toggle("on", j === k));
     tabs.forEach((t, j) => t.setAttribute("aria-pressed", String(j === k)));
     name(k);
     $("agent-by").textContent = tabs[k].dataset.by;
     $("agent-get").href = tabs[k].dataset.url;
   };
-  steadyAgents = () => {
-    const boxes = [...document.querySelectorAll(".agent-say, .agent-steps p, .agent-pop .star-text")]
-      .filter((b) => b.querySelector(".agent-name") && b.getClientRects().length);
+  // Names differ in length: "Claude Code" wrapped a line the others did not,
+  // so the page grew at every turn and the browser scrolled to make up for
+  // it. Every box that holds a name keeps the height of its longest one.
+  const steady = () => {
+    const boxes = [...document.querySelectorAll(".agent-say, .agent-steps p")]
+      .filter((b) => b.querySelector(".agent-name"));
     boxes.forEach((b) => { b.style.minHeight = ""; });
     const tall = boxes.map(() => 0);
     tabs.forEach((_, k) => {
@@ -738,10 +702,10 @@ function agents() {
     name(at);
     boxes.forEach((b, i) => { b.style.minHeight = `${tall[i]}px`; });
   };
-  steadyAgents();
-  document.fonts.ready.then(steadyAgents);
+  steady();
+  document.fonts.ready.then(steady);
   let width = innerWidth;
-  addEventListener("resize", () => { if (innerWidth !== width) { width = innerWidth; steadyAgents(); } });
+  addEventListener("resize", () => { if (innerWidth !== width) { width = innerWidth; steady(); } });
   tabs.forEach((t, k) => { t.onclick = () => { picked = true; show(k); }; });
   if (!STILL) setInterval(() => { if (!picked && !document.hidden) show((at + 1) % tabs.length); }, AGENT_TURN_MS);
   document.querySelectorAll(".copy-btn").forEach((b) => {
@@ -751,37 +715,6 @@ function agents() {
       setTimeout(() => { b.textContent = S.copy; }, 2000);
     };
   });
-}
-
-// A card that points at the section. "How to do it" takes the reader there
-// and is never shown again; closing it waits a day. Whoever scrolls to the
-// section first does not need it.
-const AGENT_DELAY_MS = 15_000;
-const AGENT_SNOOZE_DAYS = 1;
-const AGENT_KEY = "agent-prompt";
-
-function agentPrompt() {
-  const seen = remember(AGENT_KEY);
-  if (seen === "done" || (seen && Date.now() < +seen)) return;
-  const pop = $("agent-pop"), section = $("agents");
-  const close = (value) => { closePop(pop); remember(AGENT_KEY, value); };
-  const later = () => close(String(Date.now() + AGENT_SNOOZE_DAYS * 864e5));
-  $("agent-pop-close").onclick = later;
-  $("agent-pop-later").onclick = later;
-  // Scrolled, not followed: the page keeps its filters in the hash.
-  $("agent-pop-go").onclick = (e) => {
-    e.preventDefault();
-    close("done");
-    section.scrollIntoView({ behavior: STILL ? "auto" : "smooth", block: "start" });
-    $("agents-title").focus({ preventScroll: true });
-  };
-  let reached = false;
-  if ("IntersectionObserver" in window) {
-    new IntersectionObserver((seen, obs) => {
-      if (seen.some((x) => x.isIntersecting)) { reached = true; obs.disconnect(); }
-    }).observe(section);
-  }
-  setTimeout(() => { if (!reached) openPop(pop); }, AGENT_DELAY_MS);
 }
 
 // --- star prompt ----------------------------------------------------------------
@@ -806,10 +739,11 @@ function starPrompt() {
   const seen = store();
   if (seen === "starred" || (seen && Date.now() < +seen)) return;
   const pop = $("star");
-  const close = (value) => { closePop(pop); store(value); };
+  const close = (value) => { pop.hidden = true; store(value); };
   $("star-go").onclick = () => close("starred");
   $("star-close").onclick = () => close(String(Date.now() + STAR_SNOOZE_DAYS * 864e5));
-  setTimeout(() => openPop(pop), STAR_DELAY_MS);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !pop.hidden) $("star-close").click(); });
+  setTimeout(() => { pop.hidden = false; }, STAR_DELAY_MS);
 }
 
 // --- render -------------------------------------------------------------------
@@ -821,7 +755,6 @@ async function main() {
     { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }));
   wire();
   agents();
-  agentPrompt();
   starPrompt();
   kpis(); map();
   // Again whenever the column changes width or the method opens, and once the fonts are in.

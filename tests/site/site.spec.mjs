@@ -81,7 +81,7 @@ test("header card: the label left, the date top right, three equal figures whose
 test("every blue field is tiled from the one lazo, and text has no tiles behind it", async ({ page }) => {
   await open(page);
   await expect(page.locator("pattern#lazo")).toHaveCount(1);
-  for (const sel of ["header.field", ".agents-stage", "footer", "#star", "#agent-pop"])
+  for (const sel of ["header.field", ".agents-stage", "footer", "#star"])
     await expect(page.locator(`${sel} > .wall rect`), sel).toHaveAttribute("fill", "url(#lazo)");
   // The frieze and a veil of the field's blue behind the banner's, the agents' and the footer's text.
   for (const sel of ["header.field", ".agents-stage", "footer"])
@@ -427,8 +427,6 @@ test("links that leave the page open in a new tab", async ({ page, context }) =>
 test.describe("star prompt", () => {
   test.beforeEach(async ({ page }) => {
     await page.clock.install();
-    // The agents card comes first and would hold the star back.
-    await page.addInitScript(() => localStorage.setItem("agent-prompt", "done"));
   });
   const wait = (page) => page.clock.fastForward(41_000);
 
@@ -528,19 +526,15 @@ test.describe("agents", () => {
     await page.clock.fastForward(10_000);
     await expect(pressed(page)).toHaveAttribute("data-name", "Grok CLI");
     await expect(page.locator("#agent-get")).toHaveAttribute("href", /github\.com\/xai-org\/grok-build/);
-    await expect(page.locator(".agent-stack .agent-tile.on")).toHaveCount(2);
+    await expect(page.locator(".agent-stack .agent-tile.on")).toHaveCount(1);
   });
 
   // "Claude Code" wrapped a line the other names did not, and the page jumped.
   const staysPut = async (page) => {
     await open(page, "/en/");
-    await page.clock.fastForward(16_000);
-    await expect(page.locator("#agent-pop")).toBeVisible();
-    await page.locator("#agent-pop").evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
     const where = () => page.evaluate(() => [
       document.documentElement.scrollHeight,
-      Math.round(document.querySelector(".agent-tabs").getBoundingClientRect().top + scrollY),
-      Math.round(document.querySelector("#agent-pop").getBoundingClientRect().top)]);
+      Math.round(document.querySelector(".agent-tabs").getBoundingClientRect().top + scrollY)]);
     const first = await where();
     for (const tab of await tabs(page).all()) {
       await tab.evaluate((t) => t.click());
@@ -563,47 +557,6 @@ test.describe("agents", () => {
     await page.locator('.copy-btn[data-copy="agent-mcp"]').click();
     await expect(page.locator('.copy-btn[data-copy="agent-mcp"]')).toHaveText("Copiado");
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(MCP);
-  });
-
-  test("the card appears after a while and leads to the section", async ({ page }) => {
-    await open(page);
-    await expect(page.locator("#agent-pop")).toBeHidden();
-    await page.clock.fastForward(16_000);
-    await expect(page.locator("#agent-pop")).toBeVisible();
-    await page.locator("#agent-pop-go").click();
-    await expect(page.locator("#agent-pop")).toBeHidden();
-    await expect(page.locator("#agents-title")).toBeInViewport();
-    await expect(page.locator("#agents-title")).toBeFocused();
-    await page.reload();
-    await expect(rows(page).first()).toBeVisible();
-    await page.clock.fastForward(16_000);
-    await expect(page.locator("#agent-pop")).toBeHidden();
-  });
-
-  test("Not now hides the card until the next day", async ({ page }) => {
-    await open(page);
-    await page.clock.fastForward(16_000);
-    await page.locator("#agent-pop-later").click();
-    await expect(page.locator("#agent-pop")).toBeHidden();
-    await page.reload();
-    await expect(rows(page).first()).toBeVisible();
-    await page.clock.fastForward(16_000);
-    await expect(page.locator("#agent-pop")).toBeHidden();
-    await page.clock.fastForward(24 * 3600_000);
-    await page.reload();
-    await expect(rows(page).first()).toBeVisible();
-    await page.clock.fastForward(16_000);
-    await expect(page.locator("#agent-pop")).toBeVisible();
-  });
-
-  test("the star card waits while the agents card is open", async ({ page }) => {
-    await open(page);
-    await page.clock.fastForward(41_000);
-    await expect(page.locator("#agent-pop")).toBeVisible();
-    await expect(page.locator("#star")).toBeHidden();
-    await page.locator("#agent-pop-close").click();
-    await page.clock.fastForward(2_100);
-    await expect(page.locator("#star")).toBeVisible();
   });
 
   test("the English page asks in English", async ({ page }) => {
