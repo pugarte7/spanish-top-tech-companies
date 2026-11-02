@@ -25,10 +25,11 @@ Every row is checked for its own location ("Barcelona, CT, Spain"), never for
 the currency or the page's scope - a German salary in this list is worse than
 no salary. Rows carry their own exchange rate and the currency their author
 was paid in; a euro row converts back at its own rate to exactly the figure
-the author typed, and anything else goes through the Spain page's
-locationExchangeRate (Smile.io's 105.000 USD once read as 105.000 EUR until
-2026-09-15). Rows whose currency cannot be priced in euros are dropped and
-counted, not guessed.
+the author typed, and anything else converts at the rate of the euro rows
+nearest in month in the same feed (Smile.io's 105.000 USD once read as
+105.000 EUR until 2026-09-15; until 2026-11-02 the rate came from the role's
+public page, which the WAF blocks). Rows whose currency cannot be priced in
+euros are dropped and counted, not guessed.
 
 What a row keeps and what it drops is deliberate: the role, official
 specialization and title slugs, work arrangement, contract type, offer-vs-
@@ -581,36 +582,46 @@ def read_role(bearer: str, role: str, delay: float, companies: list[dict],
     return rows + oldest, read - unread
 
 
-def page_props(body: str) -> dict | None:
-    found = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', body, re.S)
-    if not found:
-        return None
-    try:
-        return json.loads(found.group(1))["props"]["pageProps"]
-    except (KeyError, TypeError, json.JSONDecodeError):
-        return None
+RATE_NEAREST = 5
 
 
-def role_page(role: str, delay: float) -> dict | None:
-    """The public /t/<role>/locations/spain page's props, for the euro rate.
+def euro_rates(rows: list[dict]) -> list[tuple[int, float]]:
+    """(month index, USD-to-EUR rate) of every euro row in a feed, sorted.
 
-    Non-euro rows convert at this page's locationExchangeRate; a page that is
-    not quoting EUR is not about Spain and its rate is unusable, which costs
-    only the rows that have no rate of their own.
+    A euro row's own exchangeRate is the dollar-to-euro rate of the month it
+    was reported (a 2022 row says 1.04, a 2025 one 0.85), which is the rate
+    a dollar or pound row from the same month needs. Until 2026-11-02 that
+    rate came from the role's public page, one HTML request per role that
+    the WAF now blocks; the feed carries it already.
     """
-    try:
-        body = get(f"{BASE}/t/{role}/locations/spain", delay)
-    except Blocked as exc:
-        # The WAF challenges HTML pages while the API still answers (seen
-        # 2026-11-01). Only the rows paid in another currency need this page,
-        # so they are skipped and counted rather than the whole run stopped.
-        print(f"  {role}: public page blocked ({exc}); rows in other currencies "
-              "are skipped this run", file=sys.stderr)
+    found = []
+    for record in rows:
+        rate = record.get("exchangeRate")
+        when = month_index(record.get("offerDate") or record.get("createdAt"))
+        if (record.get("baseSalaryCurrency") == "EUR" and when is not None
+                and isinstance(rate, (int, float)) and 0.5 <= rate <= 1.5):
+            found.append((when, float(rate)))
+    return sorted(found)
+
+
+def rate_near(rates: list[tuple[int, float]], when: int | None) -> float | None:
+    """The median rate of the euro rows nearest in month, or None."""
+    if not rates:
         return None
-    props = page_props(body) if body else None
-    if not props or props.get("locationCurrency") != "EUR":
+    if when is None:
+        when = rates[-1][0]
+    nearest = sorted(rates, key=lambda pair: abs(pair[0] - when))[:RATE_NEAREST]
+    values = sorted(rate for _, rate in nearest)
+    middle = len(values) // 2
+    return values[middle] if len(values) % 2 else (values[middle - 1] + values[middle]) / 2
+
+
+def month_index(raw) -> int | None:
+    month = reported(raw)
+    if not month:
         return None
-    return props
+    year, mm = month.split("-")
+    return int(year) * 12 + int(mm)
 
 
 def eur(amount, rate) -> int | None:
@@ -655,8 +666,12 @@ def _dedupe_key(record: dict):
                 record.get("yearsOfExperience"), record.get("level")))
 
 
-def entries_by_company(rows: list[dict], role: str, page_rate, today: str):
+def entries_by_company(rows: list[dict], role: str, rate, today: str):
     """Feed rows to {canonical slug: {"name": ..., "entries": [...]}}.
+
+    `rate` is the dollar-to-euro rate for rows paid in another currency: a
+    number applies to every one, None takes it from the feed's own euro rows
+    nearest in month (`euro_rates`).
 
     Pure: tests hand it saved rows. Anything that names no employer, sits
     outside Spain, belongs to another family, states no years, or cannot be
@@ -664,6 +679,7 @@ def entries_by_company(rows: list[dict], role: str, page_rate, today: str):
     """
     by_slug: dict[str, dict] = {}
     seen: set = set()
+    rates = euro_rates(rows) if rate is None else None
     skipped = {"foreign": 0, "wrong-family": 0, "no-employer": 0,
                "no-years": 0, "not-euro": 0, "duplicate": 0}
     for record in rows:
@@ -691,12 +707,16 @@ def entries_by_company(rows: list[dict], role: str, page_rate, today: str):
             skipped["no-years"] += 1
             continue
         # A record that names euros converts back at its own rate to exactly
-        # what its author typed; anything else goes through the page's.
-        rate = page_rate
+        # what its author typed; anything else at the euro rows' rate.
+        when = record.get("offerDate") or record.get("createdAt")
         if record.get("baseSalaryCurrency") == "EUR" and record.get("exchangeRate"):
-            rate = record["exchangeRate"]
-        base = eur(record.get("baseSalary"), rate)
-        total = eur(record.get("totalCompensation"), rate)
+            to_eur = record["exchangeRate"]
+        elif rates is not None:
+            to_eur = rate_near(rates, month_index(when))
+        else:
+            to_eur = rate
+        base = eur(record.get("baseSalary"), to_eur)
+        total = eur(record.get("totalCompensation"), to_eur)
         if base is None and total is None:
             skipped["not-euro"] += 1
             continue
@@ -707,8 +727,8 @@ def entries_by_company(rows: list[dict], role: str, page_rate, today: str):
             "role": role,
             "base": base,
             "total": total,
-            "bonus": eur(record.get("avgAnnualBonusValue") or record.get("firstYearBonusValue"), rate),
-            "stock": eur(record.get("avgAnnualStockGrantValue") or record.get("firstYearStockGrantValue"), rate),
+            "bonus": eur(record.get("avgAnnualBonusValue") or record.get("firstYearBonusValue"), to_eur),
+            "stock": eur(record.get("avgAnnualStockGrantValue") or record.get("firstYearStockGrantValue"), to_eur),
             "currency": record.get("baseSalaryCurrency") or None,
             "years_experience": str(experience),
             "level": None if level.lower() in NO_LEVEL else level,
@@ -723,7 +743,7 @@ def entries_by_company(rows: list[dict], role: str, page_rate, today: str):
             "work_arrangement": record.get("workArrangement") or None,
             "employment_type": record.get("employmentType") or None,
             "perspective": record.get("compPerspective") or None,
-            "reported": reported(record.get("offerDate") or record.get("createdAt")),
+            "reported": reported(when),
             "source": "levels.fyi",
             "source_url": f"{BASE}/companies/{record['companySlug']}/salaries/{role}/locations/spain",
             "date": today,
@@ -875,10 +895,7 @@ def main(argv: list[str]) -> int:
                 if not args.audit:
                     write_role(role, {}, only if scope is None else scope)
                 continue
-            props = role_page(role, args.delay)
-            by_slug, skipped = entries_by_company(rows, role,
-                                                  (props or {}).get("locationExchangeRate"),
-                                                  today)
+            by_slug, skipped = entries_by_company(rows, role, None, today)
             # Asked now, judged by prune_unproven() once every role is in.
             # Audited too: --audit reads everything and writes nothing.
             for slug, group in by_slug.items():

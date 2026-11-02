@@ -237,8 +237,8 @@ On `/companies/<slug>/salaries/<role>/locations/spain`:
 
 Since 2026-10-14 none of these feeds the CSV — the signed-in feed (trap 7)
 does, because it covers every role and keeps going past the page's subsets.
-The page is still read once per role for its `locationExchangeRate`, the rate
-for feed rows not paid in euros.
+Since 2026-11-02 the page is not read at all: the rate for feed rows not
+paid in euros comes from the feed's own euro rows.
 
 Every submission names its city, which is the guard that matters: a sample
 outside Spain is skipped whatever page it came from. `locationMeta` is useless
@@ -426,9 +426,16 @@ the two windows' rows (1,685 for 4,665); the full read was repeated by slug.
 
 A feed row carries its own `exchangeRate` and `baseSalaryCurrency`, so euro
 submissions convert back at their own rate to exactly the figure typed, and
-non-euro rows go through the role page's `locationExchangeRate` — which is
-all the public page is still read for. A row in a currency that cannot be
-priced in euros is dropped and counted, never guessed.
+non-euro rows convert at the median `exchangeRate` of the five euro rows
+nearest in month in the same feed (`euro_rates()`, `rate_near()`): a euro
+row's rate is the dollar-to-euro rate of the month it was reported (1.04 in
+2022, 0.85 in 2025), which is what a dollar row from that month needs. Until
+2026-11-02 that rate was the role page's `locationExchangeRate`, one HTML
+request per role; when the WAF started answering 405 on 2026-11-01 the
+run skipped about 230 rows (165 software engineers) and, replacing the role
+wholesale, dropped them from the file. A feed with no euro rows prices
+nothing: a row in a currency that cannot be priced in euros is dropped and
+counted, never guessed.
 
 ## Scripts
 
