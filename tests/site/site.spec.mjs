@@ -91,7 +91,7 @@ test("every blue field is tiled from the one lazo, and text has no tiles behind 
 });
 
 test("the banner's text is square: buttons end with the title, the veil clears both sides alike", async ({ page }) => {
-  for (const [path, width] of [["/es/", 1280], ["/en/", 1600], ["/es/", 800]]) {
+  for (const [path, width] of [["/es/", 1280], ["/en/", 1600], ["/es/", 800], ["/es/", 390]]) {
     await page.setViewportSize({ width, height: 900 });
     await open(page, path);
     await page.evaluate(() => document.fonts.ready);
@@ -104,9 +104,25 @@ test("the banner's text is square: buttons end with the title, the veil clears b
       return { title, lede, buttons, left: -parseFloat(s.left), right: b.right - parseFloat(s.right) - right };
     });
     const at = `${path} at ${width}px: ${JSON.stringify(m)}`;
-    expect(Math.abs(m.buttons - m.title), at).toBeLessThan(1.5);
+    // On a phone the buttons take the whole column and the title is narrower.
+    if (width > 640) expect(Math.abs(m.buttons - m.title), at).toBeLessThan(1.5);
     expect(m.lede, at).toBeLessThanOrEqual(m.buttons + 0.5);
     expect(Math.abs(m.right - m.left), at).toBeLessThan(1);
+    // Every line of the title and of the text is centred on the buttons.
+    const off = await page.locator(".pitch").evaluate((v) => {
+      const cta = v.querySelector(".cta").getBoundingClientRect(), r = document.createRange(), out = [];
+      for (const el of v.querySelectorAll("h1, .hero-lede")) {
+        r.selectNodeContents(el);
+        const by = {};
+        for (const q of r.getClientRects()) {
+          const k = Math.round(q.top / 4);
+          by[k] = [Math.min(by[k]?.[0] ?? Infinity, q.left), Math.max(by[k]?.[1] ?? 0, q.right)];
+        }
+        for (const [l, right] of Object.values(by)) out.push((l - cta.left) - (cta.right - right));
+      }
+      return out;
+    });
+    for (const o of off) expect(Math.abs(o), `${at} line offsets ${off}`).toBeLessThan(1.5);
   }
 });
 
@@ -598,13 +614,38 @@ test("no sideways scroll on a phone @mobile", async ({ page }) => {
 
 test("the companies table fits a phone, links in the open row @mobile", async ({ page }) => {
   await open(page);
-  // The table once scrolled sideways inside its card, hiding the 60k+ column.
+  // The table once scrolled sideways inside its card, hiding the 60k+ column;
+  // later the number of salaries was hidden on phones, and readers missed it.
   const [inner, outer] = await page.locator(".table-wrap").evaluate((el) => [el.scrollWidth, el.clientWidth]);
   expect(inner).toBeLessThanOrEqual(outer);
-  const share = await page.locator('#companies th[data-sort="share"]').boundingBox();
-  expect(share.x + share.width).toBeLessThanOrEqual(await page.evaluate(() => innerWidth));
+  const width = await page.evaluate(() => innerWidth);
+  for (const k of ["share", "n"]) {
+    const th = page.locator(`#companies th[data-sort="${k}"]`);
+    await expect(th).toBeVisible();
+    const box = await th.boundingBox();
+    expect(box.x + box.width).toBeLessThanOrEqual(width);
+  }
+  await expect(rows(page).first().locator("td.num").last()).toHaveText(/^\d+$/);
   await rows(page).first().click();
   await expect(rows(page).first().locator("xpath=following-sibling::tr[1]").locator(".links a").first()).toBeVisible();
+});
+
+test("on a phone the title is centred and the text runs as wide as the buttons @mobile", async ({ page }) => {
+  await open(page);
+  const [lede, cta] = await page.evaluate(() =>
+    [".hero-lede", ".cta"].map((s) => document.querySelector(s).getBoundingClientRect().width));
+  expect(Math.abs(lede - cta)).toBeLessThan(1);
+  const lines = await page.locator(".pitch h1").evaluate((h) => {
+    const r = document.createRange(); r.selectNodeContents(h);
+    const by = {};
+    for (const q of r.getClientRects()) {
+      const k = Math.round(q.top / 4);
+      by[k] = [Math.min(by[k]?.[0] ?? Infinity, q.left), Math.max(by[k]?.[1] ?? 0, q.right)];
+    }
+    return Object.values(by).map(([l, right]) => [l, innerWidth - right]);
+  });
+  expect(lines.length).toBeGreaterThan(1);
+  for (const [left, right] of lines) expect(Math.abs(left - right), JSON.stringify(lines)).toBeLessThan(1.5);
 });
 
 test("filter menus stay on a phone's screen @mobile", async ({ page }) => {

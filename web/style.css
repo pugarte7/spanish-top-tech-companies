@@ -172,7 +172,10 @@ h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-s
      text-wrap: balance; }
 /* The text and the buttons end where the title's longest line does (--title-w, from
    app.js's hugVeil), so the block is square and no letter sticks out past the rest;
-   never under 300px, which the pair of buttons needs for its labels. */
+   never under 300px, which the pair of buttons needs for its labels. The title and
+   the text are centred in that block. */
+.pitch h1 { max-width: max(300px, var(--title-w, 100%)); text-align: center; }
+.hero-lede { text-align: center; }
 .hero-lede { margin: 0; max-width: max(300px, var(--title-w, 44ch)); font-size: 17px; line-height: 26px; color: var(--field-soft); }
 .hero-lede b { font-weight: 600; color: var(--field-ink); }
 /* Two equal columns: the wide buttons span both, the pair takes one each, so
@@ -602,7 +605,9 @@ footer a { color: var(--field-ink); }
   .brand .emblem { width: 18px; height: 18px; }
   .topbar-end { gap: 2px; flex: none; }
   .pitch { gap: 18px; }
-  .hero-lede { font-size: 16px; line-height: 24px; }
+  /* On a phone the title and the text are centred on the whole column, as wide as the buttons. */
+  .pitch h1 { max-width: none; }
+  .hero-lede { max-width: none; font-size: 16px; line-height: 24px; }
   .cta { width: 100%; }
   .btn { padding: 0 12px; }
   .hero-card { padding: 18px 16px 16px; }
@@ -611,7 +616,8 @@ footer a { color: var(--field-ink); }
   .hero-stats dd { font-size: 24px; line-height: 28px; }
   .hero-stats dt { font-size: 12px; line-height: 16px; }
   /* The companies table fits a phone: the links move into the open row and
-     headings wrap, so the median and the 60k+ share stay on screen. */
+     headings wrap, so the median, the 60k+ share and the number of salaries stay
+     on screen; anything wider scrolls inside the card. */
   td.co .co-in > .links { display: none; }
   .detail .links { display: grid; }
   #companies th { white-space: normal; line-height: 16px; padding: 8px 6px; }
@@ -624,7 +630,6 @@ footer a { color: var(--field-ink); }
   tr.det td { padding-left: 6px; }
   .ybars { width: 100%; }
   .yplot, .yaxis { grid-template-columns: repeat(6, 1fr); }
-  .hide-sm { display: none; }
   .summary { grid-template-columns: 1fr 1fr; }
   .filter-row { flex-wrap: wrap; }
   .star-pop { width: auto; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
