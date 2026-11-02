@@ -71,6 +71,7 @@ EXCLUDED_SLUGS = {
     "abracadabra": "nobody could say what company this is",
     "data-native-systems-sl": "nobody could say what company this is",
     "freelancer": "self-employed, not a company",
+    "fintech": "not a real company, per the maintainer",
     "openbank": "removed by the maintainer",
     "samsung-zhilabs": "removed by the maintainer",
 }
