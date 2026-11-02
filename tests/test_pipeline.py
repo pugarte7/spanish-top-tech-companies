@@ -774,7 +774,7 @@ def test_agents_see_only_groups_of_five() -> None:
 
     check("Madrid's ten: median and quartiles, rounded to 1,000",
           quartiles("MD"), [66000, 52000, 81000])
-    check("Valencia's five: a rounded median, no quartiles", quartiles("VC"), [70000, None, None])
+    check("Valencia's five: median and quartiles too", quartiles("VC"), [70000, 61000, 83000])
     check("Barcelona's four give nothing", data["cells"].get("|CT|"), None)
     published = list(data["cells"].values()) + [a for v in data["company_cells"].values() for a in v]
     check("no published group under five", min(a["n"] for a in published), 5)

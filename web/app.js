@@ -613,6 +613,10 @@ function companies() {
   // column: its "median" is one person's pay. Ascending is the exact reverse.
   // 3 until a refresh writes min_ranked into data.json.
   const thin = (a) => a.n < (D.min_ranked || 3);
+  // One salary in Spain, whatever the filters: the figure is one person's pay,
+  // starred, and the note under the table says so. A big company down to one
+  // salary under a filter is not starred; the note would be untrue of it.
+  const single = (a) => D.companies[a.c].n === 1;
   const rows = (q ? all.filter((a) => D.companies[a.c].name.toLowerCase().includes(q)) : all)
     .slice().sort((x, y) => (state.asc ? -1 : 1) *
       (thin(x) - thin(y) || by(y) - by(x) || y.median - x.median));
@@ -633,11 +637,12 @@ function companies() {
         `<td class="co"><div class="co-in"><div><span class="name">${esc(c.name)}</span>` +
         `<span class="cities">${esc(c.cities.join(", "))}</span></div>` +
         `<span class="links">${companyLinks(c)}</span></div></td>` +
-        `<td class="pay"><b>${money(a.median)}</b></td>` +
+        `<td class="pay${single(a) ? " one" : ""}"><b>${money(a.median)}</b>${single(a) ? "<sup>*</sup>" : ""}</td>` +
         `<td class="num">${pct(a.share)}</td>` +
         `<td class="num">${a.n}</td></tr>` +
         `<tr class="det"${open ? "" : " hidden"}><td colspan="5">${open ? detail(a) : ""}</td></tr>`;
     }).join("") + `</tbody>`;
+  $("one-note").hidden = !shown.some(single);
   $("companies").querySelectorAll("tr.main").forEach((tr, i) => {
     tr.onkeydown = (e) => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tr.click(); }

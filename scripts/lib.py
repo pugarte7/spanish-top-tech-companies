@@ -50,11 +50,13 @@ MIN_GLOBAL = 5
 # MIN_GROUP people contribute to the cell - a city × role × arrangement group
 # of one or two names a person. Three was not enough: with three people the
 # median and the quartiles give back all three salaries (x0 = 2·p25 - median),
-# which was true of every three-person group the site published. So quartiles
-# need QUARTILE_MIN people, and every euro figure is rounded to ROUND_EUR.
-# The companies table is the one exception: see site.company_filters().
+# which was true of every three-person group the site published. Quartiles
+# needed ten until 2026-11-02, when the maintainer chose one minimum for every
+# figure the site shows; with five, p25, the median and p75 are the second,
+# third and fourth salaries. Every euro figure is rounded to ROUND_EUR. The
+# companies table is the one exception: see site.company_filters().
 MIN_GROUP = 5
-QUARTILE_MIN = 10
+QUARTILE_MIN = MIN_GROUP
 ROUND_EUR = 1_000
 
 # Two Levels.fyi slugs, one employer. The alias's page and table are read

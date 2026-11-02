@@ -429,6 +429,13 @@ tr.main:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
 tr.open .chev span { transform: rotate(90deg); }
 tr.open td { border-bottom-color: transparent; background: var(--tint); }
 td.pay b { font-weight: 700; }
+/* A figure from one salary in Spain: quieter, and starred for the note under
+   the table. The star hangs in the padding, so the figures stay aligned. */
+td.pay.one b { font-weight: 500; color: var(--muted); }
+td.pay sup, .one-note sup { font-size: 11px; line-height: 0; font-weight: 600; color: var(--hue); }
+td.pay sup { position: absolute; margin: 2px 0 0 1px; }
+.one-note { margin: 14px 0 0; max-width: 72ch; font-size: 12px; line-height: 16px; color: var(--muted); }
+.one-note sup { margin-right: 4px; }
 tr.det td { background: var(--tint); padding: 8px 12px 24px 48px; }
 .detail { display: flex; flex-wrap: wrap; gap: 20px 40px; align-items: end; }
 /* Room on the right for the 60k label. */

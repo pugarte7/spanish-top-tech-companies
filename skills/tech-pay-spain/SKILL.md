@@ -9,8 +9,8 @@ metadata:
 # Spanish Top Tech Companies
 
 Medians of yearly gross salaries in euros of people working in Spain, from
-Levels.fyi submissions. Every figure comes from 5 or more people, the middle
-half from 10, and euro figures are rounded to the nearest 1,000.
+Levels.fyi submissions. Every figure, the middle half included, comes from 5
+or more people, and euro figures are rounded to the nearest 1,000.
 
 ## Getting the numbers
 

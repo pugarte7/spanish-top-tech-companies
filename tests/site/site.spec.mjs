@@ -319,6 +319,29 @@ test("companies under three salaries come after the rest", async ({ page }) => {
   expect(ns.slice(thin).every((n) => n < 3)).toBe(true);
 });
 
+test("a company with one salary in Spain is starred, and the note under the table says why", async ({ page }) => {
+  const table = async () => page.locator("#companies tr.main").evaluateAll((trs) => trs.map((tr) =>
+    ({ n: Number(tr.lastElementChild.textContent), star: !!tr.querySelector("td.pay sup") })));
+  await open(page);
+  // The first rows all have three salaries or more: nothing starred, no note.
+  await expect(page.locator("#companies td.pay sup")).toHaveCount(0);
+  await expect(page.locator("#one-note")).toBeHidden();
+  await page.locator("#more").click();
+  const all = await table();
+  expect(all.some((r) => r.star)).toBe(true);
+  expect(all.every((r) => r.star === (r.n === 1))).toBe(true);
+  await expect(page.locator("#one-note")).toBeVisible();
+  await expect(page.locator("#one-note")).toContainText("un solo salario en España");
+  // Under a role, a company down to one salary but with more in Spain is not starred.
+  await page.goto("about:blank");
+  await open(page, "/es/#role=product-manager");
+  await expect(filter(page, "role").locator(".txt")).toHaveText("Product Manager");
+  await page.locator("#more").click();
+  const pm = await table();
+  expect(pm.filter((r) => r.star).every((r) => r.n === 1)).toBe(true);
+  expect(pm.some((r) => r.n === 1 && !r.star)).toBe(true);
+});
+
 test("clicking a column sorts it, again reverses it", async ({ page }) => {
   await open(page);
   const th = page.locator('#companies th[data-sort="n"]');
