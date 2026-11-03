@@ -1,0 +1,35 @@
+// Vercel Function: /api/v1/boards.json (vercel.json rewrites it here), the list
+// autoapply-mcp's load_preset spain downloads. The list itself is the static
+// /api/v1/boards-list.json that scripts/site.py writes; this serves it and counts
+// the download, the one signal of autoapply-mcp being used, since it runs on each
+// person's machine and sends nothing else. The version comes from its User-Agent:
+// "autoapply-mcp/0.1" is every release up to 0.3.2, which all said 0.1.
+
+import { after, capture, cut, event, origin } from "./_track.js";
+
+const CLIENT = /^autoapply-mcp\/([0-9A-Za-z.+-]{1,32})/;
+
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+    const list = await fetch(new URL("/api/v1/boards-list.json", url));
+    if (request.method === "GET") {
+      const headers = Object.fromEntries(request.headers);
+      const agent = headers["user-agent"] ?? "";
+      const found = CLIENT.exec(agent);
+      await after(capture([event("boards_download", {
+        client: found ? "autoapply-mcp" : "other",
+        autoapply_version: found?.[1],
+        user_agent: cut(agent),
+        ok: list.ok,
+        ...origin(headers),
+      })]));
+    }
+    // Clients may keep it five minutes; the CDN keeps none, or downloads go uncounted.
+    return new Response(request.method === "HEAD" ? null : list.body, {
+      status: list.status,
+      headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=300",
+                 "Access-Control-Allow-Origin": "*" },
+    });
+  },
+};

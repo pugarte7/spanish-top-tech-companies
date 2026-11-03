@@ -33,6 +33,9 @@ main() {
   # -B also moves a clone left on another branch.
   git checkout -q -f -B "$BRANCH" "origin/$BRANCH"
 
+  # npm and GitHub counters into the private usage.csv; GitHub keeps 14 days.
+  python3 scripts/usage.py || echo "usage failed; usage.csv keeps what it had"
+
   before="$(mktemp)"
   cp "$(python3 -c 'import sys; sys.path.insert(0, "scripts"); import lib; print(lib.DATA)')" "$before"
 
