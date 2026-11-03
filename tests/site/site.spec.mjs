@@ -517,6 +517,33 @@ test("tapping a region on the map filters the table by it @mobile", async ({ pag
   await expect(rows(page).first()).toBeVisible();
 });
 
+test("an empty table says no luck and offers a way out of each filter", async ({ page }) => {
+  await open(page);
+  // A role with few salaries, and a region on the map where it has none.
+  const role = "ux-researcher";
+  const places = (await (await page.request.get(`/api/v1/companies/${role}.json`)).json()).places.map((r) => r.code);
+  const mapped = await page.locator("#map .region.has").evaluateAll((ps) => ps.map((p) => p.dataset.code));
+  const region = mapped.find((c) => !places.includes(c));
+  expect(region, "a mapped region without ux researchers").toBeTruthy();
+  await filter(page, "role").locator(".pick").click();
+  await filter(page, "role").locator(`[data-v="${role}"]`).first().click();
+  await expect(page).toHaveURL(new RegExp(`#role=${role}$`));
+  await expect(rows(page).first()).toBeVisible();
+  await page.locator(`#map .region.has[data-code="${region}"]`).click();
+  await expect(page.locator("#companies .empty-title")).toHaveText("Vaya, no ha habido suerte.");
+  await expect(page.locator("#companies .empty-ways button")).toHaveText(["Todos los roles", "Toda España"]);
+  await expect(page.locator("#summary"), "the table's message is enough").toBeHidden();
+  await page.locator("#companies .empty-ways button", { hasText: "Todos los roles" }).click();
+  await expect(rows(page).first()).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`#loc=${region}$`));
+  // A search that hides every company offers to clear it.
+  await page.locator("#search").fill("zzzz");
+  await expect(page.locator("#companies")).toContainText("Ninguna empresa coincide con «zzzz»");
+  await page.locator("#companies .empty-ways button").click();
+  await expect(page.locator("#search")).toHaveValue("");
+  await expect(rows(page).first()).toBeVisible();
+});
+
 test("a table that cannot load says so, and the retry brings it", async ({ page }) => {
   await open(page);
   let cut = true;
