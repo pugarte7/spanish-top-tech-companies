@@ -21,6 +21,7 @@
   --display: "Antonio", "Arial Narrow", sans-serif;
   --field: #0000f2; --field-deep: #0000d0; --field-ink: #f2f2f2; --field-muted: #c8c8f8;
   --field-soft: #dcdcfa; --field-line: rgba(242, 242, 242, .3); --field-rule: rgba(242, 242, 242, .2);
+  --field-bright: #ffffff; --frieze: #f2f2f2;
   --ground: #f0f0f0;
   --surface: #fafafa;
   --raised: #e3e3ff;
@@ -51,26 +52,38 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --field: #0000c0; --field-deep: #00009c; --field-line: rgba(242, 242, 242, .28);
-    --ground: #05051c; --surface: #0b0b28; --raised: #1c1c4a; --raised-hover: #26265e; --tint: #10103a;
-    --border: #3a3ad8; --rule: #1a1a40; --control: #4a4a90;
-    --text: #ececff; --muted: #a6a6ee; --hue: #8c8cff; --quiet: #5a5a7e; --empty: #121236;
-    --s1: #1a1a3a; --s2: #2a2a55; --s3: #2e2ec8; --s4: #5c5cff; --s5: #a8a8ff;
-    --s1-ink: #ececff; --s2-ink: #ececff; --s3-ink: #ffffff; --s4-ink: #ffffff; --s5-ink: #05051c;
-    --c1: #1a1a3a; --c2: #23236a; --c3: #2e2ec8; --c4: #5c5cff; --c5: #a8a8ff;
-    --float: 0 8px 24px rgba(0, 0, 0, .6);
+    /* Tinta azul: the light theme's mirror. By day blue ink on white paper; by
+       night pale blue ink on black, the field black too and the lacería drawn
+       in blue lines, the cards keeping their blue edges. */
+    --field: #000000; --field-deep: #000000; --field-ink: #b8b8ff; --field-muted: #8a8ae8;
+    --field-soft: #9c9cf0; --field-line: rgba(77, 77, 255, .45); --field-rule: rgba(77, 77, 255, .35);
+    --field-bright: #e6e6ff; --frieze: #6b6bff;
+    --tile-line: rgba(77, 77, 255, .55); --tile-tint: transparent;
+    --ground: #000000; --surface: #050508; --raised: #10102a; --raised-hover: #1a1a40; --tint: #0a0a1e;
+    --border: #4d4dff; --rule: #15153a; --control: #33339a;
+    --text: #b8b8ff; --muted: #7676d8; --hue: #b8b8ff; --quiet: #2e2e5e; --empty: #0c0c1c;
+    --s1: #0e0e22; --s2: #1a1a3c; --s3: #2b2bb0; --s4: #5a5aff; --s5: #b8b8ff;
+    --s1-ink: #8a8ae6; --s2-ink: #a0a0f0; --s3-ink: #e8e8ff; --s4-ink: #ffffff; --s5-ink: #000000;
+    --c1: #0e0e22; --c2: #1a1a50; --c3: #2b2bb0; --c4: #5a5aff; --c5: #b8b8ff;
+    --float: 0 8px 24px rgba(0, 0, 0, .7);
   }
 }
 :root[data-theme="dark"] {
-  color-scheme: dark;
-  --field: #0000c0; --field-deep: #00009c; --field-line: rgba(242, 242, 242, .28);
-  --ground: #05051c; --surface: #0b0b28; --raised: #1c1c4a; --raised-hover: #26265e; --tint: #10103a;
-  --border: #3a3ad8; --rule: #1a1a40; --control: #4a4a90;
-  --text: #ececff; --muted: #a6a6ee; --hue: #8c8cff; --quiet: #5a5a7e; --empty: #121236;
-  --s1: #1a1a3a; --s2: #2a2a55; --s3: #2e2ec8; --s4: #5c5cff; --s5: #a8a8ff;
-  --s1-ink: #ececff; --s2-ink: #ececff; --s3-ink: #ffffff; --s4-ink: #ffffff; --s5-ink: #05051c;
-  --c1: #1a1a3a; --c2: #23236a; --c3: #2e2ec8; --c4: #5c5cff; --c5: #a8a8ff;
-  --float: 0 8px 24px rgba(0, 0, 0, .6);
+    color-scheme: dark;
+    /* Tinta azul: the light theme's mirror. By day blue ink on white paper; by
+       night pale blue ink on black, the field black too and the lacería drawn
+       in blue lines, the cards keeping their blue edges. */
+    --field: #000000; --field-deep: #000000; --field-ink: #b8b8ff; --field-muted: #8a8ae8;
+    --field-soft: #9c9cf0; --field-line: rgba(77, 77, 255, .45); --field-rule: rgba(77, 77, 255, .35);
+    --field-bright: #e6e6ff; --frieze: #6b6bff;
+    --tile-line: rgba(77, 77, 255, .55); --tile-tint: transparent;
+    --ground: #000000; --surface: #050508; --raised: #10102a; --raised-hover: #1a1a40; --tint: #0a0a1e;
+    --border: #4d4dff; --rule: #15153a; --control: #33339a;
+    --text: #b8b8ff; --muted: #7676d8; --hue: #b8b8ff; --quiet: #2e2e5e; --empty: #0c0c1c;
+    --s1: #0e0e22; --s2: #1a1a3c; --s3: #2b2bb0; --s4: #5a5aff; --s5: #b8b8ff;
+    --s1-ink: #8a8ae6; --s2-ink: #a0a0f0; --s3-ink: #e8e8ff; --s4-ink: #ffffff; --s5-ink: #000000;
+    --c1: #0e0e22; --c2: #1a1a50; --c3: #2b2bb0; --c4: #5a5aff; --c5: #b8b8ff;
+    --float: 0 8px 24px rgba(0, 0, 0, .7);
 }
 * { box-sizing: border-box; }
 /* Rules like .more { display: block } would otherwise beat the hidden attribute. */
@@ -108,15 +121,16 @@ button, select, input { font: inherit; color: inherit; }
    it, and the tiles a little under the frieze. */
 .tiled::after { content: ""; position: absolute; left: 0; right: 0; top: var(--frieze-top); height: 22px;
                 z-index: 1; pointer-events: none;
-                background: url("/cenefa.svg") 0 0 / 28px 22px repeat-x var(--field); }
+                background: var(--frieze);
+                -webkit-mask: url("/cenefa.svg") 0 0 / 28px 22px repeat-x; mask: url("/cenefa.svg") 0 0 / 28px 22px repeat-x; }
 .tiled > .wall { top: var(--tiles-top); }
 /* No tiles behind text: a veil of the field's own blue, its edges feathered
    into the tiles by a shadow of the same colour. */
 .veil { position: relative; z-index: 1; }
 .veil::before { content: ""; position: absolute; z-index: -1; inset: -20px -28px; border-radius: 28px;
                 background: var(--field); box-shadow: 0 0 44px 26px var(--field); pointer-events: none; }
-.field a { text-decoration-color: rgba(242, 242, 242, .55); }
-.field a:hover { color: #ffffff; text-decoration-color: currentColor; }
+.field a { text-decoration-color: color-mix(in srgb, var(--field-ink) 55%, transparent); }
+.field a:hover { color: var(--field-bright); text-decoration-color: currentColor; }
 .field :focus-visible, .topbar :focus-visible { outline-color: var(--field-ink); }
 
 /* Not ".bar": the map ranking draws its bars with that class and would turn sticky too.
@@ -133,7 +147,7 @@ button, select, input { font: inherit; color: inherit; }
             border-radius: var(--radius-control); background: none; color: var(--muted); cursor: pointer; }
 .icon-btn:hover { background: var(--raised); color: var(--text); }
 .topbar .icon-btn { color: var(--field-ink); }
-.topbar .icon-btn:hover { background: rgba(242, 242, 242, .16); color: #ffffff; }
+.topbar .icon-btn:hover { background: color-mix(in srgb, var(--field-ink) 16%, transparent); color: var(--field-bright); }
 .icon-btn svg { width: 16px; height: 16px; }
 .icon-btn .sun { display: none; }
 :root[data-theme="dark"] .icon-btn .sun { display: block; }
@@ -154,9 +168,9 @@ button, select, input { font: inherit; color: inherit; }
 /* The map's two views get buttons of one width, whichever label is longer. */
 #map-metric { display: inline-grid; grid-template-columns: 1fr 1fr; }
 .seg a.on, .seg button[aria-pressed=true] { background: var(--text); color: var(--surface); }
-.topbar .seg { background: none; border: 1px solid rgba(242, 242, 242, .4); }
+.topbar .seg { background: none; border: 1px solid color-mix(in srgb, var(--field-ink) 40%, transparent); }
 .topbar .seg a { height: 26px; color: var(--field-ink); font: 500 13px/1 var(--display); letter-spacing: .12em; }
-.topbar .seg a:hover { color: #ffffff; }
+.topbar .seg a:hover { color: var(--field-bright); }
 .topbar .seg a.on { background: var(--field-ink); color: var(--field); font-weight: 600; }
 
 /* Header: a tiled field, the tiles hidden only behind the text. The text and
@@ -188,9 +202,9 @@ h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-s
        font: 500 15px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; }
 .btn .down { width: 12px; height: 12px; flex: none; }
 .cta .btn.main { background: var(--field-ink); color: var(--field); font-weight: 600; }
-.cta .btn.main:hover { background: #ffffff; color: var(--field); }
-.cta .btn.alt { border: 1px solid rgba(242, 242, 242, .62); color: var(--field-ink); }
-.cta .btn.alt:hover { background: rgba(242, 242, 242, .14); border-color: var(--field-ink); color: #ffffff; }
+.cta .btn.main:hover { background: var(--field-bright); color: var(--field); }
+.cta .btn.alt { border: 1px solid color-mix(in srgb, var(--field-ink) 62%, transparent); color: var(--field-ink); }
+.cta .btn.alt:hover { background: color-mix(in srgb, var(--field-ink) 14%, transparent); border-color: var(--field-ink); color: var(--field-bright); }
 .how summary { list-style: none; }
 .how summary::-webkit-details-marker { display: none; }
 .how summary::after { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 0 3px;
@@ -200,7 +214,7 @@ h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-s
 .steps { margin: 10px 0 0; padding: 18px 20px 18px 38px; display: grid; gap: 10px;
          background: var(--field-deep); border: 1px solid var(--field-line); border-radius: var(--radius-card);
          color: var(--field-soft); }
-.steps b { color: #ffffff; font-weight: 600; }
+.steps b { color: var(--field-bright); font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .how summary::after { transition: none; } }
 
 /* The card: a plain surface on the tiles, nothing drawn behind its text. */
@@ -500,16 +514,16 @@ footer a { color: var(--field-ink); }
 /* The card is small and nearly all text, so its tiles are lighter. */
 .star-pop > .wall { opacity: .55; }
 @keyframes star-in { from { opacity: 0; transform: translateY(12px); } }
-.star-title { margin: 0 28px 6px 0; font: 300 28px/32px var(--display); color: #ffffff; }
+.star-title { margin: 0 28px 6px 0; font: 300 28px/32px var(--display); color: var(--field-bright); }
 .star-text { margin: 0 0 16px; color: var(--field-soft); }
 /* The one action: a flat light square with GitHub's star in the field's blue. */
 .star-btn { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto;
             border-radius: var(--radius-control); background: var(--field-ink); color: var(--field); }
-.star-btn:hover { background: #ffffff; }
+.star-btn:hover { background: var(--field-bright); }
 .star-btn svg { width: 24px; height: 24px; }
 .star-x { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: 0; border-radius: 2px;
           background: none; color: var(--field-muted); font-size: 20px; line-height: 1; cursor: pointer; }
-.star-x:hover { background: rgba(242, 242, 242, .16); color: #ffffff; }
+.star-x:hover { background: color-mix(in srgb, var(--field-ink) 16%, transparent); color: var(--field-bright); }
 @media (prefers-reduced-motion: reduce) { .star-pop { animation: none; } }
 
 /* Agents: the section after the companies, and a card like the star prompt
@@ -536,12 +550,12 @@ footer a { color: var(--field-ink); }
 .agent-say::before { inset: -12px -18px; box-shadow: 0 0 32px 18px var(--field); }
 /* The logo and the tabs sit over the veil, so its feathered edge never dims them. */
 .agents-stage .agent-stack, .agent-tabs { position: relative; z-index: 2; }
-.agent-call { margin: 0; font: 200 40px/1.08 var(--display); color: #ffffff; }
+.agent-call { margin: 0; font: 200 40px/1.08 var(--display); color: var(--field-bright); }
 .agent-by { margin: 6px 0 0; color: var(--field-muted); }
 .agent-get { display: inline-flex; align-items: center; gap: 6px; height: 40px; margin-top: 16px; padding: 0 16px;
   border-radius: var(--radius-control); background: var(--field-ink); color: var(--field); text-decoration: none;
   font: 500 14px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; }
-.agent-get:hover { background: #ffffff; }
+.agent-get:hover { background: var(--field-bright); }
 .agent-get .out { width: 12px; height: 12px; flex: none; }
 /* Six 40px tabs fit one row of the 292px a narrow stage leaves. */
 .agent-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
