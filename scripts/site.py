@@ -1115,6 +1115,48 @@ def noscript_companies(e: dict, data: dict) -> str:
             f'<ul class="noscript-companies">{rows}</ul></noscript>')
 
 
+ICON_LINKS = ('<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'
+              '<link rel="icon" href="/favicon.ico" sizes="32x32">\n'
+              '<link rel="apple-touch-icon" href="/apple-touch-icon.png">')
+
+
+def share_meta(lang: str, title: str) -> str:
+    """What Slack, WhatsApp, LinkedIn and X show for a pasted link: a large
+    image needs an absolute URL, so it is written against PUBLIC."""
+    image = f"{PUBLIC}/og-{lang}.png"
+    return (f'<meta property="og:url" content="{PUBLIC}/{lang}/">\n'
+            f'<meta property="og:image" content="{image}">\n'
+            '<meta property="og:image:width" content="1200">\n'
+            '<meta property="og:image:height" content="630">\n'
+            f'<meta property="og:image:alt" content="{html.escape(title)}">\n'
+            '<meta name="twitter:card" content="summary_large_image">\n'
+            f'<meta name="twitter:image" content="{image}">')
+
+
+def root_page(data: dict) -> str:
+    """The bare domain sends a browser on to /es/ or /en/ by its language, but
+    a link preview never runs the script: it reads this page's head, so the
+    head carries the Spanish page's title, text, image and icons."""
+    e = strings("es", data)
+    return f"""<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>{e['page_title']}</title>
+<meta name="description" content="{e['description']}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{e['title']}">
+<meta property="og:title" content="{e['page_title']}">
+<meta property="og:description" content="{e['description']}">
+{share_meta("es", e['page_title'])}
+{ICON_LINKS}
+<script>location.replace((navigator.language || "").startsWith("es") ? "/es/" : "/en/")</script>
+</head>
+<body><a href="/es/">ES</a> · <a href="/en/">EN</a></body>
+</html>
+"""
+
+
 def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     s = strings(lang, data)
     e = {k: html.escape(v) for k, v in s.items()}
@@ -1140,7 +1182,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 <meta property="og:site_name" content="{e['title']}">
 <meta property="og:title" content="{e['page_title']}">
 <meta property="og:description" content="{e['description']}">
-<meta name="twitter:card" content="summary">
+{share_meta(lang, e['page_title'])}
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#0000f2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
@@ -1149,9 +1191,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 <link rel="alternate" type="application/json" href="/api/v1/data.json" title="Salary aggregates">
 <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Salary aggregates for agents">
 <script type="application/ld+json">{json_ld(lang, data)}</script>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="icon" href="/favicon.ico" sizes="32x32">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+{ICON_LINKS}
 <link rel="preload" href="/fonts/Antonio-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/Barlow-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
@@ -1420,14 +1460,12 @@ def main(argv: list[str]) -> int:
         (OUT / lang / "index.html").write_text(page(lang, svg, data_version, data), encoding="utf-8")
         (OUT / lang / "legal").mkdir()
         (OUT / lang / "legal" / "index.html").write_text(legal_page(lang), encoding="utf-8")
-    (OUT / "index.html").write_text(
-        '<!doctype html><meta charset="utf-8"><script>location.replace('
-        '(navigator.language || "").startsWith("es") ? "/es/" : "/en/")</script>'
-        '<a href="/es/">ES</a> · <a href="/en/">EN</a>', encoding="utf-8")
+    (OUT / "index.html").write_text(root_page(data), encoding="utf-8")
     # The favicon is a tile of the lacería with an S: favicon.svg for browsers that
     # take SVG, the .ico for the rest, and a square PNG for a phone's home screen.
+    # og-*.png is the link preview, drawn by tests/site/og-image.mjs.
     for name in ("app.js", "style.css", "cenefa.svg",
-                 "favicon.svg", "favicon.ico", "apple-touch-icon.png"):
+                 "favicon.svg", "favicon.ico", "apple-touch-icon.png", "og-es.png", "og-en.png"):
         shutil.copy(WEB / name, OUT / name)
     shutil.copytree(WEB / "fonts", OUT / "fonts")
     shutil.copytree(WEB / "agents", OUT / "agents")

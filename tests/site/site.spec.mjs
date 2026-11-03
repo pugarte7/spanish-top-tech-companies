@@ -819,6 +819,21 @@ test("the tab shows the tile favicon", async ({ page }) => {
   }
 });
 
+// A pasted link shows the preview image: Slack and the rest read the head of
+// the page they are given, the bare domain included, and never run its script.
+test("a pasted link carries a large preview image", async ({ request }) => {
+  for (const [path, lang] of [["/", "es"], ["/es/", "es"], ["/en/", "en"]]) {
+    const head = await (await request.get(path)).text();
+    const image = head.match(/<meta property="og:image" content="([^"]+)"/)?.[1];
+    expect(image, path).toBe(`https://spanishtoptechcompanies.com/og-${lang}.png`);
+    expect(head, path).toContain('<meta name="twitter:card" content="summary_large_image">');
+    expect(head, path).toContain('<link rel="icon" href="/favicon.svg"');
+    const png = await request.get(new URL(image).pathname);
+    expect(png.status(), image).toBe(200);
+    expect(png.headers()["content-type"], image).toContain("image/png");
+  }
+});
+
 test("the top bar scrolls away on a phone @mobile", async ({ page }) => {
   await open(page);
   await page.locator("#companies-card").scrollIntoViewIfNeeded();
