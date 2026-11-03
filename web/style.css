@@ -324,6 +324,7 @@ input[type=search]:focus-visible { border-color: var(--text); outline: 1px solid
 #map { width: 100%; height: auto; display: block; }
 #map .region { fill: var(--empty); stroke: var(--surface); stroke-width: 1.2; stroke-linejoin: round;
                transition: fill .35s; }
+#map .region.has { cursor: pointer; }
 #map .region.has:hover { stroke: var(--text); }
 /* A region with too few salaries keeps its outline, so Spain stays whole. */
 #map .region:not(.has) { stroke: var(--control); stroke-width: .8; }

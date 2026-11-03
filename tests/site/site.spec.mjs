@@ -509,6 +509,29 @@ test("the location filter narrows the table to a region and a city", async ({ pa
   await expect(page).toHaveURL(/#loc=[A-Z]{2}-/);
 });
 
+test("tapping a region on the map filters the table by it @mobile", async ({ page }) => {
+  await open(page);
+  await page.locator('#map .region.has[data-code="AN"]').tap();
+  await expect(page).toHaveURL(/#loc=AN$/);
+  await expect(filter(page, "loc").locator(".txt")).toHaveText("Andalucía");
+  await expect(rows(page).first()).toBeVisible();
+});
+
+test("a table that cannot load says so, and the retry brings it", async ({ page }) => {
+  await open(page);
+  let cut = true;
+  await page.route("**/api/v1/companies/software-engineer.json*", (r) => cut ? r.abort() : r.continue());
+  await filter(page, "role").locator(".pick").click();
+  await filter(page, "role").locator('[data-v="software-engineer"]').first().click();
+  await expect(page.locator("#companies")).toContainText("No se pudo cargar la tabla.");
+  cut = false;
+  await page.locator("#retry").click();
+  await expect(rows(page).first()).toBeVisible();
+  await expect(filter(page, "role").locator(".txt")).toHaveText("Software Engineer");
+  // The cut request is the point of the test, not a problem in the page.
+  page.problems.splice(0, page.problems.length, ...page.problems.filter((p) => !p.includes("ERR_FAILED")));
+});
+
 test("every open row has its experience bars and the 60k line", async ({ page }) => {
   await open(page);
   const n = await rows(page).count();

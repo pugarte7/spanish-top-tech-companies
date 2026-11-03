@@ -304,7 +304,7 @@ STRINGS = {
         "under": "Under", "over": "Over",
         "role_label": "Role", "mode_label": "Work", "loc_label": "Location", "all_spain": "All of Spain",
         "mode_remote": "Remote", "mode_hybrid": "Hybrid", "mode_office": "Office",
-        "any": "Any", "loading": "Loading…", "from": "From", "to": "To",
+        "any": "Any", "loading": "Loading…", "load_failed": "The table could not load.", "retry": "Retry", "from": "From", "to": "To",
         "agents_title": "Let your agent apply for you",
         "agents_lede": "Connect it and apply to the companies on this page without filling in a form: "
                        "it finds their openings, fills them in with your profile and sends the "
@@ -418,7 +418,7 @@ STRINGS = {
         "under": "Menos de", "over": "Más de",
         "role_label": "Rol", "mode_label": "Modalidad", "loc_label": "Ubicación", "all_spain": "Toda España",
         "mode_remote": "Remoto", "mode_hybrid": "Híbrido", "mode_office": "Presencial",
-        "any": "Cualquiera", "loading": "Cargando…", "from": "Desde", "to": "Hasta",
+        "any": "Cualquiera", "loading": "Cargando…", "load_failed": "No se pudo cargar la tabla.", "retry": "Reintentar", "from": "Desde", "to": "Hasta",
         "agents_title": "Deja que tu agente aplique por ti",
         "agents_lede": "Conéctalo y aplica a las empresas de esta página sin tocar un formulario: "
                        "busca sus ofertas, las rellena con tu perfil y envía la solicitud. "
