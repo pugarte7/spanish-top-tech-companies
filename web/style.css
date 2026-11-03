@@ -473,6 +473,13 @@ tr.det td { background: var(--tint); padding: 8px 12px 24px 48px; }
 .mix-key b { font-weight: 500; color: var(--text); font-variant-numeric: tabular-nums; }
 .mix-key .nil { opacity: .5; }
 .empty { color: var(--muted); padding: 32px 0; text-align: center; }
+.empty p { margin: 0 auto; max-width: 46ch; }
+.empty .empty-title { margin-bottom: 6px; color: var(--text); font: 500 18px/1.3 var(--display); }
+.empty-ways { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
+.empty-ways button, #retry { height: 34px; padding: 0 14px; border: 1px solid var(--control);
+  border-radius: var(--radius-control); background: transparent; color: var(--text);
+  font: 500 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.empty-ways button:hover, #retry:hover { border-color: var(--text); }
 .more { display: block; margin: 18px auto 0; height: 38px; padding: 0 20px;
         border: 0; border-radius: var(--radius-control); background: var(--text); color: var(--surface);
         font: 500 14px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }

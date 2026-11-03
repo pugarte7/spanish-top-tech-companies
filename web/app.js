@@ -245,7 +245,8 @@ const trackFilters = settle(1000, (via) => track("filter", {
 }));
 
 // Every change of filters passes here: the hash keeps them for a shared link,
-// and PostHog hears of them once they settle. `via` is "menu", "matrix" or "map".
+// and PostHog hears of them once they settle. `via` is "menu", "matrix", "map"
+// or "empty" (a way out of an empty table).
 function saveHash(via = "menu") {
   const h = new URLSearchParams();
   if (state.role) h.set("role", state.role);
@@ -581,8 +582,11 @@ async function loadTable(name) {
 }
 // The role's file first: its `places` name the place's file. False when one
 // could not be reached, and the table shows the retry instead.
+// A place the role has no salaries in (a region tapped on the map) has no
+// file: the table is empty without asking for one.
+const rolePlace = () => places().some((r) => r.code === state.loc || r.cities.some((c) => c[0] === state.loc));
 async function loadTables() {
-  return await loadTable(state.role) && (!state.loc || await loadTable(placeFile()));
+  return await loadTable(state.role) && (!state.loc || !rolePlace() || await loadTable(placeFile()));
 }
 // Keys list arrangements in lib.WORK_ARRANGEMENTS order, not the menu's.
 const KEY_MODES = ["office", "hybrid", "remote"];
@@ -694,9 +698,39 @@ addEventListener("resize", placeAsterisk);
 // The rows whose company's name has the search in it, `q` lowercased.
 const named = (rows, q) => q ? rows.filter((a) => D.companies[a.c].name.toLowerCase().includes(q)) : rows;
 
+// An empty table says why and offers a way out: one button per active filter,
+// each lifting just that one, or clearing the search when only it hides
+// everything. A region tapped on the map can be empty for the role picked.
+const EMPTY_WAYS = [
+  ["role", () => !!state.role, { role: "" }],
+  ["loc", () => !!state.loc, { loc: "" }],
+  ["years", () => state.years.length > 0, { years: [] }],
+  ["modes", () => state.modes.length > 0, { modes: [] }],
+];
+function emptyTable(searchOnly) {
+  const q = state.q.trim();
+  const ways = searchOnly ? [] : EMPTY_WAYS.filter(([, on]) => on());
+  const text = searchOnly ? esc(S.empty_search).replace("{q}", () => esc(q))
+    : ways.length ? esc(S.empty_text) : esc(S.none);
+  const buttons = searchOnly ? `<button type="button" data-clear="q">${esc(S.clear_search)}</button>`
+    : ways.map(([k]) => `<button type="button" data-clear="${k}">${esc(S["clear_" + k])}</button>`).join("");
+  return `<tr><td class="empty"><p class="empty-title">${esc(S.empty_title)}</p><p>${text}</p>` +
+    (buttons ? `<div class="empty-ways">${buttons}</div>` : "") + `</td></tr>`;
+}
+function wireEmpty() {
+  $("companies").querySelectorAll("[data-clear]").forEach((b) => b.onclick = () => {
+    const k = b.dataset.clear;
+    if (k === "q") { state.q = ""; $("search").value = ""; companies(); return; }
+    applyFilters(EMPTY_WAYS.find(([key]) => key === k)[2], "empty");
+  });
+}
+
 function companies() {
   summary();
   const all = table();
+  // With no salaries at all the table's own message says it; the summary
+  // would only repeat it.
+  $("summary").hidden = !all.length;
   const q = state.q.trim().toLowerCase();
   const by = SORTS[state.sort];
   // A company under min_ranked salaries goes after the rest whatever the
@@ -718,7 +752,7 @@ function companies() {
     `<th class="${cls} sort${state.sort === k ? (state.asc ? " on asc" : " on") : ""}" data-sort="${k}"` +
     ` title="${esc(tip)}" aria-sort="${state.sort === k ? (state.asc ? "ascending" : "descending") : "none"}">${label}</th>`;
 
-  $("companies").innerHTML = !rows.length ? `<tr><td class="empty">${esc(S.none)}</td></tr>` :
+  $("companies").innerHTML = !rows.length ? emptyTable(all.length > 0) :
     `<thead><tr><th class="chev"></th><th>${S.col_company}</th>` +
     th("median", S.col_median, S.tip_median, "pay") +
     `${th("share", S.col_share, S.tip_share)}${th("n", S.col_n, S.tip_n)}</tr></thead><tbody>` +
@@ -736,6 +770,7 @@ function companies() {
         `<tr class="det"${open ? "" : " hidden"}><td colspan="5">${open ? detail(a) : ""}</td></tr>`;
     }).join("") + `</tbody>`;
   $("few-note").hidden = !shown.some(few);
+  if (!rows.length) wireEmpty();
   $("companies").querySelectorAll("tr.main").forEach((tr, i) => {
     tr.onkeydown = (e) => {
       // Keys on a link or the asterisk inside the row are theirs.
