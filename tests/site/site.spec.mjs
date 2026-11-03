@@ -78,11 +78,24 @@ test("header card: the label left, the date top right, three equal figures whose
   }
 });
 
+// Light and Spanish by default: a system in dark mode and a browser in English
+// still land on the light Spanish page, until the reader picks otherwise.
+test.describe("on a dark system in English", () => {
+  test.use({ colorScheme: "dark", locale: "en-GB" });
+  test("the site opens light and in Spanish whatever the system says", async ({ page }) => {
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/es\/$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "es");
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("light");
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(240, 240, 240)");
+  });
+});
+
 // Dark is the light theme's mirror: pale blue ink on black, the field black
 // too, and the frieze and the lacería drawn in blue rather than white.
 test("dark mode turns the blue field black and draws it in blue", async ({ page }) => {
-  await page.emulateMedia({ colorScheme: "dark" });
   await open(page);
+  await page.locator("#theme").click();
   const look = await page.locator("header.field").evaluate((e) => ({
     field: getComputedStyle(e).backgroundColor,
     frieze: getComputedStyle(e, "::after").backgroundColor,

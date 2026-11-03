@@ -1134,9 +1134,10 @@ def share_meta(lang: str, title: str) -> str:
 
 
 def root_page(data: dict) -> str:
-    """The bare domain sends a browser on to /es/ or /en/ by its language, but
-    a link preview never runs the script: it reads this page's head, so the
-    head carries the Spanish page's title, text, image and icons."""
+    """The bare domain sends everyone to the Spanish page, whatever their
+    browser's language (the maintainer's choice, 2026-11-03); English is one
+    click away. A link preview never follows the redirect, so the head carries
+    the Spanish page's title, text, image and icons."""
     e = strings("es", data)
     return f"""<!doctype html>
 <html lang="es">
@@ -1150,7 +1151,8 @@ def root_page(data: dict) -> str:
 <meta property="og:description" content="{e['description']}">
 {share_meta("es", e['page_title'])}
 {ICON_LINKS}
-<script>location.replace((navigator.language || "").startsWith("es") ? "/es/" : "/en/")</script>
+<meta http-equiv="refresh" content="0; url=/es/">
+<script>location.replace("/es/")</script>
 </head>
 <body><a href="/es/">ES</a> · <a href="/en/">EN</a></body>
 </html>
@@ -1183,9 +1185,8 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 <meta property="og:title" content="{e['page_title']}">
 <meta property="og:description" content="{e['description']}">
 {share_meta(lang, e['page_title'])}
-<meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#0000f2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#0000f2">
 <script>try {{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }} catch (_) {{}}</script>
 <link rel="alternate" hreflang="{other}" href="/{other}/">
 <link rel="alternate" type="application/json" href="/api/v1/data.json" title="Salary aggregates">
@@ -1409,7 +1410,7 @@ def legal_page(lang: str) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(t['title'])} · Spanish Top Tech Companies</title>
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="light">
 <script>try {{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }} catch (_) {{}}</script>
 <link rel="alternate" hreflang="{other}" href="/{other}/legal/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
