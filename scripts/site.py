@@ -62,14 +62,24 @@ SITE = os.environ.get("SITE_URL", "").rstrip("/")
 # (vercel.json), which ad blockers leave alone, to the EU region. Cookieless:
 # nothing is stored in the browser, which is what lets the legal page say no
 # cookies; the project must have cookieless tracking on, or PostHog drops
-# every event. No session recordings, no surveys.
+# every event. Everything else that works without browser storage is on here,
+# ahead of the project's remote config: autocapture, pageviews and pageleaves,
+# rage and dead clicks, heatmaps and scroll depth on every page, uncaught errors
+# and console errors, web vitals and network timing, console logs. Session
+# recordings and surveys need a stored id, so they stay off.
 POSTHOG_TOKEN = os.environ.get("POSTHOG_PROJECT_TOKEN", "phc_pZPnNWRnbona6CeHA5pBjQBfLTPng4jetnXHbuSZyGaX")
 # posthog-js's loader, as https://posthog.com/docs/libraries/js gives it.
 POSTHOG_LOADER = ('!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);')
 POSTHOG_OPTIONS = {
     "api_host": "/ingest", "ui_host": "https://eu.posthog.com", "defaults": "2026-08-30",
     "cookieless_mode": "always", "disable_session_recording": True, "disable_surveys": True,
+    "autocapture": True, "capture_pageview": "history_change", "capture_pageleave": True,
+    "rageclick": True, "capture_dead_clicks": True, "capture_heatmaps": True,
+    "capture_exceptions": {"capture_unhandled_errors": True, "capture_unhandled_rejections": True,
+                           "capture_console_errors": True},
+    "capture_performance": {"web_vitals": True, "network_timing": True},
     "logs": {
+        "captureConsoleLogs": True,
         "serviceName": "spanish-top-tech-companies-web",
         "environment": os.environ.get("VERCEL_ENV", "production"),
     },
@@ -1285,7 +1295,8 @@ LEGAL = {
              "and page speed in aggregate, without cookies. PostHog, on its servers in the EU, "
              "records how the page is used: the filters picked, searches that find a company, "
              "the companies opened, the buttons and links clicked, and where on the page "
-             "people click and how far they scroll. It sets no cookie, "
+             "people click and how far they scroll, the errors the page runs into and how "
+             "fast it loads. It sets no cookie, "
              "stores nothing in your browser, keeps no IP address and records no sessions. "
              "Your browser keeps, in its own "
              "storage, only the theme you chose and whether you closed a notice; that never "
@@ -1328,7 +1339,8 @@ LEGAL = {
              "cookies. PostHog, en sus servidores de la UE, registra cómo se usa la página: los "
              "filtros que eliges, las búsquedas que encuentran una empresa, las empresas que "
              "abres, los botones y enlaces que pulsas, y en qué parte de la página se hace "
-             "clic y hasta dónde se baja. No pone cookies ni guarda nada en tu "
+             "clic y hasta dónde se baja, los errores que encuentra la página y lo rápido "
+             "que carga. No pone cookies ni guarda nada en tu "
              "navegador, no conserva tu dirección IP y no graba sesiones. Tu navegador guarda, "
              "en su propio almacenamiento, solo el tema que "
              "elegiste y si cerraste un aviso; eso no sale de tu dispositivo. El servidor MCP "
