@@ -49,25 +49,8 @@
   --radius-card: 4px; --radius-control: 3px;
   --gap: 16px; --pad: 24px; --control-height: 36px;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    /* Tinta azul: the light theme's mirror. By day blue ink on white paper; by
-       night pale blue ink on black, the field black too and the lacería drawn
-       in blue lines, the cards keeping their blue edges. */
-    --field: #000000; --field-deep: #000000; --field-ink: #b8b8ff; --field-muted: #8a8ae8;
-    --field-soft: #9c9cf0; --field-line: rgba(77, 77, 255, .45); --field-rule: rgba(77, 77, 255, .35);
-    --field-bright: #e6e6ff; --frieze: #6b6bff;
-    --tile-line: rgba(77, 77, 255, .55); --tile-tint: transparent;
-    --ground: #000000; --surface: #050508; --raised: #10102a; --raised-hover: #1a1a40; --tint: #0a0a1e;
-    --border: #4d4dff; --rule: #15153a; --control: #33339a;
-    --text: #b8b8ff; --muted: #7676d8; --hue: #b8b8ff; --quiet: #2e2e5e; --empty: #0c0c1c;
-    --s1: #0e0e22; --s2: #1a1a3c; --s3: #2b2bb0; --s4: #5a5aff; --s5: #b8b8ff;
-    --s1-ink: #8a8ae6; --s2-ink: #a0a0f0; --s3-ink: #e8e8ff; --s4-ink: #ffffff; --s5-ink: #000000;
-    --c1: #0e0e22; --c2: #1a1a50; --c3: #2b2bb0; --c4: #5a5aff; --c5: #b8b8ff;
-    --float: 0 8px 24px rgba(0, 0, 0, .7);
-  }
-}
+/* Light is the default whatever the system says; dark only when the reader
+   picks it with the moon (app.js stores it as data-theme). */
 :root[data-theme="dark"] {
     color-scheme: dark;
     /* Tinta azul: the light theme's mirror. By day blue ink on white paper; by
@@ -152,10 +135,6 @@ button, select, input { font: inherit; color: inherit; }
 .icon-btn .sun { display: none; }
 :root[data-theme="dark"] .icon-btn .sun { display: block; }
 :root[data-theme="dark"] .icon-btn .moon { display: none; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .icon-btn .sun { display: block; }
-  :root:not([data-theme="light"]) .icon-btn .moon { display: none; }
-}
 
 /* Segmented controls: the language switch and the map's metric. */
 .seg { display: inline-flex; flex: none; padding: 2px; gap: 2px; background: var(--raised);
