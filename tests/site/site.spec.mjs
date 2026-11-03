@@ -78,6 +78,23 @@ test("header card: the label left, the date top right, three equal figures whose
   }
 });
 
+// Dark is the light theme's mirror: pale blue ink on black, the field black
+// too, and the frieze and the lacería drawn in blue rather than white.
+test("dark mode turns the blue field black and draws it in blue", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await open(page);
+  const look = await page.locator("header.field").evaluate((e) => ({
+    field: getComputedStyle(e).backgroundColor,
+    frieze: getComputedStyle(e, "::after").backgroundColor,
+    ink: getComputedStyle(document.body).color,
+    ground: getComputedStyle(document.body).backgroundColor,
+  }));
+  expect(look.field).toBe("rgb(0, 0, 0)");
+  expect(look.ground).toBe("rgb(0, 0, 0)");
+  expect(look.ink).toBe("rgb(184, 184, 255)");
+  expect(look.frieze).toBe("rgb(107, 107, 255)");
+});
+
 test("every blue field is tiled from the one lazo, and text has no tiles behind it", async ({ page }) => {
   await open(page);
   await expect(page.locator("pattern#lazo")).toHaveCount(1);
@@ -85,7 +102,7 @@ test("every blue field is tiled from the one lazo, and text has no tiles behind 
     await expect(page.locator(`${sel} > .wall rect`), sel).toHaveAttribute("fill", "url(#lazo)");
   // The frieze and a veil of the field's blue behind the banner's, the agents' and the footer's text.
   for (const sel of ["header.field", ".agents-stage", "footer"])
-    expect(await page.locator(sel).evaluate((e) => getComputedStyle(e, "::after").backgroundImage), sel).toContain("cenefa");
+    expect(await page.locator(sel).evaluate((e) => { const a = getComputedStyle(e, "::after"); return a.maskImage || a.webkitMaskImage; }), sel).toContain("cenefa");
   for (const sel of [".pitch", ".agent-say", "footer p"])
     await expect(page.locator(sel)).toHaveClass(/\bveil\b/);
 });
