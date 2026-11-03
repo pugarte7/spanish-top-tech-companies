@@ -3,7 +3,8 @@
 //     node tests/mcp.test.mjs
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import mcp, { respond } from "../api/mcp.js";
+import mcp, { analytics, respond } from "../api/mcp.js";
+import { redact } from "../api/_track.js";
 
 const DATA = "_site/api/v1/data.json";
 const data = JSON.parse(readFileSync(DATA, "utf8"));
@@ -191,6 +192,44 @@ report("an internal failure tells the client nothing more", (() => {
 report("a call answers from the site's data", (await (await mcp.fetch(new Request("https://x/mcp", {
   method: "POST", body: body(tool("salary_stats", {})) }))).json()).result.structuredContent.result.people
   === data.cells["||"].n);
+
+// PostHog's MCP Analytics: the reason an agent gives is a `context` argument on
+// every tool, taken out before the tool runs, and each call is one event.
+const listed = respond(data, { jsonrpc: "2.0", id: 1, method: "tools/list" }).result.tools;
+report("every tool takes an optional context", listed.every((t) =>
+  t.inputSchema.properties.context?.type === "string" && !(t.inputSchema.required ?? []).includes("context")));
+const plain = respond(data, { jsonrpc: "2.0", id: 1, ...tool("salary_stats", { role: "software-engineer" }) });
+const explained = respond(data, { jsonrpc: "2.0", id: 1, ...tool("salary_stats",
+  { role: "software-engineer", context: "a candidate compares offers" }) });
+report("context changes no answer", JSON.stringify(plain) === JSON.stringify(explained));
+const asked = { jsonrpc: "2.0", id: 9, ...modern("tools/call", { name: "top_companies", arguments: {
+  role: "software-engineer", context: "jane@example.com wants pay, call +34 612 345 678", secret_note: "x" } }) };
+const [call] = analytics(data, { "user-agent": "claude-code/2.1.0 (cli)", "x-vercel-ip-country": "ES" },
+  asked, respond(data, asked), Date.now() - 5);
+const p = call?.properties ?? {};
+report("a tool call is one $mcp_tool_call with what MCP Analytics needs", call?.event === "$mcp_tool_call" &&
+  p.$mcp_source === "posthog_mcp_analytics" && p.$mcp_tool_name === "top_companies" &&
+  p.$mcp_is_error === false && typeof p.$mcp_duration_ms === "number" && /^ses_/.test(p.$session_id) &&
+  call.distinct_id === p.$session_id && p.$mcp_server_name === "tech-pay-spain" &&
+  p.$mcp_client_name === "test" && p.$process_person_profile === false && p.$geoip_country_code === "ES", p);
+report("the reason is kept, without the email or the phone", p.$mcp_intent ===
+  "[redacted] wants pay, call [redacted]" && p.$mcp_intent_source === "context_parameter", p.$mcp_intent);
+report("an argument the tool does not declare is not sent",
+  JSON.stringify(p.$mcp_parameters?.request?.params?.arguments) === '{"role":"software-engineer"}' &&
+  p.$mcp_input_keys.includes("[redacted]") && !p.$mcp_input_keys.includes("secret_note"), p.$mcp_parameters);
+const unknown = { jsonrpc: "2.0", id: 2, ...tool("made_up", {}) };
+report("a call to an unknown tool is no event", analytics(data, {}, unknown, respond(data, unknown), Date.now()).length === 0);
+const bad = { jsonrpc: "2.0", id: 3, ...tool("salary_stats", { role: "astronaut" }) };
+report("a failed call says so", analytics(data, {}, bad, respond(data, bad), Date.now())[0]?.properties.$mcp_is_error === true);
+const hello = { jsonrpc: "2.0", id: 4, method: "initialize",
+  params: { protocolVersion: "2025-06-18", clientInfo: { name: "cursor", version: "3" } } };
+report("a handshake is $mcp_initialize with the client", (([e]) => e?.event === "$mcp_initialize" &&
+  e.properties.$mcp_client_name === "cursor" && e.properties.$mcp_protocol_version === "2025-06-18")(
+  analytics(data, {}, hello, respond(data, hello), Date.now())));
+report("redaction takes keys, tokens and addresses", redact(
+  "token=abc123 https://u:p@h.io phc_aaaaaaaaaaaaaaaaaaaaaaaa 10.0.0.1 5-7 years in MD") ===
+  "token=[redacted] https://[redacted]@h.io [redacted] [redacted] 5-7 years in MD",
+  redact("token=abc123 https://u:p@h.io phc_aaaaaaaaaaaaaaaaaaaaaaaa 10.0.0.1 5-7 years in MD"));
 
 console.log(failed ? `${failed} failed` : "api/mcp.js answers as expected");
 process.exit(failed ? 1 : 0);

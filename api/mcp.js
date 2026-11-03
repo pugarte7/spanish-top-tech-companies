@@ -9,6 +9,8 @@
 // 2026-07-28; `initialize` and anything without that key get the handshake-era
 // answers that clients up to 2025-11-25 expect.
 
+import { after, capture, cut, event, origin, redact, uuidv7 } from "./_track.js";
+
 const MODERN = "2026-07-28";
 const LEGACY = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 const SUPPORTED = [MODERN, ...LEGACY];
@@ -72,8 +74,17 @@ const TOOLS = {
     run: (data) => filters(data),
   },
 };
-export const tools = (data) => Object.entries(TOOLS)
-  .map(([name, tool]) => ({ name, ...tool.define(data), annotations: READ_ONLY }));
+// Every tool also takes `context`, the reason for the call, which PostHog's MCP
+// Analytics groups into what agents come here for (api/_track.js). Optional, and
+// taken out of the arguments before a tool runs.
+const CONTEXT = { type: "string", description: "Why are you calling this tool? Describe " +
+  "the goal in general terms, and refer to people by role (\"a candidate\") rather than " +
+  "by name. Leave out personal and identifying information." };
+const withContext = (schema) => ({ ...schema, properties: { ...schema.properties, context: CONTEXT } });
+export const tools = (data) => Object.entries(TOOLS).map(([name, tool]) => {
+  const defined = tool.define(data);
+  return { name, ...defined, inputSchema: withContext(defined.inputSchema), annotations: READ_ONLY };
+});
 
 // --- Queries over data.json -----------------------------------------------------
 
@@ -279,8 +290,9 @@ function answer(data, id, method, params, version) {
 
 function callTool(data, id, params, extra) {
   const name = params.name;
-  const args = params.arguments ?? {};
-  if (!isObject(args)) return error(id, INVALID_PARAMS, "arguments must be an object");
+  const sent = params.arguments ?? {};
+  if (!isObject(sent)) return error(id, INVALID_PARAMS, "arguments must be an object");
+  const { context, ...args } = sent;
   // Own keys only: a name such as "constructor" must not reach Object's prototype.
   const tool = typeof name === "string" && Object.hasOwn(TOOLS, name) ? TOOLS[name] : null;
   if (!tool) return error(id, INVALID_PARAMS, `unknown tool '${name}'`);
@@ -382,6 +394,66 @@ const json = (body, status = 200, extra = {}) => new Response(body === null ? nu
   status, headers: { ...CORS, ...extra, ...(body === null ? {} : { "Content-Type": "application/json" }) },
 });
 
+// --- Analytics ----------------------------------------------------------------------
+
+// What PostHog's MCP Analytics reads, one event per handshake, tool list and call
+// of a known tool (an unknown name would add a fake tool to its list). The server
+// is stateless and hands out no session id, so each request is its own session.
+// The arguments are filters, never personal; the reason an agent gives is redacted.
+export function analytics(data, headers, msg, out, started) {
+  const messages = Array.isArray(msg) ? msg : [msg];
+  const replies = new Map((Array.isArray(out) ? out : [out]).filter(isObject).map((r) => [r.id, r]));
+  const session = `ses_${uuidv7()}`;
+  const base = {
+    $mcp_source: "posthog_mcp_analytics", $mcp_interface: "mcp", $session_id: session,
+    $mcp_server_name: SERVER.name, $mcp_server_version: SERVER.version,
+    $mcp_client_user_agent: cut(headers["user-agent"]),
+    $mcp_vendor_client: cut(headers["x-anthropic-client"]),
+    ...origin(headers),
+  };
+  const duration = Date.now() - started;
+  const events = [];
+  for (const m of messages) {
+    if (!isObject(m) || m.id === undefined || m.id === null) continue;
+    const params = paramsOf(m);
+    const meta = isObject(params._meta) ? params._meta : {};
+    const client = isObject(meta[META + "clientInfo"]) ? meta[META + "clientInfo"]
+      : isObject(params.clientInfo) ? params.clientInfo : {};
+    const common = { ...base, $mcp_client_name: cut(client.name), $mcp_client_version: cut(client.version),
+      $mcp_protocol_version: cut(protocolVersion(m) ?? params.protocolVersion ?? headers["mcp-protocol-version"]) };
+    const reply = replies.get(m.id);
+    if (m.method === "initialize") events.push(event("$mcp_initialize", common, session));
+    else if (m.method === "tools/list")
+      events.push(event("$mcp_tools_list", { ...common, $mcp_listed_tool_names: Object.keys(TOOLS) }, session));
+    else if (m.method === "tools/call" && typeof params.name === "string" && Object.hasOwn(TOOLS, params.name)) {
+      const sent = isObject(params.arguments) ? params.arguments : {};
+      const { context, ...args } = sent;
+      const defined = TOOLS[params.name].define(data);
+      // A name the schema does not declare could carry private data: neither it nor its value goes.
+      const declared = (k) => Object.hasOwn(defined.inputSchema.properties, k);
+      const failed = !reply || "error" in reply || reply.result?.isError === true;
+      const intent = typeof context === "string" && context.trim() && context.trim() !== "{}"
+        ? redact(context) : undefined;
+      events.push(event("$mcp_tool_call", {
+        ...common, $mcp_tool_name: params.name, $mcp_resource_name: params.name,
+        $mcp_tool_description: defined.description,
+        $mcp_is_error: failed, $mcp_duration_ms: duration,
+        $mcp_error_type: failed ? (reply?.result?.isError ? "validation" : "internal") : undefined,
+        $mcp_error_message: failed
+          ? redact(reply?.result?.content?.[0]?.text ?? reply?.error?.message ?? "no reply") : undefined,
+        $mcp_intent: intent, $mcp_intent_source: intent && "context_parameter",
+        $mcp_input_keys: [...new Set(Object.keys(sent)
+          .map((k) => (k === "context" || declared(k) ? k : "[redacted]")))],
+        $mcp_parameters: { request: { method: "tools/call", params: { name: params.name,
+          arguments: Object.fromEntries(Object.entries(args).filter(([k]) => declared(k))
+            .map(([k, v]) => [k, typeof v === "string" ? redact(v, 256)
+              : v === null || typeof v !== "object" ? v : "[redacted]"])) } } },
+      }, session));
+    }
+  }
+  return events;
+}
+
 let DATA; // one parse per instance; a deploy with new data starts new instances
 
 // The deployment's own static copy, so the answers always match the site's.
@@ -406,8 +478,13 @@ export default {
     } catch {
       return json(error(null, PARSE_ERROR, "parse error"), 400);
     }
+    const started = Date.now();
     try {
-      const [status, body] = reply(await load(url), Object.fromEntries(request.headers), msg);
+      const data = await load(url), headers = Object.fromEntries(request.headers);
+      const [status, body] = reply(data, headers, msg);
+      let events = [];
+      try { events = analytics(data, headers, msg, body, started); } catch (e) { console.error(e); }
+      await after(capture(events));
       return json(body, status);
     } catch (e) { // data.json unreadable: still answer in JSON-RPC, not with an HTML 500
       console.error(e);

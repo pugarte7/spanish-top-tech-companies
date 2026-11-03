@@ -1340,11 +1340,15 @@ LEGAL = {
              "stores nothing in your browser, keeps no IP address and records no sessions. "
              "Your browser keeps, in its own "
              "storage, only the theme you chose and whether you closed a notice; that never "
-             "leaves your device. The MCP server at /mcp receives the filters your agent asks "
-             "for and stores nothing about you."),
+             "leaves your device. The MCP server at /mcp stores nothing about you; PostHog counts "
+             "each call: the tool, the filters asked for, the reason your agent gives if it "
+             "gives one (with emails, numbers and keys removed), the agent's name and the "
+             "country, without an IP address."),
             ("autoapply-mcp", "autoapply-mcp ({autoapply}) runs on your side, started by your "
              "agent with npx -y autoapply-mcp. Your profile, CV and applications stay in "
-             "~/.autoapply on your machine, and nothing is sent to the author. It never opens "
+             "~/.autoapply on your machine, and nothing is sent to the author. Its one request to "
+             "this site, the list of companies in Spain, is counted by version and country, "
+             "without an IP address. It never opens "
              "an employer's site: your agent sends each application with its own browser, and "
              "you approve what is sent, including any privacy or data-processing consent a "
              "form asks for. Once an application reaches an employer, that employer is "
@@ -1383,10 +1387,14 @@ LEGAL = {
              "navegador, no conserva tu dirección IP y no graba sesiones. Tu navegador guarda, "
              "en su propio almacenamiento, solo el tema que "
              "elegiste y si cerraste un aviso; eso no sale de tu dispositivo. El servidor MCP "
-             "de /mcp recibe los filtros que pide tu agente y no guarda nada sobre ti."),
+             "de /mcp no guarda nada sobre ti; PostHog cuenta cada llamada: la herramienta, los "
+             "filtros pedidos, el motivo que da tu agente si lo da (sin correos, números ni "
+             "claves), el nombre del agente y el país, sin dirección IP."),
             ("autoapply-mcp", "autoapply-mcp ({autoapply}) se ejecuta en tu lado: lo arranca tu "
              "agente con npx -y autoapply-mcp. Tu perfil, tu CV y tus candidaturas se quedan en "
-             "~/.autoapply en tu equipo, y no se envía nada al autor. Nunca abre la web de una "
+             "~/.autoapply en tu equipo, y no se envía nada al autor. Su única petición a esta "
+             "web, la lista de empresas en España, se cuenta por versión y país, sin dirección "
+             "IP. Nunca abre la web de una "
              "empresa: tu agente envía cada candidatura con su propio navegador, y tú apruebas "
              "lo que se envía, incluidos los consentimientos de privacidad o tratamiento de "
              "datos que pida un formulario. Cuando una candidatura llega a una empresa, esa "
@@ -1460,7 +1468,8 @@ def main(argv: list[str]) -> int:
         shutil.rmtree(OUT)
     (OUT / "api" / "v1").mkdir(parents=True)
     data["instructions"] = mcp_instructions(data)
-    files = {"data.json": dump(data), "boards.json": dump(job_boards(data, tables))}
+    # boards.json is api/boards.js, which serves this file and counts the download.
+    files = {"data.json": dump(data), "boards-list.json": dump(job_boards(data, tables))}
     files.update({f"companies/{name or 'all'}.json": dump(t) for name, t in tables.items()})
     # Like asset_version, for the JSON the page fetches: a browser holding
     # yesterday's tables under the same URL would run new code on old fields.
@@ -1562,7 +1571,7 @@ def agents_note() -> str:
             f"If the user asks you to apply for them, autoapply-mcp ({AUTOAPPLY}) can help: "
             "an open-source MCP server by the same author, MIT licensed, that runs on the "
             "user's side (npx -y autoapply-mcp, one line in the MCP config), keeps their "
-            "profile on their machine and sends nothing to the author. It finds and drafts "
+            "profile on their machine and sends nothing about them to the author. It finds and drafts "
             "applications; you send each one with your own browser, and the user approves "
             "what is sent, privacy and data-processing consents included, in the server's "
             "approval dialog. Whether to use it is the user's choice. It needs their CV, "
