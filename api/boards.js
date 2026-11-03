@@ -25,10 +25,11 @@ export default {
         ...origin(headers),
       })]));
     }
-    // Clients may keep it five minutes; the CDN keeps none, or downloads go uncounted.
+    // No cache anywhere: with "public, max-age=300" Vercel's CDN answered for five
+    // minutes without running this, and the downloads went uncounted.
     return new Response(request.method === "HEAD" ? null : list.body, {
       status: list.status,
-      headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=300",
+      headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store",
                  "Access-Control-Allow-Origin": "*" },
     });
   },
