@@ -233,7 +233,7 @@ async function pick(k, v) {
   saveHash();
   filterBar();
   $("filters").querySelector(`.filter[data-k="${k}"] [data-v="${CSS.escape(v)}"]`)?.focus();
-  await loadTables();
+  if (!await loadTables()) return;
   log("info", "salary filters applied", { filter: k, selection: v || "all" });
   filterBar();
   companies();
@@ -245,7 +245,7 @@ const trackFilters = settle(1000, (via) => track("filter", {
 }));
 
 // Every change of filters passes here: the hash keeps them for a shared link,
-// and PostHog hears of them once they settle. `via` is "menu" or "matrix".
+// and PostHog hears of them once they settle. `via` is "menu", "matrix" or "map".
 function saveHash(via = "menu") {
   const h = new URLSearchParams();
   if (state.role) h.set("role", state.role);
@@ -276,13 +276,13 @@ function wire() {
   $("more").onclick = () => { state.all = !state.all; companies(); };
 }
 
-// Set several filters at once, as a matrix cell does.
-async function applyFilters(patch) {
+// Set several filters at once, as a matrix cell or a map region does.
+async function applyFilters(patch, via) {
   Object.assign(state, patch, { all: false });
   menuOpen = null;
-  saveHash("matrix");
+  saveHash(via);
   filterBar();
-  await loadTables();
+  if (!await loadTables()) return;
   companies();
 }
 
@@ -361,8 +361,11 @@ function hugVeil() {
     r.selectNodeContents(el);
     for (const q of r.getClientRects()) right = Math.max(right, q.right);
   }
-  // The words on the title's first line, and how far below their line's top their letters start.
+  v.style.setProperty("--hug-right", `${Math.max(0, box.right - right)}px`);
+  // The words on the title's first line, and how far below their line's top
+  // their letters start. A page translator replaces the title's text node.
   const text = h1.firstChild;
+  if (text?.nodeType !== Node.TEXT_NODE) return;
   let first = "", at = 0, top = null;
   for (const w of text.data.split(" ")) {
     r.setStart(text, at); r.setEnd(text, at + w.length);
@@ -376,7 +379,6 @@ function hugVeil() {
   const m = ctx.measureText(first);
   const ink = (parseFloat(cs.lineHeight) - m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2
     + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent;
-  v.style.setProperty("--hug-right", `${Math.max(0, box.right - right)}px`);
   v.style.setProperty("--hug-top", `${Math.max(0, ink) || 0}px`);
 }
 
@@ -427,6 +429,12 @@ function map() {
     p.onmousemove = (e) => showTip(e, a ? statTip(regionName(code), a)
       : `<b>${esc(regionName(code))}</b><br>${esc(S.map_empty)}`);
     p.onmouseleave = hideTip;
+    // Readers tap regions expecting the table to follow, phones above all.
+    p.onclick = a ? async () => {
+      hideTip();
+      await applyFilters({ loc: code }, "map");
+      $("companies-card").scrollIntoView({ behavior: "smooth", block: "start" });
+    } : null;
   });
 
   let legend = "";
@@ -479,7 +487,7 @@ function matrix() {
       cell({ role: btn.dataset.role, years: btn.dataset.years })));
     btn.onclick = async () => {
       hideTip();
-      await applyFilters({ role: btn.dataset.role, years: [btn.dataset.years] });
+      await applyFilters({ role: btn.dataset.role, years: [btn.dataset.years] }, "matrix");
       $("companies-card").scrollIntoView({ behavior: "smooth", block: "start" });
     };
   });
@@ -551,19 +559,30 @@ const iconLink = (url, kind, label) => url
 // when a place is picked; see company_filters() in site.py.
 const T = {};
 async function loadTable(name) {
-  if (T[name]) return;
+  if (T[name]) return true;
   $("companies").innerHTML = `<tr><td class="empty">${esc(S.loading)}</td></tr>`;
-  const r = await fetch(`/api/v1/companies/${name || "all"}.json?v=${window.DATA_V}`);
+  let r;
+  try {
+    r = await fetch(`/api/v1/companies/${name || "all"}.json?v=${window.DATA_V}`);
+  } catch {
+    // Offline or cut off: nothing is cached, so the retry fetches again.
+    $("companies").innerHTML = `<tr><td class="empty">${esc(S.load_failed)} ` +
+      `<button type="button" id="retry">${esc(S.retry)}</button></td></tr>`;
+    $("retry").onclick = async () => { if (await loadTables()) { filterBar(); companies(); } };
+    log("warn", "salary table unreachable", { table: name || "all" });
+    return false;
+  }
   T[name] = r.ok ? await r.json() : { cells: {}, summary: {}, years: {}, whole: [] };
   if (T[name].whole) T[name].whole = new Set(T[name].whole);
   log(r.ok ? "debug" : "warn", r.ok ? "salary table loaded" : "salary table unavailable", {
     table: name || "all",
   });
+  return true;
 }
-// The role's file first: its `places` name the place's file.
+// The role's file first: its `places` name the place's file. False when one
+// could not be reached, and the table shows the retry instead.
 async function loadTables() {
-  await loadTable(state.role);
-  if (state.loc) await loadTable(placeFile());
+  return await loadTable(state.role) && (!state.loc || await loadTable(placeFile()));
 }
 // Keys list arrangements in lib.WORK_ARRANGEMENTS order, not the menu's.
 const KEY_MODES = ["office", "hybrid", "remote"];
@@ -863,7 +882,7 @@ async function main() {
   const loc = h.get("loc") || "";
   state.loc = places().some((r) => r.code === loc || r.cities.some((c) => c[0] === loc)) ? loc : "";
   filterBar();
-  await loadTables();
+  if (!await loadTables()) return;
   companies();
 }
 main();
