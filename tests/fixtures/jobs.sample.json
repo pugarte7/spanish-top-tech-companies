@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "generated_at": "2026-11-04T05:00:00Z",
+  "boards": { "queried": 9, "failed": 1, "issues": { "greenhouse:not_found": 1 } },
+  "jobs": [
+    {
+      "id": "greenhouse:glovo:7000001", "company": "Glovo", "slug": "glovo", "tier": "A",
+      "title": "Senior Backend Engineer", "url": "https://job-boards.greenhouse.io/glovo/jobs/7000001",
+      "ats": "greenhouse", "location": "Barcelona, Spain", "location_classes": ["spain"],
+      "workplace": "hybrid", "department": "Engineering", "posted_at": "2026-11-01T09:00:00Z", "salary": null
+    },
+    {
+      "id": "greenhouse:glovo:7000002", "company": "Glovo", "slug": "glovo", "tier": "A",
+      "title": "Product Manager, Growth", "url": "https://jobs.glovoapp.com/en/jobs/7000002",
+      "ats": "greenhouse", "location": "Barcelona, Spain", "location_classes": ["spain"],
+      "workplace": "onsite", "department": "Product", "posted_at": "2026-10-28T09:00:00Z", "salary": null
+    },
+    {
+      "id": "greenhouse:cabify:7000003", "company": "Cabify", "slug": "cabify", "tier": "A",
+      "title": "Data Scientist, Pricing", "url": "https://job-boards.greenhouse.io/cabify/jobs/7000003",
+      "ats": "greenhouse", "location": "Madrid, Spain", "location_classes": ["spain"],
+      "workplace": "hybrid", "department": "Data", "posted_at": "2026-10-30T09:00:00Z", "salary": null
+    },
+    {
+      "id": "greenhouse:adyen:7000004", "company": "Adyen", "slug": "adyen", "tier": "A",
+      "title": "Software Engineer - Payments", "url": "https://job-boards.greenhouse.io/adyen/jobs/7000004",
+      "ats": "greenhouse", "location": "Madrid, Spain", "location_classes": ["spain"],
+      "workplace": "onsite", "department": "Engineering", "posted_at": "2026-11-02T09:00:00Z", "salary": null
+    },
+    {
+      "id": "greenhouse:abb:7000005", "company": "ABB", "slug": "abb", "tier": "B",
+      "title": "Ingeniero de Software Embebido", "url": "https://job-boards.greenhouse.io/abb/jobs/7000005",
+      "ats": "greenhouse", "location": "Madrid, España", "location_classes": ["spain"],
+      "workplace": null, "department": null, "posted_at": null, "salary": null
+    },
+    {
+      "id": "lever:lodgify:5b0c8f7e-1111-4c2a-9d1e-000000000006", "company": "Lodgify", "slug": "lodgify", "tier": "B",
+      "title": "Full Stack Developer", "url": "https://jobs.lever.co/lodgify/5b0c8f7e-1111-4c2a-9d1e-000000000006",
+      "ats": "lever", "location": "Remote - Spain", "location_classes": ["spain", "remote"],
+      "workplace": "remote", "department": "Engineering", "posted_at": "2026-10-20T09:00:00Z", "salary": null
+    },
+    {
+      "id": "ashby:abacum:9950860a-1a83-4344-8541-000000000007", "company": "Abacum", "slug": "abacum", "tier": "B",
+      "title": "Senior Frontend Engineer", "url": "https://jobs.ashbyhq.com/abacum/9950860a-1a83-4344-8541-000000000007",
+      "ats": "ashby", "location": "Barcelona, Spain", "location_classes": ["spain"],
+      "workplace": "hybrid", "department": "Engineering", "posted_at": "2026-10-25T09:00:00Z",
+      "salary": { "min": 60000, "max": 75000, "currency": "EUR", "period": "year" }
+    },
+    {
+      "id": "lever:dlocal:d3aa9436-a537-4ca7-bfe0-000000000008", "company": "dLocal", "slug": "dlocal", "tier": "B",
+      "title": "Site Reliability Engineer", "url": "https://jobs.eu.lever.co/dlocal/d3aa9436-a537-4ca7-bfe0-000000000008",
+      "ats": "lever", "location": "Remote", "location_classes": ["remote"],
+      "workplace": "remote", "department": "Infrastructure", "posted_at": "2026-10-31T09:00:00Z",
+      "salary": { "min": 90000, "max": 120000, "currency": "USD", "period": "year" }
+    },
+    {
+      "id": "greenhouse:wallapop:7000009", "company": "Wallapop", "slug": "wallapop", "tier": "A",
+      "title": "Mobile Engineer (iOS)", "url": "https://job-boards.greenhouse.io/wallapop/jobs/7000009",
+      "ats": "greenhouse", "location": "Barcelona, Spain", "location_classes": ["spain"],
+      "workplace": "hybrid", "department": "Engineering", "posted_at": "2026-09-15T09:00:00Z", "salary": null
+    },
+    {
+      "id": "greenhouse:typeform:7000010", "company": "Typeform", "slug": "typeform", "tier": "A",
+      "title": "Engineering Manager", "url": "https://job-boards.greenhouse.io/typeform/jobs/7000010",
+      "ats": "greenhouse", "location": "Barcelona, Spain", "location_classes": ["spain"],
+      "workplace": "hybrid", "department": "Engineering", "posted_at": "2026-10-29T09:00:00Z", "salary": null
+    },
+    {
+      "id": "greenhouse:factorial:7000011", "company": "Factorial", "slug": "factorial", "tier": "A",
+      "title": "Account Executive", "url": "https://job-boards.greenhouse.io/factorial/jobs/7000011",
+      "ats": "greenhouse", "location": "Barcelona, Spain", "location_classes": ["spain"],
+      "workplace": "onsite", "department": "Sales", "posted_at": "2026-10-27T09:00:00Z", "salary": null
+    },
+    {
+      "id": "greenhouse:revolut:7000012", "company": "Revolut", "slug": "revolut", "tier": "A",
+      "title": "Data Analyst", "url": "https://job-boards.greenhouse.io/revolut/jobs/7000012",
+      "ats": "greenhouse", "location": "Madrid, Spain", "location_classes": ["spain"],
+      "workplace": "hybrid", "department": "Analytics", "posted_at": "2026-11-03T09:00:00Z",
+      "salary": { "min": 40000, "max": 50000, "currency": "EUR", "period": "year" }
+    },
+    {
+      "id": "greenhouse:not-on-file:7000013", "company": "Not On File", "slug": "not-on-file", "tier": "C",
+      "title": "Backend Developer", "url": "https://job-boards.greenhouse.io/notonfile/jobs/7000013",
+      "ats": "greenhouse", "location": "Valencia, Spain", "location_classes": ["spain"],
+      "workplace": "onsite", "department": "Tecnología", "posted_at": "2026-10-10T09:00:00Z", "salary": null
+    },
+    {
+      "id": "workday:bbva/wd3/BBVA:R-12345", "company": "BBVA", "slug": "bbva", "tier": "A",
+      "title": "Desarrollador Java", "url": "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345",
+      "ats": "workday", "location": "Madrid", "location_classes": ["spain"],
+      "workplace": null, "department": null, "posted_at": "2026-10-05T09:00:00Z", "salary": null
+    }
+  ]
+}
