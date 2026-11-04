@@ -17,12 +17,15 @@ is rounded to lib.ROUND_EUR. The CSV stays row-level; a city x role x years
 cell of a few people would name them. The one exception is the companies
 table (its rows, its summary and each company's bars per experience band),
 which shows whatever there is, down to one person: see company_filters().
+Since 2026-11-04 the MCP server's company tools show it too, from the
+table's own rows (company_cells()).
 
 Pages come in English and Spanish under /en/ and /es/. The page's look lives
 in web/ (app.js, style.css); this script renders the HTML shell, the map of
 Spain and /api/v1/data.json, which serves both the page and agents. Agents
 that only read URLs get /llms.txt and /llms-full.txt (markdown, from the same
-aggregates); agents that speak MCP get /mcp (api/mcp.js), which reads data.json.
+aggregates); agents that speak MCP get /mcp (api/mcp.js), which reads data.json
+and, for its company tools, /api/v1/company-cells.json.
 Set SITE_URL to the public origin so those pages carry absolute links.
 """
 from __future__ import annotations
@@ -854,6 +857,48 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
     return files
 
 
+def company_cells(tables: dict[str, dict]) -> dict:
+    """The companies table keyed like data.json's company_cells, for the MCP
+    server (/api/v1/company-cells.json): every company row the table shows
+    for a role ("" = every role), a region and an experience bucket, any
+    work arrangement, "role|region|years" with "" for all.
+
+    Re-keyed, not recomputed: each row is a table file's own row, so the MCP
+    answers with the figures the page shows, down to one salary (maintainer,
+    2026-11-04: "si hay datos en la web el mcp lo pilla, nada de lo de mínimo
+    de 5"). A region's rows are its place file's plus the role file's rows of
+    the companies whose salaries are all there (`whole`, see place_lookup()).
+    Specializations, cities, spans of bands and arrangements stay on the page.
+    """
+    def at(cells: dict, key: str):
+        v = cells.get(key)
+        return cells[v] if isinstance(v, str) else v
+
+    fields = ["c", "n", "median", "p25", "p75", "total", "share"]
+    take = [tables[""]["fields"].index(f) for f in fields]
+    n, median, share = (tables[""]["fields"].index(f) for f in ("n", "median", "share"))
+    bands = tables[""]["bands"]
+    cells = {}
+    for role in ["", *(r["slug"] for r in tables[""]["roles"])]:
+        t = tables[role]
+        for code in ["", *(p["code"] for p in t["places"])]:
+            place = tables.get(f"{role or 'all'}~{code}") if code else None
+            if code and not place:
+                continue
+            for band in ["", *bands]:
+                rows = at(t["cells"], f"|{band}") or []
+                if place:
+                    whole = set(place["whole"])
+                    rows = [r for r in rows if r[0] in whole] + (at(place["cells"], f"|{band}") or [])
+                if rows:
+                    # The table's own order: under MIN_RANKED salaries after the rest.
+                    rows = sorted(rows, key=lambda r: (r[n] < lib.MIN_RANKED, -r[median], -r[share]))
+                    cells[f"{role}|{code}|{band}"] = [[r[i] for i in take] for r in rows]
+    return {"fields": fields, "years": bands,
+            "roles": [{"slug": r["slug"], "name": r["name"]} for r in tables[""]["roles"]],
+            "cells": cells}
+
+
 def company_info(company: dict) -> dict:
     cities = collections.Counter(city_name(e["city"]) for e in company["entries"] if e.get("city"))
     # "-" means checked and there is none. The careers page first: it is where to apply.
@@ -1338,10 +1383,12 @@ LEGAL = {
              "Contact: {contact}, or an issue on GitHub ({repo}). Nothing is sold and there "
              "are no ads."),
             ("What the site publishes", "Medians of salaries people reported on Levels.fyi for "
-             "jobs in Spain, never a row per person: every figure on the map, the matrix, the "
-             "JSON and the MCP server comes from 5 or more people, the middle half included, "
-             "and every euro figure is rounded to 1,000 €. The companies table also lists "
-             "companies with fewer salaries, still rounded. Company details come from Spain "
+             "jobs in Spain, never a row per person: every figure on the map and the matrix, "
+             "and every figure across companies in the JSON and the MCP server, comes from 5 or "
+             "more people, the middle half included, and every euro figure is rounded to "
+             "1,000 €. The companies table also lists companies with fewer salaries, still "
+             "rounded, and so do the JSON and the MCP server for one company's figures, saying "
+             "how many people each comes from. Company details come from Spain "
              "Tech Radar (CC BY 4.0) and Levels.fyi. Once a day the site also publishes a list "
              "of the open positions at the companies it lists, taken from their public job "
              "boards (Greenhouse, Lever, Ashby, Workday and others): only positions in Spain or "
@@ -1390,9 +1437,11 @@ LEGAL = {
              "no hay publicidad."),
             ("Qué publica la web", "Medianas de los sueldos que la gente ha reportado en "
              "Levels.fyi para trabajos en España, nunca una fila por persona: cada cifra del "
-             "mapa, la matriz, el JSON y el servidor MCP sale de 5 personas o más, la mitad "
-             "central incluida, y todas las cifras en euros se redondean a 1.000 €. La tabla de "
-             "empresas también muestra empresas con menos sueldos, igualmente redondeados. Los "
+             "mapa y la matriz, y cada cifra de varias empresas en el JSON y el servidor MCP, "
+             "sale de 5 personas o más, la mitad central incluida, y todas las cifras en euros "
+             "se redondean a 1.000 €. La tabla de empresas también muestra empresas con menos "
+             "sueldos, igualmente redondeados, y lo mismo hacen el JSON y el servidor MCP con "
+             "las cifras de cada empresa, diciendo de cuántas personas sale cada una. Los "
              "datos de cada empresa vienen de Spain Tech Radar (CC BY 4.0) y Levels.fyi. Una vez "
              "al día la web publica también una lista de las ofertas abiertas de las empresas "
              "que muestra, sacada de sus portales de empleo públicos (Greenhouse, Lever, Ashby, "
@@ -1497,7 +1546,8 @@ def main(argv: list[str]) -> int:
     (OUT / "api" / "v1").mkdir(parents=True)
     data["instructions"] = mcp_instructions(data)
     # boards.json is api/boards.js, which serves this file and counts the download.
-    files = {"data.json": dump(data), "boards-list.json": dump(job_boards(data, tables))}
+    files = {"data.json": dump(data), "boards-list.json": dump(job_boards(data, tables)),
+             "company-cells.json": dump(company_cells(tables))}
     files.update({f"companies/{name or 'all'}.json": dump(t) for name, t in tables.items()})
     # Like asset_version, for the JSON the page fetches: a browser holding
     # yesterday's tables under the same URL would run new code on old fields.
@@ -1623,11 +1673,17 @@ def mcp_instructions(data: dict) -> str:
     holds no text of its own and the thresholds come from the same build."""
     return (
         "Salaries of people working in Spain, from Levels.fyi submissions, in euros per year. "
-        "Base is gross salary; total adds bonus and stock. "
-        f"Every figure, the middle half (p25-p75) included, comes from {data['min_group']} or "
-        "more people, and euro figures are rounded to the nearest "
-        f"{data['round_eur']}; a selection with fewer returns no result, so widen it instead "
-        "of guessing. Only companies whose median base over all their salaries reaches "
+        "Base is gross salary; total adds bonus and stock. Euro figures are rounded to the "
+        f"nearest {data['round_eur']}. salary_stats, across companies, gives a figure only from "
+        f"{data['min_group']} or more people, the middle half (p25-p75) included; a selection "
+        "with fewer returns no result, so widen it instead of guessing. The company tools "
+        "(top_companies, company_salaries and the company figure in find_jobs) answer for every "
+        "company the site's companies table lists, down to one salary, as the site does: each "
+        f"figure says how many people it comes from, few: true marks fewer than {data['min_group']}, "
+        "and a figure from one person is that person's salary, rounded, so say so when quoting it. "
+        f"p25-p75 come only from {data['quartile_min']} or more people, and top_companies lists "
+        f"companies with fewer than {data.get('min_ranked', lib.MIN_RANKED)} salaries after the rest. "
+        "Only companies whose median base over all their salaries reaches "
         "company_floor_eur (see list_filters) are counted; say so when quoting a figure for "
         "Spain. A company is also listed only with a LinkedIn page or a website and "
         f"{data.get('min_global', lib.MIN_GLOBAL)} or more submissions on Levels.fyi from "
@@ -1642,12 +1698,17 @@ def llms_txt(data: dict) -> str:
 
 > What tech and other professional jobs pay in Spain: medians of yearly gross
 > salaries in euros, by role, region and years of experience, from Levels.fyi
-> submissions. Every figure comes from {data['min_group']} or more people. Data as of {data['data_as_of']}.
+> submissions. Every figure comes from {data['min_group']} or more people, except one
+> company's own, which the companies table shows down to one salary. Data as of {data['data_as_of']}.
 
 Base is gross yearly salary; total adds bonus and stock. Spain only: no
 salary from another country is ever mixed in. A selection with fewer than
 {data['min_group']} people has no figure, the middle half (p25-p75) included;
-widen it rather than estimate. Every euro figure is rounded to the nearest {data['round_eur']:,} EUR. A company counts
+widen it rather than estimate. The one exception is a company's own figures:
+the companies table, and the MCP server's company tools with it, list every
+company with data under the filters, one salary included, each with how many
+people it comes from; one person's figure is that person's salary, rounded.
+Every euro figure is rounded to the nearest {data['round_eur']:,} EUR. A company counts
 only when its median base over all its salaries reaches {data['company_floor']:,} EUR,
 it has a LinkedIn page or a website, and it has {data.get('min_global', lib.MIN_GLOBAL)} or
 more submissions on Levels.fyi from anywhere in the world over every role.
@@ -1661,7 +1722,8 @@ them the steps under Tools. The code is open at {REPO}.
 ## Data
 
 - [All aggregates for agents (markdown)]({SITE}/llms-full.txt): national, per role, region, experience and the best-paying companies
-- [All aggregates (JSON)]({SITE}/api/v1/data.json): `cells["role|region|years"]` (empty part = all) gives n, median, p25, p75 (null under {data['quartile_min']} people), total, share at 60k+; `company_cells` the same per company, `c` indexing `companies`
+- [All aggregates (JSON)]({SITE}/api/v1/data.json): `cells["role|region|years"]` (empty part = all) gives n, median, p25, p75 (null under {data['quartile_min']} people), total, share at 60k+; `company_cells` the same per company from {data['min_group']} people, `c` indexing `companies`
+- [Companies table by selection (JSON)]({SITE}/api/v1/company-cells.json): the site's companies table keyed like `cells`, every company with data down to one salary, rows in `fields` order (`c` indexing data.json's `companies`); what the MCP server's company tools read
 - [Open postings (JSON)]({SITE}/api/v1/jobs.json): the open postings at the companies listed here, refreshed daily from their public job boards (Greenhouse, Lever, Ashby, Workday and others); only postings in Spain or remote open to Spain or Europe, and nothing about any person; `find_jobs` searches it
 - [Job boards (JSON)]({SITE}/api/v1/boards.json): the companies listed here whose job board is known (`ats`, `board`, `tier` A/B/C by the engineers' median, `tags`), the list the daily postings are read from
 
@@ -1729,7 +1791,9 @@ def llms_full(data: dict) -> str:
                      + _table(head, rows))
 
     parts.append("Narrower selections (a role in a region, a company by role) are in "
-                 f"[data.json]({SITE}/api/v1/data.json) and through the MCP server. The open "
+                 f"[data.json]({SITE}/api/v1/data.json), every company the companies table "
+                 f"lists in [company-cells.json]({SITE}/api/v1/company-cells.json), and both "
+                 "through the MCP server. The open "
                  f"postings at these companies, refreshed daily, are in [jobs.json]({SITE}/api/v1/jobs.json) "
                  "and through the MCP server's find_jobs.")
     return "\n\n".join(parts) + "\n"
