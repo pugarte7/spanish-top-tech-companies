@@ -137,7 +137,15 @@ The one exception is the companies table: on 2026-11-01 the maintainer chose
 to list every company with data under the filters, one salary included, with
 its summary and its bars per experience band (`site.company_filters()`),
 still rounded. A role with 85 salaries had listed one company. data.json,
-the map, the matrix and the MCP keep MIN_GROUP. Since 2026-11-02 a company
+the map and the matrix keep MIN_GROUP. On 2026-11-04 the MCP's company tools
+followed the table ("si hay datos en la web el mcp lo pilla, nada de lo de
+mínimo de 5"): 6 of the first 13 `company_salaries` calls had failed.
+`top_companies`, `company_salaries` and `find_jobs`' salary_context read
+`/api/v1/company-cells.json`, the table's own rows re-keyed by
+`site.company_cells()`, flag a figure under MIN_GROUP with `few: true` and
+sort under MIN_RANKED after the rest; `salary_stats` keeps MIN_GROUP. A
+company the site does not list stays unknown, with close names offered and
+nothing said about why. Since 2026-11-02 a company
 with fewer than MIN_RANKED salaries in Spain (`n` in data.json's `companies`)
 has its median greyed with an asterisk; the asterisk opens a card naming the
 company and its count (real company, figure from one or two people), and a
