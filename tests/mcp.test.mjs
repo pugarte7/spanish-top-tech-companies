@@ -345,7 +345,8 @@ report("best salary figure first, then the newest", (() => {
   return everything.every((j, k) => k === 0 || figure(everything[k - 1]) > figure(j) ||
     (figure(everything[k - 1]) === figure(j) && String(everything[k - 1].posted_at ?? "") >= String(j.posted_at ?? "")));
 })());
-const many = { ...index, jobs: Array.from({ length: 80 }, (_, k) => ({ ...index.jobs[0], id: `greenhouse:glovo:${k}` })) };
+const many = { ...index, jobs: Array.from({ length: 80 }, (_, k) => ({ ...index.jobs[0], id: `greenhouse:glovo:${k}`,
+  title: `Backend Engineer ${k}` })) };
 report("find_jobs returns at most 50", (await run("find_jobs", { limit: 500 }, { jobs: many })).structuredContent.returned === 50);
 const missing = await quietly(() => run("find_jobs", {}, { jobs: async () => { throw new Error("jobs.json answered 404"); } }));
 report("a missing index is a tool error that says so", missing.isError === true &&
@@ -360,6 +361,30 @@ const httpFound = await viaHttp("find_jobs", { company: "cabify" });
 report("over HTTP: a missing jobs.json is a tool error, and is read once it exists",
   httpMissing.isError === true && httpFound.structuredContent.jobs.length === 1 &&
   httpFound.structuredContent.generated_at === index.generated_at);
+
+// --- One opening posted once per office is one result ------------------------------
+const office = (n, location, posted) => ({ ...index.jobs[0], id: `greenhouse:workato:89298${n}002`, company: "Workato",
+  slug: "workato", title: n === 3 ? "Senior Software Engineer (GOlang, Engine)" : "Senior Software Engineer (Golang, engine)",
+  url: `https://job-boards.greenhouse.io/workato/jobs/89298${n}002`, location, posted_at: posted });
+const offices = { ...index, jobs: [office(0, "Barcelona, Spain", "2026-11-01"), office(3, "Barcelona; Madrid", "2026-11-03"),
+  office(8, "Barcelona; Valencia", "2026-11-02"), { ...index.jobs[0], id: "greenhouse:workato:1", company: "Workato",
+  slug: "workato", title: "Staff Software Engineer" }, ...index.jobs] };
+const grouped = (await run("find_jobs", { query: "engineer", region: "Barcelona", limit: 3 }, { jobs: offices })).structuredContent;
+const workato = grouped.jobs.filter((j) => j.company === "Workato");
+report("one company's postings with the same title are one result", workato.length === 2 &&
+  workato[0].id === "greenhouse:workato:892983002" &&
+  workato[0].also_posted_as.map((o) => o.id).join() === "greenhouse:workato:892988002,greenhouse:workato:892980002" &&
+  workato[0].also_posted_as.every((o) => o.location && o.url) && workato[1].also_posted_as.length === 0, workato);
+report("matches and returned count results, and grouped says how many merged",
+  grouped.returned === 3 && grouped.postings_matched === grouped.matches + 2 &&
+  grouped.grouped.startsWith(`${grouped.postings_matched} postings merged into ${grouped.matches} results`), grouped);
+const rest = (await run("find_jobs", { company: "workato", exclude: ["greenhouse:workato:892983002"] }, { jobs: offices })).structuredContent;
+const kept = rest.jobs.find((j) => /Golang/i.test(j.title));
+report("excluding one id of a group keeps the rest of the group", rest.filters.excluded === 1 &&
+  kept.id === "greenhouse:workato:892988002" && kept.also_posted_as.map((o) => o.id).join() === "greenhouse:workato:892980002");
+const gone = (await run("find_jobs", { company: "workato", exclude: ["greenhouse:workato:892983002",
+  "greenhouse:workato:892988002", "greenhouse:workato:892980002"] }, { jobs: offices })).structuredContent;
+report("excluding every id of a group removes it", gone.jobs.every((j) => !/Golang/i.test(j.title)) && gone.matches === 1);
 
 // --- Cities: a region for the salary tools, a narrower filter for find_jobs ----------
 const jobsIn = async (region) => (await run("find_jobs", { region })).structuredContent;
