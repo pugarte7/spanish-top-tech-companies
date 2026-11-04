@@ -457,7 +457,7 @@ export async function company(data, name, args = {}, env = {}) {
     const close = closeNames(companies.map(([c]) => c), name);
     throw new QueryError(`The site has no salaries for a company named '${name}'. It lists the ` +
       "companies with salaries in Spain on Levels.fyi that pass its rules (a LinkedIn page or a " +
-      "website, company_floor_eur and min_global_submissions in list_filters), so a company can be " +
+      "website, and min_global_submissions in list_filters), so a company can be " +
       "missing for any of them, or go by another name. " + (close.length
         ? `Close names on the site: ${close.join(", ")}.`
         : "top_companies with search finds a company by part of its name."));
@@ -496,7 +496,7 @@ export function filters(data) {
     regions: data.regions, years: data.years, min_group: data.min_group,
     min_ranked: data.min_ranked ?? null,
     quartile_min: data.quartile_min ?? null, round_eur: data.round_eur ?? null,
-    threshold_eur: data.threshold, company_floor_eur: data.company_floor ?? null,
+    threshold_eur: data.threshold,
     min_base_eur: data.min_base ?? null, min_global_submissions: data.min_global ?? null,
     reported: data.reported ?? null,
     data_as_of: data.data_as_of || data.generated,

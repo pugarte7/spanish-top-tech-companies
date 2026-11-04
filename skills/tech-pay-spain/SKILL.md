@@ -66,9 +66,7 @@ server over stdio.
   `people: 1` it is one person's salary, rounded to 1,000. Say how many
   people a company figure comes from when it is few.
 - Spain only. Do not mix in figures from other countries.
-- Only companies whose median base over all their salaries reaches a floor
-  (`company_floor_eur` in `list_filters`) are counted, so figures leave out
-  the lowest-paying employers. Say so when quoting a figure for Spain.
+- Every company is counted, whatever it pays.
 - A company is listed only with a LinkedIn page or a website and at least 5
   submissions on Levels.fyi from anywhere in the world over every role
   (`min_global_submissions` in `list_filters`). A company missing from the
