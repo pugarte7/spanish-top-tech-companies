@@ -11,10 +11,16 @@ name: deploy
 # optionally the variable SITE_URL (e.g. https://tech-pay-spain.vercel.app)
 # for absolute links in llms.txt. Without the token it builds and tests but
 # does not deploy.
+#
+# The build also crawls the job boards into /api/v1/jobs.json (vercel.json's
+# buildCommand runs scripts/jobs.mjs after site.py), so the daily schedule
+# below republishes the same commit with today's postings; nothing is committed.
 
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: "17 4 * * *"   # 05:17 in Madrid in winter, 06:17 in summer
   workflow_dispatch:
 
 concurrency:
@@ -46,6 +52,10 @@ jobs:
       - name: Build site
         if: env.VERCEL_TOKEN == ''
         run: python3 scripts/site.py
+
+      # autoapply-mcp, whose adapters scripts/jobs.mjs crawls the boards with.
+      - name: Install
+        run: npm ci --omit=dev
 
       - name: Build for Vercel
         if: env.VERCEL_TOKEN != ''

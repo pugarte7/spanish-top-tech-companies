@@ -8,5 +8,8 @@
   },
   "devDependencies": {
     "@playwright/test": "1.55.0"
+  },
+  "dependencies": {
+    "autoapply-mcp": "0.3.4"
   }
 }
