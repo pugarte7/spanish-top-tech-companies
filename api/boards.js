@@ -2,12 +2,15 @@
 // autoapply-mcp's load_preset spain downloads. The list itself is the static
 // /api/v1/boards-list.json that scripts/site.py writes; this serves it and counts
 // the download, the one signal of autoapply-mcp being used, since it runs on each
-// person's machine and sends nothing else. The version comes from its User-Agent:
-// "autoapply-mcp/0.1" is every release up to 0.3.2, which all said 0.1.
+// person's machine and sends nothing else unless the person allows technical data
+// (api/telemetry.js). The version comes from its User-Agent: "autoapply-mcp/0.1"
+// is every release up to 0.3.2, which all said 0.1. From 0.3.4 `?run=` says
+// whether it is a first setup or the daily refresh: installs and installs in use.
 
 import { after, capture, cut, event, origin } from "./_track.js";
 
 const CLIENT = /^autoapply-mcp\/([0-9A-Za-z.+-]{1,32})/;
+const RUNS = new Set(["setup", "refresh"]);
 
 export default {
   async fetch(request) {
@@ -20,6 +23,7 @@ export default {
       await after(capture([event("boards_download", {
         client: found ? "autoapply-mcp" : "other",
         autoapply_version: found?.[1],
+        run: RUNS.has(url.searchParams.get("run")) ? url.searchParams.get("run") : undefined,
         user_agent: cut(agent),
         ok: list.ok,
         ...origin(headers),

@@ -55,7 +55,7 @@ jobs:
           vercel build --prod --token="$VERCEL_TOKEN"
 
       - name: /mcp answers
-        run: node tests/mcp.test.mjs
+        run: node tests/mcp.test.mjs && node tests/telemetry.test.mjs
 
       - name: Deploy to Vercel
         if: env.VERCEL_TOKEN != ''
