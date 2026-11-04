@@ -15,10 +15,13 @@
 //
 // vercel.json runs it after site.py in the build, so every deploy and the
 // daily scheduled one (deploy.yml) publish a fresh index. It never fails the
-// build: a board that fails is counted under boards.issues and the rest are
-// published; a crawl that cannot run, or reaches no board at all, publishes
-// production's previous jobs.json unchanged (its generated_at says how old),
-// or no file when that cannot be read either.
+// build. A host that refuses is retried with growing waits and slowed down.
+// A board that still fails is counted under boards.issues, and its postings
+// in production's previous jobs.json are carried over unchanged for up to a
+// week (boards.stale, boards.stale_since); a board that answers 404 or with
+// no postings has none. A crawl that cannot run at all publishes production's
+// previous jobs.json unchanged (its generated_at says how old), and with no
+// board read and nothing to carry over there is no file.
 
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
@@ -50,6 +53,19 @@ const DEFAULTS = {
   minutes: Number(process.env.JOBS_MAX_MINUTES) || 20,
   concurrency: 6,
 };
+
+const THROTTLE_STATUS = new Set([402, 403, 405, 429, 503]);
+/** First wait after a host refuses; the waits double up to eight times this. */
+const BACKOFF_MS = 15_000;
+/** Attempts per board, the first included. */
+const MAX_TRIES = 4;
+/** Refusals in a row after which a host is left alone for the run: after
+ * waits of 15s, 30s, 60s and 2 min, so a host that blocks the build's address
+ * all day costs a deploy four minutes, not the whole time limit. */
+const HOST_STRIKES = 5;
+/** Days a failing board's postings are carried over from the previous index. */
+const STALE_DAYS = 7;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const norm = (s) => String(s ?? "").normalize("NFKD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
 
@@ -176,27 +192,61 @@ export async function crawl(boardsList, data, autoapply, opts = {}) {
       continue;
     }
     if (!queues.has(host)) queues.set(host, []);
-    queues.get(host).push({ board, company });
+    queues.get(host).push({ board, company, tries: 1 });
   }
 
-  const pending = [...queues.values()];
-  const worker = async () => {
-    for (let queue = pending.shift(); queue; queue = pending.shift()) {
-      for (const { board, company } of queue) {
-        if (Date.now() > deadline) { fail(board, "timeout", "crawl time limit reached"); continue; }
-        const result = await discoverJobs([company]);
-        if (result.issues.length) {
-          for (const issue of result.issues) fail(board, issue.code, issue.message);
-          continue;
-        }
-        done.add(board);
-        const slug = slugOf(board);
+  // A host that refuses (403 and the like) is backing off, not saying the board
+  // is gone: the board goes to the back of its host's queue, the host waits
+  // 15s, 30s, 60s, then 2 min after each refusal in a row, and every later
+  // board on it is spaced further apart for the rest of the run. Greenhouse
+  // refused GitHub's runner the first 24 of its 37 boards on the first daily
+  // build, then served the rest.
+  const backoff = opts.backoffMs ?? BACKOFF_MS;
+  let retries = 0;
+  const runHost = async (host, queue) => {
+    let gap = 0;
+    let strikes = 0;
+    while (queue.length) {
+      const item = queue.shift();
+      if (Date.now() > deadline) { fail(item.board, "timeout", "crawl time limit reached"); continue; }
+      const result = await discoverJobs([item.company]);
+      const issue = result.issues[0];
+      if (issue && throttled(issue) && strikes + 1 >= HOST_STRIKES) {
+        // Refused that many times running: the host is not letting this run
+        // in today, so its boards are left to the previous index.
+        log(`  ${host} refused ${HOST_STRIKES} times in a row; skipping its other ${queue.length} boards`);
+        for (const rest of [item, ...queue.splice(0)]) fail(rest.board, issue.code, issue.message);
+        break;
+      }
+      if (issue && throttled(issue) && item.tries < MAX_TRIES && Date.now() < deadline) {
+        item.tries += 1;
+        retries += 1;
+        strikes += 1;
+        gap = Math.min(backoff, Math.max(gap * 2, backoff / 5));
+        const wait = Math.min(backoff * 2 ** (strikes - 1), backoff * 8, Math.max(0, deadline - Date.now()));
+        log(`  ${host} refused ${item.board.name} (${issue.message.slice(0, 80)}); retrying in ${Math.round(wait / 1000)}s`);
+        queue.push(item);
+        await sleep(wait);
+        continue;
+      }
+      // Any answer, a 404 included, means the host is serving again.
+      if (!issue || !throttled(issue)) strikes = 0;
+      if (issue) {
+        for (const each of result.issues) fail(item.board, each.code, each.message);
+      } else {
+        done.add(item.board);
+        const slug = slugOf(item.board);
         for (const job of result.jobs) {
-          const row = entry(job, board, slug, location);
+          const row = entry(job, item.board, slug, location);
           if (row) jobs.set(row.id, row);
         }
       }
+      if (queue.length && gap) await sleep(gap);
     }
+  };
+  const pending = [...queues.entries()];
+  const worker = async () => {
+    for (let next = pending.shift(); next; next = pending.shift()) await runHost(...next);
   };
   const workers = Array.from({ length: Math.min(opts.concurrency ?? DEFAULTS.concurrency, pending.length) }, worker);
   // A request already on the wire past the deadline is abandoned, not awaited.
@@ -214,10 +264,51 @@ export async function crawl(boardsList, data, autoapply, opts = {}) {
     index: {
       version: VERSION,
       generated_at: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
-      boards: { queried, failed, issues: Object.fromEntries(Object.entries(issues).sort()) },
+      boards: { queried, failed, stale: 0, stale_since: {},
+                issues: Object.fromEntries(Object.entries(issues).sort()) },
       jobs: sortJobs([...jobs.values()]),
     },
     failures,
+    retries,
+  };
+}
+
+/** A refusal or an outage, which may pass, rather than an answer about the
+ * board. 402/403/405/429/503 are how ATS hosts throttle; autoapply's client
+ * already retries 429 and 5xx a couple of times and reports them as
+ * retryable_http. */
+export function throttled(issue) {
+  if (["retryable_http", "network_error"].includes(issue.code)) return true;
+  return THROTTLE_STATUS.has(Number(/\bHTTP (\d{3})\b/.exec(issue.message)?.[1]));
+}
+
+const boardKey = (failure) => `${failure.ats}:${failure.board}`;
+
+/**
+ * Carries over, unchanged, the postings production's previous index had for
+ * each board that failed this run, so one bad day at a host does not empty
+ * those companies. Only a board that answered loses its postings: an empty
+ * list is a success, and not_found (404) means the board is gone. A board
+ * carried over since before `maxDays` ago is dropped: its postings may have
+ * closed. `stale_since` keeps, per board, when it was last read.
+ */
+export function carryOver(index, failures, previous, now = Date.now(), maxDays = STALE_DAYS) {
+  if (!isIndex(previous)) return index;
+  const since = {};
+  for (const failure of failures) {
+    if (failure.code === "not_found") continue;
+    const key = boardKey(failure);
+    const read = previous.boards?.stale_since?.[key] ?? previous.generated_at;
+    if (now - Date.parse(read) <= maxDays * 86_400_000) since[key] = read;
+  }
+  const kept = previous.jobs.filter((job) => since[job.id.split(":").slice(0, 2).join(":")]);
+  const carried = Object.keys(since).filter((key) => kept.some((job) => job.id.startsWith(`${key}:`)));
+  const ids = new Set(index.jobs.map((job) => job.id));
+  return {
+    ...index,
+    boards: { ...index.boards, stale: carried.length,
+              stale_since: Object.fromEntries(carried.sort().map((key) => [key, since[key]])) },
+    jobs: sortJobs([...index.jobs, ...kept.filter((job) => !ids.has(job.id))]),
   };
 }
 
@@ -291,11 +382,27 @@ async function main() {
     const result = await crawl(boardsList, data, await loadAutoapply(), opts);
     const { boards } = result.index;
     const seconds = Math.round((Date.now() - started) / 1000);
-    log(`${boards.queried} boards queried, ${boards.failed} failed, ${result.index.jobs.length} postings kept, ${seconds}s`);
+    log(`${boards.queried} boards queried, ${boards.failed} failed, ${result.retries} retries, ` +
+        `${result.index.jobs.length} postings kept, ${seconds}s`);
     for (const [code, n] of Object.entries(boards.issues)) log(`  ${code}: ${n}`);
     for (const f of result.failures) log(`  - ${f.company} (${f.ats}:${f.board}) ${f.code}: ${f.message.slice(0, 160)}`);
-    if (boards.queried > 0 && boards.failed === boards.queried) reason = "no board could be read";
-    else index = result.index;
+    index = result.index;
+    if (result.failures.some((f) => f.code !== "not_found")) {
+      const prior = await previous(opts.previous);
+      if (typeof prior === "object") {
+        index = carryOver(index, result.failures, prior);
+        log(`carried over ${index.jobs.length - result.index.jobs.length} postings of ${index.boards.stale} ` +
+            `failed boards from production's index of ${prior.generated_at}`);
+      } else {
+        log(`failed boards not carried over; previous ${opts.previous}: ${prior}`);
+      }
+    }
+    // An index with no board read and nothing carried over would read as "no
+    // openings anywhere"; no file says the truth.
+    if (boards.queried > 0 && boards.failed === boards.queried && !index.boards.stale) {
+      log("no board could be read and none carried over; no index published");
+      return;
+    }
   } catch (error) {
     reason = String(error?.stack ?? error);
   }

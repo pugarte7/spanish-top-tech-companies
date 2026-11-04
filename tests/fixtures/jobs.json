@@ -1,7 +1,7 @@
 {
   "version": 1,
   "generated_at": "2026-11-04T04:20:00Z",
-  "boards": { "queried": 9, "failed": 1, "issues": { "ashby:not_found": 1 } },
+  "boards": { "queried": 9, "failed": 1, "stale": 0, "stale_since": {}, "issues": { "ashby:not_found": 1 } },
   "jobs": [
     {
       "id": "greenhouse:cabify:8900000001",
