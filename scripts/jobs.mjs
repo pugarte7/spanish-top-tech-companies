@@ -8,9 +8,9 @@
 //     node scripts/jobs.mjs --fixture tests/fixtures/jobs.json   # offline copy
 //
 // The boards are _site/api/v1/boards-list.json (site.py, from data/boards.json)
-// and every fetch goes through autoapply-mcp's own adapters and polite client
+// and every fetch goes through the ATS adapters and polite client in lib/ats
 // (per-host interval, retries, timeouts), so the postings and their location
-// classes are exactly what autoapply-mcp would see. Boards are crawled one at a
+// classes are exactly what lib/ats sees. Boards are crawled one at a
 // time per host, hosts side by side.
 //
 // vercel.json runs it after site.py in the build, so every deploy and the
@@ -28,12 +28,12 @@ import { dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 
 export const VERSION = 1;
-/** autoapply-mcp's location classes for an office in Spain, or remote from it.
+/** lib/ats location classes for an office in Spain, or remote from it.
  * Its "europe" is an office in another European country, or remote from one
  * of them, unless the place is Europe as a whole ("Home based - EMEA"). */
 const SPAIN_CLASSES = new Set(["spain", "remote-spain", "remote-europe"]);
 /** An office that names no place, only remoteness: "Remote", "Distributed",
- * "Home based - Worldwide". autoapply calls any remote office it cannot place
+ * "Home based - Worldwide". lib/ats calls any remote office it cannot place
  * remote-global, "Remote India" and "Sydney" on a remote posting included. */
 const NO_PLACE = /^(?:remote|fully|100%|work|from|at|home|based|distributed|anywhere|worldwide|global|globally|virtual|wfh|flexible|international|[\s\-–—:,/()[\]&.])+$/i;
 const REMOTE_WORD = /remote|home|distributed|anywhere|worldwide|global|virtual|wfh/i;
@@ -76,15 +76,15 @@ export function slugFinder(data) {
   return (board) => byName.get(norm(board.name)) ?? null;
 }
 
-/** One string per office, split as autoapply's classifier splits them. */
+/** One string per office, split as lib/ats's classifier splits them. */
 const officesOf = (job) => job.locationsRaw.flatMap((v) => v.split(/\s*[;|]\s*/)).map((v) => v.trim()).filter(Boolean);
 
 /**
  * The posting's location classes when a person living in Spain could take it,
  * else null: an office in Spain, remote from Spain or from Europe, or remote
- * with no place named at all. Each office is classed on its own by autoapply's
+ * with no place named at all. Each office is classed on its own by lib/ats's
  * analyzeLocation, as its gates do (jobLocationClasses), with two corrections:
- * an office naming only remoteness is remote-global (autoapply reads "Home
+ * an office naming only remoteness is remote-global (lib/ats reads "Home
  * based - Worldwide" as other), and remote Europe as a whole is remote-europe
  * ("Home based - EMEA", which it reads as an office in Europe). A placeless
  * "Remote" beside a named office elsewhere ("Distributed; Atlanta, GA") is
@@ -101,7 +101,7 @@ export function openToSpain(job, analyzeLocation) {
       return { placeless, europeWide, raw: locationClass,
                cls: placeless ? "remote-global" : europeWide && remote ? "remote-europe" : locationClass };
     });
-  // job.locationClass is one office's class, or one autoapply read from the
+  // job.locationClass is one office's class, or one lib/ats read from the
   // title or the board's published country, which the offices do not show.
   // Its "other" for Recruitee's "Barcelona, Catalunya [Cataluña], Spain" says
   // nothing the offices do not.
@@ -115,7 +115,7 @@ export function openToSpain(job, analyzeLocation) {
 }
 
 /** Pay the board publishes in its own fields. Pay read out of the description
- * is left out: autoapply's parser reads Affirm's equity grant as a salary, and
+ * is left out: lib/ats's parser reads Affirm's equity grant as a salary, and
  * a multi-country posting's text often gives another country's range. */
 function salary(comp) {
   if (!comp || comp.source !== "ats-structured" || !PERIODS.has(comp.period)) return null;
@@ -125,8 +125,8 @@ function salary(comp) {
   return { min, max, currency: comp.currency, period: comp.period };
 }
 
-/** One index entry from autoapply-mcp's normalized Job, or null when nobody
- * in Spain could take it. `location` is autoapply's ranking/location module. */
+/** One index entry from lib/ats's normalized Job, or null when nobody
+ * in Spain could take it. `location` is lib/ats's ranking/location module. */
 export function entry(job, board, slug, location) {
   const classes = openToSpain(job, location.analyzeLocation);
   if (!classes) return null;
@@ -137,7 +137,7 @@ export function entry(job, board, slug, location) {
     tier: board.tier ?? null,
     title: job.title,
     // Greenhouse's absolute_url is often the employer's marketing page; its
-    // hosted posting (description and form) is the apply URL autoapply keeps.
+    // hosted posting (description and form) is the apply URL lib/ats keeps.
     url: job.ats === "greenhouse" ? job.applyUrl || job.url : job.url || job.applyUrl,
     ats: job.ats,
     // The board's text, once per office: Greenhouse repeats the primary
@@ -145,7 +145,7 @@ export function entry(job, board, slug, location) {
     location: [...new Map(officesOf(job).map((v) => [v.toLowerCase(), v])).values()].join("; "),
     location_classes: classes,
     workplace: WORKPLACES.has(job.workplaceType) ? job.workplaceType : null,
-    // autoapply's normalized Job does not carry the board's department.
+    // lib/ats's normalized Job does not carry the board's department.
     department: null,
     posted_at: job.postedAt ?? null,
     salary: salary(job.compensation),
@@ -158,12 +158,12 @@ const sortJobs = (jobs) => jobs.sort((a, b) =>
   || a.id.localeCompare(b.id));
 
 /**
- * Crawls every board and returns the index. `autoapply` holds what is
- * taken from autoapply-mcp (discoverJobs and adapterFor, CompanySchema, the
+ * Crawls every board and returns the index. `ats` holds what is
+ * taken from lib/ats (discoverJobs and adapterFor, CompanySchema, the
  * location module), so a test can hand in the real ones over a stubbed fetch.
  */
-export async function crawl(boardsList, data, autoapply, opts = {}) {
-  const { discoverJobs, adapterFor, CompanySchema, location } = autoapply;
+export async function crawl(boardsList, data, ats, opts = {}) {
+  const { discoverJobs, adapterFor, CompanySchema, location } = ats;
   const deadline = Date.now() + (opts.minutes ?? DEFAULTS.minutes) * 60_000;
   const slugOf = slugFinder(data);
   const issues = {};
@@ -178,7 +178,7 @@ export async function crawl(boardsList, data, autoapply, opts = {}) {
     failures.push({ company: board.name, ats: board.ats, board: board.board, code, message });
   };
 
-  // One queue per host: autoapply's client spaces requests to a host, but only
+  // One queue per host: lib/ats's client spaces requests to a host, but only
   // for requests made one after another.
   const queues = new Map();
   for (const board of boardsList.companies ?? []) {
@@ -274,7 +274,7 @@ export async function crawl(boardsList, data, autoapply, opts = {}) {
 }
 
 /** A refusal or an outage, which may pass, rather than an answer about the
- * board. 402/403/405/429/503 are how ATS hosts throttle; autoapply's client
+ * board. 402/403/405/429/503 are how ATS hosts throttle; lib/ats's client
  * already retries 429 and 5xx a couple of times and reports them as
  * retryable_http. */
 export function throttled(issue) {
@@ -312,12 +312,12 @@ export function carryOver(index, failures, previous, now = Date.now(), maxDays =
   };
 }
 
-/** autoapply-mcp's modules, from the published package's compiled dist/. */
-export async function loadAutoapply() {
+/** The ATS modules in lib/ats (moved here from autoapply-mcp, MIT). */
+export async function loadAts() {
   const [registry, location, campaign] = await Promise.all([
-    import("autoapply-mcp/dist/sources/registry.js"),
-    import("autoapply-mcp/dist/ranking/location.js"),
-    import("autoapply-mcp/dist/domain/campaign.js"),
+    import("../lib/ats/sources/registry.js"),
+    import("../lib/ats/ranking/location.js"),
+    import("../lib/ats/domain/campaign.js"),
   ]);
   return { discoverJobs: registry.discoverJobs, adapterFor: registry.adapterFor,
            CompanySchema: campaign.CompanySchema, location };
@@ -376,10 +376,10 @@ async function main() {
   try {
     const boardsList = JSON.parse(readFileSync(opts.boards, "utf8"));
     const data = JSON.parse(readFileSync(opts.data, "utf8"));
-    // Says who is asking: this crawl is the site's, not someone's autoapply-mcp.
+    // Says who is asking: this crawl is the site's.
     process.env.AUTOAPPLY_USER_AGENT ??= `spanishtoptechcompanies-jobs/${VERSION} (+${SITE}; daily job index)`;
     process.env.AUTOAPPLY_LOG_LEVEL ??= "error";
-    const result = await crawl(boardsList, data, await loadAutoapply(), opts);
+    const result = await crawl(boardsList, data, await loadAts(), opts);
     const { boards } = result.index;
     const seconds = Math.round((Date.now() - started) / 1000);
     log(`${boards.queried} boards queried, ${boards.failed} failed, ${result.retries} retries, ` +

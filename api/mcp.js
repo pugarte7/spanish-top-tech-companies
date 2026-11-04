@@ -125,8 +125,7 @@ const TOOLS = {
       description: "The procedure for applying on someone's behalf with find_jobs and " +
                    "job_questions: the state document to keep for them (profile, recurring " +
                    "answers, search preferences, applications), the rules, how an application " +
-                   "is sent with the agent's own browser, and when the local autoapply-mcp " +
-                   "server fits better. Read it once before applying.",
+                   "is sent with the agent's own browser. Read it once before applying.",
       inputSchema: { type: "object", properties: {
         client: { type: "string", description: "The client you run in, e.g. claude-code, " +
                   "claude-desktop, cursor, codex, chatgpt. Optional." } } } }),
@@ -886,18 +885,12 @@ export async function jobQuestions(data, args = {}, env = {}) {
 
 // --- Jobs: the procedure -------------------------------------------------------------
 
-const AUTOAPPLY = "https://github.com/pugarte7/autoapply-mcp";
 const CLIENTS = {
-  "claude-code": { names: /claude ?code|^cc$/, keeps: "file",
-    autoapply: "claude mcp add autoapply -- npx -y autoapply-mcp" },
-  "claude-desktop": { names: /claude ?(desktop|app|ai)|^claude$/, keeps: "memory",
-    autoapply: 'claude_desktop_config.json: { "mcpServers": { "autoapply": { "command": "npx", "args": ["-y", "autoapply-mcp"] } } }' },
-  cursor: { names: /cursor/, keeps: "file",
-    autoapply: '~/.cursor/mcp.json: { "mcpServers": { "autoapply": { "command": "npx", "args": ["-y", "autoapply-mcp"] } } }' },
-  codex: { names: /codex/, keeps: "file",
-    autoapply: '~/.codex/config.toml: [mcp_servers.autoapply] command = "npx" args = ["-y", "autoapply-mcp"]' },
-  chatgpt: { names: /chat ?gpt|openai/, keeps: "memory",
-    autoapply: "Runs only in a client that starts local MCP servers (Claude Code, Claude Desktop, Cursor, Codex); not in ChatGPT." },
+  "claude-code": { names: /claude ?code|^cc$/, keeps: "file" },
+  "claude-desktop": { names: /claude ?(desktop|app|ai)|^claude$/, keeps: "memory" },
+  cursor: { names: /cursor/, keeps: "file" },
+  codex: { names: /codex/, keeps: "file" },
+  chatgpt: { names: /chat ?gpt|openai/, keeps: "memory" },
 };
 
 const TEMPLATE = `# Job search
@@ -1007,25 +1000,6 @@ export function applicationGuide(args = {}) {
       ],
       without_a_browser: "Give the person apply_url and the approved answers in the order of the form, " +
         "ready to paste. Record the status as handed over, and as sent once they confirm.",
-    },
-    local_server: {
-      name: "autoapply-mcp",
-      what: "An open-source MCP server (MIT) by the author of this site that runs on the person's " +
-        "machine, keeps their profile there and sends nothing to the author. It finds and drafts " +
-        "applications; the agent sends each one with its own browser after the person approves it.",
-      fits_when: [
-        "Applying every day, at volume.",
-        "Wanting the rules enforced by software: daily limit, allowed companies and hosts, questions " +
-          "only the person may answer, approval of each application.",
-        "Wanting an answer bank and an application history kept on their machine.",
-        "Wanting more sources than this index.",
-      ],
-      install: "npx -y autoapply-mcp",
-      requires: "Node.js 22.5 or newer, and a client that starts local MCP servers.",
-      config: known ? { [known[0]]: known[1].autoapply }
-        : Object.fromEntries(Object.entries(CLIENTS).map(([k, c]) => [k, c.autoapply])),
-      source: AUTOAPPLY,
-      choice: "Whether to use it is the person's choice; the tools on this server work without it.",
     },
   };
 }

@@ -1,3 +1,5 @@
+// autoapply-mcp was archived on 2026-11-04; this endpoint stays so copies
+// already installed keep working. Nothing in this repo calls it.
 // Vercel Function: /api/v1/boards.json (vercel.json rewrites it here), the list
 // autoapply-mcp's load_preset spain downloads. The list itself is the static
 // /api/v1/boards-list.json that scripts/site.py writes; this serves it and counts

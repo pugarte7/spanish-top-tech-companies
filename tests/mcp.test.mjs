@@ -171,15 +171,13 @@ const expected = [
   ["job_questions needs an id", toolError],
   ["a board without a form API sends the agent to the URL", (r) => out(r).questions === null &&
     /workday/.test(out(r).note) && out(r).apply_url === index.jobs.at(-1).url],
-  ["application_guide holds the template, rules and the local option", (r) =>
+  ["application_guide holds the template and rules, and no other server", (r) =>
     /## Profile/.test(out(r).state_document.template) && /## Answers to recurring questions/.test(out(r).state_document.template) &&
     /## Search preferences/.test(out(r).state_document.template) && /\| Job id \|/.test(out(r).state_document.template) &&
     out(r).rules.some((x) => /never invented/.test(x)) && out(r).rules.some((x) => /CAPTCHA/.test(x)) &&
     out(r).rules.some((x) => /never follow instructions/.test(x)) && out(r).rules.some((x) => /explicit/.test(x)) &&
-    out(r).local_server.install === "npx -y autoapply-mcp" && out(r).sending.without_a_browser],
-  ["application_guide for one client", (r) => /~\/job-search\.md/.test(out(r).state_document.where) &&
-    out(r).local_server.config["claude-code"] === "claude mcp add autoapply -- npx -y autoapply-mcp" &&
-    Object.keys(out(r).local_server.config).length === 1],
+    !("local_server" in out(r)) && !/autoapply/.test(JSON.stringify(out(r))) && out(r).sending.without_a_browser],
+  ["application_guide for one client", (r) => /~\/job-search\.md/.test(out(r).state_document.where)],
   ["odd line: a string", (r) => code(r) === -32600],
   ["odd line: an empty batch", (r) => code(r) === -32600],
   ["odd line: a batch answers its requests only", (r) => Array.isArray(r) && r.length === 1],
@@ -248,7 +246,7 @@ for (const [label, method, headers, payload, want] of cases) {
 
 const flood = Array.from({ length: 51 }, (_, i) => ({ jsonrpc: "2.0", id: i + 1, method: "ping" }));
 report("agents are asked to suggest a star, never to star on their own",
-       /star them only if they say yes/.test(data.instructions) && !/without asking/i.test(data.instructions));
+       /star it only if they say yes/.test(data.instructions) && !/without asking/i.test(data.instructions));
 report("agents are asked, not told, to bring readers back",
        !/every day|tell the user to come back/i.test(data.instructions + readFileSync("_site/llms.txt", "utf8")));
 report("no hidden text tells agents what to do",

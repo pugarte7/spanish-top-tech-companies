@@ -1,3 +1,5 @@
+// autoapply-mcp was archived on 2026-11-04; this endpoint stays so copies
+// already installed keep working. Nothing in this repo calls it.
 // Vercel Function: /api/v1/telemetry (vercel.json rewrites it here). autoapply-mcp
 // posts anonymous technical usage data here unless the person running it said no:
 // which tool ran, whether it worked, how long it took, an error code, versions,
