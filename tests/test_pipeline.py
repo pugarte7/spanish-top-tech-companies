@@ -857,8 +857,9 @@ def test_job_boards_follow_the_ranking() -> None:
 def test_companies_table_shows_any_data() -> None:
     """The companies table lists a company with any salary under the filters, and
     its row has a bar for every band someone reported, even one person
-    (maintainer, 2026-11-01). data.json's groups keep MIN_GROUP; tests/mcp.test.mjs
-    checks the MCP does too."""
+    (maintainer, 2026-11-01). data.json's groups keep MIN_GROUP. The MCP's
+    company tools read the same rows, re-keyed by company_cells() (maintainer,
+    2026-11-04); tests/mcp.test.mjs checks what they answer."""
     print("the companies table goes down to one person")
     import importlib.util
     spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
@@ -889,6 +890,17 @@ def test_companies_table_shows_any_data() -> None:
           [r[:3] for r in files[""]["cells"]["|"]], [[0, 5, 75000], [1, 2, 95000]])
     check("but data.json has no group of it",
           sorted(a["c"] for v in data["company_cells"].values() for a in v if a["c"] == 1), [])
+    mcp = site_build.company_cells(files)
+    check("the MCP's copy keys the table's rows like data.json, in the table's order",
+          ([r[:3] for r in mcp["cells"]["||"]], mcp["cells"]["||"][0] == files[""]["cells"]["|"][0][:7]),
+          ([[0, 5, 75000], [1, 2, 95000]], True))
+    check("with one person's band, and a region from its place file",
+          ([r[:3] for r in mcp["cells"]["||2-4"]], [r[:3] for r in mcp["cells"]["|MD|"]]),
+          ([[0, 1, 61000]], [[0, 5, 75000], [1, 2, 95000]]))
+    check("every MCP row is a row of the page's files", all(
+        any(r == row[:7] for f in files.values() for v in f.get("cells", {}).values()
+            if isinstance(v, list) for row in v)
+        for rows in mcp["cells"].values() for r in rows), True)
     check("a company with no LinkedIn and no website is on no table and in no group "
           "(maintainer, 2026-11-01: unverified)",
           ([c["name"] for c in data["companies"]], data["cells"]["||"]["n"]), (["Acme", "Beta"], 7))

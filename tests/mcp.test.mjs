@@ -10,9 +10,11 @@ import { redact } from "../api/_track.js";
 
 const DATA = "_site/api/v1/data.json";
 const JOBS = "tests/fixtures/jobs.sample.json";
+const COMPANIES = "_site/api/v1/company-cells.json";
 const data = JSON.parse(readFileSync(DATA, "utf8"));
 const index = JSON.parse(readFileSync(JOBS, "utf8"));
-const respond = (d, msg, env = { jobs: index }) => answer(d, msg, env);
+const table = JSON.parse(readFileSync(COMPANIES, "utf8"));
+const respond = (d, msg, env = {}) => answer(d, msg, { jobs: index, companies: table, ...env });
 const META = { "io.modelcontextprotocol/protocolVersion": "2026-07-28",
                "io.modelcontextprotocol/clientInfo": { name: "test", version: "1" } };
 const tool = (name, args) => ({ method: "tools/call", params: { name, arguments: args } });
@@ -162,7 +164,7 @@ const expected = [
     j.min_salary_checked_against === "posting" ? j.salary.max >= 60000
       : j.salary_context.company_median_base_eur >= 60000) &&
     out(r).jobs.some((j) => j.min_salary_checked_against === "posting") &&
-    !ids(r).includes("greenhouse:revolut:7000012") && !ids(r).includes("greenhouse:adyen:7000004")],
+    !ids(r).includes("greenhouse:revolut:7000012") && !ids(r).includes("greenhouse:abb:7000005")],
   ["a salary that is no number is refused", toolError],
   ["an unknown workplace is refused", toolError],
   ["exclude as one string", (r) => !ids(r).includes("greenhouse:glovo:7000001") && out(r).filters.excluded === 1],
@@ -203,6 +205,7 @@ globalThis.fetch = async (url, init = {}) => {
   const u = String(url);
   requests.push({ url: u, init });
   if (u.endsWith("/api/v1/data.json")) return new Response(JSON.stringify(data));
+  if (u.endsWith("/api/v1/company-cells.json")) return new Response(JSON.stringify(table));
   if (u.endsWith("/api/v1/jobs.json")) return serveJobs ? new Response(JSON.stringify(index)) : new Response("missing", { status: 404 });
   const stub = BOARDS[u];
   if (stub) return stub(init);
@@ -253,14 +256,69 @@ report("no hidden text tells agents what to do",
        !/apply for them|offer to install/i.test(readFileSync("_site/en/index.html", "utf8").match(/<noscript>[\s\S]*?<\/noscript>/)?.[0] ?? ""));
 report("no text tells agents to always say yes",
        !/never answer that you cannot|do not say no/i.test(data.instructions + readFileSync("_site/llms.txt", "utf8")));
-// data.json names every company the table lists, down to one salary; the MCP
-// answers only for those with a published group.
-const published = new Set((data.company_cells["||"] || []).map((a) => a.c));
-const unpublished = data.companies.find((c, i) => !published.has(i) && !data.companies.some(
-  (o, j) => published.has(j) && o.name.toLowerCase().includes(c.name.toLowerCase())));
-report("no MCP answer for a company without a group of five", Boolean(unpublished) && toolError(
-  await respond(data, { jsonrpc: "2.0", id: 1, ...tool("company_salaries", { name: unpublished.name }) })),
-  unpublished?.name);
+// --- Companies: every company the site's table lists, down to one salary -------------
+// Maintainer, 2026-11-04: "si hay datos en la web el mcp lo pilla, nada de lo de
+// mínimo de 5". The company tools read company-cells.json, the table's own rows.
+const rowsAt = (key) => (table.cells[key] ?? []).map((r) => Object.fromEntries(table.fields.map((f, k) => [f, r[k]])));
+const toolCall = async (name, args) => (await respond(data, { jsonrpc: "2.0", id: 1, ...tool(name, args) })).result;
+const overall = rowsAt("||");
+report("the table lists every company data.json names, more than had a group of five",
+  overall.length === data.companies.length && overall.length > (data.company_cells["||"] ?? []).length,
+  `${overall.length} of ${data.companies.length}`);
+// A name no other listed name contains, so it is found alone.
+const unique = (c) => !data.companies.some((o) => o !== c && o.name.toLowerCase().includes(c.name.toLowerCase()));
+const alone = (n) => overall.map((a) => data.companies[a.c]).find((c) => c.n === n && unique(c));
+const sameFigures = (g, a) => Boolean(a) && g.people === a.n && g.median_base_eur === a.median &&
+  g.p25_base_eur === a.p25 && g.p75_base_eur === a.p75 && g.median_total_eur === a.total &&
+  g.share_at_60k_base === a.share;
+for (const n of [1, 3]) {
+  const c = alone(n);
+  const got = (await toolCall("company_salaries", { name: c.name })).structuredContent;
+  const row = overall.find((a) => data.companies[a.c] === c);
+  report(`a company with ${n} salar${n === 1 ? "y" : "ies"} is returned with its count and the few flag`,
+    got?.company === c.name && got.salaries_in_spain === n && sameFigures(got.groups[0], row) &&
+    got.groups[0].people === n && got.groups.every((g) => g.few === true && g.p25_base_eur === null) &&
+    /one person it is that person's salary/.test(got.few_note), got);
+}
+const [bigCell, bigCompany] = (data.company_cells["||"] ?? []).map((a) => [a, data.companies[a.c]])
+  .find(([, c]) => unique(c));
+const bigGot = (await toolCall("company_salaries", { name: bigCompany.name })).structuredContent;
+report("a company of five or more keeps data.json's figures, unflagged", bigGot.groups[0].people === bigCell.n &&
+  bigGot.groups[0].median_base_eur === bigCell.median && bigGot.groups[0].p25_base_eur === bigCell.p25 &&
+  bigGot.groups[0].p75_base_eur === bigCell.p75 && bigGot.groups[0].few === false &&
+  bigGot.groups.every((g) => g.few === g.people < data.min_group), bigGot.groups[0]);
+const threeGot = (await toolCall("company_salaries", { name: alone(3).name })).structuredContent;
+report("every company figure is the table's own row", [bigGot, threeGot].every((got) => got.groups.every((g) =>
+  sameFigures(g, rowsAt(`${g.role ?? ""}|${g.region ?? ""}|${g.years ?? ""}`)
+    .find((a) => data.companies[a.c].name === got.company)))));
+const typo = await toolCall("company_salaries", { name: "Glvo" });
+report("a name the site does not list says so and offers close names", typo.isError === true &&
+  /The site has no salaries for a company named 'Glvo'/.test(typo.content[0].text) &&
+  /Close names on the site: Glovo/.test(typo.content[0].text), typo.content[0].text);
+const nothing = await toolCall("company_salaries", { name: "Zzyzx Quantum Holdings" });
+report("with nothing close, it points to top_companies' search", nothing.isError === true &&
+  /has no salaries/.test(nothing.content[0].text) && /top_companies with search/.test(nothing.content[0].text),
+  nothing.content[0].text);
+const ds = (await toolCall("top_companies", { role: "data-scientist", limit: 200 })).structuredContent;
+const thin = ds.result.map((x) => x.people < (data.min_ranked ?? 3));
+report("top_companies lists every company, under min_ranked salaries after the rest",
+  ds.companies_listed === rowsAt("data-scientist||").length && thin.includes(true) && thin.includes(false) &&
+  thin.indexOf(true) === thin.lastIndexOf(false) + 1 &&
+  ds.result.every((x, k) => k === 0 || thin[k] !== thin[k - 1] || ds.result[k - 1].median_base_eur >= x.median_base_eur) &&
+  ds.result.every((x) => x.few === x.people < data.min_group) && /after every company/.test(ds.order) &&
+  Boolean(ds.few_note), ds.result.map((x) => [x.people, x.median_base_eur]));
+// A selection the companies table lists but data.json withholds: the figure
+// across companies keeps its minimum, as on the map and the matrix.
+const small = Object.keys(table.cells).find((k) => {
+  const [r, , y] = k.split("|");
+  return !data.cells[k] && (!r || data.roles.some((x) => x.slug === r)) && (!y || data.years.includes(y));
+});
+const [sr, sg, sy] = small.split("|");
+const smallArgs = Object.fromEntries([["role", sr], ["region", sg], ["years", sy]].filter(([, v]) => v));
+const smallStats = (await toolCall("salary_stats", smallArgs)).structuredContent;
+const smallTop = (await toolCall("top_companies", smallArgs)).structuredContent;
+report("salary_stats still withholds under five where top_companies lists companies",
+  smallStats.result === null && /widen/.test(smallStats.reason) && smallTop.result.length > 0, small);
 report("a batch over 50 is refused", (await respond(data, flood)).error?.code === -32600);
 report("an internal failure tells the client nothing more", await (async () => {
   const quiet = console.error;
@@ -322,21 +380,27 @@ const quietly = async (fn) => {
   try { return await fn(); } finally { console.error = quiet; }
 };
 
-// salary_context is a company's role group from data.json, published only from
-// min_group people, and carries no more than top_companies shows (median, people).
+// salary_context is the company's row for the role in the site's companies table,
+// down to one person, and carries no more than top_companies shows (median, people).
 const everything = (await run("find_jobs", {})).structuredContent.jobs;
 const slugIndex = new Map(data.companies.map((c, i) => [c.levels, i]));
-report("salary context is the published group of five or more, or null", everything.every((j) => {
-  const cell = (data.company_cells[`${j.role}||`] ?? []).find((a) => a.c === slugIndex.get(j.slug));
+report("salary context is the table's row for the role, or null", everything.every((j) => {
+  const cell = rowsAt(`${j.role}||`).find((a) => a.c === slugIndex.get(j.slug));
   if (!cell) return j.salary_context === null;
   return j.salary_context.company_median_base_eur === cell.median && j.salary_context.people === cell.n &&
-    cell.n >= data.min_group && Object.keys(j.salary_context).sort().join() === "company_median_base_eur,people,role,scope";
+    j.salary_context.few === cell.n < data.min_group &&
+    Object.keys(j.salary_context).sort().join() === "company_median_base_eur,few,people,role,scope";
 }) && everything.some((j) => j.salary_context) && everything.some((j) => !j.salary_context));
-const adyen = slugIndex.get("adyen");
-report("a company on file without a role group of five gets no salary context",
-  !(data.company_cells["||"] ?? []).some((a) => a.c === adyen) ||
-  (data.company_cells["software-engineer||"] ?? []).some((a) => a.c === adyen) ||
-  everything.find((j) => j.id === "greenhouse:adyen:7000004").salary_context === null);
+const fewContext = everything.find((j) => j.salary_context?.few);
+report("a company with fewer than five for the role gets its figure, flagged", Boolean(fewContext) &&
+  fewContext.salary_context.people < data.min_group, fewContext?.salary_context);
+const noTable = await quietly(() => run("find_jobs", {}, { companies: async () => { throw new Error("404"); } }));
+report("without the companies table find_jobs still lists postings, with no salary context",
+  noTable.structuredContent.jobs.length === everything.length &&
+  noTable.structuredContent.jobs.every((j) => j.salary_context === null) &&
+  /could not be read/.test(noTable.structuredContent.salary_note));
+const noTop = await quietly(() => run("top_companies", {}, { companies: async () => { throw new Error("404"); } }));
+report("without it the company tools say so", noTop.isError === true && /company-cells\.json/.test(noTop.content[0].text));
 report("best salary figure first, then the newest", (() => {
   const figure = (j) => j.salary?.currency === "EUR" ? (j.salary.min + j.salary.max) / 2
     : j.salary_context?.company_median_base_eur ?? -1;

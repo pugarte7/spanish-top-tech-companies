@@ -9,8 +9,10 @@ metadata:
 # Spanish Top Tech Companies
 
 Medians of yearly gross salaries in euros of people working in Spain, from
-Levels.fyi submissions. Every figure, the middle half included, comes from 5
-or more people, and euro figures are rounded to the nearest 1,000.
+Levels.fyi submissions. Every figure across companies, the middle half
+included, comes from 5 or more people; one company's own figures go down to
+one salary, as on the site's companies table, each saying how many people it
+comes from. Euro figures are rounded to the nearest 1,000.
 
 ## Getting the numbers
 
@@ -19,9 +21,12 @@ The `tech-pay-spain` MCP server is always on at
 CORS). Connect to it and use its tools:
 
 - `salary_stats(role, region, years)`: median base, middle half, median total, share at 60k+.
-- `top_companies(role, region, years, search, limit)`: companies ranked by median base.
+- `top_companies(role, region, years, search, limit)`: every company with data
+  for the selection, by median base; companies with fewer than 3 salaries in
+  it come after the rest.
 - `company_salaries(name, role, region, years)`: one company, overall and by
-  role, region or years; give a role, region or years to see combinations.
+  role, region or years; give a role, region or years to see combinations. A
+  name the site does not list gets close names to try.
 - `list_filters()`: valid role slugs, region codes, experience buckets, data date.
 
 The same server searches the open postings at the companies it lists, refreshed
@@ -54,12 +59,14 @@ server over stdio.
 - Quote the median and the middle half (p25 to p75), never a mean.
 - Experience is years, in buckets 0-1, 2-4, 5-7, 8-11, 12-19, 20+. "Senior"
   means years of experience, not a job title.
-- No result means fewer than 5 people match. Widen the selection (drop the
-  region, then the years) and say you did; never estimate a figure.
+- No result from `salary_stats` means fewer than 5 people match. Widen the
+  selection (drop the region, then the years) and say you did; never
+  estimate a figure.
+- A company figure with `few: true` comes from fewer than 5 people; with
+  `people: 1` it is one person's salary, rounded to 1,000. Say how many
+  people a company figure comes from when it is few.
 - Spain only. Do not mix in figures from other countries.
-- Only companies whose median base over all their salaries reaches a floor
-  (`company_floor_eur` in `list_filters`) are counted, so figures leave out
-  the lowest-paying employers. Say so when quoting a figure for Spain.
+- Every company is counted, whatever it pays.
 - A company is listed only with a LinkedIn page or a website and at least 5
   submissions on Levels.fyi from anywhere in the world over every role
   (`min_global_submissions` in `list_filters`). A company missing from the

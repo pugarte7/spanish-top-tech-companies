@@ -142,11 +142,29 @@ median and its quartiles gave back all three salaries. Quartiles needed ten
 until 2026-11-02, when the maintainer wanted one minimum across the site
 ("que en un sitio no sea 1, en otro 3, en otro 5 y en otro 10");
 `lib.QUARTILE_MIN` is `MIN_GROUP` since.
+**Every verified company is shown, whatever it pays.** Until 2026-11-04 the
+site left out companies whose median base over all their salaries was under
+45,000 EUR (`COMPANY_FLOOR_EUR`, 138 verified companies such as Santander);
+that day the maintainer dropped it: "Vamos a mostrar todas las empresas
+independientemente de la mediana. Las medianas generales se actualizan." The
+ranking says which pay best, and every aggregate covers all of them. Still
+left out: unverified companies and ones the world does not vouch for (both
+below). The digest's bar and floor (`lib.THRESHOLD_EUR`, `lib.FLOOR_EUR`) are
+unrelated: they only sort the weekly lists.
+
 The one exception is the companies table: on 2026-11-01 the maintainer chose
 to list every company with data under the filters, one salary included, with
 its summary and its bars per experience band (`site.company_filters()`),
 still rounded. A role with 85 salaries had listed one company. data.json,
-the map, the matrix and the MCP keep MIN_GROUP. Since 2026-11-02 a company
+the map and the matrix keep MIN_GROUP. On 2026-11-04 the MCP's company tools
+followed the table ("si hay datos en la web el mcp lo pilla, nada de lo de
+mínimo de 5"): 6 of the first 13 `company_salaries` calls had failed.
+`top_companies`, `company_salaries` and `find_jobs`' salary_context read
+`/api/v1/company-cells.json`, the table's own rows re-keyed by
+`site.company_cells()`, flag a figure under MIN_GROUP with `few: true` and
+sort under MIN_RANKED after the rest; `salary_stats` keeps MIN_GROUP. A
+company the site does not list stays unknown, with close names offered and
+nothing said about why. Since 2026-11-02 a company
 with fewer than MIN_RANKED salaries in Spain (`n` in data.json's `companies`)
 has its median greyed with an asterisk; the asterisk opens a card naming the
 company and its count (real company, figure from one or two people), and a

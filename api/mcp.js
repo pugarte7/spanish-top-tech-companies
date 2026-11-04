@@ -9,8 +9,9 @@
 // 2026-07-28; `initialize` and anything without that key get the handshake-era
 // answers that clients up to 2025-11-25 expect.
 //
-// Two sources besides data.json: the daily job index /api/v1/jobs.json, read
-// when a job tool is called, and an application form read live from its
+// Three sources besides data.json: the companies table re-keyed for the company
+// tools, /api/v1/company-cells.json; the daily job index /api/v1/jobs.json, read
+// when a job tool is called; and an application form read live from its
 // board's public API (job_questions). Nothing about the person who applies
 // reaches this server: the agent keeps that in a document of its own.
 
@@ -22,7 +23,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.2.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.3.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -55,23 +56,28 @@ const TOOLS = {
   },
   top_companies: {
     define: (data) => ({ title: "Best-paying companies",
-      description: `Companies ranked by median base for a selection, each from ${data.min_group}+ ` +
-                   "salaries. Use search to look one company up within the selection.",
+      description: "Every company the site's companies table lists for a selection, by median " +
+                   "base, highest first, down to one salary; companies with fewer than " +
+                   `${data.min_ranked ?? 3} salaries in the selection come after the rest. Each says ` +
+                   `how many people its figures come from, and few: true marks fewer than ${data.min_group}. ` +
+                   "Use search to look one company up within the selection.",
       inputSchema: { type: "object", properties: {
         ...SELECTION,
         search: { type: "string", description: "Filter companies by name." },
         limit: { type: "integer", minimum: 1, maximum: 200, default: 20 } } } }),
-    run: (data, args) => topCompanies(data, args),
+    run: (data, args, env) => topCompanies(data, args, env),
   },
   company_salaries: {
     define: (data) => ({ title: "One company's salaries",
-      description: "One company in Spain: overall, and by role, region or experience " +
-                   `where ${data.min_group}+ people report. Give a role, region or years ` +
-                   "to see the groups within it, combinations included.",
+      description: "One company in Spain, any the site lists, down to one salary: overall, and " +
+                   "by role, region or experience wherever it has salaries. Each figure says how " +
+                   `many people it comes from, and few: true marks fewer than ${data.min_group}. Give ` +
+                   "a role, region or years to see the groups within it, combinations included. " +
+                   "A name the site does not list gets close names to try.",
       inputSchema: { type: "object", required: ["name"], properties: {
         name: { type: "string", description: "Company name, e.g. Glovo." },
         ...SELECTION } } }),
-    run: (data, args) => company(data, args.name, args),
+    run: (data, args, env) => company(data, args.name, args, env),
   },
   list_filters: {
     define: () => ({ title: "Roles, regions and experience buckets",
@@ -85,8 +91,9 @@ const TOOLS = {
       description: "Open postings at the companies on this site, from their public job boards " +
                    "(Greenhouse, Lever, Ashby, Workday and others), refreshed daily. Filter by text, " +
                    "role, region or remote, workplace, company and minimum salary. Each result " +
-                   "carries the company's median base for the posting's role in Spain where " +
-                   `${data.min_group}+ people report. Pass the ids already applied to or turned ` +
+                   "carries the company's median base for the posting's role in Spain, as the " +
+                   "site's companies table shows it, with how many people it comes from " +
+                   `(few: true under ${data.min_group}). Pass the ids already applied to or turned ` +
                    "down in exclude. The starting point when asked to find jobs or apply for " +
                    "someone; application_guide has the procedure.",
       inputSchema: { type: "object", properties: {
@@ -202,14 +209,16 @@ const SPECIALIZATION_BY_NAME = new Map(SPECIALIZATIONS.flatMap(([slug, label, na
 // A specialization a role name stands for, or null.
 const specialization = (role) => blank(role) ? null : SPECIALIZATION_BY_NAME.get(norm(role)) ?? null;
 
-function resolveRole(data, role) {
+// `roles` defaults to data.json's; the company tools pass the companies
+// table's too, which offers roles with fewer than min_group people in Spain.
+function resolveRole(data, role, roles = data.roles) {
   if (blank(role)) return "";
   const want = norm(role);
   if (!want) throw new QueryError(`unknown role '${role}'; see list_filters`);
-  for (const r of data.roles) if (want === norm(r.slug) || want === norm(r.name)) return r.slug;
+  for (const r of roles) if (want === norm(r.slug) || want === norm(r.name)) return r.slug;
   const special = specialization(role);
-  if (special && data.roles.some((r) => r.slug === special.slug)) return special.slug;
-  const close = data.roles.filter((r) => norm(r.name).includes(want) || norm(r.slug).includes(want))
+  if (special && roles.some((r) => r.slug === special.slug)) return special.slug;
+  const close = roles.filter((r) => norm(r.name).includes(want) || norm(r.slug).includes(want))
     .map((r) => r.slug);
   if (close.length === 1) return close[0];
   throw new QueryError(`unknown role '${role}'; ` +
@@ -269,17 +278,17 @@ function resolvePlace(data, region) {
 
 const resolveRegion = (data, region) => resolvePlace(data, region).code;
 
-function resolveYears(data, years) {
+function resolveYears(buckets, years) {
   if (blank(years)) return "";
-  if (data.years.includes(String(years))) return String(years);
+  if (buckets.includes(String(years))) return String(years);
   const n = whole(years);
   if (n === null)
-    throw new QueryError(`years must be a number or one of ${data.years.join(", ")}`);
-  for (const bucket of data.years) {
+    throw new QueryError(`years must be a number or one of ${buckets.join(", ")}`);
+  for (const bucket of buckets) {
     const [low, high] = bucket.replace("+", "").split("-");
     if (n >= Number(low) && (high === undefined || n <= Number(high))) return bucket;
   }
-  throw new QueryError(`no bucket holds ${n} years; buckets are ${data.years.join(", ")}`);
+  throw new QueryError(`no bucket holds ${n} years; buckets are ${buckets.join(", ")}`);
 }
 
 function resolveLimit(limit) {
@@ -290,8 +299,11 @@ function resolveLimit(limit) {
 }
 
 // The cell key, the selection as read, and a note when a city stood for its region.
-function select(data, { role, region, years }) {
-  const r = resolveRole(data, role), place = resolvePlace(data, region), y = resolveYears(data, years);
+// With the companies table, its roles and buckets are valid too.
+function select(data, { role, region, years }, table = null) {
+  const r = resolveRole(data, role, table ? companyRoles(data, table) : data.roles);
+  const place = resolvePlace(data, region);
+  const y = resolveYears(table?.years ?? data.years, years);
   const g = place.code;
   const special = specialization(role);
   const notes = [
@@ -320,49 +332,151 @@ export function stats(data, args = {}) {
   return { ...(a ? { selection, result: figures(a) } : withheld(data, selection)), ...note };
 }
 
-export function topCompanies(data, args = {}) {
-  const [key, selection, note] = select(data, args);
-  const limit = resolveLimit(args.limit);
-  const found = data.company_cells[key];
-  if (!found) return { ...withheld(data, selection), ...note };
-  const want = norm(args.search);
-  const rows = [];
-  for (const a of found) {
-    const c = data.companies[a.c];
-    if (want && !norm(c.name).includes(want)) continue;
-    rows.push({ company: c.name, url: c.url, ...figures(a) });
+// --- Companies: the site's companies table ----------------------------------------
+//
+// The company tools answer from /api/v1/company-cells.json, the companies table
+// re-keyed by site.py (company_cells) like data.json's cells: every company the
+// page lists, down to one salary, with the page's own figures (maintainer,
+// 2026-11-04: "si hay datos en la web el mcp lo pilla, nada de lo de mínimo de
+// 5"). salary_stats keeps data.json and its minimum, as the map and the matrix do.
+
+// The table, from env.companies (a value or an async loader), checked for shape.
+async function companyTable(env) {
+  let table;
+  try {
+    table = typeof env?.companies === "function" ? await env.companies() : env?.companies;
+    if (!isObject(table) || !isObject(table.cells) || !Array.isArray(table.fields))
+      throw new Error("no companies table");
+  } catch (e) {
+    console.error("companies table:", e?.message ?? e);
+    throw new Unavailable("The companies table (/api/v1/company-cells.json) could not be read " +
+      "right now; try again later. salary_stats still answers.");
   }
-  return { selection, companies_listed: rows.length, result: rows.slice(0, limit), ...note };
+  return table;
 }
 
-export function company(data, name, args = {}) {
-  const [, selection, note] = select(data, args);
+// data.json's roles, then the ones only the companies table has.
+const ROLES = new WeakMap();
+function companyRoles(data, table) {
+  if (!ROLES.has(table)) {
+    const known = new Set(data.roles.map((r) => r.slug));
+    ROLES.set(table, [...data.roles, ...(table.roles ?? []).filter((r) => !known.has(r.slug))]);
+  }
+  return ROLES.get(table);
+}
+
+const rowOf = (table, r) => Object.fromEntries(table.fields.map((f, k) => [f, r[k]]));
+
+// A company's figures as the table shows them, flagged when fewer than
+// min_group people are behind them.
+const companyFigures = (data, a) => ({ ...figures(a), few: a.n < data.min_group });
+
+const fewNote = (data) => `few: true marks a figure from fewer than ${data.min_group} people, ` +
+  "which only the site's companies table shows; from one person it is that person's salary, " +
+  `rounded to the nearest ${data.round_eur ?? 1000} EUR, so say so when quoting it. p25 and p75 ` +
+  `come only from ${data.quartile_min ?? data.min_group} or more people.`;
+
+export async function topCompanies(data, args = {}, env = {}) {
+  const table = await companyTable(env);
+  const [key, selection, note] = select(data, args, table);
+  const limit = resolveLimit(args.limit);
+  const found = table.cells[key];
+  if (!found?.length) return { selection, result: null, reason: "no company has salaries for " +
+    "this selection; widen it (drop region or years)", ...note };
+  const want = norm(args.search);
+  const rows = [];
+  for (const r of found) {
+    const a = rowOf(table, r), c = data.companies[a.c];
+    if (want && !norm(c.name).includes(want)) continue;
+    rows.push({ company: c.name, url: c.url, ...companyFigures(data, a) });
+  }
+  const shown = rows.slice(0, limit);
+  const ranked = data.min_ranked ?? 3;
+  return { selection, companies_listed: rows.length,
+           order: `By median base, highest first, as on the site's companies table; a company with ` +
+             `fewer than ${ranked} salaries in the selection comes after every company with ${ranked} or more.`,
+           ...(shown.some((x) => x.few) ? { few_note: fewNote(data) } : {}),
+           result: shown, ...note };
+}
+
+// Edit distance, for a name that is nearly right.
+function distance(a, b) {
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const row = [i];
+    for (let j = 1; j <= b.length; j++)
+      row[j] = Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = row;
+  }
+  return prev[b.length];
+}
+
+// Up to five listed companies whose names are close to one the site does not
+// list: the name with a typo or two, a listed name inside it ("Glovo Spain"),
+// or one of its words nearly right ("Santander Bank" finds "Banco Santander").
+// Only the listed companies are compared, so nothing says whether an unlisted
+// one is on file.
+const GENERIC = new Set(("bank banco group grupo tech technologies technology tecnologia labs spain " +
+  "espana iberia solutions software digital consulting systems services global data cloud company " +
+  "inc ltd gmbh corp holding international").split(" "));
+function closeNames(listed, name) {
+  const squash = (s) => plainWords(s).replace(/ /g, "");
+  const slack = (s) => Math.max(1, Math.floor(s.length / 4));
+  const asked = squash(name);
+  const askedWords = plainWords(name).split(" ").filter((w) => w.length >= 5 && !GENERIC.has(w));
+  const scored = [];
+  for (const c of listed) {
+    const whole = squash(c.name);
+    let score = Infinity;
+    if (whole.length >= 3 && hasPhrase(plainWords(name), plainWords(c.name))) score = 0;
+    const d = distance(asked, whole);
+    if (d <= slack(asked)) score = Math.min(score, d);
+    for (const w of askedWords)
+      for (const v of plainWords(c.name).split(" ").filter((x) => x.length >= 3)) {
+        const dw = distance(w, v);
+        if (dw <= slack(w)) score = Math.min(score, dw + 1);
+      }
+    if (score < Infinity) scored.push([score, -(c.n ?? 0), c.name]);
+  }
+  scored.sort((p, q) => p[0] - q[0] || p[1] - q[1] || p[2].localeCompare(q[2]));
+  return scored.slice(0, 5).map(([, , n]) => n);
+}
+
+export async function company(data, name, args = {}, env = {}) {
+  const table = await companyTable(env);
+  const [, selection, note] = select(data, args, table);
   if (blank(name)) throw new QueryError("name is required: a company such as Glovo");
   const want = norm(name);
-  // data.json names every company the page lists; agents get only those
-  // with a published group.
-  const published = new Set((data.company_cells["||"] || []).map((a) => a.c));
-  let matches = data.companies.map((c, i) => [c, i])
-    .filter(([c, i]) => published.has(i) && norm(c.name).includes(want));
-  const exact = matches.filter(([c]) => norm(c.name) === want);
+  // Every company the table lists; data.json names each, with its salaries in Spain.
+  const listed = new Set((table.cells["||"] ?? []).map((r) => r[0]));
+  const companies = data.companies.map((c, i) => [c, i]).filter(([, i]) => listed.has(i));
+  let matches = companies.filter(([c]) => norm(c.name).includes(want));
+  const exact = companies.filter(([c]) => norm(c.name) === want || (c.levels && norm(c.levels) === want));
   if (exact.length) matches = exact;
-  if (!want || !matches.length)
-    throw new QueryError(`no company matching '${name}' has ${data.min_group}+ salaries`);
+  if (!want || !matches.length) {
+    const close = closeNames(companies.map(([c]) => c), name);
+    throw new QueryError(`The site has no salaries for a company named '${name}'. It lists the ` +
+      "companies with salaries in Spain on Levels.fyi that pass its rules (a LinkedIn page or a " +
+      "website, and min_global_submissions in list_filters), so a company can be " +
+      "missing for any of them, or go by another name. " + (close.length
+        ? `Close names on the site: ${close.join(", ")}.`
+        : "top_companies with search finds a company by part of its name."));
+  }
   if (matches.length > 1)
     throw new QueryError("several companies match: " +
       matches.slice(0, 15).map(([c]) => c.name).join(", "));
   const [c, i] = matches[0];
   const asked = [selection.role || "", selection.region || "", selection.years || ""];
   const groups = [];
-  for (const [key, found] of Object.entries(data.company_cells)) {
+  for (const [key, found] of Object.entries(table.cells)) {
     const parts = key.split("|");
     if (parts.some((part, k) => asked[k] && part !== asked[k])) continue;
     if (!asked.some(Boolean) && parts.filter(Boolean).length > 1) continue;
-    for (const a of found) {
-      if (a.c !== i) continue;
-      const [r, g, y] = parts;
-      groups.push({ role: r || null, region: g || null, years: y || null, ...figures(a) });
-    }
+    const r = found.find((x) => x[0] === i);
+    if (!r) continue;
+    const [role, region, years] = parts;
+    groups.push({ role: role || null, region: region || null, years: years || null,
+                  ...companyFigures(data, rowOf(table, r)) });
   }
   const rank = (x) => [x.role !== null, x.region !== null, x.years !== null, -x.people];
   groups.sort((p, q) => {
@@ -370,15 +484,19 @@ export function company(data, name, args = {}) {
     for (let k = 0; k < a.length; k++) if (a[k] !== b[k]) return a[k] < b[k] ? -1 : 1;
     return 0;
   });
-  return { company: c.name, url: c.url, cities: c.cities, selection, groups, ...note };
+  return { company: c.name, url: c.url, cities: c.cities, salaries_in_spain: c.n ?? null, selection,
+           groups, ...(groups.length ? {} : { reason: "no salaries at this company for the selection; " +
+             "drop role, region or years" }),
+           ...(groups.some((g) => g.few) ? { few_note: fewNote(data) } : {}), ...note };
 }
 
 export function filters(data) {
   return {
     roles: data.roles.map((r) => ({ slug: r.slug, name: r.name })),
     regions: data.regions, years: data.years, min_group: data.min_group,
+    min_ranked: data.min_ranked ?? null,
     quartile_min: data.quartile_min ?? null, round_eur: data.round_eur ?? null,
-    threshold_eur: data.threshold, company_floor_eur: data.company_floor ?? null,
+    threshold_eur: data.threshold,
     min_base_eur: data.min_base ?? null, min_global_submissions: data.min_global ?? null,
     reported: data.reported ?? null,
     data_as_of: data.data_as_of || data.generated,
@@ -541,29 +659,28 @@ function resolveExclude(exclude) {
   return new Set(list.map((x) => x.trim()).filter(Boolean));
 }
 
-// What data.json publishes per company and role, by the slugs the index uses.
-// Only groups of min_group or more are in company_cells, so nothing finer than
-// top_companies already shows can come out of here.
+// What the companies table shows per company and role, by the slugs the index
+// uses: the row top_companies gives for the role, so nothing finer comes out here.
 const LOOKUPS = new WeakMap();
-function lookups(data) {
-  if (!LOOKUPS.has(data)) {
+function lookups(data, table) {
+  if (!LOOKUPS.has(table)) {
     const bySlug = new Map(data.companies.map((c, i) => [c.levels, i]).filter(([s]) => s));
     const cells = new Map();
-    for (const [key, found] of Object.entries(data.company_cells)) {
+    for (const [key, found] of Object.entries(table.cells)) {
       const [role, region, years] = key.split("|");
       if (!role || region || years) continue;
-      cells.set(role, new Map(found.map((a) => [a.c, a])));
+      cells.set(role, new Map(found.map((r) => [r[0], rowOf(table, r)])));
     }
-    LOOKUPS.set(data, { bySlug, cells });
+    LOOKUPS.set(table, { bySlug, cells });
   }
-  return LOOKUPS.get(data);
+  return LOOKUPS.get(table);
 }
 
-function salaryContext(data, job, role) {
-  if (!role) return null;
-  const { bySlug, cells } = lookups(data);
+function salaryContext(data, table, job, role) {
+  if (!role || !table) return null;
+  const { bySlug, cells } = lookups(data, table);
   const a = cells.get(role)?.get(bySlug.get(job.slug));
-  return a ? { role, company_median_base_eur: a.median, people: a.n,
+  return a ? { role, company_median_base_eur: a.median, people: a.n, few: a.n < data.min_group,
                scope: "this company's salaries for the role in Spain, every region and experience" } : null;
 }
 
@@ -615,6 +732,8 @@ export async function findJobs(data, args = {}, env = {}) {
   const terms = queryTerms(args.query).map((t) => ({ ...t, pattern: termPattern(t.alternatives) }));
   const company = words(args.company);
   const index = await jobIndex(env);
+  // Without the companies table the postings still come, with no salary_context.
+  const table = await companyTable(env).catch((e) => { if (e instanceof Unavailable) return null; throw e; });
 
   let excluded = 0, unknownPay = 0;
   const found = [];
@@ -632,7 +751,7 @@ export async function findJobs(data, args = {}, env = {}) {
     if (workplace && workplaceOf(job) !== workplace) continue;
     const jobRole = special ? special.slug
       : roleSlug && ROLE_PATTERN[roleSlug] ? roleSlug : titleRole(data, job.title);
-    const context = salaryContext(data, job, jobRole);
+    const context = salaryContext(data, table, job, jobRole);
     const own = postingEur(job);
     let basis;
     if (minSalary !== null) {
@@ -689,9 +808,12 @@ export async function findJobs(data, args = {}, env = {}) {
     ...(results.length > jobs.length ? { more: `${results.length - jobs.length} more match; narrow the ` +
         "filters, or call again with the ids shown so far (also_posted_as included) added to exclude." } : {}),
     order: ORDER,
-    salary_note: `salary is what the posting states, as published. salary_context is the company's ` +
-      `median base for the posting's role from ${data.min_group}+ people in Spain (Levels.fyi data), ` +
-      "null when fewer report; it describes the company, not this posting.",
+    salary_note: "salary is what the posting states, as published. salary_context is the company's " +
+      "median base for the posting's role in Spain as the site's companies table shows it (Levels.fyi " +
+      "data), with how many people it comes from; few: true marks fewer than " +
+      `${data.min_group}, and from one person it is that person's salary, rounded. null when nobody ` +
+      "at the company reports the role" + (table ? "" : ", and this time for every posting: the " +
+      "companies table could not be read") + ". It describes the company, not this posting.",
     jobs,
   };
 }
@@ -1212,7 +1334,8 @@ async function callTool(data, id, params, extra, env) {
 const MAX_BATCH = 50;
 
 // A message, or a batch (2025-03-26 clients may send one), to what goes back.
-// `env.jobs` is the job index or an async loader of it; each call gets its own
+// `env.jobs` is the job index or an async loader of it, `env.companies` the
+// companies table (company-cells.json) likewise; each call gets its own
 // budget of live form reads. A batch runs in order, one message at a time.
 export async function respond(data, msg, env = {}) {
   env = { ...env, live: { left: LIVE_PER_REQUEST } };
@@ -1374,6 +1497,18 @@ async function load(url) {
   return DATA;
 }
 
+// The companies table likewise, read on the first company tool call; a failed
+// read is not kept.
+let COMPANIES;
+async function loadCompanies(url) {
+  if (!COMPANIES) {
+    const answer = await fetch(new URL("/api/v1/company-cells.json", url));
+    if (!answer.ok) throw new Error(`company-cells.json answered ${answer.status}`);
+    COMPANIES = await answer.json();
+  }
+  return COMPANIES;
+}
+
 // The job index likewise, read on the first job tool call and kept an hour; a
 // failed read is not kept, and a stale copy beats none.
 const JOBS_TTL_MS = 3_600_000;
@@ -1408,7 +1543,8 @@ export default {
     const started = Date.now();
     try {
       const data = await load(url), headers = Object.fromEntries(request.headers);
-      const [status, body] = await reply(data, headers, msg, { jobs: () => loadJobs(url) });
+      const [status, body] = await reply(data, headers, msg,
+        { jobs: () => loadJobs(url), companies: () => loadCompanies(url) });
       let events = [];
       try { events = analytics(data, headers, msg, body, started); } catch (e) { console.error(e); }
       await after(capture(events));
