@@ -2,17 +2,17 @@
 
 **[spanishtoptechcompanies.com](https://spanishtoptechcompanies.com/es/)** · Spanish Top Tech Companies · [English](#english)
 
-El ranking de las empresas tecnológicas que mejor pagan en España, con salarios reales de gente que trabaja aquí. Para cada empresa verás el sueldo base mediano, el total con bonus y acciones y cuánta gente cobra 60.000 € o más. Puedes filtrarlo por rol, años de experiencia y modalidad de trabajo, y ver en un mapa lo que se paga en cada comunidad autónoma. Y con su servidor MCP, [tu agente de IA aplica por ti](#deja-que-tu-agente-aplique-por-ti) a sus ofertas.
+El ranking de las empresas tecnológicas que mejor pagan en España, con salarios reales de gente que trabaja aquí. Para cada empresa verás el sueldo base mediano, el total con bonus y acciones y cuánta gente cobra 60.000 € o más. Puedes filtrarlo por rol, años de experiencia y modalidad de trabajo, y ver en un mapa lo que se paga en cada comunidad autónoma. Y con su servidor MCP, [tu agente de IA busca sus ofertas abiertas y aplica por ti](#deja-que-tu-agente-aplique-por-ti), sin instalar nada.
 
 **[Ver el ranking completo →](https://spanishtoptechcompanies.com/es/)**
 
 ### Deja que tu agente aplique por ti
 
-Conecta tu agente de IA y aplica automáticamente a las ofertas de estas empresas sin tocar un formulario. Busca las ofertas, las rellena con tu CV y envía la solicitud en Greenhouse, Lever, Ashby y Workday, las plataformas de empleo que usan muchas empresas tech. También encuentra ofertas en SmartRecruiters, Workable y Recruitee. Te ahorras horas.
+Conecta tu agente de IA al servidor MCP de la web y aplica a las ofertas de estas empresas sin tocar un formulario y sin instalar nada. Cada día la web recoge las ofertas abiertas de las empresas de la lista en sus portales de empleo públicos (Greenhouse, Lever, Ashby, Workday y otros), en España o en remoto desde España. Tu agente busca entre ellas con el sueldo mediano de cada empresa al lado, lee el formulario de la oferta, escribe la carta y las respuestas con tu CV, te enseña la solicitud completa y la envía cuando le dices que sí. Te ahorras horas.
 
 Funciona mejor con Instinct y, si no, con Claude Code. También sirven Codex, Cursor, Grok CLI, Hermes o cualquier agente que admita MCP.
 
-1. **Conecta los sueldos.** Añade este servidor MCP a tu agente, sin registro:
+1. **Conecta sueldos y ofertas.** Añade este servidor MCP a tu agente, sin registro. Trae las herramientas de sueldos y las de ofertas: `find_jobs`, `job_questions` y `application_guide`.
 
    ```
    https://spanishtoptechcompanies.com/mcp
@@ -20,13 +20,15 @@ Funciona mejor con Instinct y, si no, con Claude Code. También sirven Codex, Cu
 
    En Claude Code: `claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp`
 
-2. **Dale tu CV y lo que buscas.** Una sola vez. El agente añade [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) con una línea, sin instalar nada, y te pide tu CV, dónde y cómo quieres trabajar y el sueldo que pides. Envía cada solicitud con su propio navegador; si una empresa manda un código por correo, lo lee de tu correo si se lo conectas, o te lo pide.
+2. **Dale tu CV y lo que buscas.** Una sola vez, en el chat: tu CV, dónde y cómo quieres trabajar y el sueldo que pides. Tu perfil se queda en tu agente, en su memoria o en un archivo como `~/job-search.md`; la web no guarda nada tuyo. Envía cada solicitud con su propio navegador, y si no tiene navegador te da el enlace y las respuestas para que la envíes tú. Si una empresa manda un código por correo, lo lee de tu correo si se lo conectas, o te lo pide.
 
 3. **Dile que aplique.** Por ejemplo:
 
    > Aplica por mí a las ofertas de las empresas de spanishtoptechcompanies.com que pagan 60.000 € o más a alguien con mi experiencia en Madrid.
 
-   Lo apruebas una vez y envía las solicitudes él solo. Las preguntas delicadas, como sueldo o permiso de trabajo, te las hace una vez, todas en un mensaje, y las recuerda. Si un formulario pide un CAPTCHA, te pasa la página: lo resuelves y envía la solicitud.
+   Te enseña cada solicitud completa y la envía cuando le dices que sí. Las preguntas delicadas, como sueldo o permiso de trabajo, te las hace una vez, todas en un mensaje, y los consentimientos de privacidad los aceptas tú. Si un formulario pide un CAPTCHA, te pasa la página: lo resuelves y envía la solicitud.
+
+Si envías muchas solicitudes cada día, [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) es la opción avanzada. Se ejecuta en tu equipo (`npx -y autoapply-mcp`, una línea en la configuración MCP de tu agente) y añade respuestas guardadas, historial de solicitudes, lotes, más fuentes de ofertas (también SmartRecruiters, Workable y Recruitee) y controles en el propio código: la aprobación va ligada a cada solicitud exacta, hay límites diarios y las preguntas personales solo las respondes tú. Envía datos técnicos de uso anónimos y deja de hacerlo si le dices que no.
 
 ### Qué hay en la web
 
@@ -35,6 +37,7 @@ Funciona mejor con Instinct y, si no, con Claude Code. También sirven Codex, Cu
 - **Sueldos por comunidad autónoma** en un mapa: Madrid, Cataluña (Barcelona), País Vasco, Comunidad Valenciana, Andalucía y el resto.
 - **Sueldo según la experiencia**, de 0 a más de 20 años.
 - **Remoto, híbrido o presencial**.
+- **Ofertas abiertas** de estas empresas, recogidas cada día, en [JSON](https://spanishtoptechcompanies.com/api/v1/jobs.json) y en el servidor MCP.
 - **Para desarrolladores**: los datos en [JSON](https://spanishtoptechcompanies.com/api/v1/data.json) y un resumen en [llms.txt](https://spanishtoptechcompanies.com/llms.txt).
 
 ### Cómo se calcula
@@ -47,17 +50,17 @@ Súbelo a [Levels.fyi](https://www.levels.fyi/salaries/add). La lista se rehace 
 
 ## English
 
-The **best-paying tech companies in Spain**, ranked by salary at [spanishtoptechcompanies.com](https://spanishtoptechcompanies.com/en/). Real salaries from people working in Spain: each company's median base salary, total pay with bonus and stock, and how many earn €60,000 or more. Filter by role, years of experience and remote, hybrid or office work, and see on a map what each region pays. And with its MCP server, [your AI agent applies to their openings for you](#let-your-agent-apply-for-you).
+The **best-paying tech companies in Spain**, ranked by salary at [spanishtoptechcompanies.com](https://spanishtoptechcompanies.com/en/). Real salaries from people working in Spain: each company's median base salary, total pay with bonus and stock, and how many earn €60,000 or more. Filter by role, years of experience and remote, hybrid or office work, and see on a map what each region pays. And with its MCP server, [your AI agent searches their open positions and applies for you](#let-your-agent-apply-for-you), with nothing to install.
 
 **[See the full ranking →](https://spanishtoptechcompanies.com/en/)**
 
 ### Let your agent apply for you
 
-Connect your AI agent and auto-apply to these companies' openings without filling in a form. It finds the openings, fills them in from your CV and sends the application on Greenhouse, Lever, Ashby and Workday, the job platforms many tech companies use. It also finds openings on SmartRecruiters, Workable and Recruitee. It saves you hours.
+Connect your AI agent to the site's MCP server and apply to these companies' openings without filling in a form and with nothing to install. Every day the site collects the open positions of the listed companies from their public job boards (Greenhouse, Lever, Ashby, Workday and others), in Spain or remote from Spain. Your agent searches them with each company's median salary alongside, reads the posting's application form, writes the cover letter and the answers from your CV, shows you the full application and sends it when you say yes. It saves you hours.
 
 Works best with Instinct, or else Claude Code. Codex, Cursor, Grok CLI, Hermes or any agent that supports MCP work too.
 
-1. **Connect the salaries.** Add this MCP server to your agent, no sign-in:
+1. **Connect salaries and openings.** Add this MCP server to your agent, no sign-in. It brings the salary tools and the job tools: `find_jobs`, `job_questions` and `application_guide`.
 
    ```
    https://spanishtoptechcompanies.com/mcp
@@ -65,13 +68,15 @@ Works best with Instinct, or else Claude Code. Codex, Cursor, Grok CLI, Hermes o
 
    In Claude Code: `claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp`
 
-2. **Give it your CV and what you want.** Only once. The agent adds [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) with one line, with nothing to install, and asks for your CV, where and how you want to work and the salary you ask for. It sends each application with its own browser; if a board emails a code, it reads it from your mail if you connect it, or asks you.
+2. **Give it your CV and what you want.** Only once, in the chat: your CV, where and how you want to work and the salary you ask for. Your profile stays with your agent, in its memory or in a file such as `~/job-search.md`; the site stores nothing about you. It sends each application with its own browser, and without a browser it gives you the link and the answers to send it yourself. If a board emails a code, it reads it from your mail if you connect it, or asks you.
 
 3. **Tell it to apply.** For example:
 
    > Apply for me to openings at the companies on spanishtoptechcompanies.com that pay €60,000 or more to someone with my experience in Madrid.
 
-   You approve once and it sends the applications itself. Sensitive questions, like salary or work permit, it asks you once, all in one message, and remembers. If a form asks for a CAPTCHA, it hands you the page: you solve it and it sends the application.
+   It shows you each application in full and sends it when you say yes. Sensitive questions, like salary or work permit, it asks you once, all in one message, and privacy consents are yours to accept. If a form asks for a CAPTCHA, it hands you the page: you solve it and it sends the application.
+
+If you send many applications every day, [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) is the advanced option. It runs on your machine (`npx -y autoapply-mcp`, one line in your agent's MCP config) and adds remembered answers, an application history, batches, more job sources (SmartRecruiters, Workable and Recruitee too) and guards in its own code: approval is bound to each exact application, there are daily limits and personal questions are answered only by you. It sends anonymous technical usage data and stops if you say no.
 
 ### On the site
 
@@ -80,6 +85,7 @@ Works best with Instinct, or else Claude Code. Codex, Cursor, Grok CLI, Hermes o
 - **Salaries by region** on a map: Madrid, Catalonia (Barcelona), the Basque Country, Valencia, Andalusia and the rest.
 - **Pay by experience**, from 0 to 20+ years.
 - **Remote, hybrid or office**.
+- **Open positions** at these companies, collected every day, as [JSON](https://spanishtoptechcompanies.com/api/v1/jobs.json) and through the MCP server.
 - **For developers**: the data as [JSON](https://spanishtoptechcompanies.com/api/v1/data.json) and a summary in [llms.txt](https://spanishtoptechcompanies.com/llms.txt).
 
 ### How it is calculated
