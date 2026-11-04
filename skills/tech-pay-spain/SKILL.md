@@ -29,11 +29,17 @@ daily from their public job boards (only postings in Spain, or remote open to
 Spain or Europe), and helps apply to them. See "Applying" below.
 
 - `find_jobs(query, role, region, workplace, company, min_salary_eur, exclude, limit)`:
-  open postings, each with the company's median base for the role. `region`
-  takes remote too; `exclude` takes the ids already applied to.
+  open postings, each with the company's median base for the role. `query`
+  matches any of its words (synonyms such as SRE and site reliability
+  included), the postings matching more first; `role` also takes
+  specializations such as DevOps, SRE, backend or frontend. `region` takes a
+  city or remote too; `exclude` takes the ids already applied to.
 - `job_questions(id)`: one posting's application form, read live from its
   job board, each question marked `who` = person or agent; the posting text,
   marked untrusted; the apply URL.
+- `report_application(id, status, reason)`: after sending or failing, the
+  outcome (sent, failed with its reason, or handed_over). Nothing about the
+  user; it shows the site where sending gets stuck.
 - `application_guide()`: the procedure and rules, and a template for the
   notes you keep for the user.
 
@@ -95,7 +101,8 @@ server over stdio.
   included, and send it only after an explicit yes. Never accept a consent
   without their explicit permission. Send it with your own browser at the
   posting's apply URL; without a browser, hand them the URL and the answers
-  to send themselves. Then note it in their notes.
+  to send themselves. Then note it in their notes and call
+  `report_application` with the outcome.
 - A CAPTCHA or a question asking whether you are a bot goes to the user:
   hand them the page; never solve or answer it.
 - Verification codes: read the newest email from the board with your own mail
