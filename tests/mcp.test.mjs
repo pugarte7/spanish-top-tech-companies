@@ -361,6 +361,39 @@ report("over HTTP: a missing jobs.json is a tool error, and is read once it exis
   httpMissing.isError === true && httpFound.structuredContent.jobs.length === 1 &&
   httpFound.structuredContent.generated_at === index.generated_at);
 
+// --- Cities: a region for the salary tools, a narrower filter for find_jobs ----------
+const jobsIn = async (region) => (await run("find_jobs", { region })).structuredContent;
+const bcn = await jobsIn("barcelona");
+report("find_jobs: a city narrows to postings that name it", bcn.filters.region === "CT" &&
+  bcn.filters.city === "Barcelona" && bcn.filters.city_applied === "postings that name the city" &&
+  bcn.jobs.length === 6 && bcn.jobs.every((j) => /Barcelona/.test(j.location)), bcn.filters);
+const vlc = await jobsIn("VALÈNCIA");
+report("find_jobs: Valencia, the city, is in VC", vlc.filters.region === "VC" && vlc.filters.city === "Valencia" &&
+  vlc.jobs.map((j) => j.id).join() === "greenhouse:not-on-file:7000013");
+const sabadell = await jobsIn("Sabadell");
+report("find_jobs: a city no posting names falls back to its region", sabadell.filters.region === "CT" &&
+  /whole region/.test(sabadell.filters.city_applied) && sabadell.jobs.length === bcn.jobs.length);
+const places = await Promise.all(["Málaga", "donostia", "San Sebastián", "a coruña", "Las Palmas", "Cartagena",
+  "Gijón", "Logroño", "Pamplona", "Palma", "Valladolid", "Santander", "Toledo", "Cáceres", "Zaragoza"]
+  .map(async (r) => (await jobsIn(r)).filters.region));
+report("find_jobs: city names resolve without accents or case", places.join() ===
+  "AN,PV,PV,GA,CN,MU,AS,RI,NC,IB,CL,CB,CM,EX,AR", places);
+const md = await jobsIn("Madrid");
+report("find_jobs: a region's own name is the region, not a city", md.filters.region === "MD" && !("city" in md.filters));
+const salaryIn = async (name, args) => (await run(name, args)).structuredContent;
+const statsBcn = await salaryIn("salary_stats", { role: "software-engineer", region: "Barcelona" });
+const statsCt = await salaryIn("salary_stats", { role: "software-engineer", region: "CT" });
+report("salary_stats: a city is its region, with a note", statsBcn.selection.region === "CT" &&
+  /Barcelona is in CT .*per region/.test(statsBcn.note) && !("note" in statsCt) &&
+  JSON.stringify(statsBcn.result) === JSON.stringify(statsCt.result), statsBcn);
+const topBilbao = await salaryIn("top_companies", { region: "bilbao" });
+report("top_companies: a city is its region, with a note", topBilbao.selection.region === "PV" && /Bilbao is in PV/.test(topBilbao.note));
+const glovoBcn = await salaryIn("company_salaries", { name: "glovo", region: "barcelona" });
+report("company_salaries: a city is its region, with a note", /Barcelona is in CT/.test(glovoBcn.note) &&
+  glovoBcn.groups.every((g) => g.region === "CT"));
+const atlantis = await run("salary_stats", { region: "Atlantis" });
+report("an unknown place names cities as an option", atlantis.isError === true && /a city like Barcelona/.test(atlantis.content[0].text));
+
 // --- Jobs: application forms from stubbed boards --------------------------------------
 const json = (value, status = 200) => () => new Response(JSON.stringify(value), { status });
 const GH = "https://boards-api.greenhouse.io/v1/boards";

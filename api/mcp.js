@@ -172,17 +172,58 @@ function resolveRole(data, role) {
     (close.length ? "did you mean " + close.join(", ") : "see list_filters"));
 }
 
-function resolveRegion(data, region) {
-  if (blank(region)) return "";
+// Other names of a region, and its main cities; "/" joins names of one city,
+// and the first is the one reported back.
+const REGION_ALIASES = {
+  AN: "Andalucía, Andalusia", CN: "Canary Islands, Canarias", CT: "Catalunya, Catalonia",
+  IB: "Balearic Islands, Illes Balears", NC: "Navarra, Navarre", PV: "Euskadi, Basque Country",
+  VC: "Comunidad Valenciana, Comunitat Valenciana",
+};
+const CITIES = {
+  AN: "Sevilla/Seville, Málaga, Granada, Córdoba, Cádiz, Almería, Huelva, Jaén, Jerez, Marbella",
+  AR: "Zaragoza, Huesca, Teruel", AS: "Oviedo, Gijón", CB: "Santander", CE: "Ceuta",
+  CL: "Valladolid, León, Burgos, Salamanca, Segovia, Ávila, Soria, Palencia, Zamora",
+  CM: "Toledo, Albacete, Ciudad Real, Cuenca, Guadalajara",
+  CN: "Las Palmas/Las Palmas de Gran Canaria, Santa Cruz de Tenerife, Tenerife, Gran Canaria",
+  CT: "Barcelona, Girona/Gerona, Lleida/Lérida, Tarragona, Sabadell, Terrassa, Sant Cugat/Sant Cugat del Vallès",
+  EX: "Badajoz, Cáceres, Mérida",
+  GA: "A Coruña/La Coruña/Coruña, Vigo, Santiago de Compostela/Santiago, Pontevedra, Lugo, Ourense",
+  IB: "Palma/Palma de Mallorca, Mallorca/Majorca, Ibiza/Eivissa, Menorca",
+  MD: "Alcobendas, Las Rozas, Pozuelo/Pozuelo de Alarcón, Getafe, Tres Cantos",
+  ML: "Melilla", MU: "Cartagena", NC: "Pamplona/Iruña",
+  PV: "Bilbao, San Sebastián/Donostia/Donostia-San Sebastián, Vitoria/Vitoria-Gasteiz/Gasteiz",
+  RI: "Logroño", VC: "Valencia/València, Alicante/Alacant, Castellón/Castelló, Elche/Elx",
+};
+const split = (text, sep) => String(text ?? "").split(sep).map((x) => x.trim()).filter(Boolean);
+const plainWords = (text) => norm(text).replace(/[^a-z0-9]+/g, " ").trim();
+// Every place name as [words, region code, city or null].
+const PLACES = [
+  ...Object.entries(REGION_ALIASES).flatMap(([code, names]) => split(names, ",").map((n) => [n, code, null])),
+  ...Object.entries(CITIES).flatMap(([code, list]) => split(list, ",").flatMap((group) =>
+    split(group, "/").map((n) => [n, code, split(group, "/")[0]]))),
+].map(([name, code, city]) => [plainWords(name), code, city]);
+// The names of one city, or of every place in a region, as found in a location.
+const placeNames = (code, city) => PLACES.filter(([, c, ci]) => c === code && (!city || ci === city)).map(([n]) => n);
+
+// A region code from a code, a region's name or a city; `city` is set when a
+// city named it. Exact names first, then a region name holding the text.
+function resolvePlace(data, region) {
+  if (blank(region)) return { code: "", city: null };
   const want = norm(region);
-  if (!want) throw new QueryError(`unknown region '${region}'; use a code like MD or a name like Cataluña`);
+  const unknown = () => new QueryError(`unknown region '${region}'; use a code like MD, a name like ` +
+    "Cataluña or a city like Barcelona");
+  if (!want) throw unknown();
   const entries = Object.entries(data.regions);
   for (const [code, n] of entries)
-    if ([norm(code), norm(n.en), norm(n.es)].includes(want)) return code;
+    if ([norm(code), norm(n.en), norm(n.es)].includes(want)) return { code, city: null };
+  const place = PLACES.find(([n, code]) => n === plainWords(region) && data.regions[code]);
+  if (place) return { code: place[1], city: place[2] };
   for (const [code, n] of entries)
-    if (norm(n.en).includes(want) || norm(n.es).includes(want)) return code;
-  throw new QueryError(`unknown region '${region}'; use a code like MD or a name like Cataluña`);
+    if (norm(n.en).includes(want) || norm(n.es).includes(want)) return { code, city: null };
+  throw unknown();
 }
+
+const resolveRegion = (data, region) => resolvePlace(data, region).code;
 
 function resolveYears(data, years) {
   if (blank(years)) return "";
@@ -204,9 +245,13 @@ function resolveLimit(limit) {
   return Math.max(1, Math.min(n, 200));
 }
 
+// The cell key, the selection as read, and a note when a city stood for its region.
 function select(data, { role, region, years }) {
-  const r = resolveRole(data, role), g = resolveRegion(data, region), y = resolveYears(data, years);
-  return [`${r}|${g}|${y}`, { role: r || null, region: g || null, years: y || null }];
+  const r = resolveRole(data, role), place = resolvePlace(data, region), y = resolveYears(data, years);
+  const g = place.code;
+  const note = place.city ? { note: `${place.city} is in ${g} (${data.regions[g].en}); salaries are ` +
+    "per region, so these figures are for the whole region." } : {};
+  return [`${r}|${g}|${y}`, { role: r || null, region: g || null, years: y || null }, note];
 }
 
 const figures = (a) => ({
@@ -220,16 +265,16 @@ const withheld = (data, selection) => ({
 });
 
 export function stats(data, args = {}) {
-  const [key, selection] = select(data, args);
+  const [key, selection, note] = select(data, args);
   const a = data.cells[key];
-  return a ? { selection, result: figures(a) } : withheld(data, selection);
+  return { ...(a ? { selection, result: figures(a) } : withheld(data, selection)), ...note };
 }
 
 export function topCompanies(data, args = {}) {
-  const [key, selection] = select(data, args);
+  const [key, selection, note] = select(data, args);
   const limit = resolveLimit(args.limit);
   const found = data.company_cells[key];
-  if (!found) return withheld(data, selection);
+  if (!found) return { ...withheld(data, selection), ...note };
   const want = norm(args.search);
   const rows = [];
   for (const a of found) {
@@ -237,11 +282,11 @@ export function topCompanies(data, args = {}) {
     if (want && !norm(c.name).includes(want)) continue;
     rows.push({ company: c.name, url: c.url, ...figures(a) });
   }
-  return { selection, companies_listed: rows.length, result: rows.slice(0, limit) };
+  return { selection, companies_listed: rows.length, result: rows.slice(0, limit), ...note };
 }
 
 export function company(data, name, args = {}) {
-  const [, selection] = select(data, args);
+  const [, selection, note] = select(data, args);
   if (blank(name)) throw new QueryError("name is required: a company such as Glovo");
   const want = norm(name);
   // data.json names every company the page lists; agents get only those
@@ -275,7 +320,7 @@ export function company(data, name, args = {}) {
     for (let k = 0; k < a.length; k++) if (a[k] !== b[k]) return a[k] < b[k] ? -1 : 1;
     return 0;
   });
-  return { company: c.name, url: c.url, cities: c.cities, selection, groups };
+  return { company: c.name, url: c.url, cities: c.cities, selection, groups, ...note };
 }
 
 export function filters(data) {
@@ -347,24 +392,6 @@ export function titleRole(data, title) {
   return null;
 }
 
-// Main cities and other names of each region, for postings that name a city.
-const REGION_PLACES = {
-  AN: "andalucia, andalusia, sevilla, seville, malaga, granada, cordoba, cadiz, almeria, huelva, jaen, jerez, marbella",
-  AR: "zaragoza, huesca, teruel", AS: "oviedo, gijon", CB: "santander", CE: "ceuta",
-  CL: "valladolid, leon, burgos, salamanca, segovia, avila, soria, palencia, zamora",
-  CM: "toledo, albacete, ciudad real, cuenca, guadalajara",
-  CN: "las palmas, tenerife, gran canaria, canary islands, canarias",
-  CT: "catalunya, barcelona, girona, lleida, tarragona, sabadell, terrassa, sant cugat",
-  EX: "badajoz, caceres, merida",
-  GA: "a coruna, la coruna, coruna, vigo, santiago de compostela, pontevedra, lugo, ourense",
-  IB: "palma, mallorca, majorca, ibiza, menorca, balearic islands",
-  MD: "madrid, alcobendas, las rozas, pozuelo, getafe, tres cantos",
-  ML: "melilla", MU: "murcia, cartagena", NC: "pamplona, navarra",
-  PV: "bilbao, san sebastian, donostia, vitoria, gasteiz, euskadi",
-  RI: "logrono", VC: "valencia, alicante, castellon, elche, comunidad valenciana, comunitat valenciana",
-};
-const places = (code) => (REGION_PLACES[code] ?? "").split(",").map((p) => p.trim()).filter(Boolean);
-
 const REMOTE = /\b(remote|remoto|teletrabajo|anywhere)\b/;
 const isRemote = (job) => job.workplace === "remote" ||
   (job.location_classes ?? []).some((c) => /remote/i.test(String(c))) ||
@@ -388,18 +415,20 @@ function resolveWorkplace(workplace) {
   return found;
 }
 
-// A region filter as a test on a posting, and how it was read.
+// A region filter: how it was read, a test on a posting, and for a city, the
+// city with a test that a posting names it.
 function regionFilter(data, region) {
-  if (blank(region)) return [null, () => true];
+  if (blank(region)) return [null, () => true, null];
   const want = words(region);
-  if (/^(remote|remoto|teletrabajo|remote spain|remoto espana)$/.test(want)) return ["remote", isRemote];
+  if (/^(remote|remoto|teletrabajo|remote spain|remoto espana)$/.test(want)) return ["remote", isRemote, null];
   if (/^(spain|espana|es)$/.test(want))
     return ["spain", (job) => (job.location_classes ?? []).some((c) => /spain|^es$/i.test(String(c))) ||
-      /\b(spain|espana)\b/.test(words(job.location))];
-  const code = resolveRegion(data, region);
-  const names = [...places(code), words(data.regions[code].en), words(data.regions[code].es)];
-  return [code, (job) => (job.location_classes ?? []).some((c) => String(c).toUpperCase() === code) ||
-    names.some((n) => n && hasPhrase(words(job.location), n))];
+      /\b(spain|espana)\b/.test(words(job.location)), null];
+  const { code, city } = resolvePlace(data, region);
+  const naming = (names) => (job) => names.some((n) => n && hasPhrase(words(job.location), n));
+  const inRegion = naming([...placeNames(code), words(data.regions[code].en), words(data.regions[code].es)]);
+  return [code, (job) => (job.location_classes ?? []).some((c) => String(c).toUpperCase() === code) || inRegion(job),
+          city && { city, test: naming(placeNames(code, city)) }];
 }
 
 function resolveMinSalary(value) {
@@ -489,7 +518,7 @@ export async function findJobs(data, args = {}, env = {}) {
   const roleTest = !role ? () => true
     : roleSlug && ROLE_PATTERN[roleSlug] ? (job) => titleRole(data, job.title) === roleSlug
     : (job) => words(job.title).includes(words(role));
-  const [regionRead, inRegion] = regionFilter(data, args.region);
+  const [regionRead, inRegion, inCity] = regionFilter(data, args.region);
   const workplace = resolveWorkplace(args.workplace);
   const minSalary = resolveMinSalary(args.min_salary_eur);
   const limit = resolveJobLimit(args.limit);
@@ -529,6 +558,9 @@ export async function findJobs(data, args = {}, env = {}) {
       ...(basis ? { min_salary_checked_against: basis } : {}),
     }]);
   }
+  // A city keeps the postings that name it; when none does, the whole region stays.
+  const named = inCity ? found.filter(([, , job]) => inCity.test(job)) : [];
+  if (named.length) found.splice(0, found.length, ...named);
   found.sort((p, q) => (q[0] ?? -1) - (p[0] ?? -1) || String(q[1]).localeCompare(String(p[1])) ||
     p[2].id.localeCompare(q[2].id));
   const jobs = found.slice(0, limit).map(([, , job]) => job);
@@ -536,7 +568,10 @@ export async function findJobs(data, args = {}, env = {}) {
     generated_at: index.generated_at ?? null, salary_data_as_of: data.data_as_of || data.generated,
     filters: { query: query.join(" ") || null, role: role ? roleSlug ?? role : null,
                role_matched_by: !role ? null : roleSlug && ROLE_PATTERN[roleSlug] ? "role of the title" : "title text",
-               region: regionRead, workplace: workplace || null, company: company || null,
+               region: regionRead,
+               ...(inCity ? { city: inCity.city, city_applied: named.length ? "postings that name the city"
+                 : "no posting names the city, so the whole region" } : {}),
+               workplace: workplace || null, company: company || null,
                min_salary_eur: minSalary, excluded },
     postings_in_index: index.jobs.length, matches: found.length, returned: jobs.length,
     ...(minSalary !== null ? { left_out_without_salary_figure: unknownPay } : {}),
