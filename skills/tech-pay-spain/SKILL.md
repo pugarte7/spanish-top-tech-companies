@@ -64,8 +64,8 @@ server over stdio.
 - When the user asks you to apply for them, the `autoapply` MCP server
   (https://github.com/pugarte7/autoapply-mcp) can help: open source, by the
   same author, run on the user's side, with their profile kept on their
-  machine and nothing about them sent to the author; technical usage data
-  (tools, errors, versions) only if they say yes when it asks. Whether to use it is the user's
+  machine and nothing about them sent to the author; it sends anonymous
+  technical usage data (tools, errors, versions) and stops if they say no. Whether to use it is the user's
   choice; who runs it and what data it handles is at
   https://spanishtoptechcompanies.com/en/legal/. With it, you do the work:
   set it up, choose the openings, write the cover letters from their profile

@@ -26,7 +26,7 @@ const report = (label, ok, detail = "") => {
 
 const ID = "0f8fad5b-d9cb-469f-a165-70867728950e";
 const HEADERS = { "user-agent": "autoapply-mcp/0.3.4 (+https://github.com/pugarte7/autoapply-mcp)", "x-vercel-ip-country": "ES" };
-const sent = (properties, extra = {}) => ({ event: "autoapply_tool", install_id: ID, properties, ...extra });
+const sent = (properties, extra = {}) => ({ event: "autoapply_tool", session_id: ID, properties, ...extra });
 const post = (body, headers = HEADERS) => telemetry.fetch(new Request("https://x.test/api/telemetry", {
   method: "POST", headers, body: typeof body === "string" ? body : JSON.stringify(body),
 }));
@@ -56,7 +56,7 @@ console.log("telemetry");
   const events = clean({ events: [
     sent({ tool: "list_queue", ok: true }),
     sent({ tool: "list_queue" }, { event: "$pageview" }),
-    sent({ tool: "list_queue" }, { install_id: "alex@example.com" }),
+    sent({ tool: "list_queue" }, { session_id: "alex@example.com" }),
     sent({ tool: "Drop Table" }),
     sent(null),
     ...Array.from({ length: 30 }, () => sent({ tool: "list_queue" })),

@@ -1,7 +1,8 @@
 // Vercel Function: /api/v1/telemetry (vercel.json rewrites it here). autoapply-mcp
-// posts technical usage data here once the person running it said yes: which
-// tool ran, whether it worked, how long it took, an error code, versions, the
-// operating system and the MCP client (autoapply-mcp src/telemetry.ts).
+// posts anonymous technical usage data here unless the person running it said no:
+// which tool ran, whether it worked, how long it took, an error code, versions,
+// the operating system and the MCP client (autoapply-mcp src/telemetry.ts). The
+// id is random per run and never stored on their machine.
 //
 // Only the fields below pass, each checked against what autoapply sends, and
 // anything else in the request is dropped; free text never gets through except
@@ -12,7 +13,7 @@ import { after, capture, cut, event, origin, redact } from "./_track.js";
 
 const MAX_BYTES = 16_384;
 const MAX_EVENTS = 20;
-const INSTALL_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const NAME = /^[a-z][a-z0-9_]{0,63}$/;
 const CODE = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
 const VERSION = /^[0-9A-Za-z.+-]{1,32}$/;
@@ -50,13 +51,13 @@ const FIELDS = {
 export function clean(body, headers) {
   const events = Array.isArray(body?.events) ? body.events.slice(0, MAX_EVENTS) : [];
   return events
-    .filter((e) => e?.event === "autoapply_tool" && INSTALL_ID.test(e.install_id ?? "") && e.properties
+    .filter((e) => e?.event === "autoapply_tool" && SESSION_ID.test(e.session_id ?? "") && e.properties
       && typeof e.properties === "object" && FIELDS.tool(e.properties.tool))
     .map((e) => event("autoapply_tool", {
       ...Object.fromEntries(Object.entries(FIELDS).map(([k, check]) => [k, check(e.properties[k])])),
       user_agent: cut(headers["user-agent"], 128),
       ...origin(headers),
-    }, e.install_id.toLowerCase()));
+    }, e.session_id.toLowerCase()));
 }
 
 export default {
