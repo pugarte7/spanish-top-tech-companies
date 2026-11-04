@@ -595,10 +595,11 @@ test("the footer links to the legal and privacy page, which names who runs the s
 
 test("links that leave the page open in a new tab", async ({ page, context }) => {
   await open(page);
-  // Every link except the brand, the language switch (hreflang) and links
-  // within the page.
+  // Every link except the brand, the language switch (hreflang), links
+  // within the page and the salary pages of the site (#guides), which are
+  // the next page of the same visit.
   const stay = await page.locator("a[href]").evaluateAll((as) => as
-    .filter((a) => !a.matches(".brand, [hreflang], [href^='#']") && a.target !== "_blank")
+    .filter((a) => !a.matches(".brand, [hreflang], [href^='#'], #guides a") && a.target !== "_blank")
     .map((a) => a.outerHTML.slice(0, 80)));
   expect(stay).toEqual([]);
 
@@ -901,4 +902,40 @@ test("the top bar scrolls away on a phone @mobile", async ({ page }) => {
   await open(page);
   await page.locator("#companies-card").scrollIntoViewIfNeeded();
   expect((await page.locator(".topbar").boundingBox()).y).toBeLessThan(0);
+});
+
+test.describe("salary pages", () => {
+  test("a role page carries its figures, canonical and other language without script", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto("/es/salarios/software-engineer/");
+    await expect(page.locator("h1")).toContainText("programador");
+    await expect(page.locator(".hero-median")).toHaveText(/\d+\.000\s€/);
+    await expect(page.locator(".guide-table").first().locator("tbody tr")).not.toHaveCount(0);
+    await expect(page.locator('link[rel="canonical"]'))
+      .toHaveAttribute("href", "https://spanishtoptechcompanies.com/es/salarios/software-engineer/");
+    await expect(page.locator('link[hreflang="en"]'))
+      .toHaveAttribute("href", "https://spanishtoptechcompanies.com/en/salaries/software-engineer/");
+    await context.close();
+  });
+
+  test("every link on the hub resolves", async ({ page, request }) => {
+    await page.goto("/en/salaries/");
+    const hrefs = await page.locator("main a[href^='/']").evaluateAll((as) => [...new Set(as.map((a) => a.getAttribute("href")))]);
+    expect(hrefs.length).toBeGreaterThan(50);
+    for (const href of hrefs) expect((await request.get(href)).status(), href).toBe(200);
+  });
+
+  test("@mobile a company page fits a phone", async ({ page }) => {
+    await page.goto("/en/companies/revolut/");
+    const over = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+    expect(over).toBeLessThanOrEqual(0);
+  });
+
+  test("the sitemap lists every page in both languages", async ({ request }) => {
+    const xml = await (await request.get("/sitemap.xml")).text();
+    expect(xml).toContain("<loc>https://spanishtoptechcompanies.com/es/salarios/software-engineer/</loc>");
+    expect(xml).toContain("<loc>https://spanishtoptechcompanies.com/en/companies/revolut/</loc>");
+    expect((await (await request.get("/robots.txt")).text())).toContain("Sitemap: https://spanishtoptechcompanies.com/sitemap.xml");
+  });
 });

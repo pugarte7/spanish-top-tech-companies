@@ -45,6 +45,7 @@ import unicodedata
 import urllib.request
 
 import lib
+import seo
 import taxonomy
 
 OUT = lib.ROOT / "_site"
@@ -240,7 +241,7 @@ MAP_HATCH = (3.2, .8)
 STRINGS = {
     "en": {
         "title": "Spanish Top Tech Companies", "theme": "Light or dark mode",
-        "page_title": "Best-Paying Tech Companies in Spain ({year})",
+        "page_title": "Software Engineer Salary in Spain ({year}): Best-Paying Tech Companies",
         "h1": "The tech companies in Spain that pay the most",
         "source": "Data: Levels.fyi",
         "hero_lede": "**{people} real salaries** from {levels}, at **{companies} companies** in Spain. "
@@ -353,8 +354,8 @@ STRINGS = {
                        "one message. If a form asks for a CAPTCHA, it hands you the page: you "
                        "solve it and it sends the application.",
         "copy": "Copy", "copied": "Copied",
-        "description": "A ranking of the best-paying tech companies in Spain: median base salary, "
-                       "total pay with bonus and stock, and who earns {bar} or more.",
+        "description": "What software engineers earn in Spain and which tech companies pay most: "
+                       "median base salary by company, role, experience and city, from real salaries.",
         "noscript_agents": "Without JavaScript the charts and filters do not load. These are "
                            "the companies; the medians are at /llms-full.txt and /api/v1/data.json, "
                            "their open positions at /api/v1/jobs.json, the MCP server at /mcp and "
@@ -363,7 +364,7 @@ STRINGS = {
     },
     "es": {
         "title": "Spanish Top Tech Companies", "theme": "Modo claro u oscuro",
-        "page_title": "Empresas tech que más pagan en España ({year})",
+        "page_title": "Salario programador en España ({year}): las empresas tech que más pagan",
         "h1": "Las empresas tech que más pagan en España",
         "source": "Datos: Levels.fyi",
         "hero_lede": "**{people} salarios** reales de {levels}, de **{companies} empresas** en España. "
@@ -475,8 +476,8 @@ STRINGS = {
                        "una vez, todas en un mensaje. Si un formulario pide un CAPTCHA, te pasa la "
                        "página: lo resuelves y envía la solicitud.",
         "copy": "Copiar", "copied": "Copiado",
-        "description": "Ranking de las empresas tecnológicas que mejor pagan en España: sueldo "
-                       "base mediano, total con bonus y acciones, y quién cobra {bar} o más.",
+        "description": "Cuánto cobra un programador en España y qué empresas tecnológicas pagan más: "
+                       "sueldo base mediano por empresa, rol, experiencia y comunidad, con salarios reales.",
         "noscript_agents": "Sin JavaScript no cargan los gráficos ni los filtros. Estas son "
                            "las empresas; las medianas están en /llms-full.txt y /api/v1/data.json, "
                            "sus ofertas abiertas en /api/v1/jobs.json, el servidor MCP en /mcp y el "
@@ -1199,6 +1200,33 @@ def share_meta(lang: str, title: str) -> str:
             f'<meta name="twitter:image" content="{image}">')
 
 
+def head_links(lang: str, path: str, alternates: dict[str, str]) -> str:
+    """canonical and hreflang, absolute as Google wants them, with Spanish as
+    x-default since the bare domain sends everyone there."""
+    out = [f'<link rel="canonical" href="{PUBLIC}{path}">']
+    out += [f'<link rel="alternate" hreflang="{code}" href="{PUBLIC}{href}">' for code, href in alternates.items()]
+    if "es" in alternates:
+        out.append(f'<link rel="alternate" hreflang="x-default" href="{PUBLIC}{alternates["es"]}">')
+    return "\n".join(out)
+
+
+def topbar(lang: str, e: dict, alternates: dict[str, str]) -> str:
+    lang_links = "".join(
+        f'<a class="on" aria-current="page">{code.upper()}</a>' if code == lang
+        else f'<a href="{alternates[code]}" hreflang="{code}">{code.upper()}</a>'
+        for code in ("es", "en"))
+    return f"""<nav class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="/{lang}/">{EMBLEM}<span>{e['title']}</span></a>
+    <div class="topbar-end">
+      <a class="icon-btn" href="{REPO}" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub">{GITHUB_ICON}</a>
+      <div class="seg" role="group">{lang_links}</div>
+      <button class="icon-btn" id="theme" type="button" title="{e['theme']}" aria-label="{e['theme']}">{THEME_ICON}</button>
+    </div>
+  </div>
+</nav>"""
+
+
 def root_page(data: dict) -> str:
     """The bare domain sends everyone to the Spanish page, whatever their
     browser's language (the maintainer's choice, 2026-11-03); English is one
@@ -1228,17 +1256,14 @@ def root_page(data: dict) -> str:
 def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     s = strings(lang, data)
     e = {k: html.escape(v) for k, v in s.items()}
-    other = "es" if lang == "en" else "en"
     levels = '<a href="https://www.levels.fyi" target="_blank" rel="noopener">Levels.fyi</a>'
     steps = "".join(f"\n          <li><b>{e[f'how_{k}_t']}</b> {e[f'how_{k}']}</li>"
                     for k in ("source", "when", "floor", "groups", "figures"))
     # **bold** in the copy; the salary count is filled in by app.js.
     lede = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", e["hero_lede"]).replace(
         "{people}", '<span id="k-people"></span>').replace("{levels}", levels)
-    lang_links = "".join(
-        f'<a class="on" aria-current="page">{code.upper()}</a>' if code == lang
-        else f'<a href="/{code}/" hreflang="{code}">{code.upper()}</a>'
-        for code in ("es", "en"))
+    guides, faq = seo.home_extra(data, lang)
+    faq_ld = f'\n<script type="application/ld+json">{seo.faq_json_ld(faq)}</script>' if faq else ""
     return f"""<!doctype html>
 <html lang="{lang}">
 <head>
@@ -1254,10 +1279,10 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#0000f2">
 <script>try {{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }} catch (_) {{}}</script>
-<link rel="alternate" hreflang="{other}" href="/{other}/">
+{head_links(lang, f"/{lang}/", {"es": "/es/", "en": "/en/"})}
 <link rel="alternate" type="application/json" href="/api/v1/data.json" title="Salary aggregates">
 <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Salary aggregates for agents">
-<script type="application/ld+json">{json_ld(lang, data)}</script>
+<script type="application/ld+json">{json_ld(lang, data)}</script>{faq_ld}
 {ICON_LINKS}
 <link rel="preload" href="/fonts/Antonio-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/Barlow-Regular.woff2" as="font" type="font/woff2" crossorigin>
@@ -1265,16 +1290,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 {VERCEL_SCRIPTS}</head>
 <body data-lang="{lang}">
 {lazo_de_seis()}
-<nav class="topbar">
-  <div class="topbar-in">
-    <a class="brand" href="/{lang}/">{EMBLEM}<span>{e['title']}</span></a>
-    <div class="topbar-end">
-      <a class="icon-btn" href="{REPO}" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub">{GITHUB_ICON}</a>
-      <div class="seg" role="group">{lang_links}</div>
-      <button class="icon-btn" id="theme" type="button" title="{e['theme']}" aria-label="{e['theme']}">{THEME_ICON}</button>
-    </div>
-  </div>
-</nav>
+{topbar(lang, e, {"es": "/es/", "en": "/en/"})}
 
 <header class="field tiled head-field">
 {WALL}
@@ -1338,7 +1354,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     <button class="more" id="more" hidden></button>
     {noscript_companies(e, data)}
   </section>
-{agents_section(e)}
+{agents_section(e)}{guides}
 </main>
 
 <footer class="field tiled">{WALL}<div class="foot">
@@ -1360,6 +1376,75 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 </body>
 </html>
 """
+
+
+# --- Search pages ----------------------------------------------------------------
+
+def guide_shell(data: dict):
+    """The page around seo.py's content: the home page's head, top bar,
+    blue header and footer, without its script."""
+    def shell(*, lang, path, alternates, title, description, header, main, ld) -> str:
+        e = {k: html.escape(v) for k, v in strings(lang, data).items()}
+        levels = '<a href="https://www.levels.fyi" target="_blank" rel="noopener">Levels.fyi</a>'
+        scripts = "".join(f'\n<script type="application/ld+json">'
+                          f'{json.dumps(x, ensure_ascii=False).replace("</", "<\\/")}</script>' for x in ld)
+        title, description = html.escape(title), html.escape(description)
+        return f"""<!doctype html>
+<html lang="{lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<meta name="description" content="{description}">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="{e['title']}">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{description}">
+{share_meta(lang, title).replace(f'content="{PUBLIC}/{lang}/"', f'content="{PUBLIC}{path}"', 1)}
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#0000f2">
+<script>try {{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }} catch (_) {{}}</script>
+{head_links(lang, path, alternates)}{scripts}
+{ICON_LINKS}
+<link rel="preload" href="/fonts/Antonio-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/Barlow-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
+{VERCEL_SCRIPTS}</head>
+<body data-lang="{lang}" class="guide">
+{lazo_de_seis()}
+{topbar(lang, e, alternates)}
+<header class="field tiled head-field guide-head">{WALL}
+<div class="head">
+  {header}
+</div></header>
+<main class="bento">
+{main}
+</main>
+<footer class="field tiled">{WALL}<div class="foot">
+  <p class="veil">{e['source'].replace('Levels.fyi', levels)} ·
+     <a href="/{lang}/">{e['title']}</a> ·
+     <a href="/api/v1/data.json" target="_blank" rel="noopener">{e['data']}</a> ·
+     <a href="{REPO}" target="_blank" rel="noopener">{e['repo']}</a> ·
+     <a href="/{lang}/legal/">{e['legal']}</a></p>
+</div></footer>
+<script>document.getElementById("theme").onclick = () => {{ const r = document.documentElement;
+  const t = r.dataset.theme === "dark" ? "light" : "dark"; r.dataset.theme = t;
+  try {{ localStorage.setItem("theme", t); }} catch (_) {{}} }};</script>
+</body>
+</html>
+"""
+    return shell
+
+
+def sitemap(groups: list[dict[str, str]], date: str) -> str:
+    """Every page with its other language, as Google reads hreflang in a sitemap."""
+    def url(paths: dict[str, str], path: str) -> str:
+        alts = "".join(f'<xhtml:link rel="alternate" hreflang="{c}" href="{PUBLIC}{h}"/>' for c, h in paths.items())
+        return f"<url><loc>{PUBLIC}{path}</loc><lastmod>{date}</lastmod>{alts}</url>"
+    body = "\n".join(url(paths, path) for paths in groups for path in paths.values())
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+            'xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' + body + "\n</urlset>\n")
 
 
 # --- Legal and privacy ---------------------------------------------------------
@@ -1502,7 +1587,7 @@ def legal_page(lang: str) -> str:
 <title>{html.escape(t['title'])} · Spanish Top Tech Companies</title>
 <meta name="color-scheme" content="light">
 <script>try {{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }} catch (_) {{}}</script>
-<link rel="alternate" hreflang="{other}" href="/{other}/legal/">
+{head_links(lang, f"/{lang}/legal/", {"es": "/es/legal/", "en": "/en/legal/"})}
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
@@ -1554,6 +1639,16 @@ def main(argv: list[str]) -> int:
         (OUT / lang / "legal").mkdir()
         (OUT / lang / "legal" / "index.html").write_text(legal_page(lang), encoding="utf-8")
     (OUT / "index.html").write_text(root_page(data), encoding="utf-8")
+    guides = seo.pages(data, guide_shell(data), PUBLIC)
+    for g in guides:
+        for lang, path in g["paths"].items():
+            (OUT / path.strip("/")).mkdir(parents=True, exist_ok=True)
+            (OUT / path.strip("/") / "index.html").write_text(g["html"][lang], encoding="utf-8")
+    groups = ([{"es": "/es/", "en": "/en/"}] + [g["paths"] for g in guides]
+              + [{"es": "/es/legal/", "en": "/en/legal/"}])
+    (OUT / "sitemap.xml").write_text(sitemap(groups, data["data_as_of"]), encoding="utf-8")
+    (OUT / "robots.txt").write_text(
+        f"User-agent: *\nAllow: /\nDisallow: /ingest/\n\nSitemap: {PUBLIC}/sitemap.xml\n", encoding="utf-8")
     # The favicon is a tile of the lacería with an S: favicon.svg for browsers that
     # take SVG, the .ico for the rest, and a square PNG for a phone's home screen.
     # og-*.png is the link preview, drawn by tests/site/og-image.mjs.
@@ -1576,7 +1671,7 @@ def main(argv: list[str]) -> int:
         f"Canonical: {SITE}/.well-known/security.txt\n"
         f"Expires: {int(data['generated'][:4]) + 1}-{data['generated'][5:10]}T00:00:00Z\n", encoding="utf-8")
     print(f"Built _site/: {len(data['companies'])} companies, {len(data['cells'])} cells "
-          f"of {lib.MIN_GROUP}+ people.")
+          f"of {lib.MIN_GROUP}+ people, {2 * len(guides)} search pages.")
     return 0
 
 
@@ -1728,6 +1823,8 @@ them the steps under Tools. The code is open at {REPO}.
 
 - [Web page, Spanish]({SITE}/es/)
 - [Web page, English]({SITE}/en/)
+- [Salary pages, Spanish]({SITE}/es/salarios/): one static page per role, region, role in a region and company, figures in the HTML
+- [Salary pages, English]({SITE}/en/salaries/): the same in English; every URL is in [the sitemap]({SITE}/sitemap.xml)
 - [Methodology]({REPO}/blob/{BRANCH}/METHODOLOGY.md#the-website-and-the-mcp-server)
 """
 
