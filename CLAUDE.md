@@ -225,8 +225,6 @@ companies with no board and not found boardless in the last 30 days, which
 hour). The site publishes it at `/api/v1/boards.json`, tiered by that day's
 ranking, and `scripts/jobs.mjs` crawls every board in it daily into
 `/api/v1/jobs.json`, which the MCP's job tools search. The ATS adapters both
-scripts use live in `lib/ats/`: compiled JavaScript moved here from
-autoapply-mcp (MIT) when that repository was archived on 2026-11-04 ("vamos a
-migrar todo dentro de este repo"). They are this repo's code now; fix them
-here. Applying goes through `/mcp` with nothing installed; do not point
-people at autoapply-mcp.
+scripts use live in `lib/ats/` (since 2026-11-04: "vamos a migrar todo dentro
+de este repo"); fix them there. Applying goes through `/mcp` with nothing
+installed.

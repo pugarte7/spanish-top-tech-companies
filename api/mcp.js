@@ -663,7 +663,7 @@ function untrusted(text) {
 }
 
 // Who answers a question. Categories only the person may decide, from the label
-// (and, for a box to tick, its options); autoapply-mcp's blockedQuestions.ts, cut
+// (and, for a box to tick, its options); the question classifier, cut
 // down, with Spanish forms. Order matters: the first match names the category.
 const QUESTION_CATEGORIES = [
   ["bot-check", /\bare you (a |an )?(human|robot|bot|ai|artificial intelligence)\b|\bnot a robot\b|\b(completed|written|filled|submitted) (by|with|using) (an? )?(ai|bot|automated)\b|\beres (un )?(robot|humano)\b/],

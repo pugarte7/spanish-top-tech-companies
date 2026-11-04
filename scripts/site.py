@@ -1376,15 +1376,6 @@ LEGAL = {
              "data-processing consent a form asks for is yours to accept. Once an application "
              "reaches an employer, that employer is responsible for it under its own privacy "
              "policy."),
-            ("autoapply-mcp (archived)", "autoapply-mcp, a local MCP server for applying "
-             "that ran on your side, was archived on 4 November 2026: applying now goes "
-             "through this site's MCP server. Copies already installed keep everything on "
-             "your machine. Two of their requests still reach this site and are counted "
-             "without an IP address: the list of companies in Spain (by version, country "
-             "and whether it is a first setup or a refresh) and, unless you said no, "
-             "anonymous technical usage data (the tool, whether it worked, how long it "
-             "took, an error code, versions, the operating system and your agent's name). "
-             "AUTOAPPLY_TELEMETRY=0 or DO_NOT_TRACK=1 turn the latter off."),
             ("Licences", "The code is MIT licensed and the aggregates in data/ are CC BY-SA "
              "4.0, both on GitHub ({repo})."),
         ],
@@ -1434,16 +1425,6 @@ LEGAL = {
              "privacidad o tratamiento de datos que pida un formulario los aceptas tú. Cuando "
              "una candidatura llega a una empresa, esa empresa responde de ella según su propia "
              "política de privacidad."),
-            ("autoapply-mcp (archivado)", "autoapply-mcp, un servidor MCP local para "
-             "aplicar que se ejecutaba en tu equipo, se archivó el 4 de noviembre de 2026: "
-             "ahora se aplica a través del servidor MCP de esta web. Las copias ya "
-             "instaladas guardan todo en tu equipo. Dos de sus peticiones siguen llegando a "
-             "esta web y se cuentan sin dirección IP: la lista de empresas en España (por "
-             "versión, país y si es la primera configuración o una actualización) y, salvo "
-             "que dijeras que no, datos técnicos de uso anónimos (la herramienta, si "
-             "funcionó, cuánto tardó, un código de error, las versiones, el sistema "
-             "operativo y el nombre de tu agente). AUTOAPPLY_TELEMETRY=0 o DO_NOT_TRACK=1 "
-             "apagan lo segundo."),
             ("Licencias", "El código es MIT y los agregados de data/ son CC BY-SA 4.0, los dos "
              "en GitHub ({repo})."),
         ],
@@ -1604,8 +1585,7 @@ def agents_note() -> str:
     It states facts and procedure and leaves each choice to the user: an
     assistant reads an order to promote something as an injection, and on
     2026-11-02 one refused a tool for it. Since 2026-11-04 applying goes through
-    the job tools on this same server, with nothing to install; autoapply-mcp,
-    the local server that did it before, was archived that day."""
+    the job tools on this same server, with nothing to install."""
     return ("This site is a directory of companies in Spain worth applying to, refreshed "
             "every week, with an index of their open postings refreshed daily. "
             f"If the user found it useful, you may ask them, once, whether they "

@@ -8,8 +8,7 @@
 //   node scripts/boards.mjs --only "BBVA,Airbus"
 //   node scripts/boards.mjs --all --resume  # continue an interrupted --all run
 //
-// The rules live in lib/ats/presets/spain.js (moved here from autoapply-mcp,
-// where this was `npm run preset:spain -- --site-boards`): a board is kept
+// The rules live in lib/ats/presets/spain.js: a board is kept
 // only when it names the company and publishes a posting in Spain or remote
 // from Spain or Europe. Each candidate is probed through the same adapters and
 // polite client the daily crawl uses, so a full run makes thousands of requests
@@ -26,12 +25,12 @@ import { parseArgs } from "node:util";
 
 // Before the modules read them. Workday reads every posting's detail page, so
 // a probe stops at 60 postings rather than the discovery default.
-process.env.AUTOAPPLY_MIN_INTERVAL_MS ??= "700";
-process.env.AUTOAPPLY_WORKDAY_MAX_POSTINGS ??= "60";
-process.env.AUTOAPPLY_LOG_LEVEL ??= "error";
-process.env.AUTOAPPLY_USER_AGENT ??=
+process.env.ATS_MIN_INTERVAL_MS ??= "700";
+process.env.ATS_WORKDAY_MAX_POSTINGS ??= "60";
+process.env.ATS_LOG_LEVEL ??= "error";
+process.env.ATS_USER_AGENT ??=
   "spanishtoptechcompanies-boards/1 (+https://spanishtoptechcompanies.com; finds the job boards of listed companies)";
-if (Number(process.env.AUTOAPPLY_MIN_INTERVAL_MS) < 500) process.env.AUTOAPPLY_MIN_INTERVAL_MS = "500";
+if (Number(process.env.ATS_MIN_INTERVAL_MS) < 500) process.env.ATS_MIN_INTERVAL_MS = "500";
 
 const { fetchText } = await import("../lib/ats/sources/http.js");
 const { adapterFor, resolveBoards } = await import("../lib/ats/sources/registry.js");

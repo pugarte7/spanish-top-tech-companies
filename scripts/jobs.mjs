@@ -312,7 +312,7 @@ export function carryOver(index, failures, previous, now = Date.now(), maxDays =
   };
 }
 
-/** The ATS modules in lib/ats (moved here from autoapply-mcp, MIT). */
+/** The ATS modules in lib/ats. */
 export async function loadAts() {
   const [registry, location, campaign] = await Promise.all([
     import("../lib/ats/sources/registry.js"),
@@ -377,8 +377,8 @@ async function main() {
     const boardsList = JSON.parse(readFileSync(opts.boards, "utf8"));
     const data = JSON.parse(readFileSync(opts.data, "utf8"));
     // Says who is asking: this crawl is the site's.
-    process.env.AUTOAPPLY_USER_AGENT ??= `spanishtoptechcompanies-jobs/${VERSION} (+${SITE}; daily job index)`;
-    process.env.AUTOAPPLY_LOG_LEVEL ??= "error";
+    process.env.ATS_USER_AGENT ??= `spanishtoptechcompanies-jobs/${VERSION} (+${SITE}; daily job index)`;
+    process.env.ATS_LOG_LEVEL ??= "error";
     const result = await crawl(boardsList, data, await loadAts(), opts);
     const { boards } = result.index;
     const seconds = Math.round((Date.now() - started) / 1000);

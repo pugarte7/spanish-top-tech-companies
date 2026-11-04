@@ -10,8 +10,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { carryOver, crawl, isIndex, loadAts, throttled } from "../scripts/jobs.mjs";
 
-process.env.AUTOAPPLY_MIN_INTERVAL_MS = "0";
-process.env.AUTOAPPLY_LOG_LEVEL = "error";
+process.env.ATS_MIN_INTERVAL_MS = "0";
+process.env.ATS_LOG_LEVEL = "error";
 
 const KEYS = ["id", "company", "slug", "tier", "title", "url", "ats", "location", "location_classes",
               "workplace", "department", "posted_at", "salary"];
