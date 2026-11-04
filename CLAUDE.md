@@ -133,6 +133,16 @@ median and its quartiles gave back all three salaries. Quartiles needed ten
 until 2026-11-02, when the maintainer wanted one minimum across the site
 ("que en un sitio no sea 1, en otro 3, en otro 5 y en otro 10");
 `lib.QUARTILE_MIN` is `MIN_GROUP` since.
+**Every verified company is shown, whatever it pays.** Until 2026-11-04 the
+site left out companies whose median base over all their salaries was under
+45,000 EUR (`COMPANY_FLOOR_EUR`, 138 verified companies such as Santander);
+that day the maintainer dropped it: "Vamos a mostrar todas las empresas
+independientemente de la mediana. Las medianas generales se actualizan." The
+ranking says which pay best, and every aggregate covers all of them. Still
+left out: unverified companies and ones the world does not vouch for (both
+below). The digest's bar and floor (`lib.THRESHOLD_EUR`, `lib.FLOOR_EUR`) are
+unrelated: they only sort the weekly lists.
+
 The one exception is the companies table: on 2026-11-01 the maintainer chose
 to list every company with data under the filters, one salary included, with
 its summary and its bars per experience band (`site.company_filters()`),

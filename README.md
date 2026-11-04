@@ -41,7 +41,7 @@ Funciona mejor con Instinct y, si no, con Claude Code. También sirven Codex, Cu
 
 ### Cómo se calcula
 
-Cada salario viene de [Levels.fyi](https://www.levels.fyi) y solo cuenta si la ubicación de esa persona está en España. Una empresa aparece si la mediana del sueldo base de todos sus salarios llega a 45.000 €, tiene página de LinkedIn o web, y tiene en Levels.fyi al menos 5 salarios de cualquier país sumando todos los roles: una empresa que nadie más ha reportado no aparece. Las empresas con menos de 3 salarios se listan después de las demás. Los salarios se resumen por empresa, rol, región y experiencia, y los importes de la web se redondean a 1.000 €. Los detalles están en [METHODOLOGY.md](METHODOLOGY.md#the-website-and-the-mcp-server).
+Cada salario viene de [Levels.fyi](https://www.levels.fyi) y solo cuenta si la ubicación de esa persona está en España. Aparecen todas las empresas, paguen lo que paguen, ordenadas por la mediana de su sueldo base; cada una tiene página de LinkedIn o web, y tiene en Levels.fyi al menos 5 salarios de cualquier país sumando todos los roles: una empresa que nadie más ha reportado no aparece. Las empresas con menos de 3 salarios se listan después de las demás. Los salarios se resumen por empresa, rol, región y experiencia, y los importes de la web se redondean a 1.000 €. Los detalles están en [METHODOLOGY.md](METHODOLOGY.md#the-website-and-the-mcp-server).
 
 ### Añade tu salario
 
@@ -88,7 +88,7 @@ Works best with Instinct, or else Claude Code. Codex, Cursor, Grok CLI, Hermes o
 
 ### How it is calculated
 
-Every salary comes from [Levels.fyi](https://www.levels.fyi) and counts only if that person's location is in Spain. A company is listed when the median base salary over all its salaries reaches €45,000, it has a LinkedIn page or a website, and it has at least 5 salaries on Levels.fyi from anywhere in the world over every role: a company nobody else has reported is not shown. Companies with fewer than 3 salaries are listed after the rest. Salaries are summarised by company, role, region and experience, and the site rounds every amount to €1,000. The details are in [METHODOLOGY.md](METHODOLOGY.md#the-website-and-the-mcp-server).
+Every salary comes from [Levels.fyi](https://www.levels.fyi) and counts only if that person's location is in Spain. Every company is listed whatever it pays, ranked by its median base salary; each one has a LinkedIn page or a website, and has at least 5 salaries on Levels.fyi from anywhere in the world over every role: a company nobody else has reported is not shown. Companies with fewer than 3 salaries are listed after the rest. Salaries are summarised by company, role, region and experience, and the site rounds every amount to €1,000. The details are in [METHODOLOGY.md](METHODOLOGY.md#the-website-and-the-mcp-server).
 
 ### Add your salary
 

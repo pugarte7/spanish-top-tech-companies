@@ -187,9 +187,10 @@ def city_place(region: str, city: str) -> str:
     return f"{region}-{lib._norm_words(city).replace(' ', '-')}"
 
 
-# The site covers companies whose median base, over every salary on file at
-# any role and seniority, reaches this. The CSV keeps the rest.
-COMPANY_FLOOR_EUR = 45_000
+# Until 2026-11-04 the site left out companies whose median base was under
+# 45,000 EUR; since then it shows every verified company and the ranking says
+# which pay best. This only splits job boards into tiers B and C.
+BOARD_TIER_FLOOR_EUR = 45_000
 # A yearly base under this is no full-time salary in Spain, whose minimum wage
 # has been above it since 2023: it is a monthly figure, a stipend or part-time,
 # and one of them in a group of five moves the median.
@@ -255,8 +256,8 @@ STRINGS = {
                     "so figures can trail what companies offer today.",
         "how_floor_t": "Which companies.",
         "how_floor": "For each company, the median base salary over all its salaries, any role and "
-                     "experience. It is shown if that reaches {floor}; the rest are left out. "
-                     "The company also has to exist beyond Levels.fyi, with a LinkedIn page or a "
+                     "experience, which orders the table. Every company is shown, whatever it pays; "
+                     "it has to exist beyond Levels.fyi, with a LinkedIn page or a "
                      "website, and have {global} or more salaries there from anywhere in the world, "
                      "counting every role. With fewer than {ranked} salaries in Spain a company is listed "
                      "after the rest, whichever column is sorted.",
@@ -379,8 +380,8 @@ STRINGS = {
                     "mantienen, así que las cifras pueden ir por detrás de lo que se ofrece hoy.",
         "how_floor_t": "Qué empresas entran.",
         "how_floor": "Por empresa, la mediana del sueldo base de todos sus salarios, de cualquier rol "
-                     "y experiencia. Entra si llega a {floor}; las demás se quedan fuera. La empresa "
-                     "tiene que existir fuera de Levels.fyi, con página de LinkedIn o web, y tener "
+                     "y experiencia, que ordena la tabla. Entran todas, paguen lo que paguen; la "
+                     "empresa tiene que existir fuera de Levels.fyi, con página de LinkedIn o web, y tener "
                      "allí {global} salarios o más de cualquier país, sumando todos los roles. Con "
                      "menos de {ranked} salarios en España, la empresa se lista después de las demás, se "
                      "ordene por la columna que se ordene.",
@@ -576,11 +577,6 @@ def counted(entry: dict) -> bool:
     return bool(entry.get("base")) and entry["base"] >= MIN_BASE_EUR
 
 
-def pays_enough(company: dict) -> bool:
-    bases = [e["base"] for e in company["entries"] if counted(e)]
-    return bool(bases) and statistics.median(bases) >= COMPANY_FLOOR_EUR
-
-
 def build_data(companies: list[dict]) -> dict:
     """Every publishable aggregate, keyed "role|region|years" ("" = all)."""
     return _build(companies)[0]
@@ -597,7 +593,7 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
     for i, company in enumerate(companies):
         # Nothing of an unverified company reaches the site, not even its
         # rows in the role and region groups.
-        if not lib.verified(company) or not pays_enough(company):
+        if not lib.verified(company):
             continue
         for e in company["entries"]:
             if counted(e):
@@ -651,7 +647,6 @@ def _build(companies: list[dict]) -> tuple[dict, list, dict, dict]:
         "quartile_min": lib.QUARTILE_MIN,
         "round_eur": lib.ROUND_EUR,
         "threshold": lib.THRESHOLD_EUR,
-        "company_floor": COMPANY_FLOOR_EUR,
         "hist": {"low": HIST_LOW, "high": HIST_HIGH, "step": HIST_STEP},
         "roles": [role_info(r) for r, _ in role_counts.most_common() if f"{r}||" in stats],
         "years": [b for b in bucket_labels() if f"||{b}" in stats],
@@ -926,8 +921,8 @@ def job_boards(data: dict, tables: dict) -> dict:
     data/boards.json maps a Levels.fyi slug to its board; scripts/boards.mjs
     finds them. The tier is the site's
     own ranking, today's: A when the engineers' median reaches the bar over
-    min_ranked salaries, B at the bar on fewer or above the floor, C below it
-    or with no engineers."""
+    min_ranked salaries, B at the bar on fewer or above BOARD_TIER_FLOOR_EUR,
+    C below it or with no engineers."""
     known = json.loads((AGGREGATES / "boards.json").read_text(encoding="utf-8"))
     engineers = tables.get("software-engineer") or {"fields": [], "cells": {}}
     col = {f: i for i, f in enumerate(engineers["fields"])}
@@ -942,7 +937,7 @@ def job_boards(data: dict, tables: dict) -> dict:
         median, n = medians.get(i, (None, 0))
         tier = ("C" if median is None
                 else "A" if median >= data["threshold"] and n >= data["min_ranked"]
-                else "B" if median >= data["company_floor"] else "C")
+                else "B" if median >= BOARD_TIER_FLOOR_EUR else "C")
         cities = [t for t in map(board_tag, company.get("cities", [])[:3]) if t]
         out.append({"name": company["name"], "ats": board["ats"], "board": board["board"],
                     "tier": tier, "tags": list(dict.fromkeys(["spain", *cities])),
@@ -1103,7 +1098,7 @@ def month(ym: str, lang: str) -> str:
 def strings(lang: str, data: dict) -> dict:
     reported = data.get("reported") or {"from": "", "to": "", "median": ""}
     fill = {"{min}": str(lib.MIN_GROUP),
-            "{round}": euros(lib.ROUND_EUR, lang), "{floor}": euros(COMPANY_FLOOR_EUR, lang),
+            "{round}": euros(lib.ROUND_EUR, lang),
             "{bar}": euros(lib.THRESHOLD_EUR, lang), "{minbase}": euros(MIN_BASE_EUR, lang),
             "{companies}": str(len(data["companies"])),
             "{ranked}": str(lib.MIN_RANKED), "{global}": str(lib.MIN_GLOBAL),
@@ -1683,9 +1678,7 @@ def mcp_instructions(data: dict) -> str:
         "and a figure from one person is that person's salary, rounded, so say so when quoting it. "
         f"p25-p75 come only from {data['quartile_min']} or more people, and top_companies lists "
         f"companies with fewer than {data.get('min_ranked', lib.MIN_RANKED)} salaries after the rest. "
-        "Only companies whose median base over all their salaries reaches "
-        "company_floor_eur (see list_filters) are counted; say so when quoting a figure for "
-        "Spain. A company is also listed only with a LinkedIn page or a website and "
+        "Every company is counted whatever it pays; a company is listed only with a LinkedIn page or a website and "
         f"{data.get('min_global', lib.MIN_GLOBAL)} or more submissions on Levels.fyi from "
         "anywhere in the world over every role. Years are years of experience in buckets (0-1, 2-4, 5-7, 8-11, 12-19, 20+); "
         "pass a number and it is bucketed. Call list_filters first if unsure of a role or "
@@ -1708,9 +1701,8 @@ widen it rather than estimate. The one exception is a company's own figures:
 the companies table, and the MCP server's company tools with it, list every
 company with data under the filters, one salary included, each with how many
 people it comes from; one person's figure is that person's salary, rounded.
-Every euro figure is rounded to the nearest {data['round_eur']:,} EUR. A company counts
-only when its median base over all its salaries reaches {data['company_floor']:,} EUR,
-it has a LinkedIn page or a website, and it has {data.get('min_global', lib.MIN_GLOBAL)} or
+Every euro figure is rounded to the nearest {data['round_eur']:,} EUR. Every company
+counts whatever it pays, when it has a LinkedIn page or a website and it has {data.get('min_global', lib.MIN_GLOBAL)} or
 more submissions on Levels.fyi from anywhere in the world over every role.
 {_reported(data)}{_coverage(data)}
 Agents: {agents_note()} With no tools of your own (a plain chat), point the
@@ -1750,12 +1742,8 @@ def _reported(data: dict) -> str:
 
 
 def _coverage(data: dict) -> str:
-    floor = data.get("company_floor")
-    if not floor:
-        return ""
-    return (f"\nOnly companies whose median base, over all their salaries at any role and\n"
-            f"seniority, is {_k(floor)} or more are counted, so every figure here leaves\n"
-            f"out the lowest-paying employers. Say so when quoting a figure for Spain.\n")
+    """Since 2026-11-04 every company counts, whatever it pays: nothing to warn of."""
+    return ""
 
 
 def llms_full(data: dict) -> str:
