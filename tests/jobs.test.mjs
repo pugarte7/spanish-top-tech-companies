@@ -4,11 +4,11 @@
 //     node tests/jobs.test.mjs
 import assert from "node:assert/strict";
 import { execFile, execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, existsSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { crawl, isIndex, loadAutoapply } from "../scripts/jobs.mjs";
+import { carryOver, crawl, isIndex, loadAutoapply, throttled } from "../scripts/jobs.mjs";
 
 process.env.AUTOAPPLY_MIN_INTERVAL_MS = "0";
 process.env.AUTOAPPLY_LOG_LEVEL = "error";
@@ -24,10 +24,15 @@ function checkIndex(index, name) {
   assert.ok(isIndex(index), `${name}: not a jobs index`);
   assert.deepEqual(Object.keys(index), ["version", "generated_at", "boards", "jobs"], name);
   assert.match(index.generated_at, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/, name);
-  assert.deepEqual(Object.keys(index.boards), ["queried", "failed", "issues"], name);
+  assert.deepEqual(Object.keys(index.boards), ["queried", "failed", "stale", "stale_since", "issues"], name);
   for (const [code, n] of Object.entries(index.boards.issues)) {
     assert.match(code, /^[a-z]+:[a-z_]+$/, `${name}: issue ${code}`);
     assert.ok(Number.isInteger(n) && n > 0);
+  }
+  assert.equal(Object.keys(index.boards.stale_since).length, index.boards.stale, name);
+  for (const [board, since] of Object.entries(index.boards.stale_since)) {
+    assert.match(board, /^[a-z]+:[^:]+$/, `${name}: stale ${board}`);
+    assert.ok(iso(since), `${name}: stale ${board} since ${since}`);
   }
   const ids = new Set();
   for (const job of index.jobs) {
@@ -84,10 +89,16 @@ const BOARDS = {
       createdAt: 1760000000000, workplaceType: "remote", categories: { location: "Remote - US" } },
   ],
 };
-const requested = [];
+let requested = [];
+// How many more times each URL answers 403, as Greenhouse did GitHub's runner.
+const refuse = {};
 globalThis.fetch = async (url) => {
   const key = String(url).split("?")[0];
   requested.push(key);
+  if (refuse[key] > 0) {
+    refuse[key] -= 1;
+    return new Response("<html>Forbidden</html>", { status: 403 });
+  }
   return key in BOARDS ? new Response(JSON.stringify(BOARDS[key]), { status: 200 })
                        : new Response("not found", { status: 404 });
 };
@@ -102,7 +113,7 @@ const data = { companies: [{ name: "Cabify", levels: "cabify" }, { name: "Job&Ta
 const { index } = await crawl(boardsList, data, await loadAutoapply(), { minutes: 1 });
 
 checkIndex(index, "crawl");
-assert.deepEqual(index.boards, { queried: 4, failed: 2,
+assert.deepEqual(index.boards, { queried: 4, failed: 2, stale: 0, stale_since: {},
                                  issues: { "greenhouse:not_found": 1, "nope:invalid_board": 1 } });
 assert.deepEqual(index.jobs.map((j) => j.id), [
   "greenhouse:cabify:1", "greenhouse:cabify:6", "greenhouse:cabify:8", "greenhouse:cabify:3",
@@ -129,6 +140,70 @@ assert.ok(!JSON.stringify(index).includes("We build things"), "descriptions stay
 assert.deepEqual(requested.sort(), ["https://api.lever.co/v0/postings/jobandtalent",
   "https://boards-api.greenhouse.io/v1/boards/cabify/jobs", "https://boards-api.greenhouse.io/v1/boards/gone/jobs"]);
 
+// --- A host that refuses -----------------------------------------------------
+
+const GH = "https://boards-api.greenhouse.io/v1/boards";
+assert.ok(throttled({ code: "http_error", message: "[http_error] HTTP 403 from boards-api.greenhouse.io" }));
+assert.ok(throttled({ code: "retryable_http", message: "HTTP 503 from x" }));
+assert.ok(!throttled({ code: "not_found", message: "board not found (404): x" }));
+assert.ok(!throttled({ code: "http_error", message: "HTTP 400 from x" }));
+
+// Refused twice, then served: retried, nothing lost, the other host untouched.
+requested = [];
+refuse[`${GH}/cabify/jobs`] = 2;
+const fast = { minutes: 1, backoffMs: 5 };
+const twice = await crawl({ companies: boardsList.companies.slice(0, 3) }, data, await loadAutoapply(), fast);
+assert.equal(twice.retries, 2);
+assert.deepEqual(twice.index.boards.issues, { "greenhouse:not_found": 1 });
+assert.deepEqual(twice.index.jobs.map((j) => j.id), index.jobs.map((j) => j.id));
+assert.equal(requested.filter((u) => u === `${GH}/cabify/jobs`).length, 3);
+
+// Refusing every time: the host is given up after five refusals in a row, its
+// boards fail with the refusal, and no board is retried past four attempts.
+requested = [];
+for (const b of ["cabify", "gone", "third"]) refuse[`${GH}/${b}/jobs`] = Infinity;
+const blocked = await crawl({ companies: [...boardsList.companies.slice(0, 3),
+  { name: "Third", ats: "greenhouse", board: "third", tier: "A", tags: [] }] }, data, await loadAutoapply(), fast);
+assert.deepEqual(blocked.index.boards.issues, { "greenhouse:http_error": 3 });
+assert.equal(blocked.retries, 4);
+assert.equal(requested.filter((u) => u.startsWith(GH)).length, 5);
+assert.deepEqual(blocked.index.jobs.map((j) => j.id), ["lever:jobandtalent:aaaa-1"]);
+for (const b of ["cabify", "gone", "third"]) delete refuse[`${GH}/${b}/jobs`];
+
+// --- Carrying a failed board's postings over ----------------------------------
+
+const old = (id, company, title) => ({ ...byId["greenhouse:cabify:1"], id, company, title, slug: null });
+const previousIndex = {
+  version: 1, generated_at: "2026-11-03T04:20:00Z",
+  boards: { queried: 4, failed: 1, stale: 1, stale_since: { "greenhouse:old": "2026-10-20T04:20:00Z" }, issues: {} },
+  jobs: [
+    old("greenhouse:cabify:1", "Cabify", "Backend Engineer (yesterday's copy)"),
+    old("greenhouse:cabify:99", "Cabify", "Closed since"),
+    old("greenhouse:gone:5", "Gone", "Board now 404"),
+    old("greenhouse:old:7", "Old", "Failing for two weeks"),
+    old("greenhouse:emptied:3", "Emptied", "Board now answers with no postings"),
+    old("lever:jobandtalent:aaaa-9", "Job&Talent", "Read fine today, so not carried"),
+  ],
+};
+const today = { ...blocked.index, generated_at: "2026-11-04T04:20:00Z" };
+const failures = [
+  { company: "Cabify", ats: "greenhouse", board: "cabify", code: "http_error", message: "HTTP 403" },
+  { company: "Gone", ats: "greenhouse", board: "gone", code: "not_found", message: "404" },
+  { company: "Old", ats: "greenhouse", board: "old", code: "http_error", message: "HTTP 403" },
+];
+const merged = carryOver(today, failures, previousIndex, Date.parse("2026-11-04T05:00:00Z"));
+checkIndex(merged, "carried over");
+assert.deepEqual(merged.jobs.map((j) => j.id),
+                 ["greenhouse:cabify:1", "greenhouse:cabify:99", "lever:jobandtalent:aaaa-1"]);
+assert.deepEqual(merged.jobs[0], previousIndex.jobs[0], "carried over unchanged");
+assert.deepEqual(merged.boards, { ...today.boards, stale: 1,
+                                  stale_since: { "greenhouse:cabify": "2026-11-03T04:20:00Z" } });
+// The next day, still failing: the date it was last read travels along.
+const dayAfter = carryOver({ ...today, jobs: [] }, failures.slice(0, 1), merged, Date.parse("2026-11-05T05:00:00Z"));
+assert.deepEqual(dayAfter.boards.stale_since, { "greenhouse:cabify": "2026-11-03T04:20:00Z" });
+assert.equal(dayAfter.jobs.length, 2);
+assert.deepEqual(carryOver(today, failures, null), today, "nothing to carry without a previous index");
+
 // --- The committed fixture ----------------------------------------------------
 
 const fixture = JSON.parse(readFileSync("tests/fixtures/jobs.json", "utf8"));
@@ -138,7 +213,7 @@ const site = JSON.parse(readFileSync("data/data.json", "utf8"));
 const slugs = new Set(site.companies.map((c) => c.levels));
 for (const job of fixture.jobs) assert.ok(slugs.has(job.slug), `fixture ${job.id}: ${job.slug} not in data.json`);
 
-// --- The script itself: fixture copy, and a crawl that cannot run --------------
+// --- The script itself: fixture copy, carry-over, a crawl that cannot run -----
 
 const tmp = mkdtempSync(join(tmpdir(), "jobs-test-"));
 const run = (...args) => execFileSync(process.execPath, ["scripts/jobs.mjs", ...args],
@@ -150,16 +225,27 @@ let answer = { status: 200, body: JSON.stringify(fixture) };
 const server = createServer((req, res) => { res.writeHead(answer.status); res.end(answer.body); });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const previous = `http://127.0.0.1:${server.address().port}/api/v1/jobs.json`;
-const broken = (out) => new Promise((resolve, reject) => {
+const script = (...args) => new Promise((resolve, reject) => {
   // Not execFileSync: the stub server answers on this process's event loop.
-  execFile(process.execPath,
-    ["scripts/jobs.mjs", "--boards", join(tmp, "missing.json"), "--out", out, "--previous", previous],
-    (error) => (error ? reject(error) : resolve()));
+  execFile(process.execPath, ["scripts/jobs.mjs", "--previous", previous, ...args],
+           (error) => (error ? reject(error) : resolve()));
 });
+const broken = (out) => script("--boards", join(tmp, "missing.json"), "--out", out);
 await broken(join(tmp, "kept.json"));
 assert.deepEqual(JSON.parse(readFileSync(join(tmp, "kept.json"), "utf8")), fixture,
                  "a crawl that cannot run keeps production's index");
+// A board that fails (here one with no adapter, so nothing touches the
+// network) gets its postings from production's index, and the run says so.
+writeFileSync(join(tmp, "boards.json"), JSON.stringify({ companies: [{ name: "Nowhere", ats: "nope", board: "x" }] }));
+const nowhere = { ...fixture.jobs[0], id: "nope:x:1", company: "Nowhere" };
+answer = { status: 200, body: JSON.stringify({ ...fixture, generated_at: new Date().toISOString(), jobs: [nowhere] }) };
+await script("--boards", join(tmp, "boards.json"), "--data", "data/data.json", "--out", join(tmp, "stale.json"));
+const stale = JSON.parse(readFileSync(join(tmp, "stale.json"), "utf8"));
+assert.deepEqual(stale.jobs, [nowhere]);
+assert.deepEqual([stale.boards.failed, stale.boards.stale, Object.keys(stale.boards.stale_since)], [1, 1, ["nope:x"]]);
 answer = { status: 500, body: "" };
+await script("--boards", join(tmp, "boards.json"), "--data", "data/data.json", "--out", join(tmp, "empty.json"));
+assert.ok(!existsSync(join(tmp, "empty.json")), "no board read and none carried over: no index");
 await broken(join(tmp, "none.json"));
 assert.ok(!existsSync(join(tmp, "none.json")), "no index at all when production's cannot be read");
 server.close();
