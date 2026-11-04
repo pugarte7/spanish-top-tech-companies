@@ -123,12 +123,11 @@ T = {
         "home": "Inicio", "source": "Datos: salarios de Levels.fyi de gente que trabaja en España, "
                                     "agrupados de {min} en {min} o más y redondeados a 1.000 €. Actualizado el {date}.",
         "q_pay": "¿Cuánto cobra un {role} en España?",
-        "a_pay": "El sueldo base mediano de un {role} en España es de {median} brutos al año: "
-                 "{m12} al mes en 12 pagas o {m14} en 14. La mitad cobra entre {p25} y {p75}, y con bonus "
+        "a_pay": "El sueldo base mediano de un {role} en España es de {median} brutos al año. "
+                 "La mitad cobra entre {p25} y {p75}, y con bonus "
                  "y acciones el total mediano es de {total}. Sale de {n} salarios reales.",
         "q_junior": "¿Cuánto cobra un {role} junior en España?",
-        "a_junior": "Con {years} de experiencia, el sueldo base mediano es de {median} brutos al año "
-                    "({m14} al mes en 14 pagas).",
+        "a_junior": "Con {years} de experiencia, el sueldo base mediano es de {median} brutos al año.",
         "q_senior": "¿Cuánto cobra un {role} senior en España?",
         "a_senior": "Con {years} de experiencia, el sueldo base mediano es de {median} brutos al año, "
                     "y la mitad cobra entre {p25} y {p75}.",
@@ -188,7 +187,7 @@ T = {
         "home": "Home", "source": "Data: Levels.fyi salaries of people working in Spain, in groups of "
                                   "{min} or more, rounded to €1,000. Updated {date}.",
         "q_pay": "What is the average {role} salary in Spain?",
-        "a_pay": "The median {role} base salary in Spain is {median} a year gross, about {m12} a month. "
+        "a_pay": "The median {role} base salary in Spain is {median} a year gross. "
                  "Half earn between {p25} and {p75}, and with bonus and stock the median total is {total}. "
                  "From {n} real salaries.",
         "q_junior": "What does a junior {role} earn in Spain?",
@@ -308,9 +307,7 @@ def fill(text: str, **kw) -> str:
 def figures(cell: dict, lang: str) -> dict:
     return {"median": eur(cell["median"], lang), "p25": eur(cell["p25"], lang), "p75": eur(cell["p75"], lang),
             "total": eur(cell["total"], lang), "n": f"{cell['n']:,}".replace(",", "." if lang == "es" else ","),
-            "share": pct(cell["share"], lang), "bar": eur(lib.THRESHOLD_EUR, lang),
-            # Monthly gross from the rounded yearly figure, to the nearest 10.
-            "m12": eur(int(round(cell["median"] / 12, -1)), lang), "m14": eur(int(round(cell["median"] / 14, -1)), lang)}
+            "share": pct(cell["share"], lang), "bar": eur(lib.THRESHOLD_EUR, lang)}
 
 
 # --- HTML pieces ---------------------------------------------------------------

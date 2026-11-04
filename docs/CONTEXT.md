@@ -515,8 +515,8 @@ months, read through Scrapling's `FetcherSession`) and Google's autocomplete:
   city: "revolut software engineer salary madrid".
 
 So `seo.py` writes a page for each of those shapes, with the answer in its
-first line ("cuánto cobra un programador" is answered with the median, per
-month in 12 and 14 payments too), and the home page titles lead with
+first line ("cuánto cobra un programador" is answered with the yearly
+median; the maintainer asked for no monthly figure), and the home page titles lead with
 "salario programador" and "software engineer salary in Spain". The README
 links into the pages but still holds no figure.
 
