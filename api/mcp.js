@@ -90,11 +90,13 @@ const TOOLS = {
                    "down in exclude. The starting point when asked to find jobs or apply for " +
                    "someone; application_guide has the procedure.",
       inputSchema: { type: "object", properties: {
-        query: { type: "string", description: "Words to find in the title, company or department, " +
-                 "e.g. backend python. Accents and case are ignored." },
+        query: { type: "string", description: "Words to find in the title, company or location, " +
+                 "e.g. devops sre platform. A posting matching any word counts, whole words and " +
+                 "common synonyms (SRE, site reliability) included; those matching more come first. " +
+                 "Accents and case are ignored." },
         role: { type: "string", description: "A role from list_filters, e.g. software-engineer or " +
-                "Data Scientist; postings are matched by title. Text that is no role filters " +
-                "titles as written." },
+                "Data Scientist, or a specialization such as DevOps, SRE, backend or frontend; " +
+                "postings are matched by title. Text that is neither filters titles as written." },
         region: { type: "string", description: "Spanish region code or name as in the salary " +
                   "tools (MD, Madrid, CT, Cataluña), spain, or remote." },
         workplace: { type: "string", enum: ["remote", "hybrid", "onsite"],
@@ -119,6 +121,22 @@ const TOOLS = {
         id: { type: "string", description: "A job id from find_jobs, e.g. greenhouse:cabify:1234567." } } } }),
     run: (data, args, env) => jobQuestions(data, args, env),
     annotations: { readOnlyHint: true, openWorldHint: true },
+  },
+  report_application: {
+    define: () => ({ title: "Report how an application went",
+      description: "After sending an application to a posting from find_jobs, or failing to, " +
+                   "report the outcome: sent, failed (with the reason) or handed over to the person " +
+                   "to send. Nothing about the person is asked or stored; it counts which postings " +
+                   "get applications and where sending gets stuck, so the site can fix it.",
+      inputSchema: { type: "object", required: ["id", "status"], properties: {
+        id: { type: "string", description: "The job id from find_jobs." },
+        status: { type: "string", enum: REPORT_STATUS, description: "sent: the board confirmed it. " +
+                  "failed: it could not be sent. handed_over: the person got the URL and the answers." },
+        reason: { type: "string", enum: REPORT_REASONS, description: "Why it failed: captcha, " +
+                  "login_required, form_error (a field or upload was refused), posting_closed, " +
+                  "blocked (the board refused the browser), no_browser, person_declined, other." } } } }),
+    run: (data, args, env) => reportApplication(data, args, env),
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
   application_guide: {
     define: () => ({ title: "How to apply with these tools",
@@ -159,11 +177,38 @@ const blank = (v) => v === undefined || v === null || String(v).trim() === "";
 const whole = (v) => typeof v === "number" ? (Number.isInteger(v) ? v : null)
   : typeof v === "string" && /^\s*-?\d+\s*$/.test(v) ? parseInt(v, 10) : null;
 
+// Specializations Levels.fyi counts inside a role, as people name them: the role
+// their salaries are under, the name to report back, and the words a posting's
+// title uses for them (find_jobs filters titles by these).
+const SPECIALIZATIONS = [
+  ["software-engineer", "DevOps", ["devops", "dev ops"]],
+  ["software-engineer", "SRE", ["sre", "site reliability"]],
+  ["software-engineer", "Platform", ["platform"]],
+  ["software-engineer", "Infrastructure", ["infrastructure", "infra"]],
+  ["software-engineer", "Cloud", ["cloud"]],
+  ["software-engineer", "Backend", ["backend", "back end"]],
+  ["software-engineer", "Frontend", ["frontend", "front end"]],
+  ["software-engineer", "Full stack", ["fullstack", "full stack"]],
+  ["software-engineer", "Mobile", ["mobile", "ios", "android"]],
+  ["software-engineer", "Data engineer", ["data engineer", "data engineering"]],
+  ["software-engineer", "Machine learning", ["machine learning", "ml", "ai engineer", "mlops"]],
+  ["software-engineer", "QA", ["qa", "quality assurance", "test automation", "sdet"]],
+  ["software-engineer", "Developer", ["developer", "programmer", "desarrollador", "programador"]],
+];
+const SPECIALIZATION_BY_NAME = new Map(SPECIALIZATIONS.flatMap(([slug, label, names]) =>
+  [label, ...names, ...names.map((n) => `${n} engineer`), ...names.map((n) => `${n} developer`)]
+    .map((n) => [norm(n), { slug, label, names }])));
+
+// A specialization a role name stands for, or null.
+const specialization = (role) => blank(role) ? null : SPECIALIZATION_BY_NAME.get(norm(role)) ?? null;
+
 function resolveRole(data, role) {
   if (blank(role)) return "";
   const want = norm(role);
   if (!want) throw new QueryError(`unknown role '${role}'; see list_filters`);
   for (const r of data.roles) if (want === norm(r.slug) || want === norm(r.name)) return r.slug;
+  const special = specialization(role);
+  if (special && data.roles.some((r) => r.slug === special.slug)) return special.slug;
   const close = data.roles.filter((r) => norm(r.name).includes(want) || norm(r.slug).includes(want))
     .map((r) => r.slug);
   if (close.length === 1) return close[0];
@@ -248,8 +293,14 @@ function resolveLimit(limit) {
 function select(data, { role, region, years }) {
   const r = resolveRole(data, role), place = resolvePlace(data, region), y = resolveYears(data, years);
   const g = place.code;
-  const note = place.city ? { note: `${place.city} is in ${g} (${data.regions[g].en}); salaries are ` +
-    "per region, so these figures are for the whole region." } : {};
+  const special = specialization(role);
+  const notes = [
+    place.city && `${place.city} is in ${g} (${data.regions[g].en}); salaries are per region, so ` +
+      "these figures are for the whole region.",
+    special && r === special.slug && `${special.label} is counted as ${r} on Levels.fyi, so these ` +
+      `figures are for every ${r.replace(/-/g, " ")}, not only ${special.label}.`,
+  ].filter(Boolean);
+  const note = notes.length ? { note: notes.join(" ") } : {};
   return [`${r}|${g}|${y}`, { role: r || null, region: g || null, years: y || null }, note];
 }
 
@@ -343,6 +394,41 @@ const MAX_EXCLUDE = 5000;
 // Lowercase ASCII words: accents, case and punctuation do not matter. Keeps +
 // and # so c++ and c# stay apart from c.
 const words = (text) => norm(text).replace(/[^a-z0-9+#]+/g, " ").trim();
+
+// Words a query can leave out, and words that mean the same in a job title.
+const STOPWORDS = new Set(("a an and or the of for in at on with to de del la el los las y o en para con " +
+  "job jobs role roles position positions oferta ofertas puesto puestos empleo trabajo").split(" "));
+const SYNONYMS = [
+  ["sre", "site reliability"], ["devops", "dev ops"], ["frontend", "front end"],
+  ["backend", "back end"], ["fullstack", "full stack"], ["ml", "machine learning"],
+  ["ai", "artificial intelligence", "ia"], ["qa", "quality assurance"], ["infra", "infrastructure"],
+  ["k8s", "kubernetes"], ["js", "javascript"], ["ts", "typescript"], ["pm", "product manager"],
+  ["ux", "user experience"], ["engineer", "ingeniero", "ingeniera"],
+  ["developer", "desarrollador", "desarrolladora", "programmer", "programador"],
+  ["data", "datos"], ["senior", "sr"], ["junior", "jr"], ["remote", "remoto", "teletrabajo"],
+  ["security", "seguridad"], ["sales", "ventas"], ["designer", "disenador", "disenadora"],
+];
+const SYNONYM_OF = new Map(SYNONYMS.flatMap((group) => group.map((w) => [w, group])));
+const PHRASES = new Set(SYNONYMS.flat().filter((w) => w.includes(" ")));
+
+// The terms of a query, each with the ways a title may say it: two-word phrases
+// kept together, filler words dropped.
+export function queryTerms(query) {
+  const tokens = words(query).split(" ").filter(Boolean);
+  const terms = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const pair = `${tokens[i]} ${tokens[i + 1] ?? ""}`;
+    const term = PHRASES.has(pair) ? (i++, pair) : tokens[i];
+    if (STOPWORDS.has(term) || terms.some((t) => t.term === term)) continue;
+    terms.push({ term, alternatives: SYNONYM_OF.get(term) ?? [term] });
+  }
+  return terms;
+}
+
+// Whole words only, a plural allowed: "engineer" finds "engineers", not "engineering".
+const escapeRe = (w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const termPattern = (alternatives) =>
+  new RegExp(`(?:^| )(?:${alternatives.map(escapeRe).join("|")})(?:s|es)?(?= |$)`);
 const hasPhrase = (haystack, phrase) => ` ${haystack} `.includes(` ${phrase} `);
 
 // A posting's role, from its title, in the role vocabulary of data.json. First
@@ -506,7 +592,8 @@ async function jobIndex(env) {
   return index;
 }
 
-const ORDER = "Highest salary figure first: the posting's own salary when it states one in EUR a " +
+const ORDER = "With a query, the postings matching more of its words first. Then highest salary " +
+  "figure first: the posting's own salary when it states one in EUR a " +
   "year (the middle of its range), else the company's median base for the posting's role. " +
   "Postings with neither come after, and ties go newest first.";
 
@@ -514,7 +601,10 @@ export async function findJobs(data, args = {}, env = {}) {
   const role = blank(args.role) ? "" : String(args.role);
   let roleSlug = null;
   if (role) try { roleSlug = resolveRole(data, role); } catch (e) { if (!(e instanceof QueryError)) throw e; }
+  const special = specialization(role);
+  const specialPattern = special ? termPattern(special.names) : null;
   const roleTest = !role ? () => true
+    : special ? (job) => specialPattern.test(words(job.title))
     : roleSlug && ROLE_PATTERN[roleSlug] ? (job) => titleRole(data, job.title) === roleSlug
     : (job) => words(job.title).includes(words(role));
   const [regionRead, inRegion, inCity] = regionFilter(data, args.region);
@@ -522,7 +612,7 @@ export async function findJobs(data, args = {}, env = {}) {
   const minSalary = resolveMinSalary(args.min_salary_eur);
   const limit = resolveJobLimit(args.limit);
   const exclude = resolveExclude(args.exclude);
-  const query = words(args.query).split(" ").filter(Boolean);
+  const terms = queryTerms(args.query).map((t) => ({ ...t, pattern: termPattern(t.alternatives) }));
   const company = words(args.company);
   const index = await jobIndex(env);
 
@@ -532,13 +622,16 @@ export async function findJobs(data, args = {}, env = {}) {
     if (!isObject(job) || typeof job.id !== "string") continue;
     if (exclude.has(job.id)) { excluded++; continue; }
     if (company && words(job.slug) !== company && !words(job.company).includes(company)) continue;
-    if (query.length) {
-      const text = words([job.title, job.company, job.department].filter(Boolean).join(" "));
-      if (!query.every((w) => text.includes(w))) continue;
+    let matched = [];
+    if (terms.length) {
+      const text = words([job.title, job.company, job.department, job.location].filter(Boolean).join(" "));
+      matched = terms.filter((t) => t.pattern.test(text)).map((t) => t.term);
+      if (!matched.length) continue;
     }
     if (!roleTest(job) || !inRegion(job)) continue;
     if (workplace && workplaceOf(job) !== workplace) continue;
-    const jobRole = roleSlug && ROLE_PATTERN[roleSlug] ? roleSlug : titleRole(data, job.title);
+    const jobRole = special ? special.slug
+      : roleSlug && ROLE_PATTERN[roleSlug] ? roleSlug : titleRole(data, job.title);
     const context = salaryContext(data, job, jobRole);
     const own = postingEur(job);
     let basis;
@@ -548,24 +641,25 @@ export async function findJobs(data, args = {}, env = {}) {
       else { unknownPay++; continue; }
     }
     const figure = own ? (own[0] + own[1]) / 2 : context?.company_median_base_eur ?? null;
-    found.push([figure, job.posted_at ?? "", {
+    found.push([figure, job.posted_at ?? "", matched.length, {
       id: job.id, title: job.title, company: job.company, slug: job.slug, tier: job.tier ?? null,
       location: job.location ?? null, location_classes: job.location_classes ?? [],
       workplace: job.workplace ?? null, department: job.department ?? null,
       posted_at: job.posted_at ?? null, url: job.url, ats: job.ats, salary: job.salary ?? null,
       role: jobRole, salary_context: context,
       ...(basis ? { min_salary_checked_against: basis } : {}),
+      ...(terms.length ? { matched_terms: matched } : {}),
     }]);
   }
   // A city keeps the postings that name it; when none does, the whole region stays.
-  const named = inCity ? found.filter(([, , job]) => inCity.test(job)) : [];
+  const named = inCity ? found.filter(([, , , job]) => inCity.test(job)) : [];
   if (named.length) found.splice(0, found.length, ...named);
-  found.sort((p, q) => (q[0] ?? -1) - (p[0] ?? -1) || String(q[1]).localeCompare(String(p[1])) ||
-    p[2].id.localeCompare(q[2].id));
+  found.sort((p, q) => q[2] - p[2] || (q[0] ?? -1) - (p[0] ?? -1) ||
+    String(q[1]).localeCompare(String(p[1])) || p[3].id.localeCompare(q[3].id));
   // One opening posted once per office is one result: same company, same title.
   // The first in order speaks for the group; the others stay reachable by id.
   const groups = new Map();
-  for (const [, , job] of found) {
+  for (const [, , , job] of found) {
     const key = `${words(job.slug || job.company)}|${words(job.title)}`;
     if (groups.has(key)) groups.get(key).also_posted_as.push({ id: job.id, location: job.location, url: job.url });
     else groups.set(key, { ...job, also_posted_as: [] });
@@ -574,8 +668,13 @@ export async function findJobs(data, args = {}, env = {}) {
   const jobs = results.slice(0, limit);
   return {
     generated_at: index.generated_at ?? null, salary_data_as_of: data.data_as_of || data.generated,
-    filters: { query: query.join(" ") || null, role: role ? roleSlug ?? role : null,
-               role_matched_by: !role ? null : roleSlug && ROLE_PATTERN[roleSlug] ? "role of the title" : "title text",
+    filters: { query: terms.map((t) => t.term).join(" ") || null,
+               ...(terms.length > 1 ? { query_rule: "a posting matches any of the words (whole words, " +
+                 "synonyms included) and the ones matching more come first; matched_terms says which" } : {}),
+               role: role ? (special ? special.label : roleSlug ?? role) : null,
+               role_matched_by: !role ? null
+                 : special ? `title words (${special.names.join(", ")}); salaries as ${special.slug}`
+                 : roleSlug && ROLE_PATTERN[roleSlug] ? "role of the title" : "title text",
                region: regionRead,
                ...(inCity ? { city: inCity.city, city_applied: named.length ? "postings that name the city"
                  : "no posting names the city, so the whole region" } : {}),
@@ -928,6 +1027,28 @@ In the person's own words, with the date they gave each one.
 |------|--------|---------|-------|--------|-------|
 `;
 
+const REPORT_STATUS = ["sent", "failed", "handed_over"];
+const REPORT_REASONS = ["captcha", "login_required", "form_error", "posting_closed", "blocked",
+  "no_browser", "person_declined", "other"];
+
+// Only an acknowledgement: the call itself is what PostHog counts (analytics()).
+export async function reportApplication(data, args = {}, env = {}) {
+  const id = blank(args.id) ? "" : String(args.id).trim();
+  if (!/^[a-z]+:[^\s]{1,200}$/.test(id)) throw new QueryError("id must be a job id from find_jobs");
+  const status = String(args.status ?? "").trim().toLowerCase();
+  if (!REPORT_STATUS.includes(status))
+    throw new QueryError(`status must be one of ${REPORT_STATUS.join(", ")}`);
+  const reason = blank(args.reason) ? null : String(args.reason).trim().toLowerCase();
+  if (reason !== null && !REPORT_REASONS.includes(reason))
+    throw new QueryError(`reason must be one of ${REPORT_REASONS.join(", ")}`);
+  let job = null;
+  try { job = (await jobIndex(env)).jobs.find((j) => j?.id === id) ?? null; } catch { /* still counted */ }
+  return { counted: true, id, status, reason, ats: id.split(":")[0],
+           company: job?.company ?? null, known_posting: job !== null,
+           stored: "nothing: the site keeps no record of the person or the application",
+           next: "Record it in the person's state document too." };
+}
+
 export function applicationGuide(args = {}) {
   const hint = words(args.client);
   const known = hint ? Object.entries(CLIENTS).find(([, c]) => c.names.test(hint)) : null;
@@ -956,6 +1077,8 @@ export function applicationGuide(args = {}) {
         "consents given. Send only after an explicit yes; several applications shown in full may be " +
         "approved together.",
       "Send as in sending, and record the date, job id, company, title and status in the state document.",
+      "Call report_application with the job id and the outcome (sent, failed with its reason, or " +
+        "handed_over). It asks nothing about the person and helps the site fix where sending fails.",
     ],
     state_document: {
       where: known ? (known[1].keeps === "file" ? keepFile : keepMemory)
@@ -996,10 +1119,12 @@ export function applicationGuide(args = {}) {
           "(who=person), and show it before submitting.",
         "A CAPTCHA, or a code sent by email: hand over to the person, or read the code with the mail " +
           "access they gave you.",
-        "Submit, check the confirmation, and record the status (sent, or failed with the reason).",
+        "Submit, check the confirmation, record the status (sent, or failed with the reason) and " +
+          "call report_application with it.",
       ],
       without_a_browser: "Give the person apply_url and the approved answers in the order of the form, " +
-        "ready to paste. Record the status as handed over, and as sent once they confirm.",
+        "ready to paste. Record the status as handed over, and as sent once they confirm, and call " +
+        "report_application with handed_over.",
     },
   };
 }

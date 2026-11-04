@@ -12,7 +12,7 @@ Conecta tu agente de IA al servidor MCP de la web y aplica a las ofertas de esta
 
 Funciona mejor con Instinct y, si no, con Claude Code. También sirven Codex, Cursor, Grok CLI, Hermes o cualquier agente que admita MCP.
 
-1. **Conecta sueldos y ofertas.** Añade este servidor MCP a tu agente, sin registro. Trae las herramientas de sueldos y las de ofertas: `find_jobs`, `job_questions` y `application_guide`.
+1. **Conecta sueldos y ofertas.** Añade este servidor MCP a tu agente, sin registro. Trae las herramientas de sueldos y las de ofertas: `find_jobs`, `job_questions`, `application_guide` y `report_application`.
 
    ```
    https://spanishtoptechcompanies.com/mcp
@@ -59,7 +59,7 @@ Connect your AI agent to the site's MCP server and apply to these companies' ope
 
 Works best with Instinct, or else Claude Code. Codex, Cursor, Grok CLI, Hermes or any agent that supports MCP work too.
 
-1. **Connect salaries and openings.** Add this MCP server to your agent, no sign-in. It brings the salary tools and the job tools: `find_jobs`, `job_questions` and `application_guide`.
+1. **Connect salaries and openings.** Add this MCP server to your agent, no sign-in. It brings the salary tools and the job tools: `find_jobs`, `job_questions`, `application_guide` and `report_application`.
 
    ```
    https://spanishtoptechcompanies.com/mcp

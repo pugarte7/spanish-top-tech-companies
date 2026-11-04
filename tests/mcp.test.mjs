@@ -102,8 +102,8 @@ const titles = (r) => out(r).jobs.map((j) => j.title);
 const expected = [
   ["initialize keeps a known version", (r) => r.result.protocolVersion === "2025-06-18" && r.result.instructions],
   ["initialize offers the newest handshake version", (r) => r.result.protocolVersion === "2025-11-25"],
-  ["tools/list lists the seven tools", (r) => r.result.tools.map((t) => t.name).join() ===
-    "salary_stats,top_companies,company_salaries,list_filters,find_jobs,job_questions,application_guide"],
+  ["tools/list lists the eight tools", (r) => r.result.tools.map((t) => t.name).join() ===
+    "salary_stats,top_companies,company_salaries,list_filters,find_jobs,job_questions,report_application,application_guide"],
   ["ping", (r) => JSON.stringify(r.result) === "{}"],
   ["all of Spain", (r) => out(r).result.people === data.cells["||"].n],
   ["names resolve and years are bucketed", (r) => JSON.stringify(out(r).selection) ===
@@ -553,6 +553,49 @@ const guide = { jsonrpc: "2.0", id: 7, ...tool("application_guide", { client: "c
 report("job_questions and application_guide are counted like the other tools",
   analytics(data, {}, asked2, await respond(data, asked2), Date.now())[0]?.properties.$mcp_tool_name === "job_questions" &&
   analytics(data, {}, guide, await respond(data, guide), Date.now())[0]?.properties.$mcp_parameters.request.params.arguments.client === "cursor");
+
+// --- Search words, specializations and outcome reports --------------------------------
+const search = async (args) => (await run("find_jobs", args)).structuredContent;
+const anyWord = await search({ query: "devops sre platform" });
+report("find_jobs: any word of the query matches, synonyms included", anyWord.matches > 0 &&
+  anyWord.jobs[0].title === "Site Reliability Engineer" && anyWord.jobs[0].matched_terms.join() === "sre" &&
+  /any of the words/.test(anyWord.filters.query_rule), anyWord.filters);
+const whole = await search({ query: "engineer" });
+report("find_jobs: whole words, so engineer is not engineering", whole.matches > 0 &&
+  !whole.jobs.some((j) => j.title === "Engineering Manager"), whole.jobs.map((j) => j.title));
+const both = await search({ query: "ingeniero software" });
+report("find_jobs: postings matching more words come first, Spanish synonyms too",
+  both.jobs.slice(0, 2).every((j) => j.matched_terms.length === 2) &&
+  both.jobs.slice(0, 2).some((j) => j.title === "Ingeniero de Software Embebido") &&
+  both.jobs.slice(2).every((j) => j.matched_terms.length === 1), both.jobs.map((j) => [j.title, j.matched_terms]));
+const fe = await search({ query: "front-end" });
+report("find_jobs: front-end finds Frontend", fe.jobs.some((j) => j.title === "Senior Frontend Engineer"));
+const sre = await search({ role: "SRE" });
+report("find_jobs: a specialization as role filters titles by its words",
+  sre.jobs.map((j) => j.title).join() === "Site Reliability Engineer" && sre.filters.role === "SRE" &&
+  /site reliability/.test(sre.filters.role_matched_by), sre.filters);
+const devops = (await run("salary_stats", { role: "devops", region: "CT" })).structuredContent;
+report("salary_stats: DevOps is software-engineer, with a note", devops.selection.role === "software-engineer" &&
+  /DevOps is counted as software-engineer/.test(devops.note), devops);
+const backend = (await run("top_companies", { role: "Backend Engineer", limit: 1 })).structuredContent;
+report("top_companies: Backend Engineer is software-engineer", backend.selection?.role === "software-engineer", backend.selection);
+const sent = (await run("report_application", { id: "greenhouse:glovo:7000001", status: "sent" })).structuredContent;
+report("report_application acknowledges and stores nothing", sent.counted === true && sent.status === "sent" &&
+  sent.ats === "greenhouse" && sent.known_posting === true && sent.company === "Glovo" && /nothing/.test(sent.stored), sent);
+const failedReport = (await run("report_application", { id: "lever:dlocal:x", status: "failed", reason: "captcha" })).structuredContent;
+report("report_application takes a reason", failedReport.reason === "captcha" && failedReport.known_posting === false);
+report("report_application refuses an unknown status or reason",
+  (await run("report_application", { id: "greenhouse:glovo:7000001", status: "maybe" })).isError === true &&
+  (await run("report_application", { id: "greenhouse:glovo:7000001", status: "failed", reason: "tired" })).isError === true &&
+  (await run("report_application", { id: "not an id", status: "sent" })).isError === true);
+const reported = { jsonrpc: "2.0", id: 8, ...tool("report_application", { id: "greenhouse:glovo:7000001", status: "failed", reason: "blocked" }) };
+const [outcome] = analytics(data, {}, reported, await respond(data, reported), Date.now());
+report("report_application is counted with its status and reason",
+  outcome?.properties.$mcp_tool_name === "report_application" &&
+  outcome.properties.$mcp_parameters.request.params.arguments.status === "failed" &&
+  outcome.properties.$mcp_parameters.request.params.arguments.reason === "blocked", outcome?.properties);
+const steps = (await run("application_guide", {})).structuredContent.steps.join(" ");
+report("application_guide says to report each outcome", /report_application/.test(steps));
 
 console.log(failed ? `${failed} failed` : "api/mcp.js answers as expected");
 process.exit(failed ? 1 : 0);
