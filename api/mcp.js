@@ -563,7 +563,16 @@ export async function findJobs(data, args = {}, env = {}) {
   if (named.length) found.splice(0, found.length, ...named);
   found.sort((p, q) => (q[0] ?? -1) - (p[0] ?? -1) || String(q[1]).localeCompare(String(p[1])) ||
     p[2].id.localeCompare(q[2].id));
-  const jobs = found.slice(0, limit).map(([, , job]) => job);
+  // One opening posted once per office is one result: same company, same title.
+  // The first in order speaks for the group; the others stay reachable by id.
+  const groups = new Map();
+  for (const [, , job] of found) {
+    const key = `${words(job.slug || job.company)}|${words(job.title)}`;
+    if (groups.has(key)) groups.get(key).also_posted_as.push({ id: job.id, location: job.location, url: job.url });
+    else groups.set(key, { ...job, also_posted_as: [] });
+  }
+  const results = [...groups.values()];
+  const jobs = results.slice(0, limit);
   return {
     generated_at: index.generated_at ?? null, salary_data_as_of: data.data_as_of || data.generated,
     filters: { query: query.join(" ") || null, role: role ? roleSlug ?? role : null,
@@ -573,10 +582,14 @@ export async function findJobs(data, args = {}, env = {}) {
                  : "no posting names the city, so the whole region" } : {}),
                workplace: workplace || null, company: company || null,
                min_salary_eur: minSalary, excluded },
-    postings_in_index: index.jobs.length, matches: found.length, returned: jobs.length,
+    postings_in_index: index.jobs.length, postings_matched: found.length,
+    matches: results.length, returned: jobs.length,
+    grouped: `${found.length} postings merged into ${results.length} results: one company's postings ` +
+      "with the same title are one result, the others listed in also_posted_as (each id works in " +
+      "job_questions and exclude)",
     ...(minSalary !== null ? { left_out_without_salary_figure: unknownPay } : {}),
-    ...(found.length > jobs.length ? { more: `${found.length - jobs.length} more match; narrow the ` +
-        "filters, or call again with the ids shown so far added to exclude." } : {}),
+    ...(results.length > jobs.length ? { more: `${results.length - jobs.length} more match; narrow the ` +
+        "filters, or call again with the ids shown so far (also_posted_as included) added to exclude." } : {}),
     order: ORDER,
     salary_note: `salary is what the posting states, as published. salary_context is the company's ` +
       `median base for the posting's role from ${data.min_group}+ people in Spain (Levels.fyi data), ` +
