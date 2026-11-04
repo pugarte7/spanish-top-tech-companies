@@ -681,3 +681,29 @@ footer a { color: var(--field-ink); }
 .legal h1 { margin: 24px 0 8px; font-size: clamp(32px, 6vw, 44px); }
 .legal h2 { margin: 28px 0 6px; font-size: 22px; line-height: 28px; }
 .legal p { margin: 0; overflow-wrap: anywhere; }
+
+/* Search pages (seo.py): the home page's header and cards, with the figures
+   written into the page instead of drawn by the script. */
+.guide .pitch h1 { font-size: clamp(36px, 4vw, 52px); }
+.crumbs { font-size: 13px; line-height: 18px; text-align: center; color: var(--field-ink); opacity: .85; }
+.crumbs a { color: inherit; }
+.guide-range { margin: -10px 0 0; color: var(--muted); }
+.guide-range b { color: var(--text); font-weight: 600; }
+.guide .cta { grid-template-columns: 1fr; }
+.guide-table td:first-child { font-weight: 600; }
+.guide-table td b { font-weight: 700; }
+.tile h3 { margin: 22px 0 10px; font: 500 13px/16px var(--display); letter-spacing: .1em; text-transform: uppercase;
+           color: var(--muted); }
+.tile > h2 + h3 { margin-top: 0; }
+.guide-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0; padding: 0; list-style: none; }
+.guide-links.cols { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+.tile p { margin: 0 0 14px; }
+.tile p:last-child { margin-bottom: 0; }
+.faq { display: grid; gap: 18px; margin: 0; }
+.faq dt { font-weight: 600; }
+.faq dd { margin: 4px 0 0; color: var(--muted); max-width: 80ch; }
+.guide-source { margin: 0; font-size: 13px; color: var(--muted); }
+#guides, #faq { scroll-margin-top: 72px; }
+/* The button's label may wrap on a phone rather than widen the column. */
+.guide .cta .btn { white-space: normal; height: auto; min-height: 44px; padding: 10px 14px; line-height: 1.25; text-align: center; }
+.guide .head > * { min-width: 0; }

@@ -44,6 +44,15 @@ software-engineer tables and `scripts/build.py` that wrote them removed
 ("Elimina del readme todo lo que había antes"). Do not bring tables back to
 the README; the data is on the site and in `data/`.
 
+**Search pages.** Since 2026-11-04 `scripts/seo.py` writes a static page per
+role, region, role in a region and company in both languages (`/es/salarios/`,
+`/en/salaries/`, `/es/empresas/`, `/en/companies/`), listed in `sitemap.xml`,
+because the home page draws its figures with JavaScript and ranked for nothing
+people search ("salario programador", "software engineer salary spain").
+They print only `data.json` cells, so MIN_GROUP holds there too: a company
+gets a page only with five salaries. Titles and FAQs follow the keyword
+research in docs/CONTEXT.md, "Search traffic".
+
 **`companies.csv` is private.** Since 2026-10-25 it is not in the repository
 on this branch either: one row per person is personal data and a copy of
 Levels.fyi's database. It lives at `lib.DATA`

@@ -449,6 +449,7 @@ counted, never guessed.
 | `validate.py` | Column checks and sanity checks, including the location guard, the role-page guard, and that every company has a salary on file. | Yes |
 | `digest.py` | Markdown summary of what changed in `companies.csv` since an earlier copy of it (the path is its argument), for the weekly commit body and issue; company aggregates only. Rows have no submission id, so a new salary is a row that, minus its run date, was not there before. | Yes |
 | `site.py` | Builds `_site/`: the page in Spanish and English, `/api/v1/data.json` (every aggregate of `lib.MIN_GROUP`+ people), `/llms.txt` and `/llms-full.txt` for agents that only read URLs. `SITE_URL` makes their links absolute. On Vercel (`VERCEL` set by `vercel build`) the pages also load Web Analytics and Speed Insights; nowhere else, since `/_vercel/` exists only there. They load PostHog too (`POSTHOG_TOKEN` in `site.py`, the project's public token, or `POSTHOG_PROJECT_TOKEN`), cookieless and in the EU, through the `/ingest` rewrites in `vercel.json`; `track()` in `web/app.js` sends what readers use (filters, searches that find a company, rows opened, sorts, agent tabs, copies) and `log()` the same to PostHog Logs; both are no-ops anywhere PostHog is not loaded. The project must have cookieless tracking on (Settings > Project > Web analytics), or PostHog drops every event. Heatmaps are on for `/es/*` and `/en/*`, two of the free plan's three capture URLs; IPs are discarded. | Yes |
+| `seo.py` | The search pages `site.py` writes into `_site/`: one static page per role, region, role in a region and company, in Spanish (`/es/salarios/`, `/es/empresas/`) and English (`/en/salaries/`, `/en/companies/`), plus the home page's links into them and its questions. Figures are in the HTML (no script), each from a `data.json` cell, so nothing goes under `MIN_GROUP`: a company page exists only for a company with `MIN_GROUP` salaries and lists only its roles, regions and bands with as many. `site.py` adds canonical and absolute hreflang links to every page, `sitemap.xml` and `robots.txt`. Why they exist is under "Search traffic" below. | Yes |
 | `mcp-stdio.mjs` | The MCP server over stdio for local agents: the same `respond` as `api/mcp.js`, over `_site/`'s `data.json` when built, else the live one. `skills/tech-pay-spain/SKILL.md` tells agents (Hermes, any agentskills.io client) how to use it. | Yes |
 | `api/mcp.js` | Vercel Function: the MCP server, public at `/mcp` through a rewrite in `vercel.json`; Vercel serves `_site/` as static files. The only implementation: reads the deployment's own `data.json`, so it can never return a group under `MIN_GROUP`; tools `salary_stats`, `top_companies`, `company_salaries`, `list_filters`. Job tools read the daily `/api/v1/jobs.json` and store nothing about the person: `find_jobs` searches it, with each company's role median from `data.json` where `MIN_GROUP` people report and an `exclude` list the agent keeps; `job_questions` reads one posting's form live from Greenhouse, Lever or Ashby (allow-listed hosts) and marks each question for the person or the agent; `application_guide` is the procedure and the agent's state document; `report_application` takes each application's outcome (sent, failed with an enum reason, handed_over) and stores nothing, so PostHog shows where sending fails. `find_jobs` `query` matches any word (whole words, a synonym list such as SRE = site reliability), ranked by how many match; a role such as DevOps, SRE, backend or frontend is a specialization (`SPECIALIZATIONS`): find_jobs filters titles by its words and the salary tools answer for software-engineer with a note. A city name in `region` is its region (a narrower filter in `find_jobs`). Speaks both eras of the protocol: requests carrying `_meta` `io.modelcontextprotocol/protocolVersion` get 2026-07-28 answers (`server/discover`, `resultType`, cache hints, header checks over HTTP), `initialize` gets the handshake versions back to 2024-11-05. Bad input is a JSON-RPC error, never a crash; `tests/mcp.test.mjs` checks it over stdio and HTTP. Built and deployed by `.github/workflows/deploy.yml` on every push to `main` (`vercel build` then `vercel deploy --prebuilt`; Vercel's own Git deployments are off). | Deployed by CI |
 | `jobs.mjs` | `/api/v1/jobs.json`: today's open postings at the listed companies whose board is in `data/boards.json`, kept to the ones a person in Spain could take (an office in Spain, remote from Spain or Europe, or remote naming no place). Fetches through the ATS adapters in `lib/ats/` and per-host throttle, one board at a time per host. Titles, links, locations and pay the board states in its own fields; no descriptions, nothing per person. Runs in the Vercel build after `site.py`, so every deploy and the daily scheduled one in `deploy.yml` crawl afresh, and nothing is committed. Never fails the build. A host answering 402/403/405/429/503 or 5xx is throttling, not saying the board is gone: the board is retried at the back of its host's queue after 15s, 30s, 60s, then 2 min, the host's later boards are spaced further apart, and after five refusals in a row the host is left alone for the run (Greenhouse refused GitHub's runner its first 24 of 37 boards on the first daily build, 2026-11-04, then served the rest; from the Mac it never has). A board that still fails is counted by `ats:code`, and its postings in production's previous `jobs.json` are carried over unchanged (`boards.stale` counts those boards, `boards.stale_since` says when each was last read), for up to seven days. A board that answered keeps nothing: an empty list is a success and a 404 means it is gone. A crawl that cannot run at all republishes production's previous file unchanged; one that reads no board and has nothing to carry over publishes none. `--fixture tests/fixtures/jobs.json` writes the committed sample instead, offline; `tests/jobs.test.mjs` tests it all without the network. | Yes |
@@ -491,6 +492,33 @@ So:
 Rate limiting: 403/405/429/503 all mean throttled. Treating them as "not found"
 is what originally wrote 56 false `unmatched` rows into the old backlog. Keep
 `--delay` at 2.5s or more.
+
+### Search traffic
+
+Until 2026-11-04 the site was two pages, `/es/` and `/en/`, drawn by the
+script from JSON, so a search engine read one title per language and no
+figure. That day the maintainer asked for "todo el tráfico que podamos" in
+both languages. What people search, from Google Trends (Spain, last 12
+months, read through Scrapling's `FetcherSession`) and Google's autocomplete:
+
+- Spanish, relative to "salario programador" = 100: "software engineer
+  salary spain" 109, "cuanto cobra un programador" 103, "salario data
+  scientist" 48, "levels fyi" 44, "sueldo programador" 39, "salario software
+  engineer" 35, "software engineer salary madrid" 31, "empresas tecnologicas
+  que mejor pagan" 29. Long tails (junior, senior, devops, Barcelona) are
+  under Trends' floor one by one; autocomplete shows they exist.
+- English, worldwide, relative to "software engineer salary spain" = 100:
+  "developer salary spain" 118, "tech jobs spain" 118, "tech companies in
+  spain" 72, "product manager salary spain" 52, "software engineer salary
+  madrid" 53 and "barcelona" 51, "data scientist salary spain" 28.
+- The pattern autocomplete offers most for a company is company + role +
+  city: "revolut software engineer salary madrid".
+
+So `seo.py` writes a page for each of those shapes, with the answer in its
+first line ("cuánto cobra un programador" is answered with the median, per
+month in 12 and 14 payments too), and the home page titles lead with
+"salario programador" and "software engineer salary in Spain". The README
+links into the pages but still holds no figure.
 
 ## Known gaps
 

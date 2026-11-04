@@ -56,7 +56,8 @@ const page = await browser.newPage({ viewport: { width: opts.width, height: opts
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 await page.goto(`http://localhost:${port}${opts.path}`);
-await page.locator("#companies tr.main").first().waitFor();
+// Search pages are static: only the home page draws a table to wait for.
+if (await page.locator("table#companies").count()) await page.locator("#companies tr.main").first().waitFor();
 for (const sel of opts.clicks) await page.locator(sel).first().click();
 if (opts.scroll != null) {
   if (/^\d+$/.test(opts.scroll)) await page.evaluate((y) => scrollTo(0, y), +opts.scroll);

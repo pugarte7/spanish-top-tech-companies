@@ -1,10 +1,18 @@
-# Empresas tech que más pagan en España
+# Salario de programador en España: las empresas tech que más pagan
 
 **[spanishtoptechcompanies.com](https://spanishtoptechcompanies.com/es/)** · Spanish Top Tech Companies · [English](#english)
 
-El ranking de las empresas tecnológicas que mejor pagan en España, con salarios reales de gente que trabaja aquí. Para cada empresa verás el sueldo base mediano, el total con bonus y acciones y cuánta gente cobra 60.000 € o más. Puedes filtrarlo por rol, años de experiencia y modalidad de trabajo, y ver en un mapa lo que se paga en cada comunidad autónoma. Y con su servidor MCP, [tu agente de IA busca sus ofertas abiertas y aplica por ti](#deja-que-tu-agente-aplique-por-ti), sin instalar nada.
+Cuánto cobra un programador en España y qué empresas tecnológicas pagan más, con salarios reales de gente que trabaja aquí, sacados de Levels.fyi. Para cada empresa verás el sueldo base mediano, el total con bonus y acciones y cuánta gente cobra 60.000 € o más. Puedes filtrarlo por rol, años de experiencia y modalidad de trabajo, y ver en un mapa lo que se paga en cada comunidad autónoma. Y con su servidor MCP, [tu agente de IA busca sus ofertas abiertas y aplica por ti](#deja-que-tu-agente-aplique-por-ti), sin instalar nada.
 
 **[Ver el ranking completo →](https://spanishtoptechcompanies.com/es/)**
+
+### Salarios por rol, ciudad y empresa
+
+Cada rol, comunidad y empresa tiene su página con el sueldo base mediano, la horquilla, el total con bonus y acciones y lo que se cobra según los años de experiencia:
+
+- **Por rol**: [salario de programador](https://spanishtoptechcompanies.com/es/salarios/software-engineer/), [data scientist](https://spanishtoptechcompanies.com/es/salarios/data-scientist/), [product manager](https://spanishtoptechcompanies.com/es/salarios/product-manager/), [engineering manager](https://spanishtoptechcompanies.com/es/salarios/software-engineering-manager/), [diseñador de producto](https://spanishtoptechcompanies.com/es/salarios/product-designer/), [analista de datos](https://spanishtoptechcompanies.com/es/salarios/data-analyst/) y [todos los roles](https://spanishtoptechcompanies.com/es/salarios/).
+- **Programador por ciudad**: [Madrid](https://spanishtoptechcompanies.com/es/salarios/software-engineer/madrid/), [Barcelona](https://spanishtoptechcompanies.com/es/salarios/software-engineer/cataluna/), [Valencia](https://spanishtoptechcompanies.com/es/salarios/software-engineer/comunidad-valenciana/), [Málaga y Sevilla](https://spanishtoptechcompanies.com/es/salarios/software-engineer/andalucia/), [Bilbao](https://spanishtoptechcompanies.com/es/salarios/software-engineer/pais-vasco/) y [Zaragoza](https://spanishtoptechcompanies.com/es/salarios/software-engineer/aragon/).
+- **Por empresa**: [Revolut](https://spanishtoptechcompanies.com/es/empresas/revolut/), [Glovo](https://spanishtoptechcompanies.com/es/empresas/glovo/), [Amazon](https://spanishtoptechcompanies.com/es/empresas/amazon/), [Datadog](https://spanishtoptechcompanies.com/es/empresas/datadog/), [N26](https://spanishtoptechcompanies.com/es/empresas/n26/), [TravelPerk](https://spanishtoptechcompanies.com/es/empresas/travelperk/), [Cabify](https://spanishtoptechcompanies.com/es/empresas/cabify/) y [el resto](https://spanishtoptechcompanies.com/es/salarios/#all-companies).
 
 ### Deja que tu agente aplique por ti
 
@@ -36,7 +44,7 @@ Funciona mejor con Instinct y, si no, con Claude Code. También sirven Codex, Cu
 - **Sueldos por comunidad autónoma** en un mapa: Madrid, Cataluña (Barcelona), País Vasco, Comunidad Valenciana, Andalucía y el resto.
 - **Sueldo según la experiencia**, de 0 a más de 20 años.
 - **Remoto, híbrido o presencial**.
-- **Ofertas abiertas** de estas empresas, recogidas cada día, en [JSON](https://spanishtoptechcompanies.com/api/v1/jobs.json) y en el servidor MCP.
+- **Ofertas de empleo tech** abiertas en estas empresas, recogidas cada día, en [JSON](https://spanishtoptechcompanies.com/api/v1/jobs.json) y en el servidor MCP.
 - **Para desarrolladores**: los datos en [JSON](https://spanishtoptechcompanies.com/api/v1/data.json) y un resumen en [llms.txt](https://spanishtoptechcompanies.com/llms.txt).
 
 ### Cómo se calcula
@@ -49,9 +57,17 @@ Súbelo a [Levels.fyi](https://www.levels.fyi/salaries/add). La lista se rehace 
 
 ## English
 
-The **best-paying tech companies in Spain**, ranked by salary at [spanishtoptechcompanies.com](https://spanishtoptechcompanies.com/en/). Real salaries from people working in Spain: each company's median base salary, total pay with bonus and stock, and how many earn €60,000 or more. Filter by role, years of experience and remote, hybrid or office work, and see on a map what each region pays. And with its MCP server, [your AI agent searches their open positions and applies for you](#let-your-agent-apply-for-you), with nothing to install.
+**Software engineer salaries in Spain** and the **best-paying tech companies in Spain**, ranked at [spanishtoptechcompanies.com](https://spanishtoptechcompanies.com/en/). Real salaries from people working in Spain: each company's median base salary, total pay with bonus and stock, and how many earn €60,000 or more. Filter by role, years of experience and remote, hybrid or office work, and see on a map what each region pays. And with its MCP server, [your AI agent searches their open positions and applies for you](#let-your-agent-apply-for-you), with nothing to install.
 
 **[See the full ranking →](https://spanishtoptechcompanies.com/en/)**
+
+### Salaries by role, city and company
+
+Every role, region and company has its own page with the median base salary, the range, total pay with bonus and stock, and pay by years of experience:
+
+- **By role**: [software engineer salary in Spain](https://spanishtoptechcompanies.com/en/salaries/software-engineer/), [data scientist](https://spanishtoptechcompanies.com/en/salaries/data-scientist/), [product manager](https://spanishtoptechcompanies.com/en/salaries/product-manager/), [engineering manager](https://spanishtoptechcompanies.com/en/salaries/software-engineering-manager/), [product designer](https://spanishtoptechcompanies.com/en/salaries/product-designer/), [data analyst](https://spanishtoptechcompanies.com/en/salaries/data-analyst/) and [every role](https://spanishtoptechcompanies.com/en/salaries/).
+- **Software engineers by city**: [Madrid](https://spanishtoptechcompanies.com/en/salaries/software-engineer/madrid/), [Barcelona](https://spanishtoptechcompanies.com/en/salaries/software-engineer/catalonia/), [Valencia](https://spanishtoptechcompanies.com/en/salaries/software-engineer/valencian-community/), [Málaga and Seville](https://spanishtoptechcompanies.com/en/salaries/software-engineer/andalusia/), [Bilbao](https://spanishtoptechcompanies.com/en/salaries/software-engineer/basque-country/) and [Zaragoza](https://spanishtoptechcompanies.com/en/salaries/software-engineer/aragon/).
+- **By company**: [Revolut](https://spanishtoptechcompanies.com/en/companies/revolut/), [Glovo](https://spanishtoptechcompanies.com/en/companies/glovo/), [Amazon](https://spanishtoptechcompanies.com/en/companies/amazon/), [Datadog](https://spanishtoptechcompanies.com/en/companies/datadog/), [N26](https://spanishtoptechcompanies.com/en/companies/n26/), [TravelPerk](https://spanishtoptechcompanies.com/en/companies/travelperk/), [Cabify](https://spanishtoptechcompanies.com/en/companies/cabify/) and [the rest](https://spanishtoptechcompanies.com/en/salaries/#all-companies).
 
 ### Let your agent apply for you
 
@@ -83,7 +99,7 @@ Works best with Instinct, or else Claude Code. Codex, Cursor, Grok CLI, Hermes o
 - **Salaries by region** on a map: Madrid, Catalonia (Barcelona), the Basque Country, Valencia, Andalusia and the rest.
 - **Pay by experience**, from 0 to 20+ years.
 - **Remote, hybrid or office**.
-- **Open positions** at these companies, collected every day, as [JSON](https://spanishtoptechcompanies.com/api/v1/jobs.json) and through the MCP server.
+- **Open tech jobs in Spain** at these companies, collected every day, as [JSON](https://spanishtoptechcompanies.com/api/v1/jobs.json) and through the MCP server.
 - **For developers**: the data as [JSON](https://spanishtoptechcompanies.com/api/v1/data.json) and a summary in [llms.txt](https://spanishtoptechcompanies.com/llms.txt).
 
 ### How it is calculated
