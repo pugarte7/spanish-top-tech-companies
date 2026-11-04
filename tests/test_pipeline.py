@@ -818,9 +818,9 @@ def test_location_files_list_companies_all_there() -> None:
 
 
 def test_job_boards_follow_the_ranking() -> None:
-    """/api/v1/boards.json lists the companies with a known board in autoapply-mcp's
+    """/api/v1/boards.json lists the companies with a known board in the companies.json format lib/ats reads
     companies.json format, tiered by today's engineers' median and tagged with
-    their cities the way autoapply-mcp writes tags."""
+    their cities the way lib/ats writes tags."""
     print("boards.json tiers companies by the site's ranking")
     import importlib.util
     spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
@@ -847,7 +847,7 @@ def test_job_boards_follow_the_ranking() -> None:
             boards = site_build.job_boards(data, tables)
         finally:
             site_build.AGGREGATES = original
-    check("one entry per company with a board, as autoapply-mcp writes them", boards["companies"], [
+    check("one entry per company with a board, as lib/ats reads them", boards["companies"], [
         {"name": "Acme", "ats": "greenhouse", "board": "acme", "tier": "A", "tags": ["spain", "madrid"]},
         {"name": "Beta", "ats": "lever", "board": "beta", "tier": "B",
          "tags": ["spain", "a-coruna", "madrid"], "region": "eu"}])

@@ -53,7 +53,7 @@ jobs:
         if: env.VERCEL_TOKEN == ''
         run: python3 scripts/site.py
 
-      # autoapply-mcp, whose adapters scripts/jobs.mjs crawls the boards with.
+      # zod and fast-xml-parser, which lib/ats needs to crawl the boards.
       - name: Install
         run: npm ci --omit=dev
 
@@ -65,7 +65,7 @@ jobs:
           vercel build --prod --token="$VERCEL_TOKEN"
 
       - name: /mcp answers
-        run: node tests/mcp.test.mjs && node tests/telemetry.test.mjs
+        run: node tests/mcp.test.mjs
 
       - name: Deploy to Vercel
         if: env.VERCEL_TOKEN != ''

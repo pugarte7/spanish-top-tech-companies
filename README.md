@@ -28,7 +28,6 @@ Funciona mejor con Instinct y, si no, con Claude Code. También sirven Codex, Cu
 
    Te enseña cada solicitud completa y la envía cuando le dices que sí. Las preguntas delicadas, como sueldo o permiso de trabajo, te las hace una vez, todas en un mensaje, y los consentimientos de privacidad los aceptas tú. Si un formulario pide un CAPTCHA, te pasa la página: lo resuelves y envía la solicitud.
 
-Si envías muchas solicitudes cada día, [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) es la opción avanzada. Se ejecuta en tu equipo (`npx -y autoapply-mcp`, una línea en la configuración MCP de tu agente) y añade respuestas guardadas, historial de solicitudes, lotes, más fuentes de ofertas (también SmartRecruiters, Workable y Recruitee) y controles en el propio código: la aprobación va ligada a cada solicitud exacta, hay límites diarios y las preguntas personales solo las respondes tú. Envía datos técnicos de uso anónimos y deja de hacerlo si le dices que no.
 
 ### Qué hay en la web
 
@@ -76,7 +75,6 @@ Works best with Instinct, or else Claude Code. Codex, Cursor, Grok CLI, Hermes o
 
    It shows you each application in full and sends it when you say yes. Sensitive questions, like salary or work permit, it asks you once, all in one message, and privacy consents are yours to accept. If a form asks for a CAPTCHA, it hands you the page: you solve it and it sends the application.
 
-If you send many applications every day, [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp) is the advanced option. It runs on your machine (`npx -y autoapply-mcp`, one line in your agent's MCP config) and adds remembered answers, an application history, batches, more job sources (SmartRecruiters, Workable and Recruitee too) and guards in its own code: approval is bound to each exact application, there are daily limits and personal questions are answered only by you. It sends anonymous technical usage data and stops if you say no.
 
 ### On the site
 

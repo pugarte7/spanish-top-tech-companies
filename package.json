@@ -10,6 +10,7 @@
     "@playwright/test": "1.55.0"
   },
   "dependencies": {
-    "autoapply-mcp": "0.3.4"
+    "fast-xml-parser": "5.12.0",
+    "zod": "4.6.7"
   }
 }

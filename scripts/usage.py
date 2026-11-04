@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""How the projects are used, as far as public counters tell: npm downloads of
-autoapply-mcp and GitHub views, clones, stars and forks of both repos, one row
+"""How the project is used, as far as public counters tell: GitHub views,
+clones, stars and forks of the repo, one row
 per day into usage.csv beside the private companies.csv (lib.DATA).
 
     python3 scripts/usage.py          # update usage.csv, print the last 14 days
@@ -9,7 +9,7 @@ GitHub keeps traffic for 14 days only, so weekly.sh runs this every Monday
 and the file is the history. The traffic API needs push access: it runs as
 the maintainer through `gh`. A day read again overwrites the earlier reading,
 since GitHub's and npm's latest day are still filling. What the site sees
-itself (/mcp calls, boards.json downloads) is in PostHog, not here.
+itself (/mcp calls) is in PostHog, not here.
 """
 from __future__ import annotations
 
@@ -23,8 +23,8 @@ import urllib.request
 import lib
 
 FILE = lib.DATA.parent / "usage.csv"
-REPOS = ["pugarte7/spanish-top-tech-companies", "pugarte7/autoapply-mcp"]
-PACKAGES = ["autoapply-mcp"]
+REPOS = ["pugarte7/spanish-top-tech-companies"]
+PACKAGES: list[str] = []
 FIELDS = ["date", "source", "metric", "value"]
 
 

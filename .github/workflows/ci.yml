@@ -30,7 +30,7 @@ jobs:
         run: npm ci --omit=dev
 
       - name: Site builds and /mcp answers
-        run: python3 scripts/site.py && node tests/mcp.test.mjs && node tests/telemetry.test.mjs
+        run: python3 scripts/site.py && node tests/mcp.test.mjs
 
       # Offline: the boards are stubbed, the crawl runs only in deploys.
       - name: Job index

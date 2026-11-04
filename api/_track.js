@@ -1,5 +1,5 @@
-// Server-side events for PostHog: what no browser sends, the agents calling /mcp
-// and autoapply-mcp downloading /api/v1/boards.json. Vercel serves no function
+// Server-side events for PostHog: what no browser sends, the agents calling /mcp.
+// Vercel serves no function
 // from a file whose name starts with "_", so this is only imported.
 //
 // Like the page: no cookie, no IP and no person profile. Each request is its own

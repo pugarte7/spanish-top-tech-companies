@@ -1,4 +1,4 @@
-// scripts/jobs.mjs, offline: autoapply-mcp's real adapters over a stubbed
+// scripts/jobs.mjs, offline: the real adapters in lib/ats over a stubbed
 // fetch, the index's shape and filter, the committed fixture, and the
 // fallbacks when the crawl cannot run. Run after site.py:
 //     node tests/jobs.test.mjs
@@ -8,10 +8,10 @@ import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { carryOver, crawl, isIndex, loadAutoapply, throttled } from "../scripts/jobs.mjs";
+import { carryOver, crawl, isIndex, loadAts, throttled } from "../scripts/jobs.mjs";
 
-process.env.AUTOAPPLY_MIN_INTERVAL_MS = "0";
-process.env.AUTOAPPLY_LOG_LEVEL = "error";
+process.env.ATS_MIN_INTERVAL_MS = "0";
+process.env.ATS_LOG_LEVEL = "error";
 
 const KEYS = ["id", "company", "slug", "tier", "title", "url", "ats", "location", "location_classes",
               "workplace", "department", "posted_at", "salary"];
@@ -110,7 +110,7 @@ const boardsList = { version: 1, companies: [
   { name: "Nowhere", ats: "nope", board: "x", tier: "A", tags: [] },
 ] };
 const data = { companies: [{ name: "Cabify", levels: "cabify" }, { name: "Job&Talent", levels: "jobandtalent" }] };
-const { index } = await crawl(boardsList, data, await loadAutoapply(), { minutes: 1 });
+const { index } = await crawl(boardsList, data, await loadAts(), { minutes: 1 });
 
 checkIndex(index, "crawl");
 assert.deepEqual(index.boards, { queried: 4, failed: 2, stale: 0, stale_since: {},
@@ -152,7 +152,7 @@ assert.ok(!throttled({ code: "http_error", message: "HTTP 400 from x" }));
 requested = [];
 refuse[`${GH}/cabify/jobs`] = 2;
 const fast = { minutes: 1, backoffMs: 5 };
-const twice = await crawl({ companies: boardsList.companies.slice(0, 3) }, data, await loadAutoapply(), fast);
+const twice = await crawl({ companies: boardsList.companies.slice(0, 3) }, data, await loadAts(), fast);
 assert.equal(twice.retries, 2);
 assert.deepEqual(twice.index.boards.issues, { "greenhouse:not_found": 1 });
 assert.deepEqual(twice.index.jobs.map((j) => j.id), index.jobs.map((j) => j.id));
@@ -163,7 +163,7 @@ assert.equal(requested.filter((u) => u === `${GH}/cabify/jobs`).length, 3);
 requested = [];
 for (const b of ["cabify", "gone", "third"]) refuse[`${GH}/${b}/jobs`] = Infinity;
 const blocked = await crawl({ companies: [...boardsList.companies.slice(0, 3),
-  { name: "Third", ats: "greenhouse", board: "third", tier: "A", tags: [] }] }, data, await loadAutoapply(), fast);
+  { name: "Third", ats: "greenhouse", board: "third", tier: "A", tags: [] }] }, data, await loadAts(), fast);
 assert.deepEqual(blocked.index.boards.issues, { "greenhouse:http_error": 3 });
 assert.equal(blocked.retries, 4);
 assert.equal(requested.filter((u) => u.startsWith(GH)).length, 5);
