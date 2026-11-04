@@ -27,7 +27,7 @@ jobs:
           node-version: "22"
 
       - name: Site builds and /mcp answers
-        run: python3 scripts/site.py && node tests/mcp.test.mjs
+        run: python3 scripts/site.py && node tests/mcp.test.mjs && node tests/telemetry.test.mjs
 
       # companies.csv is private, so validate.py and site.py --refresh run on
       # the maintainer's Mac (scripts/weekly.sh); CI has the tests and the site,

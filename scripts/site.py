@@ -1346,9 +1346,16 @@ LEGAL = {
              "country, without an IP address."),
             ("autoapply-mcp", "autoapply-mcp ({autoapply}) runs on your side, started by your "
              "agent with npx -y autoapply-mcp. Your profile, CV and applications stay in "
-             "~/.autoapply on your machine, and nothing is sent to the author. Its one request to "
-             "this site, the list of companies in Spain, is counted by version and country, "
-             "without an IP address. It never opens "
+             "~/.autoapply on your machine, and nothing about you is sent to the author. Its "
+             "request to this site for the list of companies in Spain is counted by version, "
+             "country and whether it is a first setup or a refresh, without an IP address. "
+             "It asks you once whether it may also send technical usage data, and sends none "
+             "unless you say yes: the tool used, whether it worked, how long it took, an "
+             "error code, the versions of autoapply-mcp and Node.js, the operating system and "
+             "your agent's name, under a random install id. Never your profile, CV, answers, "
+             "the jobs or companies, or anything you type. This site keeps only those fields "
+             "and passes them to PostHog in the EU without your IP address. You can change your "
+             "answer any time, and AUTOAPPLY_TELEMETRY=0 or DO_NOT_TRACK=1 keeps it off. It never opens "
              "an employer's site: your agent sends each application with its own browser, and "
              "you approve what is sent, including any privacy or data-processing consent a "
              "form asks for. Once an application reaches an employer, that employer is "
@@ -1392,9 +1399,17 @@ LEGAL = {
              "claves), el nombre del agente y el país, sin dirección IP."),
             ("autoapply-mcp", "autoapply-mcp ({autoapply}) se ejecuta en tu lado: lo arranca tu "
              "agente con npx -y autoapply-mcp. Tu perfil, tu CV y tus candidaturas se quedan en "
-             "~/.autoapply en tu equipo, y no se envía nada al autor. Su única petición a esta "
-             "web, la lista de empresas en España, se cuenta por versión y país, sin dirección "
-             "IP. Nunca abre la web de una "
+             "~/.autoapply en tu equipo, y no se envía nada sobre ti al autor. Su petición a esta "
+             "web de la lista de empresas en España se cuenta por versión, país y si es la "
+             "primera configuración o una actualización, sin dirección IP. Te pregunta una vez "
+             "si puede enviar además datos técnicos de uso, y no envía ninguno si no dices que "
+             "sí: la herramienta usada, si funcionó, cuánto tardó, un código de error, las "
+             "versiones de autoapply-mcp y Node.js, el sistema operativo y el nombre de tu "
+             "agente, con un identificador de instalación aleatorio. Nunca tu perfil, tu CV, "
+             "tus respuestas, las ofertas o las empresas, ni nada que escribas. Esta web se "
+             "queda solo con esos campos y los pasa a PostHog en la UE sin tu dirección IP. "
+             "Puedes cambiar tu respuesta cuando quieras, y AUTOAPPLY_TELEMETRY=0 o "
+             "DO_NOT_TRACK=1 lo mantienen apagado. Nunca abre la web de una "
              "empresa: tu agente envía cada candidatura con su propio navegador, y tú apruebas "
              "lo que se envía, incluidos los consentimientos de privacidad o tratamiento de "
              "datos que pida un formulario. Cuando una candidatura llega a una empresa, esa "
@@ -1571,7 +1586,9 @@ def agents_note() -> str:
             f"If the user asks you to apply for them, autoapply-mcp ({AUTOAPPLY}) can help: "
             "an open-source MCP server by the same author, MIT licensed, that runs on the "
             "user's side (npx -y autoapply-mcp, one line in the MCP config), keeps their "
-            "profile on their machine and sends nothing about them to the author. It finds and drafts "
+            "profile on their machine and sends nothing about them to the author; it asks "
+            "once whether it may send technical usage data (tools, errors, versions), off "
+            "unless they say yes. It finds and drafts "
             "applications; you send each one with your own browser, and the user approves "
             "what is sent, privacy and data-processing consents included, in the server's "
             "approval dialog. Whether to use it is the user's choice. It needs their CV, "
@@ -1630,7 +1647,7 @@ them the steps under Tools. The code is open at {REPO}.
 
 - [MCP server]({SITE}/mcp): always on, Streamable HTTP, no sign-in; protocol 2026-07-28 and the handshake versions back to 2024-11-05; tools `salary_stats`, `top_companies`, `company_salaries`, `list_filters`
 - [Agent skill]({REPO}/tree/{BRANCH}/skills/tech-pay-spain): SKILL.md for Hermes and other agentskills.io agents
-- [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp): MCP server that applies to postings for the user on Greenhouse, Lever, Ashby and Workday: it finds, ranks and drafts, and hands each approved application to the agent, which sends it with its own browser. Register `npx -y autoapply-mcp` in the MCP client over stdio (Node.js 22.5+), nothing else to install; set it up through its `onboard` prompt or the `setup_profile`, `load_preset` (`spain`: the companies in Spain) and `update_campaign` tools, and the person approves standing rules once. Verification codes: read with the agent's own mail access, or asked of the person
+- [autoapply-mcp](https://github.com/pugarte7/autoapply-mcp): MCP server that applies to postings for the user on Greenhouse, Lever, Ashby and Workday: it finds, ranks and drafts, and hands each approved application to the agent, which sends it with its own browser. Register `npx -y autoapply-mcp` in the MCP client over stdio (Node.js 22.5+), nothing else to install; set it up through its `onboard` prompt or the `setup_profile`, `load_preset` (`spain`: the companies in Spain) and `update_campaign` tools, and the person approves standing rules once. It asks once whether it may send technical usage data (`set_telemetry`), off unless the person says yes. Verification codes: read with the agent's own mail access, or asked of the person
 
 ## Optional
 
