@@ -41,7 +41,10 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   city or remote too; `exclude` takes the ids already applied to.
 - `job_questions(id)`: one posting's application form, read live from its
   job board, each question marked `who` = person or agent; the posting text,
-  marked untrusted; the apply URL.
+  marked untrusted; the apply URL. Greenhouse, Lever, Ashby, Workable and
+  Recruitee forms are read whole. Workday shows its form only after sign-in:
+  `account_required` is true, the person opens the account, and the
+  questions are Workday's standard steps plus a marker for the employer's own.
 - `report_application(id, status, reason)`: after sending or failing, the
   outcome (sent, failed with its reason, or handed_over). Nothing about the
   user; it shows the site where sending gets stuck. After a sent one it
