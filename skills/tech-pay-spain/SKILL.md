@@ -44,7 +44,9 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   marked untrusted; the apply URL.
 - `report_application(id, status, reason)`: after sending or failing, the
   outcome (sent, failed with its reason, or handed_over). Nothing about the
-  user; it shows the site where sending gets stuck.
+  user; it shows the site where sending gets stuck. After a sent one it
+  reminds you that you may ask, once, about a star; the state document's
+  Support line keeps the answer.
 - `application_guide()`: the procedure and rules, and a template for the
   notes you keep for the user.
 
