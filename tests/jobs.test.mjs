@@ -8,7 +8,7 @@ import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { carryOver, crawl, isIndex, loadAts, throttled } from "../scripts/jobs.mjs";
+import { carryOver, crawl, fresh, isIndex, loadAts, throttled } from "../scripts/jobs.mjs";
 
 process.env.ATS_MIN_INTERVAL_MS = "0";
 process.env.ATS_LOG_LEVEL = "error";
@@ -248,6 +248,18 @@ await script("--boards", join(tmp, "boards.json"), "--data", "data/data.json", "
 assert.ok(!existsSync(join(tmp, "empty.json")), "no board read and none carried over: no index");
 await broken(join(tmp, "none.json"));
 assert.ok(!existsSync(join(tmp, "none.json")), "no index at all when production's cannot be read");
+// A push deploy republishes production's index while it is fresh, and
+// crawls once it is not.
+const at = Date.parse("2026-11-05T12:00:00Z");
+const young = { ...fixture, generated_at: "2026-11-05T04:30:00Z" };
+assert.equal(fresh(young, 36, at), young);
+assert.equal(fresh({ ...fixture, generated_at: "2026-11-03T04:30:00Z" }, 36, at), null, "too old");
+assert.equal(fresh(young, 0, at), null, "0 always crawls");
+assert.equal(fresh("HTTP 500", 36, at), null);
+answer = { status: 200, body: JSON.stringify({ ...fixture, generated_at: new Date().toISOString() }) };
+await script("--reuse", "36", "--boards", join(tmp, "missing.json"), "--out", join(tmp, "reused.json"));
+assert.equal(JSON.parse(readFileSync(join(tmp, "reused.json"), "utf8")).jobs.length, fixture.jobs.length,
+             "a fresh production index is republished");
 server.close();
 
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);

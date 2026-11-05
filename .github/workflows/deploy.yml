@@ -12,9 +12,11 @@ name: deploy
 # for absolute links in llms.txt. Without the token it builds and tests but
 # does not deploy.
 #
-# The build also crawls the job boards into /api/v1/jobs.json (vercel.json's
-# buildCommand runs scripts/jobs.mjs after site.py), so the daily schedule
-# below republishes the same commit with today's postings; nothing is committed.
+# The build also writes /api/v1/jobs.json (vercel.json's buildCommand runs
+# scripts/jobs.mjs after site.py); nothing is committed. The daily schedule
+# below crawls the job boards and republishes the same commit with today's
+# postings. A push only reuses production's jobs.json while it is under
+# JOBS_REUSE_HOURS old, so a code change deploys in minutes.
 
 on:
   push:
@@ -38,6 +40,7 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      JOBS_REUSE_HOURS: ${{ github.event_name == 'push' && '36' || '0' }}
     steps:
       - uses: actions/checkout@v4
 
