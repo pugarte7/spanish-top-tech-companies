@@ -1490,10 +1490,11 @@ LEGAL = {
              "storage, only the theme you chose and whether you closed a notice; that never "
              "leaves your device. The MCP server at /mcp stores nothing about you, its job tools "
              "included; PostHog counts each call: the tool, the filters or the posting asked "
-             "for, whether an application was sent or why not when your agent reports it, the "
-             "reason your agent gives if it "
+             "for, how many results it found, whether an application was sent or why not when "
+             "your agent reports it, the reason your agent gives if it "
              "gives one (with emails, numbers and keys removed), the agent's name and the "
-             "country, without an IP address."),
+             "country, without an IP address. A random id the server gives your agent when it "
+             "connects groups the calls of one conversation; it says nothing about you."),
             ("Applying with your agent", "The MCP server's job tools (find_jobs, job_questions, "
              "application_guide and report_application) search the daily list of positions and, when your agent "
              "asks for one, read a posting's application form from the employer's public job "
@@ -1543,10 +1544,12 @@ LEGAL = {
              "en su propio almacenamiento, solo el tema que "
              "elegiste y si cerraste un aviso; eso no sale de tu dispositivo. El servidor MCP "
              "de /mcp no guarda nada sobre ti, tampoco sus herramientas de ofertas; PostHog cuenta "
-             "cada llamada: la herramienta, los filtros o la oferta que se piden, si una "
-             "candidatura se envió o por qué no cuando tu agente lo cuenta, el motivo que da tu "
-             "agente si lo da (sin correos, números ni "
-             "claves), el nombre del agente y el país, sin dirección IP."),
+             "cada llamada: la herramienta, los filtros o la oferta que se piden, cuántos "
+             "resultados encuentra, si una candidatura se envió o por qué no cuando tu agente lo "
+             "cuenta, el motivo que da tu agente si lo da (sin correos, números ni "
+             "claves), el nombre del agente y el país, sin dirección IP. Un identificador "
+             "aleatorio que el servidor da a tu agente al conectarse agrupa las llamadas de una "
+             "misma conversación; no dice nada de ti."),
             ("Aplicar con tu agente", "Las herramientas de ofertas del servidor MCP (find_jobs, "
              "job_questions, application_guide y report_application) buscan en la lista diaria de ofertas y, cuando "
              "tu agente lo pide, leen el formulario de una oferta en el portal de empleo público "

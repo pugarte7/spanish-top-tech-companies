@@ -23,7 +23,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.3.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.4.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -46,6 +46,8 @@ const READ_ONLY = { readOnlyHint: true, openWorldHint: false };
 // Every tool once: what tools/list shows of it, and what a call runs. `run` gets
 // the data, the arguments and `env`: where the job index comes from and how
 // many live form reads this request has left. It may return a promise.
+// `measure`, when there is one, gives PostHog what an answer found, from the
+// answer itself: counts and public facts about a posting, never a person.
 const TOOLS = {
   salary_stats: {
     define: () => ({ title: "Salary statistics",
@@ -53,6 +55,7 @@ const TOOLS = {
                    "60k+ base for a role, region and experience in Spain.",
       inputSchema: { type: "object", properties: SELECTION } }),
     run: (data, args) => stats(data, args),
+    measure: (out) => ({ result_count: out.result ? 1 : 0 }),
   },
   top_companies: {
     define: (data) => ({ title: "Best-paying companies",
@@ -66,6 +69,7 @@ const TOOLS = {
         search: { type: "string", description: "Filter companies by name." },
         limit: { type: "integer", minimum: 1, maximum: 200, default: 20 } } } }),
     run: (data, args, env) => topCompanies(data, args, env),
+    measure: (out) => ({ result_count: out.companies_listed ?? 0 }),
   },
   company_salaries: {
     define: (data) => ({ title: "One company's salaries",
@@ -116,6 +120,7 @@ const TOOLS = {
                    "postings already applied to, shown or turned down." },
         limit: { type: "integer", minimum: 1, maximum: JOB_MAX, default: JOB_DEFAULT } } } }),
     run: (data, args, env) => findJobs(data, args, env),
+    measure: (out) => ({ result_count: out.matches }),
   },
   job_questions: {
     define: () => ({ title: "One posting's application form",
@@ -127,6 +132,8 @@ const TOOLS = {
       inputSchema: { type: "object", required: ["id"], properties: {
         id: { type: "string", description: "A job id from find_jobs, e.g. greenhouse:cabify:1234567." } } } }),
     run: (data, args, env) => jobQuestions(data, args, env),
+    measure: (out) => ({ result_count: out.questions?.length ?? 0, form_read: out.form_source !== null,
+                         ats: out.job?.ats ?? undefined }),
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
   report_application: {
@@ -143,6 +150,8 @@ const TOOLS = {
                   "login_required, form_error (a field or upload was refused), posting_closed, " +
                   "blocked (the board refused the browser), no_browser, person_declined, other." } } } }),
     run: (data, args, env) => reportApplication(data, args, env),
+    measure: (out) => ({ application_status: out.status, application_reason: out.reason ?? undefined,
+                         ats: out.ats, company: out.company ?? undefined, known_posting: out.known_posting }),
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
   application_guide: {
@@ -172,7 +181,12 @@ export const tools = (data) => Object.entries(TOOLS).map(([name, tool]) => {
 
 // --- Queries over data.json -----------------------------------------------------
 
-class QueryError extends Error {}
+// A caller's mistake, answered as a tool error. `kind` is for PostHog only:
+// validation, not_found (no such company or posting), upstream (a job board
+// failed) or rate_limited.
+class QueryError extends Error {
+  constructor(message, kind = "validation") { super(message); this.kind = kind; }
+}
 
 const norm = (text) => String(text ?? "").normalize("NFKD").replace(/[^\x00-\x7f]/g, "")
   .toLowerCase().replace(/-/g, " ").split(/\s+/).filter(Boolean).join(" ");
@@ -460,7 +474,7 @@ export async function company(data, name, args = {}, env = {}) {
       "website, and min_global_submissions in list_filters), so a company can be " +
       "missing for any of them, or go by another name. " + (close.length
         ? `Close names on the site: ${close.join(", ")}.`
-        : "top_companies with search finds a company by part of its name."));
+        : "top_companies with search finds a company by part of its name."), "not_found");
   }
   if (matches.length > 1)
     throw new QueryError("several companies match: " +
@@ -1069,7 +1083,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
   const index = await jobIndex(env);
   const job = index.jobs.find((j) => isObject(j) && j.id === id);
   if (!job) throw new QueryError(`no job '${id}' in the index of ${index.generated_at ?? "today"}; ids come ` +
-    "from find_jobs, and a posting that closed leaves the index");
+    "from find_jobs, and a posting that closed leaves the index", "not_found");
   const posting = { id: job.id, title: job.title, company: job.company, location: job.location ?? null,
                     workplace: job.workplace ?? null, url: job.url, ats: job.ats };
   const parts = splitId(job.id);
@@ -1080,7 +1094,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
                    "Open url in your browser and read the form there; classify its questions with the " +
                    "same rule (see application_guide)." };
   if (env.live) {
-    if (env.live.left <= 0) throw new QueryError(`at most ${LIVE_PER_REQUEST} job_questions calls per request`);
+    if (env.live.left <= 0) throw new QueryError(`at most ${LIVE_PER_REQUEST} job_questions calls per request`, "rate_limited");
     env.live.left--;
   }
   let form;
@@ -1089,7 +1103,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
   } catch (e) {
     if (!(e instanceof BoardError)) throw e;
     throw new QueryError(`could not read the form of ${job.id}: ${e.message}. Open ${job.url} in your ` +
-                         "browser to read it there.");
+                         "browser to read it there.", "upstream");
   }
   const person = form.questions.filter((q) => q.who === "person").length;
   return {
@@ -1154,9 +1168,12 @@ const REPORT_REASONS = ["captcha", "login_required", "form_error", "posting_clos
   "no_browser", "person_declined", "other"];
 
 // Only an acknowledgement: the call itself is what PostHog counts (analytics()).
+// A job id from find_jobs: the board, the company's slug on it and the posting's own id.
+const JOB_ID = /^[a-z]+:[^\s]{1,200}$/;
+
 export async function reportApplication(data, args = {}, env = {}) {
   const id = blank(args.id) ? "" : String(args.id).trim();
-  if (!/^[a-z]+:[^\s]{1,200}$/.test(id)) throw new QueryError("id must be a job id from find_jobs");
+  if (!JOB_ID.test(id)) throw new QueryError("id must be a job id from find_jobs");
   const status = String(args.status ?? "").trim().toLowerCase();
   if (!REPORT_STATUS.includes(status))
     throw new QueryError(`status must be one of ${REPORT_STATUS.join(", ")}`);
@@ -1311,6 +1328,9 @@ async function answer(data, id, method, params, version, env) {
   return error(id, METHOD_NOT_FOUND, `method not found: ${method}`);
 }
 
+// Why a tool call failed, kept beside the reply for analytics() and never sent.
+const ERROR_KIND = new WeakMap();
+
 async function callTool(data, id, params, extra, env) {
   const name = params.name;
   const sent = params.arguments ?? {};
@@ -1319,15 +1339,18 @@ async function callTool(data, id, params, extra, env) {
   // Own keys only: a name such as "constructor" must not reach Object's prototype.
   const tool = typeof name === "string" && Object.hasOwn(TOOLS, name) ? TOOLS[name] : null;
   if (!tool) return error(id, INVALID_PARAMS, `unknown tool '${name}'`);
-  let result;
+  let result, kind;
   try {
     const out = await tool.run(data, args, env);
     result = { content: [{ type: "text", text: JSON.stringify(out) }], structuredContent: out };
   } catch (e) {
     if (!(e instanceof QueryError)) throw e;
     result = { content: [{ type: "text", text: e.message }], isError: true };
+    kind = e.kind;
   }
-  return { jsonrpc: "2.0", id, result: { ...result, ...extra } };
+  const reply = { jsonrpc: "2.0", id, result: { ...result, ...extra } };
+  if (kind) ERROR_KIND.set(reply, kind);
+  return reply;
 }
 
 // A batch is a convenience of one era, not a way to run thousands of queries per POST.
@@ -1358,6 +1381,7 @@ const CORS = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization, MCP-Protocol-Version, " +
                                   "Mcp-Method, Mcp-Name, Mcp-Session-Id, Last-Event-ID",
+  "Access-Control-Expose-Headers": "Mcp-Session-Id",
   "Access-Control-Max-Age": "86400",
 };
 
@@ -1427,17 +1451,31 @@ const json = (body, status = 200, extra = {}) => new Response(body === null ? nu
 
 // --- Analytics ----------------------------------------------------------------------
 
+// The session a POST belongs to. `initialize` gets a new random id, sent back in
+// the Mcp-Session-Id header, which handshake-era clients repeat on every later
+// request; the server keeps nothing of it, so any id of that shape is accepted
+// and anything else is ignored. 2026-07-28 clients have no handshake and no id.
+const SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+export function sessionOf(headers, msg) {
+  const messages = Array.isArray(msg) ? msg : [msg];
+  if (messages.some((m) => isObject(m) && m.method === "initialize")) return { id: uuidv7(), minted: true };
+  const sent = String(headers["mcp-session-id"] ?? "").trim().toLowerCase();
+  return { id: SESSION_ID.test(sent) ? sent : null, minted: false };
+}
+
 // What PostHog's MCP Analytics reads, one event per handshake, tool list and call
-// of a known tool (an unknown name would add a fake tool to its list). The server
-// is stateless and hands out no session id, so each request is its own session.
-// The arguments are filters, never personal; the reason an agent gives is redacted.
-export function analytics(data, headers, msg, out, started) {
+// of a known tool (an unknown name would add a fake tool to its list). The calls
+// of one connection share its session id; without one, each request is its own.
+// The arguments are filters and job ids, never personal; the reason an agent
+// gives is redacted.
+export function analytics(data, headers, msg, out, started, sessionId = null) {
   const messages = Array.isArray(msg) ? msg : [msg];
   const replies = new Map((Array.isArray(out) ? out : [out]).filter(isObject).map((r) => [r.id, r]));
-  const session = `ses_${uuidv7()}`;
+  const session = `ses_${sessionId ?? uuidv7()}`;
   const base = {
     $mcp_source: "posthog_mcp_analytics", $mcp_interface: "mcp", $session_id: session,
     $mcp_server_name: SERVER.name, $mcp_server_version: SERVER.version,
+    $mcp_session_linked: sessionId !== null,
     $mcp_client_user_agent: cut(headers["user-agent"]),
     $mcp_vendor_client: cut(headers["x-anthropic-client"]),
     ...origin(headers),
@@ -1463,13 +1501,18 @@ export function analytics(data, headers, msg, out, started) {
       // A name the schema does not declare could carry private data: neither it nor its value goes.
       const declared = (k) => Object.hasOwn(defined.inputSchema.properties, k);
       const failed = !reply || "error" in reply || reply.result?.isError === true;
+      const out = !failed && isObject(reply.result?.structuredContent) ? reply.result.structuredContent : null;
+      let measured = {};
+      try { measured = out && TOOLS[params.name].measure ? TOOLS[params.name].measure(out) : {}; }
+      catch (e) { console.error(e); }
       const intent = typeof context === "string" && context.trim() && context.trim() !== "{}"
         ? redact(context) : undefined;
       events.push(event("$mcp_tool_call", {
         ...common, $mcp_tool_name: params.name, $mcp_resource_name: params.name,
         $mcp_tool_description: defined.description,
         $mcp_is_error: failed, $mcp_duration_ms: duration,
-        $mcp_error_type: failed ? (reply?.result?.isError ? "validation" : "internal") : undefined,
+        $mcp_error_type: failed
+          ? (reply?.result?.isError ? ERROR_KIND.get(reply) ?? "validation" : "internal") : undefined,
         $mcp_error_message: failed
           ? redact(reply?.result?.content?.[0]?.text ?? reply?.error?.message ?? "no reply") : undefined,
         $mcp_intent: intent, $mcp_intent_source: intent && "context_parameter",
@@ -1477,8 +1520,11 @@ export function analytics(data, headers, msg, out, started) {
           .map((k) => (k === "context" || declared(k) ? k : "[redacted]")))],
         $mcp_parameters: { request: { method: "tools/call", params: { name: params.name,
           arguments: Object.fromEntries(Object.entries(args).filter(([k]) => declared(k))
-            .map(([k, v]) => [k, typeof v === "string" ? redact(v, 256)
+            .map(([k, v]) => [k, typeof v === "string" ? (k === "id" && JOB_ID.test(v) ? cut(v) : redact(v, 256))
+              : Array.isArray(v) && k === "exclude" ? `${v.length} ids`
               : v === null || typeof v !== "object" ? v : "[redacted]"])) } } },
+        ...measured,
+        ...(typeof measured.result_count === "number" ? { result_empty: measured.result_count === 0 } : {}),
       }, session));
     }
   }
@@ -1545,10 +1591,11 @@ export default {
       const data = await load(url), headers = Object.fromEntries(request.headers);
       const [status, body] = await reply(data, headers, msg,
         { jobs: () => loadJobs(url), companies: () => loadCompanies(url) });
+      const session = sessionOf(headers, msg);
       let events = [];
-      try { events = analytics(data, headers, msg, body, started); } catch (e) { console.error(e); }
+      try { events = analytics(data, headers, msg, body, started, session.id); } catch (e) { console.error(e); }
       await after(capture(events));
-      return json(body, status);
+      return json(body, status, session.minted && status === 200 ? { "Mcp-Session-Id": session.id } : {});
     } catch (e) { // data.json unreadable: still answer in JSON-RPC, not with an HTML 500
       console.error(e);
       return json(error(isObject(msg) ? msg.id ?? null : null, INTERNAL_ERROR, "internal error"), 500);

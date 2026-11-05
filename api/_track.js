@@ -2,8 +2,9 @@
 // Vercel serves no function
 // from a file whose name starts with "_", so this is only imported.
 //
-// Like the page: no cookie, no IP and no person profile. Each request is its own
-// anonymous id, the country comes from Vercel's header, and PostHog's GeoIP is off
+// Like the page: no cookie, no IP and no person profile. The id is the agent's
+// random MCP session (api/mcp.js sessionOf) or, without one, a fresh one per
+// request; the country comes from Vercel's header, and PostHog's GeoIP is off
 // because the address it would see is Vercel's, not the caller's.
 
 const HOST = "https://eu.i.posthog.com";

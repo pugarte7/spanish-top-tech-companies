@@ -5,7 +5,7 @@
 // stub: no test reaches the network.
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import mcp, { analytics, respond as answer } from "../api/mcp.js";
+import mcp, { analytics, respond as answer, sessionOf } from "../api/mcp.js";
 import { redact } from "../api/_track.js";
 
 const DATA = "_site/api/v1/data.json";
@@ -372,6 +372,42 @@ report("redaction takes keys, tokens and addresses", redact(
   "token=[redacted] https://[redacted]@h.io [redacted] [redacted] 5-7 years in MD",
   redact("token=abc123 https://u:p@h.io phc_aaaaaaaaaaaaaaaaaaaaaaaa 10.0.0.1 5-7 years in MD"));
 
+// --- Sessions, results and error kinds in PostHog --------------------------------------
+const UUID7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const shook = await mcp.fetch(new Request("https://x/mcp", { method: "POST",
+  headers: { "Content-Type": "application/json", Accept: "application/json, text/event-stream" },
+  body: JSON.stringify({ jsonrpc: "2.0", ...hello }) }));
+const minted = shook.headers.get("mcp-session-id");
+report("initialize hands out a random Mcp-Session-Id, exposed to browsers", shook.status === 200 &&
+  UUID7.test(minted ?? "") && /mcp-session-id/i.test(shook.headers.get("access-control-expose-headers")), minted);
+const later = await mcp.fetch(new Request("https://x/mcp", { method: "POST",
+  headers: { "Content-Type": "application/json", "Mcp-Session-Id": minted },
+  body: JSON.stringify({ jsonrpc: "2.0", id: 2, ...tool("list_filters", {}) }) }));
+report("a later request keeps its session and gets no new id", later.status === 200 &&
+  later.headers.get("mcp-session-id") === null);
+report("sessionOf: a handshake mints, a sent id is kept, anything else is ignored",
+  sessionOf({}, hello).minted === true && sessionOf({ "mcp-session-id": minted }, asked).id === minted &&
+  sessionOf({ "mcp-session-id": "jane@example.com" }, asked).id === null && sessionOf({}, asked).id === null);
+const linked = analytics(data, {}, [hello, asked], await respond(data, [hello, asked]), Date.now(), minted);
+report("the calls of one connection share its session",
+  linked.length === 2 && linked.every((e) => e.properties.$session_id === `ses_${minted}` &&
+    e.distinct_id === `ses_${minted}` && e.properties.$mcp_session_linked === true), linked.map((e) => e.properties.$session_id));
+report("without a session id each request is its own", p.$mcp_session_linked === false);
+const counted = async (name, args) =>
+  analytics(data, {}, { jsonrpc: "2.0", id: 1, ...tool(name, args) },
+    await respond(data, { jsonrpc: "2.0", id: 1, ...tool(name, args) }), Date.now())[0].properties;
+const emptyCall = await counted("find_jobs", { query: "zzzzqqq" });
+const some = await counted("top_companies", { role: "software-engineer" });
+report("a call says how much it found, and whether nothing", emptyCall.result_count === 0 &&
+  emptyCall.result_empty === true && emptyCall.$mcp_is_error === false && some.result_count > 0 &&
+  some.result_empty === false, [emptyCall.result_count, some.result_count]);
+const unknownCo = await counted("company_salaries", { name: "Nonexistent Widgets" });
+const wrongRole = await counted("salary_stats", { role: "astronaut" });
+const noJob = await counted("job_questions", { id: "greenhouse:glovo:1" });
+report("an unknown company or posting is not_found, a bad argument validation",
+  unknownCo.$mcp_error_type === "not_found" && noJob.$mcp_error_type === "not_found" &&
+  wrongRole.$mcp_error_type === "validation", [unknownCo.$mcp_error_type, noJob.$mcp_error_type, wrongRole.$mcp_error_type]);
+
 // --- Jobs: salary context, limits, a missing index -----------------------------------
 const run = async (name, args, env) => (await respond(data, { jsonrpc: "2.0", id: 1, ...tool(name, args) }, env)).result;
 const quietly = async (fn) => {
@@ -610,7 +646,7 @@ const searched = { jsonrpc: "2.0", id: 5, ...tool("find_jobs", { query: "jane@ex
 const [jobEvent] = analytics(data, {}, searched, await respond(data, searched), Date.now());
 const sentJson = JSON.stringify(jobEvent);
 report("a find_jobs event carries no excluded ids and no email", jobEvent?.properties.$mcp_tool_name === "find_jobs" &&
-  jobEvent.properties.$mcp_is_error === false && jobEvent.properties.$mcp_parameters.request.params.arguments.exclude === "[redacted]" &&
+  jobEvent.properties.$mcp_is_error === false && jobEvent.properties.$mcp_parameters.request.params.arguments.exclude === "2 ids" &&
   !sentJson.includes("7000001") && !sentJson.includes("private-board") && !sentJson.includes("jane@"), jobEvent?.properties);
 const asked2 = { jsonrpc: "2.0", id: 6, ...tool("job_questions", { id: "greenhouse:glovo:7000001" }) };
 const guide = { jsonrpc: "2.0", id: 7, ...tool("application_guide", { client: "cursor" }) };
@@ -658,6 +694,15 @@ report("report_application is counted with its status and reason",
   outcome?.properties.$mcp_tool_name === "report_application" &&
   outcome.properties.$mcp_parameters.request.params.arguments.status === "failed" &&
   outcome.properties.$mcp_parameters.request.params.arguments.reason === "blocked", outcome?.properties);
+report("report_application's event keeps the job id whole, with the posting's board and company",
+  outcome.properties.$mcp_parameters.request.params.arguments.id === "greenhouse:glovo:7000001" &&
+  outcome.properties.application_status === "failed" && outcome.properties.application_reason === "blocked" &&
+  outcome.properties.ats === "greenhouse" && outcome.properties.company === "Glovo" &&
+  outcome.properties.known_posting === true, outcome?.properties);
+const notAnId = { jsonrpc: "2.0", id: 9, ...tool("job_questions", { id: "call me on +34 612 345 678" }) };
+report("an id that is not a job id is still redacted",
+  analytics(data, {}, notAnId, await respond(data, notAnId), Date.now())[0].properties
+    .$mcp_parameters.request.params.arguments.id === "call me on [redacted]");
 const steps = (await run("application_guide", {})).structuredContent.steps.join(" ");
 report("application_guide says to report each outcome", /report_application/.test(steps));
 
