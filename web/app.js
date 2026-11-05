@@ -573,11 +573,28 @@ async function loadTable(name) {
     log("warn", "salary table unreachable", { table: name || "all" });
     return false;
   }
-  T[name] = r.ok ? await r.json() : { cells: {}, summary: {}, years: {}, whole: [] };
+  const t = r.ok ? await r.json() : { cells: {}, summary: {}, years: {}, whole: [] };
+  // A tab opened before a deploy holds the old company list, and the tables
+  // number companies by their place in it: reload (the hash keeps the
+  // filters), or, if this tab already did, fetch today's list.
+  if (t.list_v && t.list_v !== D.list_v) {
+    if (reloadStale()) return false;
+    D = await (await fetch(`/api/v1/data.json?v=${t.list_v}`)).json();
+  }
+  T[name] = t;
   if (T[name].whole) T[name].whole = new Set(T[name].whole);
   log(r.ok ? "debug" : "warn", r.ok ? "salary table loaded" : "salary table unavailable", {
     table: name || "all",
   });
+  return true;
+}
+function reloadStale() {
+  try {
+    if (sessionStorage.getItem("stale") === D.list_v) return false;
+    sessionStorage.setItem("stale", D.list_v);
+  } catch { return false; }
+  log("info", "stale page reloaded", { list: D.list_v || "none" });
+  location.reload();
   return true;
 }
 // The role's file first: its `places` name the place's file. False when one

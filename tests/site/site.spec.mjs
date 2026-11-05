@@ -559,6 +559,40 @@ test("a table that cannot load says so, and the retry brings it", async ({ page 
   page.problems.splice(0, page.problems.length, ...page.problems.filter((p) => !p.includes("ERR_FAILED")));
 });
 
+// A deploy that changes the company list while a tab is open: the tables
+// fetched afterwards number companies on the new list.
+async function deployWhileOpen(page, times) {
+  await open(page);
+  let left = times;
+  await page.route("**/api/v1/companies/software-engineer.json*", async (r) => {
+    if (left-- <= 0) return r.continue();
+    const res = await r.fetch();
+    await r.fulfill({ response: res, json: { ...(await res.json()), list_v: "deployed" } });
+  });
+}
+const pickEngineer = async (page) => {
+  await filter(page, "role").locator(".pick").click();
+  await filter(page, "role").locator('[data-v="software-engineer"]').first().click();
+};
+
+test("a tab left open across a deploy reloads, keeping its filters", async ({ page }) => {
+  await deployWhileOpen(page, 1);
+  const reloaded = page.waitForEvent("load");
+  await pickEngineer(page);
+  await reloaded;
+  await expect(rows(page).first()).toBeVisible();
+  await expect(filter(page, "role").locator(".txt")).toHaveText("Software Engineer");
+});
+
+test("a tab that already reloaded fetches the new company list instead", async ({ page }) => {
+  await deployWhileOpen(page, 2);
+  const reloaded = page.waitForEvent("load");
+  await pickEngineer(page);
+  await reloaded;
+  await expect(rows(page).first()).toBeVisible();
+  await expect(filter(page, "role").locator(".txt")).toHaveText("Software Engineer");
+});
+
 test("every open row has its experience bars and the 60k line", async ({ page }) => {
   await open(page);
   const n = await rows(page).count();

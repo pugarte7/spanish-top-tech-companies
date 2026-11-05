@@ -5,7 +5,9 @@
   "outputDirectory": "_site",
   "git": { "deploymentEnabled": false },
   "redirects": [
-    { "source": "/", "destination": "/es/", "permanent": false }
+    { "source": "/", "destination": "/es/", "permanent": false },
+    { "source": "/:lang(es|en)", "destination": "/:lang/", "permanent": true },
+    { "source": "/:lang(es|en)/:path((?:[^/.]+/)*[^/.]+)", "destination": "/:lang/:path/", "permanent": true }
   ],
   "rewrites": [
     { "source": "/ingest/static/:path(.*)", "destination": "https://eu-assets.i.posthog.com/static/:path" },
