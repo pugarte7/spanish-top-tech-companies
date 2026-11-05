@@ -334,8 +334,9 @@ STRINGS = {
         "agents_pick": "Pick your agent",
         "agents_get": "Get {name}",
         "agents_s1_t": "Connect salaries and openings",
-        "agents_s1": "Paste this address into {name}'s connectors, so it knows which companies pay "
-                     "most and which positions they have open today.",
+        "agents_s1": "Paste this address into the chat and ask {name} to connect to it: it adds "
+                     "the server itself. Then it knows which companies pay most and which "
+                     "positions they have open today.",
         "agents_s2_t": "Give it your CV and what you want",
         "agents_s2": "Only once, in the chat. {name} writes the cover letter and the answers "
                      "from your CV and sends each application with its own browser. Your profile "
@@ -456,8 +457,9 @@ STRINGS = {
         "agents_pick": "Elige tu agente",
         "agents_get": "Consigue {name}",
         "agents_s1_t": "Conecta sueldos y ofertas",
-        "agents_s1": "Pega esta dirección en los conectores de {name}. Así sabe qué empresas pagan "
-                     "más y qué ofertas tienen abiertas hoy.",
+        "agents_s1": "Pégale esta dirección en el chat y pídele a {name} que se conecte: él mismo "
+                     "añade el servidor. Así sabe qué empresas pagan más y qué ofertas tienen "
+                     "abiertas hoy.",
         "agents_s2_t": "Dale tu CV y lo que buscas",
         "agents_s2": "Una sola vez, en el chat. {name} escribe la carta y las respuestas a partir "
                      "de tu CV y envía cada solicitud con su propio navegador. Tu perfil se queda "
@@ -1803,7 +1805,8 @@ more submissions on Levels.fyi from anywhere in the world over every role.
 Agents: {agents_note()} With no tools of your own (a plain chat), point the
 user to an agent that runs tools (Instinct works best, then Claude Code; Codex,
 Cursor and Hermes work too): they
-connect {SITE}/mcp there and paste the prompt on {SITE}/es/#agents; then give
+ask it in the chat to connect to {SITE}/mcp, which it adds itself, and paste the
+prompt on {SITE}/es/#agents; then give
 them the steps under Tools. The code is open at {REPO}.
 
 ## Data
