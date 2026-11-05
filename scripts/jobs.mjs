@@ -6,6 +6,7 @@
 //
 //     node scripts/jobs.mjs                    # after site.py: crawl the boards
 //     node scripts/jobs.mjs --fixture tests/fixtures/jobs.json   # offline copy
+//     node scripts/jobs.mjs --reuse 36         # production's index if under 36h old
 //
 // The boards are _site/api/v1/boards-list.json (site.py, from data/boards.json)
 // and every fetch goes through the ATS adapters and polite client in lib/ats
@@ -13,9 +14,13 @@
 // classes are exactly what lib/ats sees. Boards are crawled one at a
 // time per host, hosts side by side.
 //
-// vercel.json runs it after site.py in the build, so every deploy and the
-// daily scheduled one (deploy.yml) publish a fresh index. It never fails the
-// build. A host that refuses is retried with growing waits and slowed down.
+// vercel.json runs it after site.py in the build. The daily scheduled deploy
+// (deploy.yml) crawls; a deploy for a push to main passes JOBS_REUSE_HOURS
+// and republishes production's index unchanged while it is that fresh, so a
+// code change ships in minutes instead of waiting on every board (since
+// 2026-11-05: "porque tenemos que hacer el rastreo de ofertas cada vez que
+// hacemos un deploy?"). An older or unreadable index means a crawl. It never
+// fails the build. A host that refuses is retried with growing waits and slowed down.
 // A board that still fails is counted under boards.issues, and its postings
 // in production's previous jobs.json are carried over unchanged for up to a
 // week (boards.stale, boards.stale_since); a board that answers 404 or with
@@ -51,6 +56,9 @@ const DEFAULTS = {
   // A run past this publishes what it has; the boards not reached count as
   // "timeout". GitHub's build has room, a stuck host should not hold a deploy.
   minutes: Number(process.env.JOBS_MAX_MINUTES) || 20,
+  // Hours within which production's index is republished instead of a crawl;
+  // 0 always crawls.
+  reuse: Number(process.env.JOBS_REUSE_HOURS) || 0,
   concurrency: 6,
 };
 
@@ -324,6 +332,13 @@ export async function loadAts() {
 }
 
 /** True for a jobs.json this script could have written. */
+/** Production's index, when it is one and younger than `hours`. */
+export function fresh(prior, hours, now = Date.now()) {
+  if (!(hours > 0) || !isIndex(prior)) return null;
+  const age = now - Date.parse(prior.generated_at);
+  return age >= 0 && age < hours * 3_600_000 ? prior : null;
+}
+
 export function isIndex(value) {
   return value?.version === VERSION && typeof value.generated_at === "string"
     && Array.isArray(value.jobs) && typeof value.boards === "object";
@@ -354,7 +369,7 @@ function args(argv) {
   for (let i = 0; i < argv.length; i += 1) {
     const key = argv[i].replace(/^--/, "");
     if (!(key in out) && key !== "fixture") throw new Error(`unknown option ${argv[i]}`);
-    out[key] = key === "minutes" || key === "concurrency" ? Number(argv[++i]) : argv[++i];
+    out[key] = ["minutes", "concurrency", "reuse"].includes(key) ? Number(argv[++i]) : argv[++i];
   }
   return out;
 }
@@ -368,6 +383,17 @@ async function main() {
     if (!isIndex(index)) throw new Error(`${opts.fixture} is not a jobs index`);
     log(`${index.jobs.length} postings from ${opts.fixture} -> ${opts.out} (${write(opts.out, index)} bytes)`);
     return;
+  }
+
+  if (opts.reuse > 0) {
+    const prior = await previous(opts.previous);
+    const kept = typeof prior === "object" ? fresh(prior, opts.reuse) : null;
+    if (kept) {
+      log(`reused production's index of ${kept.generated_at} (${kept.jobs.length} postings, ` +
+          `${write(opts.out, kept)} bytes); no crawl`);
+      return;
+    }
+    log(`production's index is not under ${opts.reuse}h old (${typeof prior === "object" ? prior.generated_at : prior}); crawling`);
   }
 
   const started = Date.now();
