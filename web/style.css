@@ -491,6 +491,15 @@ footer p { margin: 0; }
 footer .veil { width: fit-content; margin: 0 auto; }
 footer .veil::before { inset: -8px -20px; box-shadow: 0 0 28px 18px var(--field); }
 footer a { color: var(--field-ink); }
+/* Links into the salary pages, on every page: they used to be two tiles at
+   the end of the home page. */
+footer .foot-links { width: auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px 32px;
+                     margin: 0 auto 44px; text-align: left; }
+footer .foot-links::before { inset: -20px -28px; }
+.foot-links h2 { margin: 0 0 10px; font: 500 14px/18px var(--display); letter-spacing: .12em; text-transform: uppercase;
+                 color: var(--field-bright); }
+.foot-links ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 15px; line-height: 21px; }
+@media (max-width: 800px) { footer .foot-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 20px; } }
 
 /* Star prompt: a piece of the blue field, lacería and all. It floats, so it
    is the one card with a shadow. After .field, so it stays fixed. */
@@ -703,7 +712,7 @@ footer a { color: var(--field-ink); }
 .faq dt { font-weight: 600; }
 .faq dd { margin: 4px 0 0; color: var(--muted); max-width: 80ch; }
 .guide-source { margin: 0; font-size: 13px; color: var(--muted); }
-#guides, #faq { scroll-margin-top: 72px; }
+#faq { scroll-margin-top: 72px; }
 /* The button's label may wrap on a phone rather than widen the column. */
 .guide .cta .btn { white-space: normal; height: auto; min-height: 44px; padding: 10px 14px; line-height: 1.25; text-align: center; }
 .guide .head > * { min-width: 0; }

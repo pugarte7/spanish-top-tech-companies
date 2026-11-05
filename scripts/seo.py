@@ -146,8 +146,7 @@ T = {
                 "{total} de total con bonus y acciones. Sale de {n} salarios.",
         "q_co_role": "¿Cuánto paga {company} a un {role} en España?",
         "a_co_role": "Un sueldo base mediano de {median} brutos al año, con {n} salarios.",
-        "home_faq": "Lo que más se pregunta",
-        "guides": "Salarios por rol, comunidad y empresa",
+        "questions": "Preguntas", "foot_swe": "Programador por comunidad",
         "all": "Ver todos",
     },
     "en": {
@@ -210,8 +209,7 @@ T = {
                 "total pay with bonus and stock. From {n} salaries.",
         "q_co_role": "What is the {company} {role} salary in Spain?",
         "a_co_role": "A median base salary of {median} a year gross, from {n} salaries.",
-        "home_faq": "What people ask",
-        "guides": "Salaries by role, region and company",
+        "questions": "Questions", "foot_swe": "Software engineers by region",
         "all": "See all",
     },
 }
@@ -356,7 +354,7 @@ def tile(title: str, body: str, lede: str = "") -> str:
 
 def faq_html(lang: str, qa: list[tuple[str, str]]) -> str:
     items = "".join(f"<div><dt>{esc(q)}</dt><dd>{esc(a)}</dd></div>" for q, a in qa)
-    return tile(T[lang]["t_faq"], f'<dl class="faq">{items}</dl>')
+    return tile(T[lang]["t_faq"], f'<dl class="faq">{items}</dl>').replace("<section ", '<section id="faq" ', 1)
 
 
 def faq_ld(qa: list[tuple[str, str]]) -> dict:
@@ -625,27 +623,26 @@ def pages(data: dict, shell, public: str) -> list[dict]:
     return Builder(data, shell, public).build()
 
 
-def home_extra(data: dict, lang: str) -> tuple[str, list[tuple[str, str]]]:
-    """The home page's links into these pages and the questions it answers
-    in plain text, so a search engine reading it without JavaScript finds both."""
+FOOT_TOP = 6
+
+
+def footer_links(data: dict, lang: str) -> str:
+    """Links into these pages for every page's footer: the top roles, places
+    and companies and the questions people search, each to the page that
+    answers it, so they are a link away from anywhere on the site."""
     b = Builder(data, None, "")
     s, t = b.s, T[lang]
-    qa = b.role_qa(lang, "software-engineer")[:4] if s.cell("software-engineer") else []
-    roles = [(s.role_path(r, lang), s.role_heading(r, lang)) for r in s.role_slugs[:12]]
-    places = [(s.role_path("software-engineer", lang, g), s.place(g, lang)) for g in s.region_codes
-              if s.cell("software-engineer", g)]
-    top = [c for c, _ in sorted(s.company_cells().items(), key=lambda kv: -kv[1]["n"])[:24] if s.has_company_page(c)]
-    companies = [(s.company_path(c, lang), s.companies[c]["name"]) for c in top]
-    body = (f"<h3>{esc(t['by_role'])}</h3>{link_list(roles)}"
-            f"<h3>{esc(fill(t['swe_in'], role=s.role_heading('software-engineer', lang)))}</h3>{link_list(places)}"
-            f"<h3>{esc(t['by_company'])}</h3>{link_list(companies)}"
-            f"<p>{link(s.hub(lang), t['all'] + ' →')}</p>")
-    items = "".join(f"<div><dt>{esc(q)}</dt><dd>{esc(a)}</dd></div>" for q, a in qa)
-    section = (f'\n  <section class="tile wide" id="guides"><h2>{esc(t["guides"])}</h2>{body}</section>'
-               + (f'\n  <section class="tile wide" id="faq"><h2>{esc(t["home_faq"])}</h2><dl class="faq">{items}</dl></section>'
-                  if qa else ""))
-    return section, qa
-
-
-def faq_json_ld(qa: list[tuple[str, str]]) -> str:
-    return json.dumps(faq_ld(qa), ensure_ascii=False).replace("</", "<\\/")
+    swe = "software-engineer"
+    roles = [(s.role_path(r, lang), s.role_heading(r, lang)) for r in s.role_slugs[:FOOT_TOP]]
+    places = [(s.role_path(swe, lang, g), s.place(g, lang)) for g in s.region_codes if s.cell(swe, g)][:FOOT_TOP]
+    top = [c for c, _ in sorted(s.company_cells().items(), key=lambda kv: -kv[1]["n"]) if s.has_company_page(c)]
+    companies = [(s.company_path(c, lang), s.companies[c]["name"]) for c in top[:FOOT_TOP]]
+    hub = s.hub(lang)
+    qs = [(s.role_path(swe, lang) + "#faq", q) for q, _ in b.role_qa(lang, swe)[:4]] if s.cell(swe) else []
+    cols = [(t["by_role"], roles, hub), (t["foot_swe"], places, hub),
+            (t["by_company"], companies, hub + "#all-companies"), (t["questions"], qs, None)]
+    body = "".join(
+        f'<div><h2>{esc(head)}</h2><ul>' + "".join(f"<li>{link(h, x)}</li>" for h, x in items)
+        + (f"<li>{link(more, t['all'] + ' →')}</li>" if more else "") + "</ul></div>"
+        for head, items, more in cols if items)
+    return f'<nav class="foot-links veil" aria-label="{esc(t["hub_h1"])}">{body}</nav>'
