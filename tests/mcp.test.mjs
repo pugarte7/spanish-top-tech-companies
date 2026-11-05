@@ -76,7 +76,7 @@ const calls = [
   tool("find_jobs", { exclude: [1, 2] }),
   tool("job_questions", { id: "greenhouse:nobody:1" }),
   tool("job_questions", {}),
-  tool("job_questions", { id: "workday:bbva/wd3/BBVA:R-12345" }),
+  tool("job_questions", { id: "smartrecruiters:ecovadis:744000000000001" }),
   tool("application_guide", {}),
   tool("application_guide", { client: "Claude Code" }),
 ].map((c, i) => ({ jsonrpc: "2.0", id: i + 1, ...c }));
@@ -153,7 +153,7 @@ const expected = [
   ["exclude leaves out the ids an agent passes", (r) => ids(r).join() === "greenhouse:glovo:7000002" &&
     out(r).filters.excluded === 1],
   ["the limit is capped at 50", (r) => out(r).returned === index.jobs.length],
-  ["a small limit says how many more match", (r) => out(r).returned === 2 && /12 more match/.test(out(r).more)],
+  ["a small limit says how many more match", (r) => out(r).returned === 2 && /13 more match/.test(out(r).more)],
   ["a role matches titles of that role", (r) => out(r).filters.role === "software-engineer" &&
     out(r).jobs.every((j) => j.role === "software-engineer") && titles(r).includes("Ingeniero de Software Embebido") &&
     !titles(r).includes("Engineering Manager")],
@@ -172,7 +172,7 @@ const expected = [
   ["an id not in the index is a tool error", (r) => toolError(r) && /no job 'greenhouse:nobody:1'/.test(r.result.content[0].text)],
   ["job_questions needs an id", toolError],
   ["a board without a form API sends the agent to the URL", (r) => out(r).questions === null &&
-    /workday/.test(out(r).note) && out(r).apply_url === index.jobs.at(-1).url],
+    /smartrecruiters/.test(out(r).note) && out(r).apply_url === index.jobs.at(-1).url],
   ["application_guide holds the template and rules, and no other server", (r) =>
     /## Profile/.test(out(r).state_document.template) && /## Answers to recurring questions/.test(out(r).state_document.template) &&
     /## Search preferences/.test(out(r).state_document.template) && /\| Job id \|/.test(out(r).state_document.template) &&
@@ -525,6 +525,12 @@ report("company_salaries: a city is its region, with a note", /Barcelona is in C
 const atlantis = await run("salary_stats", { region: "Atlantis" });
 report("an unknown place names cities as an option", atlantis.isError === true && /a city like Barcelona/.test(atlantis.content[0].text));
 
+const placeWords = (await run("find_jobs", { query: "engineer spain europe" })).structuredContent;
+const plainWords = (await run("find_jobs", { query: "engineer" })).structuredContent;
+report("place words such as Spain do not match every posting through its location",
+  plainWords.matches > 0 && plainWords.matches < index.jobs.length && placeWords.matches === plainWords.matches,
+  [placeWords.matches, plainWords.matches]);
+
 // --- Jobs: application forms from stubbed boards --------------------------------------
 const json = (value, status = 200) => () => new Response(JSON.stringify(value), { status });
 const GH = "https://boards-api.greenhouse.io/v1/boards";
@@ -628,6 +634,70 @@ report("ashby: fields, a Boolean as Yes/No, who=person for sponsorship, bot chec
   byLabel(ashby, /compensation/).who === "person" && byLabel(ashby, /languages/).type === "multiselect" &&
   byLabel(ashby, /languages/).who === "agent" && /Remote first/.test(ashby.description.text) &&
   ashby.apply_url === "https://jobs.ashbyhq.com/abacum/9950860a-1a83-4344-8541-000000000007/application", ashby.questions);
+// Workable and Recruitee publish their forms; Workday publishes the posting only.
+const more = { ...index, jobs: [...index.jobs,
+  { id: "workable:exoticca:3C35D18DA3", company: "Exoticca", slug: "exoticca", title: "Accounting Specialist",
+    url: "https://apply.workable.com/j/3C35D18DA3", ats: "workable", location: "Barcelona, Spain" },
+  { id: "recruitee:sequra:2616630", company: "seQura", slug: "sequra", title: "Accountant",
+    url: "https://sequra.recruitee.com/o/accountant-4", ats: "recruitee", location: "Barcelona, Spain" },
+  { id: "workday:bbva/wd3/BBVA:R-99999", company: "BBVA", slug: "bbva", title: "Analista",
+    url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Analista_R-99999", ats: "workday", location: "Madrid" }] };
+const formIn = async (id) => (await run("job_questions", { id }, { jobs: more })).structuredContent;
+BOARDS["https://apply.workable.com/api/v1/jobs/3C35D18DA3/form"] = json([
+  { name: "Personal information", fields: [{ id: "firstname", label: "First name", required: true, type: "text" },
+    { id: "email", label: "Email", required: true, type: "email" }] },
+  { name: "Profile", fields: [{ id: "resume", label: "Resume", required: true, type: "file" }] },
+  { name: "Details", fields: [
+    { id: "CA_1", label: "Notice period", required: true, singleOption: true, type: "dropdown",
+      options: [{ name: "1", value: "Available immediately" }, { name: "2", value: "1 month" }] },
+    { id: "CA_2", label: "Right to work", required: true, type: "boolean" },
+    { id: "CA_3", label: "Salary Expectations", required: true, type: "number" },
+    { id: "QA_4", label: "Which tools have you used?", required: false, type: "multiple",
+      options: [{ name: "5", value: "NetSuite" }, { name: "6", value: "SAP" }] }] },
+  { fields: [{ id: "gdpr", onlyTrueAllowed: true, required: true, type: "boolean", url: "https://apply.workable.com/exoticca/gdpr_policy" }] }]);
+BOARDS["https://apply.workable.com/api/v2/accounts/exoticca/jobs/3C35D18DA3"] = json({
+  description: "<p>We sell trips.</p>", requirements: "<ul><li>NetSuite</li></ul>", benefits: "" });
+BOARDS["https://sequra.recruitee.com/api/offers/2616630"] = json({ offer: {
+  options_phone: "required", options_cv: "required", options_cover_letter: "optional", options_photo: "off",
+  careers_apply_url: "https://sequra.recruitee.com/o/accountant-4/c/new", description: "<p>About seQura</p>",
+  requirements: "<p>Accounting degree</p>", location_question_visible: false, open_questions: [
+    { id: 1, body: "When can you join the team?", kind: "string", required: true, open_question_options: [] },
+    { id: 2, body: "Which is your English level?", kind: "multi_choice", required: true,
+      open_question_options: [{ body: "B2" }, { body: "C1" }] },
+    { id: 3, body: "Would you now or in the future require work permit assistance?", kind: "boolean", required: true, open_question_options: [] },
+    { id: 4, body: "Please tell us about your salary expectations.", kind: "salary", required: true, open_question_options: [] }] } });
+const WD = "https://bbva.wd3.myworkdayjobs.com/wday/cxs/bbva/BBVA/job/Madrid";
+BOARDS[`${WD}/R-12345`] = json({ jobPostingInfo: { jobDescription: "<p>Java en BBVA</p>", canApply: true,
+  externalUrl: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345", questionnaireId: "abc123" } });
+BOARDS[`${WD}/Analista_R-99999`] = json({ jobPostingInfo: { canApply: false } });
+
+const workable = await formIn("workable:exoticca:3C35D18DA3");
+report("workable: fields with labels as options, right to work, pay and GDPR to the person",
+  workable.form_source === "workable public API, read now" && byLabel(workable, /^First name$/).who === "agent" &&
+  byLabel(workable, /Notice/).options.join() === "Available immediately,1 month" &&
+  byLabel(workable, /Right to work/).who === "person" && byLabel(workable, /Right to work/).options.join() === "Yes,No" &&
+  byLabel(workable, /Salary/).who === "person" && byLabel(workable, /tools/).type === "multiselect" &&
+  byLabel(workable, /GDPR/).who === "person" && byLabel(workable, /GDPR/).policy_url.endsWith("gdpr_policy") &&
+  /We sell trips/.test(workable.description.text) && /NetSuite/.test(workable.description.text) &&
+  workable.apply_url === "https://apply.workable.com/exoticca/j/3C35D18DA3/apply/", workable.questions);
+const recruitee = await formIn("recruitee:sequra:2616630");
+report("recruitee: the fields switched on, open questions, permit and pay to the person",
+  ["Full name", "Email", "Phone", "Resume/CV", "Cover letter"].every((l) => byLabel(recruitee, new RegExp(`^${l}$`))) &&
+  !byLabel(recruitee, /^Photo$/) && byLabel(recruitee, /^Cover letter$/).required === false &&
+  byLabel(recruitee, /English/).options.join() === "B2,C1" && byLabel(recruitee, /join/).who === "agent" &&
+  byLabel(recruitee, /permit/).who === "person" && byLabel(recruitee, /salary/).who === "person" &&
+  /Accounting degree/.test(recruitee.description.text) &&
+  recruitee.apply_url === "https://sequra.recruitee.com/o/accountant-4/c/new", recruitee.questions);
+const workday = await formIn("workday:bbva/wd3/BBVA:R-12345");
+report("workday: the posting, an account the person opens, the standard steps and the employer's questions",
+  workday.account_required === true && workday.employer_questions === "after sign-in" && /sign-in/.test(workday.form_source) &&
+  byLabel(workday, /account with BBVA/).who === "person" && byLabel(workday, /account with BBVA/).category === "account" &&
+  byLabel(workday, /own application questions/).type === "unread" && byLabel(workday, /terms and conditions/).who === "person" &&
+  byLabel(workday, /^Resume/).who === "agent" && /Java en BBVA/.test(workday.description.text) &&
+  workday.apply_url === "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345/apply", workday.questions);
+const wdClosed = await run("job_questions", { id: "workday:bbva/wd3/BBVA:R-99999" }, { jobs: more });
+report("workday: a posting that takes no more applications is a tool error", wdClosed.isError === true &&
+  /no longer takes applications/.test(wdClosed.content[0].text));
 const closed = await run("job_questions", { id: "greenhouse:cabify:7000003" });
 report("a posting the board no longer has is a tool error with the URL", closed.isError === true &&
   /may have closed/.test(closed.content[0].text) && closed.content[0].text.includes("https://job-boards.greenhouse.io/cabify/jobs/7000003"));
@@ -635,7 +705,7 @@ const down = await run("job_questions", { id: "greenhouse:wallapop:7000009" });
 report("a board that cannot be reached is a tool error", down.isError === true && /could not be reached/.test(down.content[0].text));
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com)\//.test(r.url) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com)\//.test(r.url) &&
     r.init.redirect === "error" && r.init.signal instanceof AbortSignal));
 const burst = Array.from({ length: 6 }, (_, k) => ({ jsonrpc: "2.0", id: k + 1, ...tool("job_questions", { id: "greenhouse:glovo:7000001" }) }));
 const burstReplies = await respond(data, burst);
