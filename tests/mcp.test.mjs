@@ -393,6 +393,14 @@ report("the calls of one connection share its session",
   linked.length === 2 && linked.every((e) => e.properties.$session_id === `ses_${minted}` &&
     e.distinct_id === `ses_${minted}` && e.properties.$mcp_session_linked === true), linked.map((e) => e.properties.$session_id));
 report("without a session id each request is its own", p.$mcp_session_linked === false);
+const byHeader = analytics(data, { "x-stc-internal": "1" }, hello, await respond(data, hello), Date.now())[0];
+const byAgent = analytics(data, { "user-agent": "prod-check" }, asked, await respond(data, asked), Date.now())[0];
+const byIntent = analytics(data, {}, { jsonrpc: "2.0", id: 1, ...tool("list_filters", { context: "production check by the maintainer" }) },
+  await respond(data, { jsonrpc: "2.0", id: 1, ...tool("list_filters", {}) }), Date.now())[0];
+report("the site's own traffic is internal: header, its scripts or a maintainer's check",
+  byHeader.properties.internal === true && byAgent.properties.internal === true &&
+  byIntent.properties.internal === true && p.internal === false,
+  [byHeader.properties.internal, byAgent.properties.internal, byIntent.properties.internal, p.internal]);
 const counted = async (name, args) =>
   analytics(data, {}, { jsonrpc: "2.0", id: 1, ...tool(name, args) },
     await respond(data, { jsonrpc: "2.0", id: 1, ...tool(name, args) }), Date.now())[0].properties;

@@ -1380,7 +1380,7 @@ const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization, MCP-Protocol-Version, " +
-                                  "Mcp-Method, Mcp-Name, Mcp-Session-Id, Last-Event-ID",
+                                  "Mcp-Method, Mcp-Name, Mcp-Session-Id, Last-Event-ID, X-STC-Internal",
   "Access-Control-Expose-Headers": "Mcp-Session-Id",
   "Access-Control-Max-Age": "86400",
 };
@@ -1463,6 +1463,15 @@ export function sessionOf(headers, msg) {
   return { id: SESSION_ID.test(sent) ? sent : null, minted: false };
 }
 
+// The site's own traffic, marked `internal` so PostHog's test-account filter
+// leaves it out: the maintainer's agents send X-STC-Internal (any value), the
+// deploy and probe scripts have their own user agents, and a check run by hand
+// says so in its context. Anyone could send the header; it only hides them.
+const INTERNAL_AGENTS = /^(?:prod-check|probe\/|claude-code\/verify)/i;
+const MAINTAINER = /\bmaintainer\b/i;
+const internalRequest = (headers) => Boolean(String(headers["x-stc-internal"] ?? "").trim()) ||
+  INTERNAL_AGENTS.test(String(headers["user-agent"] ?? ""));
+
 // What PostHog's MCP Analytics reads, one event per handshake, tool list and call
 // of a known tool (an unknown name would add a fake tool to its list). The calls
 // of one connection share its session id; without one, each request is its own.
@@ -1475,7 +1484,7 @@ export function analytics(data, headers, msg, out, started, sessionId = null) {
   const base = {
     $mcp_source: "posthog_mcp_analytics", $mcp_interface: "mcp", $session_id: session,
     $mcp_server_name: SERVER.name, $mcp_server_version: SERVER.version,
-    $mcp_session_linked: sessionId !== null,
+    $mcp_session_linked: sessionId !== null, internal: internalRequest(headers),
     $mcp_client_user_agent: cut(headers["user-agent"]),
     $mcp_vendor_client: cut(headers["x-anthropic-client"]),
     ...origin(headers),
@@ -1516,6 +1525,7 @@ export function analytics(data, headers, msg, out, started, sessionId = null) {
         $mcp_error_message: failed
           ? redact(reply?.result?.content?.[0]?.text ?? reply?.error?.message ?? "no reply") : undefined,
         $mcp_intent: intent, $mcp_intent_source: intent && "context_parameter",
+        ...(intent && MAINTAINER.test(intent) ? { internal: true } : {}),
         $mcp_input_keys: [...new Set(Object.keys(sent)
           .map((k) => (k === "context" || declared(k) ? k : "[redacted]")))],
         $mcp_parameters: { request: { method: "tools/call", params: { name: params.name,
