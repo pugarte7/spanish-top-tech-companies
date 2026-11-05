@@ -1631,10 +1631,15 @@ def main(argv: list[str]) -> int:
         shutil.rmtree(OUT)
     (OUT / "api" / "v1").mkdir(parents=True)
     data["instructions"] = mcp_instructions(data)
+    # The tables number companies by their place in data.json's list. A tab
+    # opened before a deploy keeps the old list and fetches today's tables:
+    # list_v in both lets the page notice and reload.
+    data["list_v"] = hashlib.sha256(dump(data["companies"]).encode()).hexdigest()[:10]
     # boards.json is api/boards.js, which serves this file and counts the download.
     files = {"data.json": dump(data), "boards-list.json": dump(job_boards(data, tables)),
              "company-cells.json": dump(company_cells(tables))}
-    files.update({f"companies/{name or 'all'}.json": dump(t) for name, t in tables.items()})
+    files.update({f"companies/{name or 'all'}.json": dump({**t, "list_v": data["list_v"]})
+                  for name, t in tables.items()})
     # Like asset_version, for the JSON the page fetches: a browser holding
     # yesterday's tables under the same URL would run new code on old fields.
     data_version = hashlib.sha256("".join(files.values()).encode()).hexdigest()[:10]
