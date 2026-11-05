@@ -1262,8 +1262,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     # **bold** in the copy; the salary count is filled in by app.js.
     lede = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", e["hero_lede"]).replace(
         "{people}", '<span id="k-people"></span>').replace("{levels}", levels)
-    guides, faq = seo.home_extra(data, lang)
-    faq_ld = f'\n<script type="application/ld+json">{seo.faq_json_ld(faq)}</script>' if faq else ""
+    foot = seo.footer_links(data, lang)
     return f"""<!doctype html>
 <html lang="{lang}">
 <head>
@@ -1282,7 +1281,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 {head_links(lang, f"/{lang}/", {"es": "/es/", "en": "/en/"})}
 <link rel="alternate" type="application/json" href="/api/v1/data.json" title="Salary aggregates">
 <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Salary aggregates for agents">
-<script type="application/ld+json">{json_ld(lang, data)}</script>{faq_ld}
+<script type="application/ld+json">{json_ld(lang, data)}</script>
 {ICON_LINKS}
 <link rel="preload" href="/fonts/Antonio-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/Barlow-Regular.woff2" as="font" type="font/woff2" crossorigin>
@@ -1354,10 +1353,11 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     <button class="more" id="more" hidden></button>
     {noscript_companies(e, data)}
   </section>
-{agents_section(e)}{guides}
+{agents_section(e)}
 </main>
 
 <footer class="field tiled">{WALL}<div class="foot">
+  {foot}
   <p class="veil">{e['source'].replace('Levels.fyi', levels)} ·
      <a href="/api/v1/data.json" target="_blank" rel="noopener">{e['data']}</a> ·
      <a href="{REPO}" target="_blank" rel="noopener">{e['repo']}</a> ·
@@ -1383,6 +1383,8 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 def guide_shell(data: dict):
     """The page around seo.py's content: the home page's head, top bar,
     blue header and footer, without its script."""
+    foots = {lang: seo.footer_links(data, lang) for lang in ("es", "en")}
+
     def shell(*, lang, path, alternates, title, description, header, main, ld) -> str:
         e = {k: html.escape(v) for k, v in strings(lang, data).items()}
         levels = '<a href="https://www.levels.fyi" target="_blank" rel="noopener">Levels.fyi</a>'
@@ -1421,6 +1423,7 @@ def guide_shell(data: dict):
 {main}
 </main>
 <footer class="field tiled">{WALL}<div class="foot">
+  {foots[lang]}
   <p class="veil">{e['source'].replace('Levels.fyi', levels)} ·
      <a href="/{lang}/">{e['title']}</a> ·
      <a href="/api/v1/data.json" target="_blank" rel="noopener">{e['data']}</a> ·

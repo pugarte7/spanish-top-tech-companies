@@ -596,10 +596,10 @@ test("the footer links to the legal and privacy page, which names who runs the s
 test("links that leave the page open in a new tab", async ({ page, context }) => {
   await open(page);
   // Every link except the brand, the language switch (hreflang), links
-  // within the page and the salary pages of the site (#guides), which are
+  // within the page and the footer's links into the salary pages, which are
   // the next page of the same visit.
   const stay = await page.locator("a[href]").evaluateAll((as) => as
-    .filter((a) => !a.matches(".brand, [hreflang], [href^='#'], #guides a") && a.target !== "_blank")
+    .filter((a) => !a.matches(".brand, [hreflang], [href^='#'], .foot-links a") && a.target !== "_blank")
     .map((a) => a.outerHTML.slice(0, 80)));
   expect(stay).toEqual([]);
 
