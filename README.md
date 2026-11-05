@@ -25,7 +25,7 @@ Funciona con cualquier agente que admita MCP. Quienes lo usan lo hacen sobre tod
 
    > Conéctate a este servidor MCP: https://spanishtoptechcompanies.com/mcp
 
-   Trae las herramientas de sueldos y las de ofertas (`find_jobs`, `job_questions`, `application_guide` y `report_application`). Si te pide abrir una sesión nueva para cargarlo, hazlo.
+   Trae las herramientas de sueldos y las de ofertas (`find_jobs`, `job_questions`, `application_guide` y `report_application`).
 
 2. **Dale tu CV y lo que buscas.** Una sola vez, en el chat: tu CV, dónde y cómo quieres trabajar y el sueldo que pides. Tu perfil se queda en tu agente, en su memoria o en un archivo como `~/job-search.md`; la web no guarda nada tuyo. Envía cada solicitud con su propio navegador, y si no tiene navegador te da el enlace y las respuestas para que la envíes tú. Si una empresa manda un código por correo, lo lee de tu correo si se lo conectas, o te lo pide.
 
@@ -34,17 +34,6 @@ Funciona con cualquier agente que admita MCP. Quienes lo usan lo hacen sobre tod
    > Aplica por mí a las ofertas de las empresas de spanishtoptechcompanies.com que pagan 60.000 € o más a alguien con mi experiencia en Madrid.
 
    O: «Aplica a 5 ofertas de backend en Barcelona», «Busca ofertas en remoto que pueda hacer desde España», «¿Cuánto paga Revolut a un programador senior?». Las preguntas delicadas, como sueldo o permiso de trabajo, te las hace una vez, todas en un mensaje, y los consentimientos de privacidad los aceptas tú. Si un formulario pide un CAPTCHA, te pasa la página: lo resuelves y envía la solicitud.
-
-<details>
-<summary>Configurarlo a mano</summary>
-
-- Codex: `codex mcp add tech-pay-spain --url https://spanishtoptechcompanies.com/mcp`
-- Claude Code: `claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp`
-- Cursor, en `~/.cursor/mcp.json`: `{"mcpServers": {"tech-pay-spain": {"url": "https://spanishtoptechcompanies.com/mcp"}}}`
-- Claude o Instinct: añade la URL como conector personalizado.
-- Hermes y otros agentes de [agentskills.io](https://agentskills.io): la skill [tech-pay-spain](skills/tech-pay-spain/SKILL.md).
-
-</details>
 
 ### Preguntas frecuentes
 
@@ -101,7 +90,7 @@ It works with any agent that supports MCP. People use it mostly from Codex and C
 
    > Connect to this MCP server: https://spanishtoptechcompanies.com/mcp
 
-   That brings the salary tools and the job tools (`find_jobs`, `job_questions`, `application_guide` and `report_application`). If it asks you to open a new session to load it, do so.
+   That brings the salary tools and the job tools (`find_jobs`, `job_questions`, `application_guide` and `report_application`).
 
 2. **Give it your CV and what you want.** Only once, in the chat: your CV, where and how you want to work and the salary you ask for. Your profile stays with your agent, in its memory or in a file such as `~/job-search.md`; the site stores nothing about you. It sends each application with its own browser, and without a browser it gives you the link and the answers to send it yourself. If a board emails a code, it reads it from your mail if you connect it, or asks you.
 
@@ -110,17 +99,6 @@ It works with any agent that supports MCP. People use it mostly from Codex and C
    > Apply for me to openings at the companies on spanishtoptechcompanies.com that pay €60,000 or more to someone with my experience in Madrid.
 
    Or: "Apply to 5 backend openings in Barcelona", "Find remote jobs I can take from Spain", "What does Revolut pay a senior software engineer?". Sensitive questions, like salary or work permit, it asks you once, all in one message, and privacy consents are yours to accept. If a form asks for a CAPTCHA, it hands you the page: you solve it and it sends the application.
-
-<details>
-<summary>Set it up by hand</summary>
-
-- Codex: `codex mcp add tech-pay-spain --url https://spanishtoptechcompanies.com/mcp`
-- Claude Code: `claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp`
-- Cursor, in `~/.cursor/mcp.json`: `{"mcpServers": {"tech-pay-spain": {"url": "https://spanishtoptechcompanies.com/mcp"}}}`
-- Claude or Instinct: add the URL as a custom connector.
-- Hermes and other [agentskills.io](https://agentskills.io) agents: the [tech-pay-spain](skills/tech-pay-spain/SKILL.md) skill.
-
-</details>
 
 ### FAQ
 
