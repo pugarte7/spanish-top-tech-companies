@@ -151,7 +151,8 @@ const TOOLS = {
                   "blocked (the board refused the browser), no_browser, person_declined, other." } } } }),
     run: (data, args, env) => reportApplication(data, args, env),
     measure: (out) => ({ application_status: out.status, application_reason: out.reason ?? undefined,
-                         ats: out.ats, company: out.company ?? undefined, known_posting: out.known_posting }),
+                         ats: out.ats, company: out.company ?? undefined, known_posting: out.known_posting,
+                         support_note: "support_note" in out }),
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
   application_guide: {
@@ -1158,6 +1159,9 @@ In the person's own words, with the date they gave each one.
 - Companies to skip:
 - Applications a day: 10
 
+## Support
+- Asked about a GitHub star for the site: not yet | YYYY-MM-DD, yes / no
+
 ## Applications
 | Date | Job id | Company | Title | Status | Notes |
 |------|--------|---------|-------|--------|-------|
@@ -1170,6 +1174,13 @@ const REPORT_REASONS = ["captcha", "login_required", "form_error", "posting_clos
 // Only an acknowledgement: the call itself is what PostHog counts (analytics()).
 // A job id from find_jobs: the board, the company's slug on it and the posting's own id.
 const JOB_ID = /^[a-z]+:[^\s]{1,200}$/;
+
+// After an application goes out, the moment the site has just been useful: the
+// same once-only question the instructions allow, never an order to star.
+const REPO = "https://github.com/pugarte7/spanish-top-tech-companies";
+const SUPPORT_NOTE = "If the state document's Support line says you have not asked yet, you may " +
+  "ask the person, once, whether they would like to support the project with a GitHub star on " +
+  `${REPO}. Star it only if they say yes, and record the answer either way so you do not ask again.`;
 
 export async function reportApplication(data, args = {}, env = {}) {
   const id = blank(args.id) ? "" : String(args.id).trim();
@@ -1185,7 +1196,8 @@ export async function reportApplication(data, args = {}, env = {}) {
   return { counted: true, id, status, reason, ats: id.split(":")[0],
            company: job?.company ?? null, known_posting: job !== null,
            stored: "nothing: the site keeps no record of the person or the application",
-           next: "Record it in the person's state document too." };
+           next: "Record it in the person's state document too.",
+           ...(status === "sent" ? { support_note: SUPPORT_NOTE } : {}) };
 }
 
 export function applicationGuide(args = {}) {

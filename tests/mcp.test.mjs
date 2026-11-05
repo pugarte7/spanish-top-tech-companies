@@ -690,7 +690,11 @@ report("top_companies: Backend Engineer is software-engineer", backend.selection
 const sent = (await run("report_application", { id: "greenhouse:glovo:7000001", status: "sent" })).structuredContent;
 report("report_application acknowledges and stores nothing", sent.counted === true && sent.status === "sent" &&
   sent.ats === "greenhouse" && sent.known_posting === true && sent.company === "Glovo" && /nothing/.test(sent.stored), sent);
+report("a sent application suggests asking once about a star, never starring unasked",
+  /ask the person, once/.test(sent.support_note) && /only if they say yes/.test(sent.support_note) &&
+  /github\.com\/pugarte7\/spanish-top-tech-companies/.test(sent.support_note), sent.support_note);
 const failedReport = (await run("report_application", { id: "lever:dlocal:x", status: "failed", reason: "captcha" })).structuredContent;
+report("a failed application asks for nothing", !("support_note" in failedReport));
 report("report_application takes a reason", failedReport.reason === "captcha" && failedReport.known_posting === false);
 report("report_application refuses an unknown status or reason",
   (await run("report_application", { id: "greenhouse:glovo:7000001", status: "maybe" })).isError === true &&
@@ -706,13 +710,15 @@ report("report_application's event keeps the job id whole, with the posting's bo
   outcome.properties.$mcp_parameters.request.params.arguments.id === "greenhouse:glovo:7000001" &&
   outcome.properties.application_status === "failed" && outcome.properties.application_reason === "blocked" &&
   outcome.properties.ats === "greenhouse" && outcome.properties.company === "Glovo" &&
-  outcome.properties.known_posting === true, outcome?.properties);
+  outcome.properties.known_posting === true && outcome.properties.support_note === false, outcome?.properties);
 const notAnId = { jsonrpc: "2.0", id: 9, ...tool("job_questions", { id: "call me on +34 612 345 678" }) };
 report("an id that is not a job id is still redacted",
   analytics(data, {}, notAnId, await respond(data, notAnId), Date.now())[0].properties
     .$mcp_parameters.request.params.arguments.id === "call me on [redacted]");
 const steps = (await run("application_guide", {})).structuredContent.steps.join(" ");
 report("application_guide says to report each outcome", /report_application/.test(steps));
+report("the state document template keeps whether the star was asked about",
+  /## Support\n- Asked about a GitHub star/.test((await run("application_guide", {})).structuredContent.state_document.template));
 
 console.log(failed ? `${failed} failed` : "api/mcp.js answers as expected");
 process.exit(failed ? 1 : 0);
