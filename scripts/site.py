@@ -578,11 +578,6 @@ def counted(entry: dict) -> bool:
     return bool(entry.get("base")) and entry["base"] >= MIN_BASE_EUR
 
 
-def build_data(companies: list[dict]) -> dict:
-    """Every publishable aggregate, keyed "role|region|years" ("" = all)."""
-    return _build(companies)[0]
-
-
 def build_site(companies: list[dict]) -> tuple[dict, dict[str, dict]]:
     """data.json, and the companies table's own files, one per role."""
     data, rows, index = _build(companies)
