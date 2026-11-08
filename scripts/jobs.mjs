@@ -331,7 +331,6 @@ export async function loadAts() {
            CompanySchema: campaign.CompanySchema, location };
 }
 
-/** True for a jobs.json this script could have written. */
 /** Production's index, when it is one and younger than `hours`. */
 export function fresh(prior, hours, now = Date.now()) {
   if (!(hours > 0) || !isIndex(prior)) return null;
@@ -339,6 +338,7 @@ export function fresh(prior, hours, now = Date.now()) {
   return age >= 0 && age < hours * 3_600_000 ? prior : null;
 }
 
+/** True for a jobs.json this script could have written. */
 export function isIndex(value) {
   return value?.version === VERSION && typeof value.generated_at === "string"
     && Array.isArray(value.jobs) && typeof value.boards === "object";
