@@ -390,15 +390,58 @@ def test_feed_is_read_to_the_end() -> None:
         pages = ['not json']
         check("a page that does not parse makes the feed unread",
               fetch_spain.feed("token", "data-scientist", 0), None)
-        pages = [json.dumps({"rows": [{"uuid": "x"}] * 50})] * 40
+        pages = [json.dumps({"rows": [row(uuid="x")] * 50})] * 40
         try:
             fetch_spain.feed("token", "software-engineer", 0)
             truncated = False
         except fetch_spain.Truncated:
             truncated = True
-        check("a feed past the offset ceiling is truncated, not complete", truncated, True)
+        check("a query of one offer date past the ceiling is truncated", truncated, True)
         check("no offset past the ceiling is asked for",
               any("offset=1000" in u for u in calls), False)
+    finally:
+        fetch_spain.get = original
+
+
+def test_feed_moves_past_the_offset_ceiling_by_date() -> None:
+    """The API refuses an offset past 990; the date cursor reads on.
+
+    Until 2026-11-08 a newest-first and an oldest-first window left 2023 to
+    early 2026 readable only per company, and Alan, whose one Spanish
+    engineer reported in July 2024, was never asked for.
+    """
+    print("fetch_spain reads past the offset ceiling from the last date seen")
+    import fetch_spain, urllib.parse
+
+    def day(n):
+        return f"Mon Jan {n:02d} 2024 10:00:00 GMT+0000 (Coordinated Universal Time)"
+
+    # 1,100 rows over 22 days, 50 a day, oldest first: one query sees 1,000.
+    feed_rows = [row(uuid=f"r{i}", offerDate=day(1 + i // 50)) for i in range(1100)]
+    calls = []
+
+    def fake_get(url, delay, attempts=3, headers=None):
+        params = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(url).query))
+        calls.append(params)
+        assert params["sortOrder"] == "ASC" and int(params["offset"]) <= 990
+        since = params.get("sinceDate")
+        rows = [r for r in feed_rows
+                if not since or fetch_spain.since_date(r["offerDate"]) >= since]
+        offset = int(params["offset"])
+        return json.dumps({"total": 250, "rows": rows[offset:offset + 50]})
+
+    original = fetch_spain.get
+    fetch_spain.get = fake_get
+    try:
+        found = fetch_spain.feed("token", "software-engineer", 0)
+        check("every row is read, the ones past the ceiling included",
+              len({r["uuid"] for r in found}), 1100)
+        check("the second query starts a second before the last date seen",
+              [c.get("sinceDate") for c in calls if c["offset"] == "0"],
+              [None, "2024-01-20T09:59:59.000Z"])
+        check("an ISO offerDate works as a cursor too",
+              fetch_spain.since_date("2026-11-08T15:18:11.000Z"), "2026-11-08T15:18:10.000Z")
+        check("a row without a date gives no cursor", fetch_spain.since_date(None), None)
     finally:
         fetch_spain.get = original
 
@@ -423,20 +466,18 @@ def test_feed_is_read_to_the_end() -> None:
 
 
 def test_a_role_past_the_ceiling_is_read_per_company() -> None:
-    """One query sees at most 1,000 rows; software engineers are more.
+    """When the date cursor cannot move, read_role() reads per company.
 
-    On 2026-10-16 the all-roles run could not read software engineers: the
-    API refuses an offset past 990. Newest-first and oldest-first leave a
-    gap of years between them, so read_role() reads each employer on its own
-    and scopes the write to the companies it read.
+    That takes more than 1,000 rows on one offer date, which no role has;
+    the fallback reads every employer the feed named and every company on
+    file for the role, and scopes the write to the companies it read.
     """
-    print("fetch_spain reads a role past the offset ceiling company by company")
+    print("fetch_spain falls back to company by company when the cursor is stuck")
     import fetch_spain
 
-    def fake_feed(bearer, role, delay, company=None, order="DESC"):
+    def fake_feed(bearer, role, delay, company=None):
         if company is None:
-            raise fetch_spain.Truncated([row("newco", uuid="n1")] if order == "DESC"
-                                        else [row("oldco", uuid="o1")])
+            raise fetch_spain.Truncated([row("newco", uuid="n1")])
         if company == "broken":
             return None
         return [row(company, uuid=f"{company}-1"), row(company, uuid=f"{company}-2")]
@@ -449,8 +490,8 @@ def test_a_role_past_the_ceiling_is_read_per_company() -> None:
                    lib.blank_company("Analysts", levels_slug="analysts")
                    | {"entries": [entry(PER_LOCATION, role="data-analyst")]}]
         rows, scope = fetch_spain.read_role("t", "software-engineer", 0, on_file)
-        check("windows' employers and companies on file are read; others are not",
-              scope, {"newco", "oldco", "acme"})
+        check("the feed's employers and companies on file are read; others are not",
+              scope, {"newco", "acme"})
         check("the per-company rows are kept",
               sorted(r["uuid"] for r in rows if r["companySlug"] == "acme"), ["acme-1", "acme-2"])
         rows, scope = fetch_spain.read_role("t", "software-engineer", 0, on_file, {"lost"})
@@ -465,10 +506,8 @@ def test_a_role_past_the_ceiling_is_read_per_company() -> None:
             check("an empty scope writes nothing",
                   (stats["rewritten"], stats["dropped"], len(stored()["entries"])), (0, 0, 1))
 
-        def meeting(bearer, role, delay, company=None, order="DESC"):
-            raise fetch_spain.Truncated([row(uuid="same")])
-        fetch_spain.feed = meeting
-        check("windows that meet are the whole feed",
+        fetch_spain.feed = lambda bearer, role, delay, company=None: [row(uuid="all")]
+        check("a feed read whole is unscoped",
               fetch_spain.read_role("t", "software-engineer", 0, on_file)[1], None)
     finally:
         fetch_spain.feed = original
@@ -958,7 +997,7 @@ def main() -> int:
                  test_one_submission_is_one_entry,
                  test_the_world_vouches_for_a_company,
                  test_foreign_rows_are_skipped,
-                 test_feed_is_read_to_the_end,
+                 test_feed_is_read_to_the_end, test_feed_moves_past_the_offset_ceiling_by_date,
                  test_a_role_past_the_ceiling_is_read_per_company,
                  test_an_unread_feed_changes_nothing,
                  test_companies_are_their_salaries,

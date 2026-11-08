@@ -42,6 +42,7 @@ from __future__ import annotations
 import argparse
 import base64
 import collections
+import datetime
 import getpass
 import hashlib
 import hmac
@@ -74,7 +75,8 @@ SPAIN_COUNTRY_ID = 226
 TABLE_PAGE = 50
 # The API refuses an offset past 990 ("offset must not be greater than 990"),
 # so one query sees at most 1,000 rows. Software engineers in Spain are
-# several times that; read_role() works around it.
+# several times that: feed() reads oldest first and, at the ceiling, starts a
+# new query from the last date it saw (`sinceDate`, the site's own filter).
 MAX_OFFSET = 990
 # A Cognito refresh token mints a fresh id token each run, so an unattended
 # run needs nobody to paste one daily. It lives in the login Keychain rather
@@ -362,53 +364,88 @@ def decrypt(payload: str) -> dict:
 
 
 class Truncated(Exception):
-    """A query reached the API's offset ceiling with rows still coming."""
+    """More rows share one offer date than one query can page through."""
 
     def __init__(self, rows: list[dict]):
         super().__init__(f"{len(rows)} rows read before the offset ceiling")
         self.rows = rows
 
 
-def feed(bearer: str, role: str, delay: float, company: str | None = None,
-         order: str = "DESC") -> list[dict] | None:
+def since_date(raw) -> str | None:
+    """An offerDate as the ISO instant `sinceDate` takes, one second early.
+
+    The feed serves both "Thu Jul 04 2024 10:22:03 GMT+0000 (...)" and ISO.
+    A second early, because rows sharing the cursor's instant must not be
+    lost if the API reads sinceDate as strictly after; the repeats are
+    deduped downstream on uuid.
+    """
+    text = str(raw or "")
+    try:
+        when = datetime.datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        found = re.match(r"[A-Z][a-z]{2} ([A-Z][a-z]{2} \d{1,2} \d{4} \d{2}:\d{2}:\d{2})", text)
+        if not found:
+            return None
+        when = datetime.datetime.strptime(found.group(1), "%b %d %Y %H:%M:%S")
+    if when.tzinfo:
+        when = when.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+    when -= datetime.timedelta(seconds=1)
+    return when.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+
+def feed(bearer: str, role: str, delay: float, company: str | None = None) -> list[dict] | None:
     """Every Spanish submission in one job family, to the end of the query.
 
     Without `company` it is the country-wide feed. `total` in the answer tops
     out at 250 but the API keeps serving rows past it, so paging stops at an
-    empty page, not at the total. Rows repeat across pages when new
-    submissions arrive mid-read; entries_by_company() dedupes on uuid. Each
-    row carries its own exchange rate and currency, so the only thing the
-    role's public page adds is the rate for rows paid in another currency.
+    empty page, not at the total. The offset stops at 990, so rows are read
+    oldest first and, when a query reaches the ceiling, the next one starts
+    at the last row's date: until 2026-11-08 a newest-first and an
+    oldest-first window left 2023 to early 2026 readable only per company,
+    and an employer that reported only in those years (Alan) was never
+    asked for. Oldest first also keeps rows that arrive mid-read at the end,
+    where they cannot shift the pages still to come. Rows repeat across
+    pages and across queries; entries_by_company() dedupes on uuid. Each
+    row carries its own exchange rate and currency.
 
     Returns None when a page could not be read: half a feed is not a smaller
     feed, and write_role() would treat the missing rows as deleted. Raises
-    Truncated when the query outgrows the offset ceiling.
+    Truncated when a whole query shares one offer date, so the cursor cannot
+    move.
     """
     rows: list[dict] = []
     headers = _api_headers(bearer, f"{BASE}/t/{role}/locations/spain")
-    for offset in range(0, MAX_OFFSET + 1, TABLE_PAGE):
-        query = urllib.parse.urlencode(
-            ([("companySlug", company)] if company else []) + [
-                ("jobFamilySlug", role), ("countryIds[0]", SPAIN_COUNTRY_ID),
-                ("offset", offset), ("limit", TABLE_PAGE),
-                ("sortBy", "offer_date"), ("sortOrder", order)])
-        body = get(f"{API}?{query}", delay, headers=headers)
-        if body is None:
-            return None
-        try:
-            data = json.loads(body)
-            if isinstance(data, dict) and "payload" in data:
-                data = decrypt(data["payload"])
-            page = data["rows"]
-        except (json.JSONDecodeError, ValueError, TypeError, KeyError, zlib.error,
-                subprocess.CalledProcessError) as exc:
-            print(f"  {role}: feed answer unreadable ({exc.__class__.__name__})",
-                  file=sys.stderr)
-            return None
-        rows += page
-        if not page:
-            return rows
-    raise Truncated(rows)
+    since = None
+    while True:
+        window: list[dict] = []
+        for offset in range(0, MAX_OFFSET + 1, TABLE_PAGE):
+            query = urllib.parse.urlencode(
+                ([("companySlug", company)] if company else []) + [
+                    ("jobFamilySlug", role), ("countryIds[0]", SPAIN_COUNTRY_ID),
+                    ("offset", offset), ("limit", TABLE_PAGE),
+                    ("sortBy", "offer_date"), ("sortOrder", "ASC")]
+                + ([("sinceDate", since)] if since else []))
+            body = get(f"{API}?{query}", delay, headers=headers)
+            if body is None:
+                return None
+            try:
+                data = json.loads(body)
+                if isinstance(data, dict) and "payload" in data:
+                    data = decrypt(data["payload"])
+                page = data["rows"]
+            except (json.JSONDecodeError, ValueError, TypeError, KeyError, zlib.error,
+                    subprocess.CalledProcessError) as exc:
+                print(f"  {role}: feed answer unreadable ({exc.__class__.__name__})",
+                      file=sys.stderr)
+                return None
+            if not page:
+                return rows + window
+            window += page
+        rows += window
+        cursor = since_date(window[-1].get("offerDate"))
+        if cursor is None or cursor == since:
+            raise Truncated(rows)
+        since = cursor
 
 
 def _api_headers(bearer: str, referer: str) -> dict:
@@ -528,30 +565,21 @@ def read_role(bearer: str, role: str, delay: float, companies: list[dict],
               only: set | None = None):
     """(rows, scope) for one role, or None when it could not be read.
 
-    scope is None when the country feed was read whole. A role past the
-    offset ceiling is read newest-first and oldest-first; when the two
-    windows meet, that is the whole feed. When they do not, the rows in
-    between are only reachable per company: every employer either window
-    names and every company already on file for the role is read on its own,
-    and scope is the set of canonical slugs read whole. write_role() then
-    touches only those, because an employer that reported only in the gap
-    is invisible here and must keep what it has.
+    scope is None when the country feed was read whole, which feed() does
+    for every role it can move its date cursor through. If it cannot (a
+    single offer date with more rows than one query pages), every employer
+    the feed named and every company already on file for the role is read
+    on its own, and scope is the set of canonical slugs read whole.
+    write_role() then touches only those, because an employer it did not
+    reach must keep what it has.
     """
     try:
         rows = feed(bearer, role, delay)
         return None if rows is None else (rows, None)
-    except Truncated as newest:
-        rows = newest.rows
-    try:
-        oldest = feed(bearer, role, delay, order="ASC")
     except Truncated as exc:
-        oldest = exc.rows
-    if oldest is None:
-        return None
-    if {_dedupe_key(r) for r in rows} & {_dedupe_key(r) for r in oldest}:
-        return rows + oldest, None
+        rows = exc.rows
 
-    slugs = {r["companySlug"] for r in rows + oldest
+    slugs = {r["companySlug"] for r in rows
              if isinstance(r.get("companySlug"), str) and r["companySlug"]}
     for company in companies:
         if company.get("levels_slug") and any(e.get("role") == role
@@ -565,7 +593,7 @@ def read_role(bearer: str, role: str, delay: float, companies: list[dict],
         for slug in only:
             slugs.add(slug)
             slugs.update(lib.aliases_of(slug))
-    print(f"  {role}: over {MAX_OFFSET + TABLE_PAGE} rows; reading {len(slugs)} "
+    print(f"  {role}: one offer date past the offset ceiling; reading {len(slugs)} "
           "companies one by one")
     read, unread = set(), set()
     for slug in sorted(slugs):
@@ -579,7 +607,7 @@ def read_role(bearer: str, role: str, delay: float, companies: list[dict],
             continue
         rows += found
         read.add(lib.canonical(slug))
-    return rows + oldest, read - unread
+    return rows, read - unread
 
 
 RATE_NEAREST = 5
