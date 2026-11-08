@@ -805,7 +805,7 @@ def test_agents_see_only_groups_of_five() -> None:
     rows += [entry(PER_LOCATION, base=b, region="CT", city="Barcelona")
              for b in (60000, 65000, 70000, 80000)]
     with temp_data(acme(*rows, website="https://acme.example")):
-        data = site_build.build_data(lib.load_companies())
+        data = site_build.build_site(lib.load_companies())[0]
 
     def quartiles(region: str) -> list:
         a = data["cells"][f"|{region}|"]
@@ -962,7 +962,7 @@ def test_site_dates_and_minimum_base() -> None:
                             (90000, "2026-10-17", "2026-10"))]
     rows.append(entry(PER_LOCATION, base=1000, region="MD", city="Madrid", date="2026-10-18"))
     with temp_data(acme(*rows, website="https://acme.example")):
-        data = site_build.build_data(lib.load_companies())
+        data = site_build.build_site(lib.load_companies())[0]
     check("the 1,000 EUR base is left out", data["cells"]["||"]["n"], 5)
     check("the date is the latest read of a counted salary", data["data_as_of"], "2026-10-17")
     check("reported months: first, last and median",

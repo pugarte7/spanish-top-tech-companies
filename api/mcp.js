@@ -293,8 +293,6 @@ function resolvePlace(data, region) {
   throw unknown();
 }
 
-const resolveRegion = (data, region) => resolvePlace(data, region).code;
-
 function resolveYears(buckets, years) {
   if (blank(years)) return "";
   if (buckets.includes(String(years))) return String(years);
@@ -923,7 +921,6 @@ const QUESTION_CATEGORIES = [
   ["disability", /\bdisabilit|\bdiscapacidad\b|\baccommodation|\badjustments?\b|\baccessib(le|ility)\b/],
   ["consent", /\bconsent|\bgdpr\b|\bprivacy (policy|notice)\b|\bdata (processing|protection|transfer|retention)\b|\bterms (and|&) conditions\b|\bi (agree|acknowledge|certify|attest)\b|\bcertify\b|\battest\b|\backnowledg|\bconsentimiento\b|\bacepto\b|\bproteccion de datos\b|\bpolitica de privacidad\b|\btalent (pool|community)\b|\bfuture (job )?opportunities\b/],
 ];
-const PERSON = new Set(QUESTION_CATEGORIES.map(([c]) => c));
 const TICK = /^(i )?(agree|acknowledge|accept|confirm|consent|acepto|confirmo)/;
 
 export function questionWho(label, options = []) {
