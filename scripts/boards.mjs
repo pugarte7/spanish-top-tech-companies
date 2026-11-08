@@ -40,7 +40,7 @@ const spain = await import("../lib/ats/presets/spain.js");
 const { values } = parseArgs({
   options: {
     data: { type: "string", default: "data/data.json" },
-    tables: { type: "string", default: "data/companies.json" },
+    tables: { type: "string", default: "data/companies/software-engineer.json" },
     boards: { type: "string", default: "data/boards.json" },
     none: { type: "string", default: "data/boards-none.json" },
     report: { type: "string", default: join(tmpdir(), "stc-boards-report.json") },
@@ -62,7 +62,7 @@ async function fetchPage(url) {
   }
 }
 
-const snapshot = spain.readSiteSnapshot(readJson(values.data), readJson(values.tables));
+const snapshot = spain.readSiteSnapshot(readJson(values.data), { "software-engineer": readJson(values.tables) });
 const boards = existsSync(values.boards) ? readJson(values.boards) : {};
 const none = existsSync(values.none) ? readJson(values.none) : {};
 const RECHECK_DAYS = 30;
