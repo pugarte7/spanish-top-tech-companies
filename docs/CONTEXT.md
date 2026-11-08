@@ -341,8 +341,9 @@ What the API does:
 
 - Query: `companySlug` (empty for the country feed), `jobFamilySlug` (the
   role's slug), `countryIds[0]=226` (Spain), `offset`, `limit` (max 50, 400
-  above it), `sortBy=offer_date`, `sortOrder=DESC`. `total` caps at 250 and
-  lies — the API keeps serving rows past it (trap 7).
+  above it), `sortBy=offer_date`, `sortOrder` (`ASC` since 2026-11-08),
+  `sinceDate` (an ISO instant; rows on or after it). `total` caps at 250 and
+  lies — the API keeps serving rows past it (trap 7). `offset` stops at 990.
 - Answer: `{"payload": "<base64>"}`. AES-128-ECB, key = first 16 characters
   of base64(MD5("levelstothemoon!!")), then zlib, then JSON with `total`,
   `hidden`, `rows`. The site's own JavaScript does the same unwrapping; it is
@@ -411,19 +412,23 @@ occasionally with a struck-off slug: `EXCLUDED_SLUGS` rows are skipped at
 entry time, before they can be filed.
 
 A role past the offset ceiling (`MAX_OFFSET` 990: software engineers) is
-read newest-first and oldest-first, and the years between the two windows
-only per company: every employer a window names and every company on file
-for the role. `read_role()` returns that set as the scope and `write_role()`
-touches only it. Two consequences. A company that leaves the file while its
-submissions sit in the gap is invisible to the next run — nothing names it —
-and only comes back when it is asked for by slug (`--company`, which since
-2026-11-02 reads it on its own even off file); Stenn, Creative Fabrica and
-D-EDGE left that way on 2026-11-02 and were read back by name. And an empty
-scope means nothing was read whole, not "no limit": on 2026-11-02 a
-`--company` run that found none of its slugs in the windows passed an empty
-set, which was falsy, and replaced every company's software engineers with
-the two windows' rows (1,685 for 4,665); the full read was repeated by slug.
-`write_role()` now tells `None` from an empty set.
+read oldest first, and when a query reaches the ceiling the next one starts
+at the last row's date (`sinceDate`, the filter the site's own JavaScript
+sends, a second early so rows sharing that instant are not lost; repeats are
+deduped on uuid). Until 2026-11-08 it was read newest-first and
+oldest-first, and the years between the two windows (January 2023 to
+February 2026) only per company: every employer a window named and every
+company on file. An employer that reported only in those years was never
+asked for: Alan's one Madrid engineer (July 2024) was not on the site when
+an agent asked for Alan through the MCP, and Stenn, Creative Fabrica and
+D-EDGE left the file on 2026-11-02 that way. The per-company read remains
+as a fallback, for a query whose rows all share one offer date so the
+cursor cannot move: `read_role()` then returns the set it read as the scope
+and `write_role()` touches only it. An empty scope means nothing was read
+whole, not "no limit": on 2026-11-02 a `--company` run passed an empty set,
+which was falsy, and replaced every company's software engineers with the
+two windows' rows (1,685 for 4,665). `write_role()` now tells `None` from an
+empty set.
 
 A feed row carries its own `exchangeRate` and `baseSalaryCurrency`, so euro
 submissions convert back at their own rate to exactly the figure typed, and
