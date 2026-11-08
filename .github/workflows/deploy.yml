@@ -14,7 +14,8 @@ name: deploy
 #
 # The build also crawls the job boards into /api/v1/jobs.json (vercel.json's
 # buildCommand runs scripts/jobs.mjs after site.py), so the daily schedule
-# below republishes the same commit with today's postings; nothing is committed.
+# below republishes the same commit with today's postings. The only thing
+# committed is the pay those postings state, to the `offers` branch.
 
 on:
   push:
@@ -28,7 +29,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write   # the `offers` branch; nothing else is pushed
 
 jobs:
   deploy:
@@ -70,6 +71,34 @@ jobs:
       - name: Deploy to Vercel
         if: env.VERCEL_TOKEN != ''
         run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+
+      # The pay employers state in their postings, kept day by day:
+      # scripts/offers.py merges today's jobs.json into offers.csv on the
+      # `offers` branch (one row per posting and range, first and last day
+      # seen). Its own branch, so the daily commit neither redeploys the site
+      # nor races the Mac's weekly push to main. A failure here is a lost day,
+      # never a failed deploy.
+      - name: Check out offers
+        id: offers
+        if: ${{ !cancelled() && hashFiles('_site/api/v1/jobs.json') != '' }}
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: offers
+          path: offers-branch
+
+      - name: Record stated pay
+        if: ${{ !cancelled() && steps.offers.outcome == 'success' }}
+        continue-on-error: true
+        run: |
+          python3 scripts/offers.py _site/api/v1/jobs.json offers-branch/offers.csv
+          cd offers-branch
+          git add offers.csv
+          if git diff --cached --quiet; then exit 0; fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898283+github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "Offers $(date -u +%F)"
+          git push -q origin HEAD:offers
 
       - name: Not deployed
         if: env.VERCEL_TOKEN == ''
