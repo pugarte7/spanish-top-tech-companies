@@ -257,7 +257,11 @@ de este repo"); fix them there. Applying goes through `/mcp` with nothing
 installed.
 
 Releases are automatic: `.github/workflows/release.yml` tags every PR merged
-into `main` as the next patch (`minor` or `major` label on the PR for those)
-and publishes a GitHub Release whose one bullet is the PR title, so keep
-titles short. Direct pushes such as the weekly refresh make no release.
+into `main` by its label: `patch` (fixes, copy, data, tooling), `minor`
+(something new and visible: a site section, an MCP tool, a data field) or
+`major` (breaks whoever consumes us: `data/` format, MCP tool names or
+arguments, removed URLs); no label is patch. It publishes a GitHub Release
+whose one bullet is the PR title, so keep titles short. The hook in
+`.claude/hooks/release-label.py` refuses `gh pr create` into `main` without
+one of those labels. Direct pushes such as the weekly refresh make no release.
 Since 2026-11-09 the line restarts at v1.1.0; v2.0.0 was withdrawn.
