@@ -394,6 +394,64 @@ assert.equal(JSON.parse(readFileSync(join(tmp, "reused.json"), "utf8")).jobs.len
              "a fresh production index is republished");
 server.close();
 
+// --- Employer APIs (jsonapi) and Rippling over a stubbed fetch ---------------
+{
+  const { adapterFor } = await import("../lib/ats/sources/registry.js");
+  const { CompanySchema } = await import("../lib/ats/domain/campaign.js");
+  const { jobLocationClasses } = await import("../lib/ats/ranking/location.js");
+  const posted = [];
+  const API = {
+    "https://cg-jobstream-api.azurewebsites.net/api/job-search": { count: 1, data: [
+      { id: "1-es_ES_SAPBTP", title: "Senior Data Engineer", location: "Valencia", country_code: "es-es",
+        description: "<p>Data</p>", apply_job_url: "https://careers.capgemini.com/job/1/", indexed_at: "2026-10-28T17:11:57.000Z" }] },
+    "https://www.sage.com/api/sagedotcom/careersearch/getcareersearchdata/": { vacancies: { TotalSize: 2, Records: [
+      { Id: "VN1", Name: "Director of Engineering", Url: "https://sagehr.example/apply?vacancyNo=VN1",
+        OfficeLocation: "Barcelona", Country: "Spain", ActiveDate: "2026-11-05", Description: "x" },
+      { Id: "VN2", Name: "Sales Advisor", Url: "https://sagehr.example/apply?vacancyNo=VN2",
+        OfficeLocation: "Pretoria", Country: "South Africa", ActiveDate: "2026-11-05" }] } },
+    "https://schwarz-digits.de/en/api/v1/job/search": (body) => body.filters.location_city.length === 0
+      ? { jobs: [], pagination: { totalCount: 339 }, filters: { groups: [{ identifier: "location_city", values: [
+          { identifier: "location_SIT-ES_Barcelona" }, { identifier: "location_SIT-BG_Sofia" }] }] } }
+      : { jobs: [{ id: "48", title: "SOC Analyst", location: "Barcelona", url: "https://schwarz-digits.de/en/jobsearch/soc-48" }],
+          pagination: { totalCount: 1 } },
+    "https://api.rippling.com/platform/api/ats/v2/board/chess/jobs": { page: 0, pageSize: 100, totalItems: 2, totalPages: 1, items: [
+      { id: "a1", name: "Site Reliability Engineer", url: "https://ats.rippling.com/chess/jobs/a1",
+        locations: [{ name: "Remote", country: "Spain", countryCode: "ES", workplaceType: "REMOTE" }] },
+      { id: "b2", name: "Japanese Translator ", url: "https://ats.rippling.com/chess/jobs/b2",
+        locations: [{ name: "Remote", country: "Japan", countryCode: "JP", workplaceType: "REMOTE" }] }] },
+    "https://api.rippling.com/platform/api/ats/v2/board/chess/jobs/a1": { description: { role: "<p>Run it</p>" } },
+    "https://api.rippling.com/platform/api/ats/v2/board/chess/jobs/b2": { description: { role: "<p>Translate</p>" } },
+  };
+  const saved = globalThis.fetch;
+  globalThis.fetch = async (url, init = {}) => {
+    const key = String(url).split("?")[0];
+    const body = init.body ? JSON.parse(init.body) : null;
+    if (body) posted.push(body);
+    const answer = typeof API[key] === "function" ? API[key](body) : API[key];
+    return answer ? new Response(JSON.stringify(answer), { status: 200 }) : new Response("not found", { status: 404 });
+  };
+  const read = (name, ats, board) =>
+    adapterFor(ats).listJobs(CompanySchema.parse({ name, ats, board }), "2026-11-09T00:00:00Z");
+  const inSpain = (jobs) => jobs.filter((j) => jobLocationClasses(j).some((c) => ["spain", "remote-spain", "remote-europe"].includes(c)));
+  const cap = await read("Capgemini", "jsonapi", "capgemini-es");
+  assert.deepEqual(cap.map((j) => [j.title, j.locationsRaw, j.url]),
+                   [["Senior Data Engineer", ["Valencia, Spain"], "https://careers.capgemini.com/job/1/"]]);
+  const sage = await read("Sage", "jsonapi", "sage");
+  assert.deepEqual(inSpain(sage).map((j) => j.externalId), ["VN1"], "Sage lists every country; Spain is filtered after");
+  const sd = await read("Schwarz Digits", "jsonapi", "schwarz-digits");
+  assert.deepEqual(sd.map((j) => j.locationsRaw), [["Barcelona, Spain"]]);
+  assert.deepEqual(posted.at(-1).filters.location_city, ["location_SIT-ES_Barcelona"], "only the Spanish offices are asked for");
+  await assert.rejects(read("X", "jsonapi", "nobody"), /no jsonapi mapping/);
+  const chess = await read("Chess.com", "rippling", "chess");
+  assert.deepEqual(inSpain(chess).map((j) => [j.title, j.workplaceType]), [["Site Reliability Engineer", "remote"]]);
+  assert.match(chess[0].descriptionText, /Run it/);
+  const rippling = adapterFor("rippling");
+  assert.deepEqual(rippling.boardFromUrl("https://ats.rippling.com/chess/jobs"), { ats: "rippling", board: "chess", region: "global" });
+  assert.equal(rippling.boardFromPage("https://www.chess.com/jobs", '<a href="https://ats.rippling.com/chess/jobs/a1">')?.board, "chess");
+  assert.equal(rippling.boardFromUrl("https://www.chess.com/jobs"), null);
+  globalThis.fetch = saved;
+}
+
 // --- SuccessFactors career sites, over a stubbed fetch -------------------------
 
 const sf = await import("../lib/ats/sources/successfactors.js");
