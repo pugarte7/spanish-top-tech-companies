@@ -394,4 +394,68 @@ assert.equal(JSON.parse(readFileSync(join(tmp, "reused.json"), "utf8")).jobs.len
              "a fresh production index is republished");
 server.close();
 
+// Phenom and iCIMS career sites live on the employer's own domain.
+const careerSite = (ats, board) => ({ name: ats === "phenom" ? "Roche" : "Keysight", ats, board, tier: "B", tags: [],
+                                active: true, region: "global", query: "" });
+const phenomJob = (jobId, extra) => ({ jobId, title: `Engineer ${jobId}`, country: "Spain", city: "Madrid",
+  multi_location: ["Madrid, Spain"], postedDate: "2026-10-13T00:00:00.000+0000", descriptionTeaser: "Teaser",
+  applyUrl: `https://roche.wd3.myworkdayjobs.com/roche-ext/job/Madrid/x_${jobId}/apply`, ...extra });
+const PHENOM = {
+  facets: { refineSearch: { status: 200, totalHits: 300, data: { jobs: [],
+    aggregations: [{ field: "country", value: { Switzerland: 200, SPAIN: 3 } }] } } },
+  spain: { refineSearch: { status: 200, totalHits: 3, data: { jobs: [
+    phenomJob("A-1", { RemoteType: "Hybrid" }),
+    phenomJob("A-2", { country: "Switzerland", city: "Zurich", multi_location: ["Zurich, Switzerland", "Barcelona, Spain"] }),
+    phenomJob("A-3", { country: "Switzerland", city: "Basel", multi_location: ["Basel, Switzerland"] })] } } },
+};
+const phenomBodies = [];
+globalThis.fetch = async (url, init = {}) => {
+  const u = String(url);
+  if (u === "https://careers.roche.com/widgets") {
+    const body = JSON.parse(init.body);
+    phenomBodies.push(body);
+    return new Response(JSON.stringify(body.selected_fields.country ? PHENOM.spain : PHENOM.facets));
+  }
+  if (u === "https://careers.roche.com/global/en/job/A-1")
+    return new Response(`<script>phApp.ddo = {"jobDetail":{"data":{"job":{"description":"<p>Full text</p>"}}}}; phApp.x = 1;</script>`);
+  if (u.startsWith("https://careers.keysight.com/api/jobs?"))
+    return new Response(JSON.stringify({ totalCount: 2, jobs: [
+      { data: { slug: "53254", title: "Solutions Architect", language: "en-us", city: "Las Rozas", state: "Madrid",
+        country: "Spain", country_code: "ES", description: "<p>About</p>", qualifications: "<p>RF</p>",
+        posted_date: "2026-07-16T10:08:00+0000", apply_url: "https://globalcareers-keysight.icims.com/jobs/53254/login" } },
+      { data: { slug: "53300", title: "Test Engineer", language: "en-us", city: "Milano", country: "Italy", country_code: "IT",
+        description: "<p>Milan</p>", additional_locations: [{ city: "Malaga", country: "Spain", country_code: "ES" }] } }] }));
+  return new Response("not found", { status: 404 });
+};
+process.env.ATS_PHENOM_MAX_DETAILS = "1";
+const phenomJobs = await adapterFor("phenom").listJobs(careerSite("phenom", "careers.roche.com/ROCHGLOBAL/global/en"), "2026-11-09T00:00:00Z");
+assert.deepEqual(phenomBodies.map((b) => b.selected_fields), [{}, { country: ["SPAIN"] }],
+                 "the Spain filter uses the value the site's own facet names");
+assert.equal(phenomBodies[1].refNum, "ROCHGLOBAL");
+const { spainPostings } = await import("../lib/ats/presets/spain.js");
+const inSpain = (jobs) => spainPostings(jobs).map((j) => j.externalId);
+assert.deepEqual(phenomJobs.map((j) => j.url), ["A-1", "A-2", "A-3"].map((id) => `https://careers.roche.com/global/en/job/${id}`));
+assert.deepEqual(inSpain(phenomJobs), ["A-1", "A-2"], "a fuzzy match in Basel only is not in Spain");
+assert.deepEqual([phenomJobs[0].descriptionText, phenomJobs[1].descriptionText], ["Full text", "Teaser"],
+                 "past ATS_PHENOM_MAX_DETAILS the search teaser stands in");
+assert.equal(phenomJobs[0].workplaceType, "hybrid");
+assert.equal(phenomJobs[0].postedAt, "2026-10-13T00:00:00.000Z");
+assert.match(phenomJobs[0].applyUrl, /myworkdayjobs\.com/);
+const icimsJobs = await adapterFor("icims").listJobs(careerSite("icims", "careers.keysight.com"), "2026-11-09T00:00:00Z");
+assert.deepEqual(icimsJobs.map((j) => j.url), ["53254", "53300"].map((id) => `https://careers.keysight.com/jobs/${id}?lang=en-us`));
+assert.deepEqual(inSpain(icimsJobs), ["53254", "53300"], "a second location in Spain counts");
+assert.match(icimsJobs[0].descriptionText, /About[\s\S]*RF/);
+assert.match(icimsJobs[0].applyUrl, /icims\.com/);
+const { phenomAdapter } = await import("../lib/ats/sources/phenom.js");
+const { icimsAdapter } = await import("../lib/ats/sources/icims.js");
+const phenomHome = '<script>phApp.ddo = {}; phApp.x = 1;</script><script>{"country":"global","locale":"en_global","refNum":"CISCISGLOBAL"}</script><img src="https://cdn.phenompeople.com/x.png">';
+assert.deepEqual(phenomAdapter.boardFromPage("https://careers.cisco.com/global/en/search-results", phenomHome),
+                 { ats: "phenom", board: "careers.cisco.com/CISCISGLOBAL/global/en", region: "global" });
+assert.equal(phenomAdapter.boardFromPage("https://careers.clarivate.com/", phenomHome.replace("CISCISGLOBAL", "CLACLAGB")).board,
+             "careers.clarivate.com/CLACLAGB", "a site with no locale path");
+assert.equal(phenomAdapter.boardFromPage("https://example.com/careers", "<html>careers</html>"), null);
+assert.deepEqual(icimsAdapter.boardFromPage("https://careers.keysight.com/external", '<div class="JIBE_INPUT-ADDRESS"></div>'),
+                 { ats: "icims", board: "careers.keysight.com", region: "global" });
+assert.throws(() => phenomAdapter.listUrl({ board: "careers.cisco.com" }), /host\/refNum/);
+
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);

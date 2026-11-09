@@ -2,7 +2,7 @@
 
 The job-board code the site's crawl and board finder use: one adapter per ATS
 (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, Workable, Recruitee,
-Teamtailor, Eightfold, Oracle Recruiting Cloud and a few employer sites), a polite HTTP client with a per-host interval, the
+Teamtailor, Eightfold, Oracle Recruiting Cloud, Phenom and iCIMS career sites, and a few employer sites), a polite HTTP client with a per-host interval, the
 location classifier and the rules that decide which board belongs to a company
 (`presets/spain.js`).
 
