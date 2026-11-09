@@ -139,7 +139,7 @@ const TOOLS = {
   job_questions: {
     define: () => ({ title: "One posting's application form",
       description: "The application form of one posting from find_jobs, read live from its " +
-                   "board (Greenhouse, Lever, Ashby, Workable and Recruitee; for Workday, whose form " +
+                   "board (Greenhouse, Lever, Ashby, Workable, Recruitee and Teamtailor; for Workday, whose form " +
                    "needs the person's account, the posting and Workday's standard steps; other " +
                    "boards are read in the browser): " +
                    "each question with its type, options, whether it is required and who answers " +
@@ -974,6 +974,9 @@ const ATS_HOSTS = new Set(["boards-api.greenhouse.io", "boards-api.eu.greenhouse
 // Workday and Recruitee give each employer its own subdomain.
 const ATS_HOST_PATTERNS = [/^[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com$/, /^[a-z0-9-]+\.recruitee\.com$/];
 const allowedHost = (host) => ATS_HOSTS.has(host) || ATS_HOST_PATTERNS.some((p) => p.test(host));
+// Teamtailor serves each career site on the employer's own domain; its host is
+// the board in our own index, and only that host is read for that posting.
+const SITE_HOST = /^(?=.{4,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/;
 const LIVE_TIMEOUT_MS = 8000;
 const LIVE_MAX_CHARS = 4_000_000;
 // Live form reads per request: a batch of 50 must not become 100 calls to a board.
@@ -983,9 +986,10 @@ const DESCRIPTION_CHARS = 6000;
 class BoardError extends Error {}
 const hostOf = (url) => { try { return new URL(url).hostname; } catch { return ""; } };
 
-async function fetchBoard(env, url, { body, text = false } = {}) {
+async function fetchBoard(env, url, { body, text = false, site = null } = {}) {
   const u = new URL(url);
-  if (u.protocol !== "https:" || !allowedHost(u.hostname)) throw new BoardError(`host ${u.hostname} is not allowed`);
+  if (u.protocol !== "https:" || !(allowedHost(u.hostname) || (site && u.hostname === site)))
+    throw new BoardError(`host ${u.hostname} is not allowed`);
   let answer;
   try {
     answer = await (env.fetch ?? globalThis.fetch)(u.href, {
@@ -1039,7 +1043,7 @@ function untrusted(text) {
 // down, with Spanish forms. Order matters: the first match names the category.
 const QUESTION_CATEGORIES = [
   ["bot-check", /\bare you (a |an )?(human|robot|bot|ai|artificial intelligence)\b|\bnot a robot\b|\b(completed|written|filled|submitted) (by|with|using) (an? )?(ai|bot|automated)\b|\beres (un )?(robot|humano)\b/],
-  ["work-authorization", /\b(authoriz|authoris)\w* to work\b|\bwork (authoriz|authoris)|\bright to work\b|\blegally (able|allowed|entitled) to work\b|\b(entitled|eligible|permitted) to work\b|\bwork(ing)? permit\b|\bpermiso de trabajo\b|\bautorizaci\w* (para|de) trabaj/],
+  ["work-authorization", /\b(authoriz|authoris)\w* to work\b|\bwork (authoriz|authoris)|\bright to work\b|\blegally (able|allowed|entitled) to work\b|\b(entitled|eligible|permitted) to work\b|\bwork(ing)? permit\b|\bpermit to work\b|\bpermiso de trabajo\b|\bautorizaci\w* (para|de) trabaj/],
   ["sponsorship", /\bsponsor|\bvisa\b|\bh 1b\b|\bimmigration\b|\bpatrocinio\b/],
   ["citizenship", /\bcitizen|\bnationality\b|\bpermanent resident\b|\bgreen card\b|\bnacionalidad\b|\bciudadan/],
   ["clearance", /\bclearance\b|\btop secret\b|\bpublic trust\b/],
@@ -1265,6 +1269,103 @@ async function recruiteeForm(env, board, external) {
            captcha: null };
 }
 
+// Teamtailor: the application page of the career site, server-rendered HTML.
+// The employer's own questions come first (data-question-uuid blocks), then
+// the standard fields, each a <label for="candidate_..."> with an asterisk
+// when required. The posting text is the page's JSON-LD JobPosting.
+const TEAMTAILOR_TYPES = { boolean: "boolean", choice: "select", number: "number", text: "text",
+  date: "date", range: "number", video: "video", file: "file" };
+const TEAMTAILOR_FIELDS = { first_name: "text", last_name: "text", email: "email", phone: "phone",
+  resume_remote_url: "file", file_remote_url: "file", cover_letter: "textarea", location: "text",
+  location_ids: "multiselect" };
+// The asterisk is drawn; the word for screen readers (Required, Obligatorio...) is in an sr-only span.
+const isRequired = (html) => /data-asterisk="true"/.test(html);
+const labelText = (html) => htmlText(String(html).replace(/<sup\b[\s\S]*?<\/sup>/gi, " ")
+  .replace(/<span[^>]*class="[^"]*\bsr-only\b[^"]*"[^>]*>[\s\S]*?<\/span>/gi, " "))
+  .replace(/\s+/g, " ").trim().slice(0, 400);
+const choiceLabels = (block, forPrefix) =>
+  [...block.matchAll(new RegExp(`<label\\b[^>]*for="${forPrefix}[^"]*"[^>]*>([\\s\\S]*?)<\\/label>`, "g")),
+   ...block.matchAll(/<option\b[^>]*value="[^"]+"[^>]*>([\s\S]*?)<\/option>/g)].map((m) => labelText(m[1])).filter(Boolean);
+const legendLabel = (block) => {
+  const legend = /<legend\b[^>]*>([\s\S]*?)<\/legend>/.exec(block)?.[1];
+  if (!legend) return null;
+  const title = /<span\b[^>]*>([\s\S]*?<\/span>)\s*<\/span>|<span\b[^>]*>([\s\S]*?)<\/span>/.exec(legend);
+  const titleText = labelText(title ? (title[1] ?? title[2]) : legend);
+  const detail = labelText(/<\/span>\s*<div\b[^>]*>([\s\S]*)<\/div>\s*$/.exec(legend)?.[1] ?? "");
+  return { label: [titleText, detail].filter(Boolean).join(": "), required: isRequired(legend) };
+};
+
+export function teamtailorQuestions(page) {
+  const start = page.indexOf('id="job-application-form"');
+  if (start < 0) throw new BoardError("the board no longer takes applications for this posting; it may have closed");
+  const end = page.indexOf("</form>", start);
+  const form = page.slice(start, end < 0 ? undefined : end);
+  const firstStandard = Math.max(form.search(/<label[^>]*for="candidate_first_name"/), 0);
+  // The employer's own questions: one block per data-question-mandatory, up to the next one.
+  const marks = [...form.slice(0, firstStandard || undefined).matchAll(/<div\b[^>]*\bdata-question-mandatory="(true|false)"/g)];
+  const own = marks.map((mark, i) => {
+    const block = form.slice(mark.index, marks[i + 1]?.index ?? (firstStandard || undefined)).split(/<h2\b/)[0];
+    // Teamtailor can place its own locations picker among the questions.
+    if (/name="candidate\[location_ids\]\[\]"/.test(block))
+      return question("location_ids", legendLabel(block)?.label || "Locations", mark[1] === "true", "multiselect",
+                      choiceLabels(block, "candidate_location_ids_"));
+    const id = /value="(\d+)"[^>]*name="candidate\[answers_attributes\]\[\d+\]\[question_id\]"/.exec(block)?.[1] ?? String(i);
+    const kind = [...block.matchAll(/name="candidate\[answers_attributes\]\[\d+\]\[(\w+)\]/g)]
+      .map((m) => m[1]).find((k) => !/question_id$/.test(k)) ?? "text";
+    const label = legendLabel(block)?.label
+      || labelText(/<label\b[^>]*for="candidate_answers_attributes_[^"]*"[^>]*>([\s\S]*?)<\/label>/.exec(block)?.[1] ?? "");
+    const options = kind === "boolean" ? choiceLabels(block, "boolean-") : choiceLabels(block, "candidate_answers_attributes_\\d+_choice");
+    const type = kind === "choice" && /data-question-multiple-choice="true"/.test(block) ? "multiselect"
+      : kind === "text" && /<textarea\b/.test(block) ? "textarea" : TEAMTAILOR_TYPES[kind] ?? "text";
+    return question(`question_${id}`, label, mark[1] === "true", type,
+                    kind === "boolean" && options.length !== 2 ? ["Yes", "No"] : options);
+  });
+  const rest = form.slice(firstStandard);
+  const standard = [...rest.matchAll(/<label\b[^>]*for="candidate_([a-z0-9_]+)"[^>]*>([\s\S]*?)<\/label>/g)]
+    .filter(([, field]) => !/^answers_attributes|^location_ids_/.test(field))
+    .map(([, field, html]) => {
+      const key = field.replace(/^job_applications_attributes_\d+_/, "");
+      // The privacy consent is always required; its label carries the word, not the asterisk.
+      return question(key, labelText(html), isRequired(html) || key === "consent_given",
+                      key.startsWith("consent_") ? "checkbox" : TEAMTAILOR_FIELDS[key] ?? "text", [], "application",
+                      key.startsWith("consent_") ? { who: "person", category: "consent" } : {});
+    });
+  // A fieldset of checkboxes such as the locations the person would work from.
+  for (const set of rest.matchAll(/<fieldset\b[\s\S]*?<\/fieldset>/g)) {
+    const field = /name="candidate\[([a-z_]+)\]\[\]"/.exec(set[0])?.[1];
+    const legend = legendLabel(set[0]);
+    if (!field || !legend) continue;
+    standard.push(question(field, legend.label, legend.required, TEAMTAILOR_FIELDS[field] ?? "multiselect",
+                           choiceLabels(set[0], `candidate_${field}_`)));
+  }
+  return [...own, ...standard];
+}
+
+function jobPostingText(page) {
+  for (const m of page.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)) {
+    try {
+      const data = JSON.parse(m[1]);
+      const posting = [data, ...(Array.isArray(data?.["@graph"]) ? data["@graph"] : [])].find((d) => d?.["@type"] === "JobPosting");
+      if (posting?.description) return htmlText(posting.description);
+    } catch { /* not this block */ }
+  }
+  return null;
+}
+
+async function teamtailorForm(env, board, external, job) {
+  const site = String(board).toLowerCase();
+  if (!SITE_HOST.test(site) || !/^\d+$/.test(external) || hostOf(job.url) !== site)
+    throw new BoardError("the posting's URL is not on its Teamtailor career site");
+  const apply = `https://${site}/jobs/${external}/applications/new`;
+  const page = await fetchBoard(env, apply, { text: true, site });
+  const questions = teamtailorQuestions(page);
+  let description = null;
+  try { description = jobPostingText(await fetchBoard(env, job.url, { text: true, site })); } catch { /* the form is what matters */ }
+  return { apply_url: apply, questions, description,
+           captcha: /h-captcha|g-recaptcha|recaptcha|turnstile/i.test(page),
+           source: "Teamtailor career site's application page, read now" };
+}
+
 // Workday publishes the posting, but its form only after the person signs in
 // to an account with the employer. job_questions reads the posting, says
 // whether the employer adds questions of its own (questionnaireId), and lists
@@ -1314,7 +1415,7 @@ async function workdayForm(env, board, external, job) {
 }
 
 const FORMS = { greenhouse: greenhouseForm, ashby: ashbyForm, lever: leverForm, workable: workableForm,
-                recruitee: recruiteeForm, workday: workdayForm };
+                recruitee: recruiteeForm, teamtailor: teamtailorForm, workday: workdayForm };
 
 // "ats:board:id"; the board may hold slashes (Workday), never a colon.
 function splitId(id) {
@@ -1335,7 +1436,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
   const read = parts && job.ats === parts[0] && Object.hasOwn(FORMS, job.ats) ? FORMS[job.ats] : null;
   if (!read)
     return { job: posting, apply_url: job.url, form_source: null, questions: null, description: null, captcha: null,
-             note: `job_questions reads Greenhouse, Lever, Ashby, Workable and Recruitee forms, and Workday's ` +
+             note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee and Teamtailor forms, and Workday's ` +
                    `postings; this posting is on ${job.ats}. ` +
                    "Open url in your browser and read the form there; classify its questions with the " +
                    "same rule (see application_guide)." };

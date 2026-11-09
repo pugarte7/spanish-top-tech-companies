@@ -106,6 +106,7 @@ globalThis.fetch = async (url) => {
     refuse[key] -= 1;
     return new Response("<html>Forbidden</html>", { status: 403 });
   }
+  if (typeof BOARDS[key] === "string") return new Response(BOARDS[key], { status: 200 });
   return key in BOARDS ? new Response(JSON.stringify(BOARDS[key]), { status: 200 })
                        : new Response("not found", { status: 404 });
 };
@@ -151,6 +152,52 @@ assert.deepEqual(lever.regions, ["CT"], "Lisbon is no Spanish region");
 assert.ok(!JSON.stringify(index).includes("We build things"), "descriptions stay out of the index");
 assert.deepEqual(requested.sort(), ["https://api.lever.co/v0/postings/jobandtalent",
   "https://boards-api.greenhouse.io/v1/boards/cabify/jobs", "https://boards-api.greenhouse.io/v1/boards/gone/jobs"]);
+
+// --- Teamtailor: one RSS feed per career site, the site's host as the board ------
+
+const ttItem = (id, title, places, remote = "hybrid") => `<item><title>${title}</title>
+  <description>&lt;p&gt;We fly. You have 2+ years of experience.&lt;/p&gt;</description>
+  <pubDate>Fri, 06 Nov 2026 15:14:31 +0100</pubDate>
+  <link>https://careers.vueling.com/jobs/${id}-${title.toLowerCase().replace(/\W+/g, "-")}</link>
+  <remoteStatus>${remote}</remoteStatus><guid>g-${id}</guid>
+  <tt:locations>${places.map(([city, country]) => `<tt:location><tt:name>${city}</tt:name>
+    <tt:city>${city}</tt:city><tt:country>${country}</tt:country></tt:location>`).join("")}</tt:locations>
+  <tt:department>Tech</tt:department><tt:role/></item>`;
+const rss = (items) => `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:tt="https://teamtailor.com/locations"><channel><title>Vueling</title>
+<link>https://careers.vueling.com/jobs</link>${items.join("")}</channel></rss>`;
+BOARDS["https://careers.vueling.com/jobs.rss"] = rss([
+  ttItem(8681660, "Data Engineer", [["Viladecans", "Spain"]]),
+  ttItem(8681661, "Backend Developer", [["Lisbon", "Portugal"], ["Barcelona", "Spain"]], "fully"),
+  ttItem(8681662, "Cabin Crew Paris", [["Paris", "France"]], "onsite"),
+]);
+BOARDS["https://careers.notteamtailor.com/jobs.rss"] = `<?xml version="1.0"?><rss version="2.0"><channel><title>x</title></channel></rss>`;
+const ttData = { companies: [{ name: "Vueling", levels: "vueling" }], roles: [{ slug: "software-engineer" }, { slug: "data-engineer" }] };
+const tt = await crawl({ companies: [
+  { name: "Vueling", ats: "teamtailor", board: "careers.vueling.com", tier: "B", tags: ["spain"] },
+  { name: "Plain RSS", ats: "teamtailor", board: "careers.notteamtailor.com", tier: "C", tags: [] },
+  { name: "Not a host", ats: "teamtailor", board: "vueling", tier: "C", tags: [] },
+] }, ttData, await loadAts(), { minutes: 1 });
+checkIndex(tt.index, "teamtailor crawl");
+assert.deepEqual(tt.index.boards.issues, { "teamtailor:invalid_board": 1, "teamtailor:invalid_source_payload": 1 });
+assert.deepEqual(tt.index.jobs.map((j) => j.id), ["teamtailor:careers.vueling.com:8681661", "teamtailor:careers.vueling.com:8681660"]);
+const ttJob = Object.fromEntries(tt.index.jobs.map((j) => [j.id, j]));
+assert.deepEqual([ttJob["teamtailor:careers.vueling.com:8681660"].location, ttJob["teamtailor:careers.vueling.com:8681660"].workplace,
+                  ttJob["teamtailor:careers.vueling.com:8681660"].url, ttJob["teamtailor:careers.vueling.com:8681660"].slug,
+                  ttJob["teamtailor:careers.vueling.com:8681660"].posted_at],
+                 ["Viladecans, Spain", "hybrid", "https://careers.vueling.com/jobs/8681660-data-engineer", "vueling", "2026-11-06T14:14:31.000Z"]);
+assert.equal(ttJob["teamtailor:careers.vueling.com:8681661"].workplace, "remote");
+const { teamtailorAdapter } = await import("../lib/ats/sources/teamtailor.js");
+assert.deepEqual(teamtailorAdapter.boardFromUrl("https://ironhackers.teamtailor.com/jobs/123-x"),
+                 { ats: "teamtailor", board: "ironhackers.teamtailor.com", region: "global" });
+assert.equal(teamtailorAdapter.boardFromUrl("https://www.teamtailor.com/en-us/"), null);
+assert.deepEqual(teamtailorAdapter.boardFromPage("https://www.mercadonatech.com/",
+  '<a href="https://www.teamtailor.com/en-us/?utm_campaign=poweredby&amp;utm_content=www.mercadonatech.com">Teamtailor</a>'),
+  { ats: "teamtailor", board: "www.mercadonatech.com", region: "global" });
+assert.deepEqual(teamtailorAdapter.boardFromPage("https://careers.idealista.com/",
+  '<link href="https://assets.teamtailor-cdn.com/x.css"><a href="/jobs">Jobs</a>'),
+  { ats: "teamtailor", board: "careers.idealista.com", region: "global" });
+assert.equal(teamtailorAdapter.boardFromPage("https://www.example.com/", '<a href="/jobs">Jobs</a>'), null);
 
 // --- A host that refuses -----------------------------------------------------
 
