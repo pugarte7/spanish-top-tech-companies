@@ -274,4 +274,29 @@ assert.equal(JSON.parse(readFileSync(join(tmp, "reused.json"), "utf8")).jobs.len
              "a fresh production index is republished");
 server.close();
 
+// scripts/boards.mjs: how a board is read off a link or a careers page.
+const spain = await import("../lib/ats/presets/spain.js");
+assert.deepEqual(spain.boardFromUrl("https://redhat.wd5.myworkdayjobs.com/en-US/jobs"),
+                 { ats: "workday", board: "redhat/wd5/jobs", region: "global" }, "a Workday site may be called jobs");
+assert.deepEqual(spain.boardFromUrl("https://job-boards.eu.greenhouse.io/sahajsoftware"),
+                 { ats: "greenhouse", board: "sahajsoftware", region: "global" }, "EU Greenhouse");
+assert.equal(spain.boardFromUrl("https://boards.greenhouse.io/embed"), null);
+assert.deepEqual(spain.boardsLinkedFrom('<a href="https://job-boards.eu.greenhouse.io/acme/jobs/1">').map((b) => b.board), ["acme"]);
+const rules = { threshold: 60_000, companyFloor: 45_000, minRanked: 3, dataAsOf: "" };
+const pages = {
+  "https://acme.example/": "<html>no board here</html>",
+  "https://acme.example/careers": '<a href="https://careers.smartrecruiters.com/Acme">Jobs</a>',
+};
+const seen = [];
+const probed = await spain.probeCompany(
+  { name: "Acme", levelsSlug: "acme", website: "https://acme.example/", careers: "https://acme.example/careers",
+    cities: [], engineerMedian: null, engineerCount: 0 },
+  rules,
+  { fetchPage: async (url) => pages[url] ?? null, resolve: async () => [],
+    listJobs: async (entry) => { seen.push(entry); return [{ locationClass: "spain", locationsRaw: ["Madrid, Spain"] }]; } },
+);
+assert.equal(probed.kept?.board, "Acme", "the careers page from data/careers.json is read");
+assert.equal(probed.candidates[0].source, "website");
+assert.equal(seen[0].country, "es", "SmartRecruiters is asked for postings in Spain only");
+
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);
