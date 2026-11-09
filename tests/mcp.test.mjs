@@ -863,5 +863,52 @@ report("application_guide says to report each outcome", /report_application/.tes
 report("the state document template keeps whether the star was asked about",
   /## Support\n- Asked about a GitHub star/.test((await run("application_guide", {})).structuredContent.state_document.template));
 
+// No match: what each filter costs, suggestions that keep what the person is
+// looking for, and what the index holds (2026-11-08: ChatGPT got 0 for
+// company Zapier, GitLab, Doist... and for "Django FastAPI").
+const jobsOut = async (args) => (await toolCall("find_jobs", args)).structuredContent;
+const zapier = await jobsOut({ company: "Zapier", region: "spain", min_salary_eur: 60000 });
+report("a company with no posting says the index has none, and suggests no other company's",
+  zapier.matches === 0 && /no posting from 'Zapier'/.test(zapier.no_match.company_note) &&
+  !zapier.no_match.suggestions && zapier.no_match.without_each_filter.find((w) => w.drop === "company").matches > 0,
+  zapier.no_match);
+const glvo = await jobsOut({ company: "Glvo" });
+report("a misspelled company gets the close names in the index", /Close names in the index: Glovo/.test(glvo.no_match.company_note),
+  glvo.no_match);
+const frontMadrid = await jobsOut({ role: "frontend", region: "MD" });
+report("dropping one filter suggests the postings it finds, and says which filter they miss",
+  frontMadrid.matches === 0 && frontMadrid.no_match.suggestions?.[0]?.company === "Abacum" &&
+  /^without region/.test(frontMadrid.no_match.suggestions_are), frontMadrid.no_match);
+const rich = await jobsOut({ role: "backend", min_salary_eur: 900000 });
+report("a salary floor nobody reaches is the filter to drop",
+  rich.no_match.without_each_filter[0].drop === "min_salary_eur" && rich.no_match.suggestions.length > 0 &&
+  /^without min_salary_eur/.test(rich.no_match.suggestions_are), rich.no_match);
+const django = await jobsOut({ query: "Django FastAPI", workplace: "remote" });
+report("words no posting names say query reads titles, not descriptions, and suggest nothing",
+  /not its description/.test(django.no_match.query_note ?? "") && !django.no_match.suggestions, django.no_match);
+report("a search that matches has no no_match", !(await jobsOut({ company: "glovo" })).no_match);
+const remoteStats = (await toolCall("salary_stats", { region: "remote", role: "software-engineer" })).structuredContent;
+const spainStats = (await toolCall("salary_stats", { role: "software-engineer" })).structuredContent;
+report("region remote is all of Spain, with a note", remoteStats.selection.region === null &&
+  remoteStats.result.median_base_eur === spainStats.result.median_base_eur && /all of Spain/.test(remoteStats.note),
+  remoteStats);
+report("region Spain is all of Spain", (await toolCall("salary_stats", { region: "España" })).isError !== true);
+report("years written as a range count by the low end",
+  (await toolCall("salary_stats", { years: "3-4" })).structuredContent.selection.years === "2-4" &&
+  (await toolCall("salary_stats", { years: "6 years" })).structuredContent.selection.years === "5-7");
+report("find_jobs reads a range of years as its top", (await jobsOut({ years: "3-4" })).filters.years === "4");
+const wide = (await toolCall("salary_stats", { ...smallArgs, years: smallArgs.years ?? data.years.at(-1),
+  region: smallArgs.region ?? "MD" })).structuredContent;
+report("a selection under the minimum offers the nearest wider ones that have it",
+  wide.result === null && (wide.wider_selections ?? []).length > 0 && wide.wider_selections.every((w) =>
+    w.result.people === data.cells[`${w.selection.role ?? ""}|${w.selection.region ?? ""}|${w.selection.years ?? ""}`].n),
+  wide);
+const notOnFile = await toolCall("company_salaries", { name: "Not On File" });
+report("a company without salaries but with postings points to find_jobs", notOnFile.isError === true &&
+  /It has 1 open posting/.test(notOnFile.content[0].text) && /find_jobs with company 'Not On File'/.test(notOnFile.content[0].text),
+  notOnFile.content[0].text);
+const glvoTop = (await toolCall("top_companies", { search: "Glvo" })).structuredContent;
+report("top_companies' search with no hit offers close names", /Close names: Glovo/.test(glvoTop.search_note ?? ""), glvoTop);
+
 console.log(failed ? `${failed} failed` : "api/mcp.js answers as expected");
 process.exit(failed ? 1 : 0);
