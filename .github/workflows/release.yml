@@ -38,6 +38,14 @@ jobs:
 
           last=$(gh api "repos/$REPO/git/matching-refs/tags/v" --jq '.[].ref' \
             | sed 's|refs/tags/v||' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          # A rerun of an old push must not release a commit a newer tag already has.
+          if [ -n "$last" ]; then
+            status=$(gh api "repos/$REPO/compare/$SHA...v$last" --jq .status)
+            if [ "$status" = "ahead" ] || [ "$status" = "identical" ]; then
+              echo "v$last already contains $SHA, no release."
+              exit 0
+            fi
+          fi
           IFS=. read -r major minor patch <<<"${last:-0.0.0}"
           case " $labels " in
             *" major "*) next="$((major + 1)).0.0" ;;
