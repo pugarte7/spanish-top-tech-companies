@@ -716,6 +716,24 @@ const given = await spain.probeCompany(
   { resolve: async () => [], listJobs: async () => [{ locationClass: "spain", locationsRaw: ["Madrid, Spain"] }] },
 );
 assert.equal(given.kept?.board, "acme", "a board written out in data/careers.json is taken as it is");
+// Dormant boards: the company's own board stays with nothing in Spain today.
+const acmeCo = { name: "Acme", levelsSlug: "acme", website: null, cities: [], engineerMedian: null, engineerCount: 0 };
+const berlin = [{ locationClass: "europe", locationsRaw: ["Berlin, Germany"], title: "Engineer at Acme", descriptionText: "Acme" }];
+const madrid = [{ locationClass: "spain", locationsRaw: ["Madrid, Spain"], title: "Engineer", descriptionText: "Acme" }];
+const probe = (company, guesses, jobsFor) => spain.probeCompany(company, rules,
+  { resolve: async () => guesses, listJobs: async (entry) => jobsFor(entry.board) });
+const own = await probe({ ...acmeCo, careers: { ats: "lever", board: "acme" } }, [], () => berlin);
+assert.deepEqual([own.kept?.board, own.dormant], ["acme", true], "its own board with nothing in Spain is kept, dormant");
+const empty = await probe({ ...acmeCo, careers: { ats: "lever", board: "acme" } }, [], () => []);
+assert.equal(empty.kept?.board, "acme", "its own empty board is kept too");
+const guessedEmpty = await probe(acmeCo, [{ ats: "lever", board: "acme", url: "https://api.lever.co/v0/postings/acme" }], () => []);
+assert.equal(guessedEmpty.kept, null, "a guessed slug with nothing on it is not kept");
+const guessedNamed = await probe(acmeCo, [{ ats: "lever", board: "acme", url: "https://api.lever.co/v0/postings/acme" }], () => berlin);
+assert.equal(guessedNamed.dormant, true, "a guessed board naming the company is kept, dormant");
+const spainWins = await probe({ ...acmeCo, careers: { ats: "lever", board: "acme" } },
+  [{ ats: "greenhouse", board: "acmeco", url: "https://boards-api.greenhouse.io/v1/boards/acmeco" }],
+  (board) => (board === "acmeco" ? madrid : berlin));
+assert.deepEqual([spainWins.kept?.board, spainWins.dormant], ["acmeco", false], "postings in Spain beat a dormant board");
 
 // Bending Spoons: the positions in its own site's __NEXT_DATA__; Apple's careers links read as its search for Spain.
 const { entry } = await import("../scripts/jobs.mjs");
