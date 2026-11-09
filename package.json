@@ -5,7 +5,7 @@
     "og": "node tests/site/og-image.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "1.55.0"
+    "@playwright/test": "1.65.0"
   },
   "dependencies": {
     "fast-xml-parser": "5.12.0",
