@@ -6,8 +6,10 @@
     python3 -m http.server -d _site    # then open http://localhost:8000/es/
 
 companies.csv is private (lib.DATA), so the repository carries what the site
-publishes instead: data/data.json and data/companies.json, the same files
-served at /api/v1/. --refresh rewrites them; anything else only reads them.
+publishes instead: data/data.json and one file per companies table under
+data/companies/, the same files served at /api/v1/. --refresh rewrites them;
+anything else only reads them. The tables were one 23 MB file until
+2026-11-08, over the 16 MiB a file the HOL plugin scanner reads.
 data/boards.json (each company's job board, crawled daily by scripts/jobs.mjs)
 is written by scripts/boards.mjs, not by --refresh: see job_boards().
 
@@ -51,6 +53,7 @@ import taxonomy
 OUT = lib.ROOT / "_site"
 # The aggregates the site is built from, committed: nothing in them is row-level.
 AGGREGATES = lib.ROOT / "data"
+TABLES = AGGREGATES / "companies"
 WEB = lib.ROOT / "web"
 REPO = "https://github.com/pugarte7/spanish-top-tech-companies"
 # Who answers for the site, on the legal page and in
@@ -1616,10 +1619,18 @@ def aggregates(refresh: bool) -> tuple[dict, dict[str, dict]]:
         data, tables = build_site(lib.published(lib.load_companies()))
         AGGREGATES.mkdir(exist_ok=True)
         (AGGREGATES / "data.json").write_text(dump(data) + "\n", encoding="utf-8")
-        (AGGREGATES / "companies.json").write_text(dump(tables) + "\n", encoding="utf-8")
+        shutil.rmtree(TABLES, ignore_errors=True)
+        for name, table in tables.items():
+            path = TABLES / f"{name or 'all'}.json"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(dump(table) + "\n", encoding="utf-8")
         return data, tables
-    read = lambda name: json.loads((AGGREGATES / name).read_text(encoding="utf-8"))
-    return read("data.json"), read("companies.json")
+    read = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    tables = {}
+    for path in sorted(TABLES.rglob("*.json")):
+        name = path.relative_to(TABLES).with_suffix("").as_posix()
+        tables["" if name == "all" else name] = read(path)
+    return read(AGGREGATES / "data.json"), tables
 
 
 def main(argv: list[str]) -> int:
