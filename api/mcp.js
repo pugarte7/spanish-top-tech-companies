@@ -139,7 +139,7 @@ const TOOLS = {
   job_questions: {
     define: () => ({ title: "One posting's application form",
       description: "The application form of one posting from find_jobs, read live from its " +
-                   "board (Greenhouse, Lever, Ashby, Workable and Recruitee; for Workday, whose form " +
+                   "board (Greenhouse, Lever, Ashby, Workable, Recruitee and BambooHR; for Workday, whose form " +
                    "needs the person's account, the posting and Workday's standard steps; other " +
                    "boards are read in the browser): " +
                    "each question with its type, options, whether it is required and who answers " +
@@ -972,7 +972,8 @@ const ATS_HOSTS = new Set(["boards-api.greenhouse.io", "boards-api.eu.greenhouse
   "api.lever.co", "api.eu.lever.co", "jobs.lever.co", "jobs.eu.lever.co", "jobs.ashbyhq.com",
   "apply.workable.com"]);
 // Workday and Recruitee give each employer its own subdomain.
-const ATS_HOST_PATTERNS = [/^[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com$/, /^[a-z0-9-]+\.recruitee\.com$/];
+const ATS_HOST_PATTERNS = [/^[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com$/, /^[a-z0-9-]+\.recruitee\.com$/,
+  /^[a-z0-9-]+\.bamboohr\.com$/];
 const allowedHost = (host) => ATS_HOSTS.has(host) || ATS_HOST_PATTERNS.some((p) => p.test(host));
 const LIVE_TIMEOUT_MS = 8000;
 const LIVE_MAX_CHARS = 4_000_000;
@@ -1044,7 +1045,7 @@ const QUESTION_CATEGORIES = [
   ["citizenship", /\bcitizen|\bnationality\b|\bpermanent resident\b|\bgreen card\b|\bnacionalidad\b|\bciudadan/],
   ["clearance", /\bclearance\b|\btop secret\b|\bpublic trust\b/],
   ["criminal-history", /\bconvict|\bfelony\b|\bmisdemeanou?r\b|\bcriminal\b|\bbackground check\b|\bantecedentes penales\b/],
-  ["compensation", /\bsalar|\bcompensation\b|\bremuneraci|\bretribuci|\bbase pay\b|\bpay (expectation|range|requirement)|\bexpected (pay|ote)\b|\bcurrent (pay|package)\b|\bsueldo\b/],
+  ["compensation", /\bsalar|\bcompensation\b|\bremuneraci|\bretribuci|\bbase pay\b|\bpay (expectation|range|requirement)|\b(expected|desired) (pay|ote)\b|\bcurrent (pay|package)\b|\bsueldo\b/],
   ["demographic", /\bgender\b|\brace\b|\bracial\b|\bethnic|\bhispanic\b|\blatin[oax]\b|\bpronoun|\bsexual orientation\b|\blgbt|\btransgender\b|\bgenero\b|\betnia\b/],
   ["veteran", /\bveteran\b|\bmilitary service\b|\barmed forces\b/],
   ["disability", /\bdisabilit|\bdiscapacidad\b|\baccommodation|\badjustments?\b|\baccessib(le|ility)\b/],
@@ -1265,6 +1266,32 @@ async function recruiteeForm(env, board, external) {
            captcha: null };
 }
 
+const BAMBOO_TYPES = { short: "text", long: "textarea", yes_no: "boolean", checkbox: "multiselect",
+  multiple_choice: "select", radio: "select", dropdown: "select", date: "date", file: "file" };
+const BAMBOO_STANDARD = { firstName: "text", lastName: "text", email: "email", phone: "phone",
+  streetAddress: "text", city: "text", state: "select", zip: "text", countryId: "select", linkedinUrl: "url",
+  dateAvailable: "date", desiredPay: "text", websiteUrl: "url", collegeName: "text", references: "textarea",
+  highestEducationId: "select", coverLetterFileId: "file", resumeFileId: "file", referredBy: "text" };
+
+// BambooHR: the posting's detail carries its whole form, standard fields with
+// their labels and the employer's own customQuestions.
+async function bamboohrForm(env, board, external) {
+  const p = await fetchBoard(env, `https://${encodeURIComponent(board)}.bamboohr.com/careers/` +
+                                  `${encodeURIComponent(external)}/detail`);
+  const job = p?.result?.jobOpening, fields = p?.result?.formFields;
+  if (!isObject(job) || !isObject(fields)) throw new BoardError("the board no longer has this posting; it may have closed");
+  const standard = Object.entries(fields).filter(([key, f]) => isObject(f) && Object.hasOwn(BAMBOO_STANDARD, key))
+    .map(([key, f]) => question(key, f.label, f.isRequired, BAMBOO_STANDARD[key],
+                                key === "countryId" ? [] : labels(f.options, "text")));
+  const own = records(fields.customQuestions).map((q) => {
+    const type = BAMBOO_TYPES[String(q.type ?? "")] ?? "text";
+    const options = labels(q.options, "text");
+    return question(`custom_${q.id}`, q.question, q.isRequired, type, type === "boolean" && !options.length ? ["Yes", "No"] : options);
+  });
+  return { apply_url: String(job.jobOpeningShareUrl || `https://${board}.bamboohr.com/careers/${external}`),
+           questions: [...standard, ...own], description: htmlText(job.description), captcha: null };
+}
+
 // Workday publishes the posting, but its form only after the person signs in
 // to an account with the employer. job_questions reads the posting, says
 // whether the employer adds questions of its own (questionnaireId), and lists
@@ -1314,7 +1341,7 @@ async function workdayForm(env, board, external, job) {
 }
 
 const FORMS = { greenhouse: greenhouseForm, ashby: ashbyForm, lever: leverForm, workable: workableForm,
-                recruitee: recruiteeForm, workday: workdayForm };
+                recruitee: recruiteeForm, workday: workdayForm, bamboohr: bamboohrForm };
 
 // "ats:board:id"; the board may hold slashes (Workday), never a colon.
 function splitId(id) {
@@ -1335,7 +1362,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
   const read = parts && job.ats === parts[0] && Object.hasOwn(FORMS, job.ats) ? FORMS[job.ats] : null;
   if (!read)
     return { job: posting, apply_url: job.url, form_source: null, questions: null, description: null, captcha: null,
-             note: `job_questions reads Greenhouse, Lever, Ashby, Workable and Recruitee forms, and Workday's ` +
+             note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee and BambooHR forms, and Workday's ` +
                    `postings; this posting is on ${job.ats}. ` +
                    "Open url in your browser and read the form there; classify its questions with the " +
                    "same rule (see application_guide)." };

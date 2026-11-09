@@ -274,4 +274,99 @@ assert.equal(JSON.parse(readFileSync(join(tmp, "reused.json"), "utf8")).jobs.len
              "a fresh production index is republished");
 server.close();
 
+// --- Radancy, Cornerstone, Pinpoint and BambooHR over a stubbed fetch --------
+
+{
+  const { adapterFor } = await import("../lib/ats/sources/registry.js");
+  const { CompanySchema } = await import("../lib/ats/domain/campaign.js");
+  const { spainPostings } = await import("../lib/ats/presets/spain.js");
+  const pages = {
+    "https://careers.acme.com/en/search-jobs/results": JSON.stringify({ hasJobs: true, results:
+      '<section data-total-pages="1"><ul><li><a href="/en/job/barcelona/data-engineer/1/111" data-job-id="111">' +
+      '<h2>Data Engineer &#x2013; Platform</h2><span class="job-location"><strong>Location: </strong>Barcelona, Catalonia</span></a></li>' +
+      '<li><a href="/en/job/valencia/it-planner/1/222" data-job-id="222"><h3>IT Planner</h3>' +
+      '<span class="job-location">Valencia, Valencia</span></a></li></ul></section>' }),
+    "https://careers.acme.com/en/job/barcelona/data-engineer/1/111":
+      '<script type="application/ld+json">{"@type":"JobPosting","description":"<p>You have 3-5 years of Spark.</p>","datePosted":"2026-10-01"}</script>',
+    "https://careers.acme.com/en/job/valencia/it-planner/1/222": "<html>no ld</html>",
+    "https://acme.csod.com/ux/ats/careersite/4/home": '<script>var c={"token":"guest-123","cloud":"https://eu-fra.api.csod.com/"};</script>',
+    "https://eu-fra.api.csod.com/rec-job-search/external/jobs": JSON.stringify({ data: { totalCount: 3, requisitions: [
+      { requisitionId: 7, displayJobTitle: "Cybersecurity engineer", externalDescription: "<p>Defend.</p>",
+        postingEffectiveDate: "2026-10-02", locations: [{ city: "Tres Cantos", state: "Madrid", country: "ES" }] },
+      { requisitionId: 8, displayJobTitle: "Envía tu CV", locations: [{ country: "ES" }] },
+      { requisitionId: 9, displayJobTitle: "Branch clerk", locations: [{}] },
+    ] } }),
+    "https://jobs.acme.com/postings.json": JSON.stringify({ data: [
+      { id: "1", title: "Account Manager", url: "https://jobs.acme.com/en/postings/u-1", workplace_type: "remote",
+        location: { city: "Remote", name: "EMEA-Spain-Field based" }, description: "<p>Sell.</p>" },
+      { id: "2", title: "Engineer", url: "https://jobs.acme.com/en/postings/u-2", workplace_type: "hybrid",
+        location: { city: "Madrid", province: "Community of Madrid", name: "ESP Madrid" } },
+      { id: "3", title: "Analyst", url: "https://jobs.acme.com/en/postings/u-3", workplace_type: "onsite",
+        location: { city: "Rijswijk", name: "NLD Rijswijk" } },
+    ] }),
+    "https://acme.bamboohr.com/careers/list": JSON.stringify({ result: [
+      { id: "5", jobOpeningName: "Backend Engineer", location: { city: "Barcelona", state: "Barcelona" },
+        atsLocation: { country: null } },
+      { id: "6", jobOpeningName: "Sales UK", location: { city: "City of London, UK#UK", state: "Hybrid" },
+        atsLocation: { country: null } },
+    ] }),
+    "https://acme.bamboohr.com/careers/5/detail": JSON.stringify({ result: { jobOpening: {
+      description: "<p>Go.</p>", datePosted: "2026-10-28", location: { addressCountry: "Spain" } } } }),
+    "https://acme.bamboohr.com/careers/6/detail": JSON.stringify({ result: { jobOpening: {
+      description: "<p>Sell.</p>", location: { addressCountry: "Argentina" } } } }),
+  };
+  const seen = [];
+  const before = globalThis.fetch;
+  globalThis.fetch = async (url, init = {}) => {
+    const key = String(url).split("?")[0];
+    seen.push({ key, auth: init.headers?.authorization ?? init.headers?.Authorization ?? null, body: init.body ?? null });
+    return key in pages ? new Response(pages[key], { status: 200 }) : new Response("not found", { status: 404 });
+  };
+  const list = async (ats, board, query = "") =>
+    adapterFor(ats).listJobs(CompanySchema.parse({ name: "Acme", ats, board, query }), "2026-11-09T00:00:00Z");
+
+  const radancy = await list("radancy", "careers.acme.com/en");
+  assert.deepEqual(radancy.map((j) => [j.title, j.locationsRaw[0]]),
+                   [["Data Engineer – Platform", "Barcelona, Catalonia, Spain"], ["IT Planner", "Valencia, Valencia, Spain"]],
+                   "the Spain facet was asked, so a place without its country is in Spain");
+  assert.equal(spainPostings(radancy).length, 2);
+  assert.match(radancy[0].descriptionText, /3-5 years/);
+  assert.equal(radancy[0].postedAt, "2026-10-01");
+  assert.ok(seen.some((s) => s.key === "https://careers.acme.com/en/search-jobs/results"));
+
+  const csod = await list("cornerstone", "acme/4", "ES");
+  assert.deepEqual(csod.map((j) => [j.externalId, j.locationsRaw[0]]),
+                   [["7", "Tres Cantos, Madrid, Spain"], ["9", "Spain"]], "open applications are not postings");
+  assert.equal(seen.find((s) => s.key.endsWith("/rec-job-search/external/jobs")).auth, "Bearer guest-123");
+  assert.equal(csod[0].url, "https://acme.csod.com/ux/ats/careersite/4/home/requisition/7?c=acme");
+  assert.equal(spainPostings(csod).length, 2);
+
+  const pinpoint = await list("pinpoint", "jobs.acme.com");
+  assert.deepEqual(pinpoint.map((j) => j.locationsRaw[0]),
+                   ["Remote, Spain", "Madrid, Community of Madrid, Spain", "Rijswijk, Netherlands"]);
+  assert.deepEqual(spainPostings(pinpoint).map((j) => j.externalId), ["1", "2"]);
+  assert.equal(pinpoint[1].applyUrl, "https://jobs.acme.com/en/postings/u-2/applications/new");
+
+  const bamboo = await list("bamboohr", "acme");
+  assert.deepEqual(bamboo.map((j) => j.locationsRaw[0]), ["Barcelona, Spain", "City of London, UK, United Kingdom"],
+                   "the country after the hash wins over the address country");
+  assert.deepEqual(spainPostings(bamboo).map((j) => j.externalId), ["5"]);
+  assert.equal(bamboo[0].postedAt, "2026-10-28");
+  globalThis.fetch = before;
+
+  // Board recognition, for scripts/boards.mjs.
+  const from = (ats, url) => adapterFor(ats).boardFromUrl(url);
+  assert.deepEqual(from("cornerstone", "https://odigeo.csod.com/ux/ats/careersite/2/home/requisition/2852?c=odigeo"),
+                   { ats: "cornerstone", board: "odigeo/2", region: "global" });
+  assert.equal(from("cornerstone", "https://odigeo.csod.com/ATS/careersite/da.aspx?routename=x&amp;site=2&amp;c=odigeo")?.board, "odigeo/2");
+  assert.equal(from("pinpoint", "https://tabby.pinpointhq.com/en/jobs/603651")?.board, "tabby.pinpointhq.com");
+  assert.equal(from("pinpoint", "https://app.pinpointhq.com/assets/x.js"), null);
+  assert.equal(from("bamboohr", "https://wallbox.bamboohr.com/careers")?.board, "wallbox");
+  assert.equal(from("bamboohr", "https://staticfe.bamboohr.com/careers/x.js"), null);
+  assert.deepEqual(adapterFor("radancy").boardFromPage("https://careers.ing.com/en/search-jobs",
+                   '<link href="https://tbcdn.talentbrew.com/x.css"><a href="/en/search-jobs">'),
+                   { ats: "radancy", board: "careers.ing.com/en", region: "global" });
+  assert.equal(adapterFor("radancy").boardFromPage("https://example.com/", "<html></html>"), null);
+}
+
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);

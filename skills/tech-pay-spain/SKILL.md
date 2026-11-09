@@ -66,8 +66,8 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   Each result has the `roles`, `seniority` and `years_asked` read from it.
 - `job_questions(id)`: one posting's application form, read live from its
   job board, each question marked `who` = person or agent; the posting text,
-  marked untrusted; the apply URL. Greenhouse, Lever, Ashby, Workable and
-  Recruitee forms are read whole. Workday shows its form only after sign-in:
+  marked untrusted; the apply URL. Greenhouse, Lever, Ashby, Workable,
+  Recruitee and BambooHR forms are read whole. Workday shows its form only after sign-in:
   `account_required` is true, the person opens the account, and the
   questions are Workday's standard steps plus a marker for the employer's own.
 - `report_application(id, status, reason)`: after sending or failing, the
