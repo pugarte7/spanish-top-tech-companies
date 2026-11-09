@@ -53,8 +53,11 @@ jobs:
         with:
           node-version: "22"
 
+      # The token lifts GitHub's 60-an-hour limit on the star count in the topbar.
       - name: Build site
         if: env.VERCEL_TOKEN == ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: python3 scripts/site.py
 
       # zod and fast-xml-parser, which lib/ats needs to crawl the boards.
@@ -63,6 +66,8 @@ jobs:
 
       - name: Build for Vercel
         if: env.VERCEL_TOKEN != ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           npm install --global vercel@latest
           vercel pull --yes --environment=production --token="$VERCEL_TOKEN"

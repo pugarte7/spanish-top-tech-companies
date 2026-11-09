@@ -33,6 +33,7 @@ Set SITE_URL to the public origin so those pages carry absolute links.
 from __future__ import annotations
 
 import collections
+import functools
 import hashlib
 import html
 import itertools
@@ -226,6 +227,10 @@ GITHUB_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentC
                ' 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16'
                ' 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01'
                ' 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>')
+# The share card's button on phones: a box with an arrow out of it.
+SHARE_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" '
+              'stroke-linecap="round" stroke-linejoin="round"><path d="M8 10V1.5M5 4.5l3-3 3 3"/>'
+              '<path d="M5.5 7H3.5v7.5h9V7h-2"/></svg>')
 # Both glyphs ship; the stylesheet shows the moon in light mode and the sun in dark.
 # Drawn, not the ↗ character: iOS paints that as a blue emoji tile.
 OUT_ICON = ('<svg class="out" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.5 8.5l5-5M4.5 3.5h4v4" '
@@ -335,11 +340,15 @@ STRINGS = {
         "people": "salaries", "median": "Median", "range": "p25–p75",
         "updated": "Updated {date}",
         "data": "JSON", "repo": "GitHub", "web": "Website", "legal": "Legal and privacy",
-        "star_title": "Did this help?",
-        "star_text": "It is free and has no ads. A star on GitHub is what gets it in front of more "
-                     "people looking for a tech job in Spain.",
-        "star_how": "On GitHub it is the Star button, top right. You need to be signed in.",
-        "star_button": "Star it on GitHub", "star_close": "Close",
+        "stars_label": "GitHub, {n} stars",
+        "star_title": "Finding it useful?",
+        "star_text": "I keep this site going on my own, with no ads and nothing to sell. Every star "
+                     "on GitHub moves it up, so more people looking for a tech job find it.",
+        "star_how": "It is the Star button at the top right of the repo, with your GitHub account.",
+        "star_button": "Give it a star", "star_close": "Close",
+        "share_text": "Know someone looking for a tech job in Spain? Send them the site. "
+                      "It is free and has no ads.",
+        "share_button": "Share", "share_copied": "Link copied",
         "under": "Under", "over": "Over",
         "role_label": "Role", "mode_label": "Work", "loc_label": "Location", "all_spain": "All of Spain",
         "mode_remote": "Remote", "mode_hybrid": "Hybrid", "mode_office": "Office",
@@ -466,11 +475,15 @@ STRINGS = {
         "people": "salarios", "median": "Mediana", "range": "p25–p75",
         "updated": "Actualizado {date}",
         "data": "JSON", "repo": "GitHub", "web": "Web", "legal": "Aviso legal y privacidad",
-        "star_title": "¿Te ha servido?",
-        "star_text": "Es gratis y sin anuncios. Una estrella en GitHub es lo que hace que llegue a más "
-                     "gente que busca trabajo en tech en España.",
-        "star_how": "En GitHub es el botón Star, arriba a la derecha. Hace falta haber iniciado sesión.",
-        "star_button": "Dar la estrella en GitHub", "star_close": "Cerrar",
+        "stars_label": "GitHub, {n} estrellas",
+        "star_title": "¿Te está sirviendo?",
+        "star_text": "Esta web la mantengo yo solo, sin anuncios ni nada que vender. Cada estrella "
+                     "en GitHub la hace subir y que la encuentre más gente que busca trabajo en tech.",
+        "star_how": "Es el botón Star, arriba a la derecha del repo, con tu cuenta de GitHub.",
+        "star_button": "Darle una estrella", "star_close": "Cerrar",
+        "share_text": "¿Conoces a alguien que busca trabajo en tech en España? Pásale la web. "
+                      "Es gratis y sin anuncios.",
+        "share_button": "Compartir", "share_copied": "Enlace copiado",
         "under": "Menos de", "over": "Más de",
         "role_label": "Rol", "mode_label": "Modalidad", "loc_label": "Ubicación", "all_spain": "Toda España",
         "mode_remote": "Remoto", "mode_hybrid": "Híbrido", "mode_office": "Presencial",
@@ -1260,6 +1273,37 @@ def head_links(lang: str, path: str, alternates: dict[str, str]) -> str:
     return "\n".join(out)
 
 
+@functools.cache
+def repo_stars() -> int | None:
+    """The repo's stars, read once per build for the topbar. None offline or
+    when GitHub refuses (60 calls an hour without a token): the link then
+    shows the logo alone, as it did before the count."""
+    req = urllib.request.Request(REPO.replace("https://github.com/", "https://api.github.com/repos/"),
+                                 headers={"Accept": "application/vnd.github+json",
+                                          "User-Agent": "spanish-top-tech-companies"})
+    if token := os.environ.get("GITHUB_TOKEN"):
+        req.add_header("Authorization", f"Bearer {token}")
+    try:
+        with urllib.request.urlopen(req, timeout=5) as r:
+            return int(json.load(r)["stargazers_count"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def github_link(lang: str, e: dict) -> str:
+    """The topbar's GitHub link with the star count beside the logo: on
+    2026-11-09 desktop readers reached the repo from the bare logo more than
+    from the star card, and a count says what the link is for."""
+    n = repo_stars()
+    if not n:
+        return (f'<a class="icon-btn gh-link" href="{REPO}" target="_blank" rel="noopener" title="GitHub" '
+                f'aria-label="GitHub">{GITHUB_ICON}</a>')
+    count = f"{n:,}".replace(",", "." if lang == "es" else ",")
+    label = e["stars_label"].replace("{n}", count)
+    return (f'<a class="gh-stars" href="{REPO}" target="_blank" rel="noopener" title="{label}" '
+            f'aria-label="{label}">{GITHUB_ICON}{STAR_ICON}<span>{count}</span></a>')
+
+
 def topbar(lang: str, e: dict, alternates: dict[str, str]) -> str:
     lang_links = "".join(
         f'<a class="on" aria-current="page">{code.upper()}</a>' if code == lang
@@ -1269,7 +1313,7 @@ def topbar(lang: str, e: dict, alternates: dict[str, str]) -> str:
   <div class="topbar-in">
     <a class="brand" href="/{lang}/">{EMBLEM}<span>{e['title']}</span></a>
     <div class="topbar-end">
-      <a class="icon-btn" href="{REPO}" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub">{GITHUB_ICON}</a>
+      {github_link(lang, e)}
       <div class="seg" role="group">{lang_links}</div>
       <button class="icon-btn" id="theme" type="button" title="{e['theme']}" aria-label="{e['theme']}">{THEME_ICON}</button>
     </div>
@@ -1420,6 +1464,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
   <button class="star-x" id="star-close" type="button" aria-label="{e['star_close']}">×</button>
   <p class="star-title" id="star-title">{e['star_title']}</p>
   <p class="star-text">{e['star_text']}</p>
+  <p class="share-text">{e['share_text']}</p>
   <div class="star-demo" aria-hidden="true">
     <span class="gh-repo">pugarte7 / <b>spanish-top-tech-companies</b></span>
     <span class="gh-btn"><span class="gh-off">{STAR_ICON}Star</span><span class="gh-on">{STAR_FILL}Starred</span></span>
@@ -1427,6 +1472,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
   </div>
   <p class="star-how">{e['star_how']}</p>
   <a class="star-btn" id="star-go" href="{REPO}" target="_blank" rel="noopener">{STAR_ICON}<span>{e['star_button']}</span></a>
+  <button class="star-btn" id="share-go" type="button">{SHARE_ICON}<span>{e['share_button']}</span></button>
 </aside>
 <script>window.S={json.dumps(s, ensure_ascii=False)};window.DATA_V="{data_version}";</script>
 <script src="/app.js?v={asset_version("app.js")}"></script>
