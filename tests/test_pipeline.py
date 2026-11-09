@@ -924,7 +924,7 @@ def test_companies_table_shows_any_data() -> None:
     spec.loader.exec_module(site_build)
     rows = [entry(PER_LOCATION, base=b, region="MD", city="Madrid", years_experience="8")
             for b in (70000, 75000, 82600, 90000)]
-    rows.append(entry(PER_LOCATION, base=61400, region="MD", city="Madrid", years_experience="3"))
+    rows.append(entry(PER_LOCATION, base=61400, total=70400, region="MD", city="Madrid", years_experience="3"))
     beta_url = "https://www.levels.fyi/companies/beta/salaries/software-engineer/locations/spain"
     beta = lib.blank_company("Beta", levels_slug="beta", levels_status="resolved",
                              linkedin_url="https://www.linkedin.com/company/beta") | {
@@ -936,8 +936,11 @@ def test_companies_table_shows_any_data() -> None:
         data, files = site_build.build_site(lib.load_companies())
         import review
         review_md = review.render(lib.load_companies(), limit=1)
-    check("one person's band has a rounded median, empty bands none",
-          files[""]["years"][""][0], [None, [61000, 1], None, [79000, 4], None, None])
+    check("one person's band has rounded medians of base and total, empty bands none",
+          files[""]["years"][""][0], [None, [61000, 1, 70000], None, [79000, 4, 79000], None, None])
+    head = files[""]["fields"]
+    check("a company row carries its total's middle half and 60k+ share",
+          [dict(zip(head, r)) for r in files[""]["cells"]["|"]][0]["tshare"], 1.0)
     cells = files[""]["cells"]
     # A key whose rows repeat an earlier key's holds that key (site.shared()).
     at = lambda k: cells[cells[k]] if isinstance(cells[k], str) else cells[k]

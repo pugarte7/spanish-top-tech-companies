@@ -124,6 +124,15 @@ introduces the site. The files:
 Do not bring data tables back to the README, split the CSV into per-company
 files or add a second data file.
 
+The companies table shows the median base and the median total pay (base +
+bonus + stock) side by side; on 2026-11-09 the maintainer picked that out of
+four mock-ups of a base/total toggle. Whichever of the two the reader sorts
+by is the one followed: the summary, its histogram, the 60k+ share and each
+company's bars switch with it, and `#pay=total` keeps it in a link. The
+table files carry the total's figures as `tp25`, `tp75`, `tshare` (rows),
+plus `total` and `thist` (summary) and a third number per year band. The
+map, the matrix, data.json, the MCP and the digest stay on base.
+
 ### The standard the maintainer wants
 
 A row should eventually mean: *I know someone in Spain doing this job and what

@@ -33,6 +33,7 @@ Set SITE_URL to the public origin so those pages carry absolute links.
 from __future__ import annotations
 
 import collections
+import functools
 import hashlib
 import html
 import itertools
@@ -204,6 +205,14 @@ YEAR_BUCKETS = [(0, 2), (2, 5), (5, 8), (8, 12), (12, 20), (20, None)]
 # Histogram bins of 10k; the ends are open so a lone outlier joins a crowd.
 HIST_LOW, HIST_HIGH, HIST_STEP = 20_000, 150_000, 10_000
 
+# GitHub's filled star (octicon star-fill-16), the button once starred.
+STAR_FILL = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .25a.75.75 0 0 1 '
+             '.673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791'
+             'L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611'
+             'L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>')
+# The pointer in the star prompt's demo.
+POINTER = ('<svg viewBox="0 0 16 20" aria-hidden="true"><path d="M1 1v15l4-4 3 7 3-1.3-3-6.7h5.5z" '
+           'fill="#fff" stroke="#1f2328" stroke-width="1.2" stroke-linejoin="round"/></svg>')
 # GitHub's outline star (octicon star-16), the one on its Star button.
 STAR_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .25a.75.75 0 0 1 '
              '.673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791'
@@ -218,6 +227,10 @@ GITHUB_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentC
                ' 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16'
                ' 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01'
                ' 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>')
+# The share card's button on phones: a box with an arrow out of it.
+SHARE_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" '
+              'stroke-linecap="round" stroke-linejoin="round"><path d="M8 10V1.5M5 4.5l3-3 3 3"/>'
+              '<path d="M5.5 7H3.5v7.5h9V7h-2"/></svg>')
 # Both glyphs ship; the stylesheet shows the moon in light mode and the sun in dark.
 # Drawn, not the ↗ character: iOS paints that as a blue emoji tile.
 OUT_ICON = ('<svg class="out" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.5 8.5l5-5M4.5 3.5h4v4" '
@@ -288,6 +301,7 @@ STRINGS = {
         "matrix_sub": "Median gross yearly base salary for the roles with most data. "
                       "Click a cell to see which companies pay most there.",
         "sum_range": "Middle half earns",
+        "sum_scope": "Only {filters}: {n} of the {all} salaries in Spain above.",
         "companies_title": "Companies",
         "search": "Search",
         "col_company": "Company", "col_median": "Median base salary",
@@ -295,6 +309,11 @@ STRINGS = {
         "col_share": "Earning 60k+",
         "tip_median": "Gross yearly base salary: half earn more, half earn less",
         "tip_share": "Share of salaries with a base of 60,000 € or more",
+        "col_total": "Median total pay", "col_share_total": "Total of 60k+",
+        "tip_total": "Gross yearly base + bonus + stock: half earn more, half earn less",
+        "tip_share_total": "Share of salaries with a total of 60,000 € or more",
+        "pay_note": "Sort by base or by total in the header: the summary, the 60k+ share and "
+                    "each company's bars follow that column.",
         "tip_n": "How many salaries this company has under the filters chosen. "
                  f"Under {lib.MIN_RANKED}, the company is listed after the rest",
         "few_note": "Companies with fewer than {ranked} salaries in Spain. They are real ({global} "
@@ -321,9 +340,14 @@ STRINGS = {
         "people": "salaries", "median": "Median", "range": "p25–p75",
         "updated": "Updated {date}",
         "data": "JSON", "repo": "GitHub", "web": "Website", "legal": "Legal and privacy",
-        "star_title": "Finding this useful?",
-        "star_text": "Give the repo a star on GitHub. It helps more people find it.",
-        "star_button": "Star on GitHub", "star_close": "Close",
+        "stars_label": "GitHub, {n} stars",
+        "star_title": "Finding it useful?",
+        "star_text": "Every star on GitHub moves it up, so more people looking for a tech job find it.",
+        "star_how": "It is the Star button at the top right of the repo, with your GitHub account.",
+        "star_button": "Give it a star", "star_close": "Close",
+        "share_text": "Know someone looking for a tech job in Spain? Send them the site. "
+                      "It is free and has no ads.",
+        "share_button": "Share", "share_copied": "Link copied",
         "under": "Under", "over": "Over",
         "role_label": "Role", "mode_label": "Work", "loc_label": "Location", "all_spain": "All of Spain",
         "mode_remote": "Remote", "mode_hybrid": "Hybrid", "mode_office": "Office",
@@ -412,6 +436,7 @@ STRINGS = {
         "matrix_sub": "Sueldo base bruto anual mediano de los roles con más datos. "
                       "Pulsa una celda para ver qué empresas pagan más en ese caso.",
         "sum_range": "La mitad cobra entre",
+        "sum_scope": "Solo {filters}: {n} de los {all} salarios de España de arriba.",
         "companies_title": "Empresas",
         "search": "Buscar",
         "col_company": "Empresa", "col_median": "Sueldo base mediano",
@@ -419,6 +444,11 @@ STRINGS = {
         "col_share": "Cobran 60k o más",
         "tip_median": "Salario base bruto anual: la mitad cobra más y la mitad menos",
         "tip_share": "Porcentaje de salarios con una base de 60.000 € o más",
+        "col_total": "Total mediano", "col_share_total": "Total de 60k o más",
+        "tip_total": "Base + bonus + acciones, bruto anual: la mitad cobra más y la mitad menos",
+        "tip_share_total": "Porcentaje de salarios con un total de 60.000 € o más",
+        "pay_note": "Ordena por sueldo base o por total en la cabecera: el resumen, el 60k+ y "
+                    "las barras de cada empresa siguen a esa columna.",
         "tip_n": "Cuántos salarios de esta empresa hay con los filtros elegidos. "
                  f"Con menos de {lib.MIN_RANKED}, la empresa va después del resto",
         "few_note": "Empresas con menos de {ranked} salarios en España. Existen ({global} o más "
@@ -444,9 +474,15 @@ STRINGS = {
         "people": "salarios", "median": "Mediana", "range": "p25–p75",
         "updated": "Actualizado {date}",
         "data": "JSON", "repo": "GitHub", "web": "Web", "legal": "Aviso legal y privacidad",
+        "stars_label": "GitHub, {n} estrellas",
         "star_title": "¿Te está sirviendo?",
-        "star_text": "Dale una estrella al repo en GitHub. Ayuda a que lo encuentre más gente.",
-        "star_button": "Dar una estrella en GitHub", "star_close": "Cerrar",
+        "star_text": "Cada estrella en GitHub la hace subir y que la encuentre más gente que busca "
+                     "trabajo en tech.",
+        "star_how": "Es el botón Star, arriba a la derecha del repo, con tu cuenta de GitHub.",
+        "star_button": "Darle una estrella", "star_close": "Cerrar",
+        "share_text": "¿Conoces a alguien que busca trabajo en tech en España? Pásale la web. "
+                      "Es gratis y sin anuncios.",
+        "share_button": "Compartir", "share_copied": "Enlace copiado",
         "under": "Menos de", "over": "Más de",
         "role_label": "Rol", "mode_label": "Modalidad", "loc_label": "Ubicación", "all_spain": "Toda España",
         "mode_remote": "Remoto", "mode_hybrid": "Híbrido", "mode_office": "Presencial",
@@ -546,7 +582,8 @@ def aggregate(entries: list[dict], hist: bool = False,
     bases = sorted(e["base"] for e in entries if e.get("base"))
     if not bases or len(bases) < min_group:
         return None
-    totals = [e["total"] for e in entries if e.get("total")]
+    # A total left empty is the base alone: no bonus or stock reported.
+    totals = [e.get("total") or e["base"] for e in entries if e.get("base")]
     quartiles = (statistics.quantiles(bases, n=4, method="inclusive")
                  if len(bases) >= lib.QUARTILE_MIN else None)
     at_bar = sum(1 for b in bases if b >= lib.THRESHOLD_EUR)
@@ -561,6 +598,25 @@ def aggregate(entries: list[dict], hist: bool = False,
     }
     if hist:
         out["hist"] = histogram(bases)
+    return out
+
+
+def total_stats(entries: list[dict], hist: bool = False) -> dict:
+    """The companies table's figures on total pay, beside aggregate()'s on
+    base: its middle half, share at the bar and histogram. The median total
+    is aggregate()'s own `total`. The same people as the base figures: every
+    row with a base, its total, which is the base when there is no bonus or
+    stock (maintainer, 2026-11-09: a column per pay, the one sorted drives)."""
+    totals = sorted(e.get("total") or e["base"] for e in entries if e.get("base"))
+    quartiles = (statistics.quantiles(totals, n=4, method="inclusive")
+                 if len(totals) >= lib.QUARTILE_MIN else None)
+    out = {
+        "tp25": rounded(quartiles[0]) if quartiles else None,
+        "tp75": rounded(quartiles[2]) if quartiles else None,
+        "tshare": round(sum(1 for t in totals if t >= lib.THRESHOLD_EUR) / len(totals), 3),
+    }
+    if hist:
+        out["thist"] = histogram(totals)
     return out
 
 
@@ -674,9 +730,9 @@ def _spans(values: list[str]) -> list[tuple[str, ...]]:
 
 
 def company_years(cells: dict, bands: list[str], index: dict) -> dict[str, dict[int, list]]:
-    """Each listed company's median base and count per experience band, keyed
-    by arrangements and then by the company's index in data.json. A band of
-    one person has its median too, rounded to ROUND_EUR."""
+    """Each listed company's [median base, count, median total] per experience
+    band, keyed by arrangements and then by the company's index in data.json.
+    A band of one person has its medians too, rounded to ROUND_EUR."""
     out = {}
     for key, by_company in cells.items():
         modes, span = key.split("|")
@@ -688,8 +744,10 @@ def company_years(cells: dict, bands: list[str], index: dict) -> dict[str, dict[
                 continue
             row = []
             for b in bands:
-                bases = [e["base"] for e in cells.get(f"{modes}|{b}", {}).get(i, ()) if e.get("base")]
-                row.append([rounded(statistics.median(bases)), len(bases)] if bases else None)
+                band = [e for e in cells.get(f"{modes}|{b}", {}).get(i, ()) if e.get("base")]
+                row.append([rounded(statistics.median(e["base"] for e in band)), len(band),
+                            rounded(statistics.median(e.get("total") or e["base"] for e in band))]
+                           if band else None)
             per[index[i]] = row
         if per:
             out[modes] = per
@@ -782,19 +840,23 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
                     groups[t][key][i].append(e)
 
     files = {}
-    fields = ["c", "n", "median", "p25", "p75", "total", "share", "mix"]
+    # t-prefixed: the same figures on total pay, for when the reader sorts by it.
+    fields = ["c", "n", "median", "p25", "p75", "total", "share", "mix", "tp25", "tp75", "tshare"]
     # The summary above the table: everyone under the same filters, one
     # aggregate per key, with its histogram.
-    summary_fields = ["n", "median", "p25", "p75", "share", "hist"]
+    summary_fields = ["n", "median", "p25", "p75", "share", "hist",
+                      "total", "tp25", "tp75", "tshare", "thist"]
     for name, cells in groups.items():
         out, summary = {}, {}
         for key, by_company in cells.items():
-            if a := aggregate([e for entries in by_company.values() for e in entries],
-                              hist=True, min_group=1):
+            everyone = [e for entries in by_company.values() for e in entries]
+            if a := aggregate(everyone, hist=True, min_group=1):
+                a.update(total_stats(everyone, hist=True))
                 summary[key] = [a[f] for f in summary_fields]
             found = []
             for i, entries in by_company.items():
                 if a := aggregate(entries, min_group=1):
+                    a.update(total_stats(entries))
                     a["mix"] = pay_mix(entries)
                     found.append({"c": index[i], **a})
             if found:
@@ -1210,6 +1272,37 @@ def head_links(lang: str, path: str, alternates: dict[str, str]) -> str:
     return "\n".join(out)
 
 
+@functools.cache
+def repo_stars() -> int | None:
+    """The repo's stars, read once per build for the topbar. None offline or
+    when GitHub refuses (60 calls an hour without a token): the link then
+    shows the logo alone, as it did before the count."""
+    req = urllib.request.Request(REPO.replace("https://github.com/", "https://api.github.com/repos/"),
+                                 headers={"Accept": "application/vnd.github+json",
+                                          "User-Agent": "spanish-top-tech-companies"})
+    if token := os.environ.get("GITHUB_TOKEN"):
+        req.add_header("Authorization", f"Bearer {token}")
+    try:
+        with urllib.request.urlopen(req, timeout=5) as r:
+            return int(json.load(r)["stargazers_count"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def github_link(lang: str, e: dict) -> str:
+    """The topbar's GitHub link with the star count beside the logo: on
+    2026-11-09 desktop readers reached the repo from the bare logo more than
+    from the star card, and a count says what the link is for."""
+    n = repo_stars()
+    if not n:
+        return (f'<a class="icon-btn gh-link" href="{REPO}" target="_blank" rel="noopener" title="GitHub" '
+                f'aria-label="GitHub">{GITHUB_ICON}</a>')
+    count = f"{n:,}".replace(",", "." if lang == "es" else ",")
+    label = e["stars_label"].replace("{n}", count)
+    return (f'<a class="gh-stars" href="{REPO}" target="_blank" rel="noopener" title="{label}" '
+            f'aria-label="{label}">{GITHUB_ICON}{STAR_ICON}<span>{count}</span></a>')
+
+
 def topbar(lang: str, e: dict, alternates: dict[str, str]) -> str:
     lang_links = "".join(
         f'<a class="on" aria-current="page">{code.upper()}</a>' if code == lang
@@ -1219,7 +1312,7 @@ def topbar(lang: str, e: dict, alternates: dict[str, str]) -> str:
   <div class="topbar-in">
     <a class="brand" href="/{lang}/">{EMBLEM}<span>{e['title']}</span></a>
     <div class="topbar-end">
-      <a class="icon-btn" href="{REPO}" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub">{GITHUB_ICON}</a>
+      {github_link(lang, e)}
       <div class="seg" role="group">{lang_links}</div>
       <button class="icon-btn" id="theme" type="button" title="{e['theme']}" aria-label="{e['theme']}">{THEME_ICON}</button>
     </div>
@@ -1349,6 +1442,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     </div>
     <div class="summary" id="summary" aria-live="polite"></div>
     <div class="table-wrap"><table id="companies"></table></div>
+    <p class="pay-note" id="pay-note" hidden>{e['pay_note']}</p>
     <p class="few-note" id="few-note" hidden><sup>*</sup>{e['few_note']}</p>
     <button class="more" id="more" hidden></button>
     {noscript_companies(e, data)}
@@ -1369,7 +1463,15 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
   <button class="star-x" id="star-close" type="button" aria-label="{e['star_close']}">×</button>
   <p class="star-title" id="star-title">{e['star_title']}</p>
   <p class="star-text">{e['star_text']}</p>
-  <a class="star-btn" id="star-go" href="{REPO}" target="_blank" rel="noopener" aria-label="{e['star_button']}" title="{e['star_button']}">{STAR_ICON}</a>
+  <p class="share-text">{e['share_text']}</p>
+  <div class="star-demo" aria-hidden="true">
+    <span class="gh-repo">pugarte7 / <b>spanish-top-tech-companies</b></span>
+    <span class="gh-btn"><span class="gh-off">{STAR_ICON}Star</span><span class="gh-on">{STAR_FILL}Starred</span></span>
+    <span class="gh-pointer">{POINTER}</span>
+  </div>
+  <p class="star-how">{e['star_how']}</p>
+  <a class="star-btn" id="star-go" href="{REPO}" target="_blank" rel="noopener">{STAR_ICON}<span>{e['star_button']}</span></a>
+  <button class="star-btn" id="share-go" type="button">{SHARE_ICON}<span>{e['share_button']}</span></button>
 </aside>
 <script>window.S={json.dumps(s, ensure_ascii=False)};window.DATA_V="{data_version}";</script>
 <script src="/app.js?v={asset_version("app.js")}"></script>
