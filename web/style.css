@@ -426,6 +426,8 @@ td.pay b { font-weight: 700; }
 /* Base and total side by side: the one the summary, the 60k+ share and the
    bars follow leads, the other is there to compare. */
 td.pay > span { color: var(--muted); }
+/* Each figure sits centred under its heading, which is wider than the figure. */
+#companies th.pay, #companies td.pay, #companies th.num, #companies td.num { text-align: center; }
 th.pay.lead { color: var(--text); }
 .pay-note { margin: 14px 0 0; max-width: 72ch; font-size: 12px; line-height: 16px; color: var(--muted); }
 .pay-note + .few-note { margin-top: 6px; }
