@@ -1,6 +1,7 @@
 {
   "abacum": {"ats":"ashby","board":"abacum"},
   "accenture": {"ats":"workday","board":"accenture/wd103/AccentureCareers","query":"Spain"},
+  "adevinta": {"ats":"jsonld","board":"adevinta.com/careers/jobs/"},
   "adyen": {"ats":"greenhouse","board":"adyen"},
   "affirm": {"ats":"greenhouse","board":"affirm"},
   "agicap": {"ats":"lever","board":"agicap"},
@@ -26,8 +27,10 @@
   "docplanner": {"ats":"ashby","board":"docplanner"},
   "drata": {"ats":"ashby","board":"drata"},
   "dxc-technology": {"ats":"workday","board":"dxctechnology/wd1/DXCJobs","query":"Spain"},
+  "dynatrace": {"ats":"jsonld","board":"www.dynatrace.com/careers/sitemap-0.xml","query":"sitemap"},
   "ebury": {"ats":"greenhouse","board":"ebury"},
   "ecovadis": {"ats":"smartrecruiters","board":"ecovadis"},
+  "edreams-odigeo": {"ats":"jsonld","board":"www.edreamsodigeocareers.com/jobs/"},
   "elastic": {"ats":"greenhouse","board":"elastic"},
   "esw": {"ats":"greenhouse","board":"esw"},
   "exoticca": {"ats":"workable","board":"exoticca"},
