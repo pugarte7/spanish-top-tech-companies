@@ -715,6 +715,16 @@ const more = { ...index, jobs: [...index.jobs,
     url: "https://sequra.recruitee.com/o/accountant-4", ats: "recruitee", location: "Barcelona, Spain" },
   { id: "workday:bbva/wd3/BBVA:R-99999", company: "BBVA", slug: "bbva", title: "Analista",
     url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Analista_R-99999", ats: "workday", location: "Madrid" },
+  { id: "bendingspoons:jobs.bendingspoons.com:63c548b3521886004f3daec0", company: "Bending Spoons",
+    slug: "bending-spoons", title: "Product manager", ats: "bendingspoons", location: "Madrid, Spain",
+    url: "https://jobs.bendingspoons.com/positions/63c548b3521886004f3daec0" },
+  { id: "bamboohr:wallbox:123", company: "Wallbox", slug: "wallbox", title: "HR Labor Relations Internship",
+    url: "https://wallbox.bamboohr.com/careers/123", ats: "bamboohr", location: "Barcelona, Spain" },
+  { id: "phenom:careers.roche.com/ROCHGLOBAL/global/en:202602-104409", company: "Roche", slug: "roche",
+    title: "Team Lead Engineering", url: "https://careers.roche.com/global/en/job/202602-104409", ats: "phenom",
+    location: "Madrid, Spain" },
+  { id: "phenom:careers.allianz.com/AISAIPGB:94498", company: "Allianz", slug: "allianz", title: "Security Risk Intern",
+    url: "https://careers.allianz.com/job/94498", ats: "phenom", location: "Barcelona, Spain" },
   { id: "teamtailor:careers.vueling.com:8681660", company: "Vueling", slug: "vueling", title: "Training Specialist",
     url: "https://careers.vueling.com/jobs/8681660-training-specialist", ats: "teamtailor", location: "Viladecans, Spain" },
   { id: "teamtailor:careers.vueling.com:8681661", company: "Vueling", slug: "vueling", title: "Elsewhere",
@@ -743,6 +753,20 @@ BOARDS["https://sequra.recruitee.com/api/offers/2616630"] = json({ offer: {
       open_question_options: [{ body: "B2" }, { body: "C1" }] },
     { id: 3, body: "Would you now or in the future require work permit assistance?", kind: "boolean", required: true, open_question_options: [] },
     { id: 4, body: "Please tell us about your salary expectations.", kind: "salary", required: true, open_question_options: [] }] } });
+const BS_JOB = { id: "63c548b3521886004f3daec0", status: "active", jobTitle: "Product manager",
+  highLevelDescription: "<span>Build products people love.</span>", responsibilities: ["<span>Investigate.</span>"],
+  requirements: [{ title: "Reasoning ability", description: "You think from first principles." }],
+  applyEmailVerificationEnabled: true,
+  officeLocations: [{ title: "Madrid (Spain)", country: { isoCode: "ES", name: "Spain" } },
+                    { title: "Milan (Italy)", country: { isoCode: "IT", name: "Italy" } }],
+  applicationForm: { personalDetails: [], survey: [], applicationInformation: [
+    { id: "cv", title: "CV/Resume (in English)", type: "pdf_upload", optional: false, choices: [] },
+    { id: "where", title: "In which country do you plan to be based?", type: "job_country", optional: false, choices: [] },
+    { id: "visa", title: "Will you require visa sponsorship to work in the country you selected?", type: "dropdown",
+      optional: false, choices: ["Yes", "No", "I'm not sure"] },
+    { id: "site", title: "Your personal website", type: "url", optional: true, choices: [] }] } };
+BOARDS["https://jobs.bendingspoons.com/positions/63c548b3521886004f3daec0"] = () => new Response(
+  `<html><script id="__NEXT_DATA__" type="application/json">${JSON.stringify({ props: { pageProps: { job: BS_JOB } } })}</script></html>`);
 // Teamtailor serves the form as HTML on the employer's domain, as careers.vueling.com does.
 const ttQuestion = (n, mandatory, inner) => `<div data-question-uuid="u${n}" data-question-mandatory="${mandatory}" ` +
   `data-question-multiple-choice="false"><input type="hidden" value="${6290540 + n}" ` +
@@ -783,6 +807,24 @@ const WD = "https://bbva.wd3.myworkdayjobs.com/wday/cxs/bbva/BBVA/job/Madrid";
 BOARDS[`${WD}/R-12345`] = json({ jobPostingInfo: { jobDescription: "<p>Java en BBVA</p>", canApply: true,
   externalUrl: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345", questionnaireId: "abc123" } });
 BOARDS[`${WD}/Analista_R-99999`] = json({ jobPostingInfo: { canApply: false } });
+BOARDS["https://wallbox.bamboohr.com/careers/123/detail"] = json({ result: {
+  jobOpening: { description: "<p>Join People at Wallbox</p>", jobOpeningShareUrl: "https://wallbox.bamboohr.com/careers/123" },
+  formFields: { firstName: { isRequired: true, label: "First Name" }, email: { isRequired: true, label: "Email" },
+    resumeFileId: { isRequired: true, label: "Resume" }, desiredPay: { isRequired: false, label: "Desired Pay" },
+    linkedinUrl: { isRequired: true, label: "LinkedIn URL" },
+    customQuestions: [{ id: "91", isRequired: false, question: "Are you based in Barcelona?", type: "short", options: [] },
+      { id: "92", isRequired: true, question: "Do you need a work permit to work in Spain?", type: "yes_no", options: [] }],
+    genderId: [] } } });
+// Phenom pages carry the posting in phApp.ddo; the apply link names the ATS behind it.
+const phenomPage = (job) => () => new Response(`<html><script>phApp.ddo = ${JSON.stringify({ jobDetail: { data: { job } } })}; ` +
+  "phApp.experimentData = {};</script></html>");
+BOARDS["https://careers.roche.com/global/en/job/202602-104409"] = phenomPage({ description: "<p>Roche Madrid</p>",
+  applyUrl: "https://roche.wd3.myworkdayjobs.com/roche-ext/job/Madrid/Team-Lead_202602-104409-2/apply" });
+BOARDS["https://roche.wd3.myworkdayjobs.com/wday/cxs/roche/roche-ext/job/Madrid/Team-Lead_202602-104409-2"] = json({
+  jobPostingInfo: { jobDescription: "<p>Reliability at Roche</p>", canApply: true,
+    externalUrl: "https://roche.wd3.myworkdayjobs.com/roche-ext/job/Madrid/Team-Lead_202602-104409-2" } });
+BOARDS["https://careers.allianz.com/job/94498"] = phenomPage({ description: "<p>Allianz Barcelona</p>",
+  applyUrl: "https://career5.successfactors.eu/careers?company=AZGROUPPROD&career_job_req_id=94498" });
 
 const workable = await formIn("workable:exoticca:3C35D18DA3");
 report("workable: fields with labels as options, right to work, pay and GDPR to the person",
@@ -801,6 +843,14 @@ report("recruitee: the fields switched on, open questions, permit and pay to the
   byLabel(recruitee, /permit/).who === "person" && byLabel(recruitee, /salary/).who === "person" &&
   /Accounting degree/.test(recruitee.description.text) &&
   recruitee.apply_url === "https://sequra.recruitee.com/o/accountant-4/c/new", recruitee.questions);
+const bamboo = await formIn("bamboohr:wallbox:123");
+report("bamboohr: standard fields with their labels, the employer's questions, permit and pay to the person",
+  bamboo.form_source === "bamboohr public API, read now" && byLabel(bamboo, /^First Name$/).who === "agent" &&
+  byLabel(bamboo, /^Resume$/).type === "file" && byLabel(bamboo, /Desired Pay/).who === "person" &&
+  byLabel(bamboo, /Desired Pay/).required === false && byLabel(bamboo, /based in Barcelona/).type === "text" &&
+  byLabel(bamboo, /work permit/).options.join() === "Yes,No" && byLabel(bamboo, /work permit/).who === "person" &&
+  /Join People/.test(bamboo.description.text) && bamboo.apply_url === "https://wallbox.bamboohr.com/careers/123",
+  bamboo.questions);
 const teamtailor = await formIn("teamtailor:careers.vueling.com:8681660");
 report("teamtailor: own questions with their options, the locations picker, standard fields and consents",
   teamtailor.form_source.startsWith("Teamtailor") && byLabel(teamtailor, /Work Permit/).who === "person" &&
@@ -824,6 +874,23 @@ report("workday: the posting, an account the person opens, the standard steps an
   byLabel(workday, /own application questions/).type === "unread" && byLabel(workday, /terms and conditions/).who === "person" &&
   byLabel(workday, /^Resume/).who === "agent" && /Java en BBVA/.test(workday.description.text) &&
   workday.apply_url === "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345/apply", workday.questions);
+const spoons = await formIn("bendingspoons:jobs.bendingspoons.com:63c548b3521886004f3daec0");
+report("bending spoons: the form in the posting's page, its offices as countries, sponsorship to the person",
+  byLabel(spoons, /^CV/).type === "file" && byLabel(spoons, /based/).options.join() === "Spain,Italy" &&
+  byLabel(spoons, /sponsorship/).who === "person" && byLabel(spoons, /website/).required === false &&
+  byLabel(spoons, /Code sent by email/).required === true && /first principles/.test(spoons.description.text) &&
+  spoons.apply_url === "https://jobs.bendingspoons.com/positions/63c548b3521886004f3daec0/apply", spoons.questions);
+const viaPhenom = await formIn("phenom:careers.roche.com/ROCHGLOBAL/global/en:202602-104409");
+report("phenom: a posting applied to on Workday reads as Workday, through the Phenom page",
+  viaPhenom.account_required === true && /Phenom/.test(viaPhenom.form_source) &&
+  byLabel(viaPhenom, /account with Roche/).who === "person" && /Reliability at Roche/.test(viaPhenom.description.text) &&
+  viaPhenom.apply_url === "https://roche.wd3.myworkdayjobs.com/roche-ext/job/Madrid/Team-Lead_202602-104409-2/apply",
+  viaPhenom.questions);
+const otherAts = await formIn("phenom:careers.allianz.com/AISAIPGB:94498");
+report("phenom: on another ATS, the apply URL, the description and one unread form",
+  otherAts.questions.length === 1 && otherAts.questions[0].type === "unread" && /successfactors/.test(otherAts.questions[0].label) &&
+  /Allianz Barcelona/.test(otherAts.description.text) && otherAts.apply_url.startsWith("https://career5.successfactors.eu/"),
+  otherAts.questions);
 const wdClosed = await run("job_questions", { id: "workday:bbva/wd3/BBVA:R-99999" }, { jobs: more });
 report("workday: a posting that takes no more applications is a tool error", wdClosed.isError === true &&
   /no longer takes applications/.test(wdClosed.content[0].text));
@@ -834,7 +901,7 @@ const down = await run("job_questions", { id: "greenhouse:wallapop:7000009" });
 report("a board that cannot be reached is a tool error", down.isError === true && /could not be reached/.test(down.content[0].text));
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.vueling\.com)\//.test(r.url) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com)\//.test(r.url) &&
     r.init.redirect === "error" && r.init.signal instanceof AbortSignal));
 const burst = Array.from({ length: 6 }, (_, k) => ({ jsonrpc: "2.0", id: k + 1, ...tool("job_questions", { id: "greenhouse:glovo:7000001" }) }));
 const burstReplies = await respond(data, burst);
