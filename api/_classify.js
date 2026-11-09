@@ -97,7 +97,7 @@ export const ROLE_TITLES = [
   ["product-designer", /\bdesigner\b|\bdisenador/, NOT_SOFTWARE],
   ["sales-engineer", /\b(sales|solutions?|pre ?sales) engineer\b|\bsolutions? consultant\b/],
   ["solution-architect", /\barchitect\b|\barquitect[oa]\b/, NOT_SOFTWARE],
-  ["security-analyst", /\bsecurity (analyst|specialist|operations)\b|\bsoc analyst\b|\bcyber ?security\b|\bciberseguridad\b/, /\b(marketing|sales|account|recruit\w*)\b/],
+  ["security-analyst", /\bsecurity (analyst|specialist|operations)\b|\bsoc analyst\b|\bcyber ?security\b|\bcyber\b|\bciberseguridad\b/, /\b(marketing|sales|account|recruit\w*)\b/],
   ["data-scientist", /\bdata scien|\b(research|applied|applied ai|ai|machine learning|ml) scientist\b|\bcientifico de datos\b/],
   ["data-analyst", /\b(data|bi|business intelligence|analytics|product|marketing) analyst\b|\banalista de datos\b/],
   ["business-analyst", /\bbusiness analyst\b|\banalista de negocio/],
