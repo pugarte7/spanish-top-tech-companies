@@ -45,7 +45,7 @@ Funciona con cualquier agente que admita MCP. Quienes lo usan lo hacen sobre tod
 
 **¿Y en Madrid o en Barcelona?** Hay una página por rol y comunidad, como [programador en Madrid](https://spanishtoptechcompanies.com/es/salarios/software-engineer/madrid/) o [en Barcelona y Cataluña](https://spanishtoptechcompanies.com/es/salarios/software-engineer/cataluna/).
 
-**¿Es lo mismo que Levels.fyi o Glassdoor?** Los salarios vienen de Levels.fyi, pero aquí solo cuentan los de personas que trabajan en España, resumidos por empresa, rol, ciudad y experiencia, en euros y en español. No se mezcla ningún salario de otro país.
+**¿Es lo mismo que Levels.fyi?** Los salarios vienen de Levels.fyi, pero aquí solo cuentan los de personas que trabajan en España, resumidos por empresa, rol, ciudad y experiencia, en euros y en español. No se mezcla ningún salario de otro país.
 
 ### Qué hay en la web
 

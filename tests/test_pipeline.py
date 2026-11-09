@@ -585,17 +585,17 @@ def test_companies_are_their_salaries() -> None:
         check("a feed employer not on file is created",
               (stats["created"], stored("newco")["company"]), (1, "Newco"))
 
-    # 2026-11-08: 186 companies filed from Glassdoor, with no Levels.fyi slug,
+    # 2026-11-08: 186 companies filed from another source, with no Levels.fyi slug,
     # refused the Levels.fyi engineers of the employer of the same name.
-    glassdoor = lib.blank_company("Newco") | {"entries": [entry(None, source="glassdoor")]}
-    with temp_data(glassdoor):
+    imported = lib.blank_company("Newco") | {"entries": [entry(None, source="other")]}
+    with temp_data(imported):
         by_slug, _ = fed([row("newco")])
         stats = write_role("software-engineer", by_slug)
         newco = stored("newco")
         check("a same-name company with no Levels.fyi slug takes the feed's rows",
               (stats["adopted"], stats["created"], len(lib.load_companies()),
                sorted(e["source"] for e in newco["entries"])),
-              (1, 0, 1, ["glassdoor", "levels.fyi"]))
+              (1, 0, 1, ["levels.fyi", "other"]))
     other = lib.blank_company("Newco", levels_slug="newco-inc") | {"entries": [entry(PER_LOCATION)]}
     with temp_data(other):
         by_slug, _ = fed([row("newco")])
