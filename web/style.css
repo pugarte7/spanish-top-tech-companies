@@ -419,13 +419,22 @@ th.sort:hover, th.sort.on { color: var(--text); }
 /* Every sortable heading carries both carets, drawn rather than typed so
    they sit on the label's middle whatever the font; the one the table is
    sorted by lights up. A click changes which, never where the label sits. */
-.carets { display: inline-flex; flex-direction: column; gap: 2px; margin-right: 6px;
-          vertical-align: middle; position: relative; top: -1px; }
+/* Carets beside the label, centred on it however many lines it wraps to. */
+th .th-in { display: inline-flex; align-items: center; gap: 6px; }
+.carets { display: inline-flex; flex: none; flex-direction: column; gap: 2px; position: relative; top: -1px; }
+.swap { display: grid; }
+.swap > span { grid-area: 1 / 1; }
+.swap > [aria-hidden] { visibility: hidden; }
 .carets i { width: 0; height: 0; border-inline: 4px solid transparent; opacity: .3; transition: opacity .15s; }
 .carets i:first-child { border-bottom: 4px solid currentColor; }
 .carets i:last-child { border-top: 4px solid currentColor; }
 th.sort:hover .carets i { opacity: .55; }
 th.sort.on:not(.asc) .carets i:last-child, th.sort.on.asc .carets i:first-child { opacity: 1; }
+/* Fixed columns: sorting reorders the rows, and with them the widest name and
+   figure, so widths taken from the content would shift the headings on every click. */
+#companies { table-layout: fixed; }
+#companies th { white-space: normal; }
+td.co { overflow-wrap: break-word; }
 /* The name takes about half the row and the figures sit together on the right,
    so the middle of a row, where people click to open it, is never a link logo. */
 @media (min-width: 641px) {
@@ -705,6 +714,18 @@ footer .foot-links::before { inset: -20px -28px; }
   #companies tr > :first-child { padding-left: 12px; }
   #companies tr > :last-child { padding-right: 12px; }
   #companies td.chev, #companies th.chev { width: 24px; }
+  /* Each figure column as wide as its widest figure or heading word; the
+     name takes the rest, and under about 380px the table scrolls in its card. */
+  #companies { min-width: 356px; }
+  #companies th.pay, #companies td.pay, #companies th.num, #companies td.num { padding-left: 3px; padding-right: 3px; }
+  #companies th.pay { width: 68px; }
+  #companies th.num { width: 50px; }
+  #companies th[data-sort="n"] { width: 66px; }
+  /* The carets go above the label, which keeps the column's whole width; all
+     of them on one row and every label starting on the line under it. */
+  #companies th { vertical-align: top; }
+  #companies th .th-in { display: flex; flex-direction: column; gap: 4px; }
+  #companies th:not(.sort) { padding-top: 22px; }
   .tile { padding: 18px 12px; }
   .bento { gap: 12px; padding-top: 24px; }
   h2 { font-size: 26px; line-height: 30px; }
