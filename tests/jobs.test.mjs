@@ -486,5 +486,12 @@ const probed = await spain.probeCompany(
 assert.equal(probed.kept?.board, "Acme", "the careers page from data/careers.json is read");
 assert.equal(probed.candidates[0].source, "website");
 assert.equal(seen[0].country, "es", "SmartRecruiters is asked for postings in Spain only");
+const given = await spain.probeCompany(
+  { name: "Acme", levelsSlug: "acme", website: null, careers: { ats: "lever", board: "acme" },
+    cities: [], engineerMedian: null, engineerCount: 0 },
+  rules,
+  { resolve: async () => [], listJobs: async () => [{ locationClass: "spain", locationsRaw: ["Madrid, Spain"] }] },
+);
+assert.equal(given.kept?.board, "acme", "a board written out in data/careers.json is taken as it is");
 
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);
