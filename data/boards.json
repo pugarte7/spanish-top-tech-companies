@@ -42,7 +42,6 @@
   "elastic": {"ats":"greenhouse","board":"elastic"},
   "elevenlabs": {"ats":"ashby","board":"elevenlabs"},
   "esw": {"ats":"greenhouse","board":"esw"},
-  "esw-eshopworld": {"ats":"greenhouse","board":"esw"},
   "europcar": {"ats":"workday","board":"europcar/wd103/EuropcarCareerPage","query":"Spain"},
   "exoticca": {"ats":"workable","board":"exoticca"},
   "expedia-group": {"ats":"workday","board":"expedia/wd108/search","query":"Spain"},
