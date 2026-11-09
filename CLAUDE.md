@@ -255,3 +255,9 @@ ranking, and `scripts/jobs.mjs` crawls every board in it daily into
 scripts use live in `lib/ats/` (since 2026-11-04: "vamos a migrar todo dentro
 de este repo"); fix them there. Applying goes through `/mcp` with nothing
 installed.
+
+Releases are automatic: `.github/workflows/release.yml` tags every PR merged
+into `main` as the next patch (`minor` or `major` label on the PR for those)
+and publishes a GitHub Release whose one bullet is the PR title, so keep
+titles short. Direct pushes such as the weekly refresh make no release.
+Since 2026-11-09 the line restarts at v1.1.0; v2.0.0 was withdrawn.

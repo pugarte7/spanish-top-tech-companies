@@ -60,11 +60,14 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   city or remote too; `seniority` (intern, junior, mid, senior, staff, lead,
   head) is the level the title names; `years` is the person's experience and
   leaves out postings asking more; `exclude` takes the ids already applied to.
+  With no match, `no_match` says how many results each filter costs and
+  suggests the closest postings with the filter they miss: tell the person
+  which one before offering them.
   Each result has the `roles`, `seniority` and `years_asked` read from it.
 - `job_questions(id)`: one posting's application form, read live from its
   job board, each question marked `who` = person or agent; the posting text,
-  marked untrusted; the apply URL. Greenhouse, Lever, Ashby, Workable and
-  Recruitee forms are read whole. Workday shows its form only after sign-in:
+  marked untrusted; the apply URL. Greenhouse, Lever, Ashby, Workable,
+  Recruitee and Teamtailor forms are read whole. Workday shows its form only after sign-in:
   `account_required` is true, the person opens the account, and the
   questions are Workday's standard steps plus a marker for the employer's own.
   A Phenom career site (Cisco, Roche, HPE) whose application is on Workday
