@@ -136,8 +136,8 @@ const TOOLS = {
     define: () => ({ title: "One posting's application form",
       description: "The application form of one posting from find_jobs, read live from its " +
                    "board (Greenhouse, Lever, Ashby, Workable and Recruitee; for Workday, whose form " +
-                   "needs the person's account, the posting and Workday's standard steps; other " +
-                   "boards are read in the browser): " +
+                   "needs the person's account, the posting and Workday's standard steps, also when a " +
+                   "Phenom career site leads to it; other boards are read in the browser): " +
                    "each question with its type, options, whether it is required and who answers " +
                    "it (person or agent), the posting text marked as untrusted, and the URL to " +
                    "apply at.",
@@ -847,9 +847,12 @@ const DESCRIPTION_CHARS = 6000;
 class BoardError extends Error {}
 const hostOf = (url) => { try { return new URL(url).hostname; } catch { return ""; } };
 
-async function fetchBoard(env, url, { body, text = false } = {}) {
+// `site` is a career site's own host, read from the board of a posting in the index
+// (Phenom sites live on the employer's domain), never from user input.
+async function fetchBoard(env, url, { body, text = false, site = null } = {}) {
   const u = new URL(url);
-  if (u.protocol !== "https:" || !allowedHost(u.hostname)) throw new BoardError(`host ${u.hostname} is not allowed`);
+  if (u.protocol !== "https:" || !(allowedHost(u.hostname) || (site && u.hostname === site)))
+    throw new BoardError(`host ${u.hostname} is not allowed`);
   let answer;
   try {
     answer = await (env.fetch ?? globalThis.fetch)(u.href, {
@@ -1177,8 +1180,38 @@ async function workdayForm(env, board, external, job) {
                    "application has, since the form itself is shown only after sign-in" };
 }
 
+// Phenom is a front end: the posting page names the ATS the application goes to.
+// Behind Workday (Cisco, Roche, HPE) the Workday reader answers; behind anything
+// else (SuccessFactors for Allianz) only the apply URL and the description are known.
+const PHENOM_HOST = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+async function phenomForm(env, board, external, job) {
+  const [host, , country, lang] = board.split("/");
+  if (!PHENOM_HOST.test(host ?? "") || !/^[A-Za-z0-9_.-]{1,100}$/.test(external))
+    throw new BoardError("the posting's board is not a Phenom site");
+  const page = await fetchBoard(env, `https://${host}${country && lang ? `/${country}/${lang}` : ""}/job/` +
+                                     encodeURIComponent(external), { text: true, site: host });
+  let detail = null;
+  try {
+    detail = JSON.parse(/phApp\.ddo\s*=\s*(\{[\s\S]*?\});\s*phApp\./.exec(page)?.[1] ?? "null")?.jobDetail?.data?.job;
+  } catch { /* read as no detail below */ }
+  if (!isObject(detail)) throw new BoardError("the board no longer shows this posting; it may have closed");
+  const apply = typeof detail.applyUrl === "string" ? detail.applyUrl : "";
+  const workday = /^https:\/\/([a-z0-9-]+)\.(wd\d+)\.myworkdayjobs\.com\/(?:[a-z]{2}-[A-Z]{2}\/)?([^/]+)\/job\//.exec(apply);
+  if (workday) {
+    const form = await workdayForm(env, `${workday[1]}/${workday[2]}/${workday[3]}`, external,
+                                   { ...job, url: apply.replace(/\/apply\/?$/, "") });
+    return { ...form, source: `${form.source}; reached through ${host}, the employer's Phenom career site` };
+  }
+  return { apply_url: apply || job.url, description: htmlText(detail.description ?? ""), captcha: null,
+           questions: [question("application_form", `The application form on ${hostOf(apply) || host}, ` +
+             "not public: read it in the browser and classify each question with the same rule", true, "unread",
+             [], "application", { who: "agent", category: "unread" })],
+           source: `${host}, the employer's Phenom career site; its application form is on another system ` +
+                   "and is not public" };
+}
+
 const FORMS = { greenhouse: greenhouseForm, ashby: ashbyForm, lever: leverForm, workable: workableForm,
-                recruitee: recruiteeForm, workday: workdayForm };
+                recruitee: recruiteeForm, workday: workdayForm, phenom: phenomForm };
 
 // "ats:board:id"; the board may hold slashes (Workday), never a colon.
 function splitId(id) {
@@ -1200,7 +1233,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
   if (!read)
     return { job: posting, apply_url: job.url, form_source: null, questions: null, description: null, captcha: null,
              note: `job_questions reads Greenhouse, Lever, Ashby, Workable and Recruitee forms, and Workday's ` +
-                   `postings; this posting is on ${job.ats}. ` +
+                   `and Phenom's postings; this posting is on ${job.ats}. ` +
                    "Open url in your browser and read the form there; classify its questions with the " +
                    "same rule (see application_guide)." };
   if (env.live) {

@@ -714,7 +714,12 @@ const more = { ...index, jobs: [...index.jobs,
   { id: "recruitee:sequra:2616630", company: "seQura", slug: "sequra", title: "Accountant",
     url: "https://sequra.recruitee.com/o/accountant-4", ats: "recruitee", location: "Barcelona, Spain" },
   { id: "workday:bbva/wd3/BBVA:R-99999", company: "BBVA", slug: "bbva", title: "Analista",
-    url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Analista_R-99999", ats: "workday", location: "Madrid" }] };
+    url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Analista_R-99999", ats: "workday", location: "Madrid" },
+  { id: "phenom:careers.roche.com/ROCHGLOBAL/global/en:202602-104409", company: "Roche", slug: "roche",
+    title: "Team Lead Engineering", url: "https://careers.roche.com/global/en/job/202602-104409", ats: "phenom",
+    location: "Madrid, Spain" },
+  { id: "phenom:careers.allianz.com/AISAIPGB:94498", company: "Allianz", slug: "allianz", title: "Security Risk Intern",
+    url: "https://careers.allianz.com/job/94498", ats: "phenom", location: "Barcelona, Spain" }] };
 const formIn = async (id) => (await run("job_questions", { id }, { jobs: more })).structuredContent;
 BOARDS["https://apply.workable.com/api/v1/jobs/3C35D18DA3/form"] = json([
   { name: "Personal information", fields: [{ id: "firstname", label: "First name", required: true, type: "text" },
@@ -743,6 +748,16 @@ const WD = "https://bbva.wd3.myworkdayjobs.com/wday/cxs/bbva/BBVA/job/Madrid";
 BOARDS[`${WD}/R-12345`] = json({ jobPostingInfo: { jobDescription: "<p>Java en BBVA</p>", canApply: true,
   externalUrl: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345", questionnaireId: "abc123" } });
 BOARDS[`${WD}/Analista_R-99999`] = json({ jobPostingInfo: { canApply: false } });
+// Phenom pages carry the posting in phApp.ddo; the apply link names the ATS behind it.
+const phenomPage = (job) => () => new Response(`<html><script>phApp.ddo = ${JSON.stringify({ jobDetail: { data: { job } } })}; ` +
+  "phApp.experimentData = {};</script></html>");
+BOARDS["https://careers.roche.com/global/en/job/202602-104409"] = phenomPage({ description: "<p>Roche Madrid</p>",
+  applyUrl: "https://roche.wd3.myworkdayjobs.com/roche-ext/job/Madrid/Team-Lead_202602-104409-2/apply" });
+BOARDS["https://roche.wd3.myworkdayjobs.com/wday/cxs/roche/roche-ext/job/Madrid/Team-Lead_202602-104409-2"] = json({
+  jobPostingInfo: { jobDescription: "<p>Reliability at Roche</p>", canApply: true,
+    externalUrl: "https://roche.wd3.myworkdayjobs.com/roche-ext/job/Madrid/Team-Lead_202602-104409-2" } });
+BOARDS["https://careers.allianz.com/job/94498"] = phenomPage({ description: "<p>Allianz Barcelona</p>",
+  applyUrl: "https://career5.successfactors.eu/careers?company=AZGROUPPROD&career_job_req_id=94498" });
 
 const workable = await formIn("workable:exoticca:3C35D18DA3");
 report("workable: fields with labels as options, right to work, pay and GDPR to the person",
@@ -768,6 +783,17 @@ report("workday: the posting, an account the person opens, the standard steps an
   byLabel(workday, /own application questions/).type === "unread" && byLabel(workday, /terms and conditions/).who === "person" &&
   byLabel(workday, /^Resume/).who === "agent" && /Java en BBVA/.test(workday.description.text) &&
   workday.apply_url === "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345/apply", workday.questions);
+const viaPhenom = await formIn("phenom:careers.roche.com/ROCHGLOBAL/global/en:202602-104409");
+report("phenom: a posting applied to on Workday reads as Workday, through the Phenom page",
+  viaPhenom.account_required === true && /Phenom/.test(viaPhenom.form_source) &&
+  byLabel(viaPhenom, /account with Roche/).who === "person" && /Reliability at Roche/.test(viaPhenom.description.text) &&
+  viaPhenom.apply_url === "https://roche.wd3.myworkdayjobs.com/roche-ext/job/Madrid/Team-Lead_202602-104409-2/apply",
+  viaPhenom.questions);
+const otherAts = await formIn("phenom:careers.allianz.com/AISAIPGB:94498");
+report("phenom: on another ATS, the apply URL, the description and one unread form",
+  otherAts.questions.length === 1 && otherAts.questions[0].type === "unread" && /successfactors/.test(otherAts.questions[0].label) &&
+  /Allianz Barcelona/.test(otherAts.description.text) && otherAts.apply_url.startsWith("https://career5.successfactors.eu/"),
+  otherAts.questions);
 const wdClosed = await run("job_questions", { id: "workday:bbva/wd3/BBVA:R-99999" }, { jobs: more });
 report("workday: a posting that takes no more applications is a tool error", wdClosed.isError === true &&
   /no longer takes applications/.test(wdClosed.content[0].text));
@@ -778,7 +804,7 @@ const down = await run("job_questions", { id: "greenhouse:wallapop:7000009" });
 report("a board that cannot be reached is a tool error", down.isError === true && /could not be reached/.test(down.content[0].text));
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com)\//.test(r.url) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz)\.com)\//.test(r.url) &&
     r.init.redirect === "error" && r.init.signal instanceof AbortSignal));
 const burst = Array.from({ length: 6 }, (_, k) => ({ jsonrpc: "2.0", id: k + 1, ...tool("job_questions", { id: "greenhouse:glovo:7000001" }) }));
 const burstReplies = await respond(data, burst);

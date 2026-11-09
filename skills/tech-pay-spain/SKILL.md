@@ -67,6 +67,9 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   Recruitee forms are read whole. Workday shows its form only after sign-in:
   `account_required` is true, the person opens the account, and the
   questions are Workday's standard steps plus a marker for the employer's own.
+  A Phenom career site (Cisco, Roche, HPE) whose application is on Workday
+  answers the same way; on any other system behind Phenom, and on iCIMS
+  career sites, the form is read in the browser.
 - `report_application(id, status, reason)`: after sending or failing, the
   outcome (sent, failed with its reason, or handed_over). Nothing about the
   user; it shows the site where sending gets stuck. After a sent one it
