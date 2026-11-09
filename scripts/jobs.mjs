@@ -58,11 +58,14 @@ const DEFAULTS = {
   previous: process.env.JOBS_PREVIOUS_URL || `${SITE}/api/v1/jobs.json`,
   // A run past this publishes what it has; the boards not reached count as
   // "timeout". GitHub's build has room, a stuck host should not hold a deploy.
-  minutes: Number(process.env.JOBS_MAX_MINUTES) || 20,
+  // 45 since 2026-11-09, when the boards went from 107 to 262 and several
+  // adapters read up to 100 posting pages each.
+  minutes: Number(process.env.JOBS_MAX_MINUTES) || 45,
   // Hours within which production's index is republished instead of a crawl;
   // 0 always crawls.
   reuse: Number(process.env.JOBS_REUSE_HOURS) || 0,
-  concurrency: 6,
+  // Hosts read side by side; each host still gets one request at a time.
+  concurrency: 12,
 };
 
 const THROTTLE_STATUS = new Set([402, 403, 405, 429, 503]);

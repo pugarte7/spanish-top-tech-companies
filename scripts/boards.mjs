@@ -8,9 +8,10 @@
 //   node scripts/boards.mjs --only "BBVA,airbus"     # names or Levels.fyi slugs
 //   node scripts/boards.mjs --all --resume  # continue an interrupted --all run
 //
-// The rules live in lib/ats/presets/spain.js: a board is kept
-// only when it names the company and publishes a posting in Spain or remote
-// from Spain or Europe. Each candidate is probed through the same adapters and
+// The rules live in lib/ats/presets/spain.js: a board is kept when it is the
+// company's own (its site or careers page links it, or its postings name it),
+// even with nothing in Spain today ("dormant"), so the daily crawl sees the day
+// it posts here; among several, the one with most postings in Spain wins. Each candidate is probed through the same adapters and
 // polite client the daily crawl uses, so a full run makes thousands of requests
 // and takes most of an hour. The default run only probes companies that have no
 // board and were not found boardless in the last RECHECK_DAYS, which
@@ -78,7 +79,8 @@ for (const company of snapshot.companies) {
 }
 const boards = existsSync(values.boards) ? readJson(values.boards) : {};
 const none = existsSync(values.none) ? readJson(values.none) : {};
-const RECHECK_DAYS = 30;
+// Weekly: a company with no board may have one by next Monday.
+const RECHECK_DAYS = 7;
 const today = new Date().toISOString().slice(0, 10);
 const recent = (day) => day && (Date.parse(today) - Date.parse(day)) / 86_400_000 < RECHECK_DAYS;
 
@@ -118,7 +120,7 @@ for (const company of companies) {
   clearTimeout(timer);
   reports.push(report);
   writeFileSync(values.report, `${JSON.stringify({ dataAsOf: snapshot.rules.dataAsOf, companies: reports }, null, 2)}\n`);
-  const kept = report.timedOut ? "timed out, left as it was" : report.kept ? `kept ${report.kept.ats}/${report.kept.board}` : "none";
+  const kept = report.timedOut ? "timed out, left as it was" : report.kept ? `${report.dormant ? "dormant" : "kept"} ${report.kept.ats}/${report.kept.board}` : "none";
   process.stderr.write(`[${index}/${companies.length}] ${company.name}: ${report.candidates.length} board(s), ${kept}\n`);
 }
 

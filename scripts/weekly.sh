@@ -54,7 +54,7 @@ main() {
   python3 scripts/site.py --refresh
   python3 scripts/review.py > data/review.md
   # Companies new to the list get their job board found, so tomorrow's crawl
-  # of open postings reaches them; ones found boardless are rechecked monthly.
+  # of open postings reaches them; ones found boardless are rechecked weekly.
   { [ -d node_modules ] || npm ci --omit=dev -q; } && node scripts/boards.mjs > /dev/null \
     || echo "boards failed; data/boards.json stays as it is"
 
