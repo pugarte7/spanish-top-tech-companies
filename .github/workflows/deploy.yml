@@ -26,9 +26,12 @@ on:
     - cron: "17 4 * * *"   # 05:17 in Madrid in winter, 06:17 in summer
   workflow_dispatch:
 
+# Deploys queue instead of cancelling each other: a push during the daily
+# crawl (some 45 minutes, up to 90) used to cancel it, losing the day's postings
+# (2026-11-09). A queued push deploy then reuses the fresh index.
 concurrency:
   group: deploy
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write   # the `offers` branch; nothing else is pushed
