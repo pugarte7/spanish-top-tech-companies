@@ -139,7 +139,7 @@ const TOOLS = {
   job_questions: {
     define: () => ({ title: "One posting's application form",
       description: "The application form of one posting from find_jobs, read live from its " +
-                   "board (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor and BambooHR; for Workday, whose form " +
+                   "board (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR and Bending Spoons; for Workday, whose form " +
                    "needs the person's account, the posting and Workday's standard steps, also when a " +
                    "Phenom career site leads to it; other boards are read in the browser): " +
                    "each question with its type, options, whether it is required and who answers " +
@@ -970,7 +970,7 @@ export async function findJobs(data, args = {}, env = {}) {
 // The only hosts job_questions calls, over HTTPS, without following redirects.
 const ATS_HOSTS = new Set(["boards-api.greenhouse.io", "boards-api.eu.greenhouse.io",
   "api.lever.co", "api.eu.lever.co", "jobs.lever.co", "jobs.eu.lever.co", "jobs.ashbyhq.com",
-  "apply.workable.com"]);
+  "apply.workable.com", "jobs.bendingspoons.com"]);
 // Workday and Recruitee give each employer its own subdomain.
 const ATS_HOST_PATTERNS = [/^[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com$/, /^[a-z0-9-]+\.recruitee\.com$/,
   /^[a-z0-9-]+\.bamboohr\.com$/];
@@ -1272,6 +1272,34 @@ async function recruiteeForm(env, board, external) {
            captcha: null };
 }
 
+const BENDING_SPOONS_TYPES = { pdf_upload: "file", url: "url", short_answer: "text", dropdown: "select",
+  checkboxes: "multiselect", country: "country", job_country: "select", gpa: "text", job_options: "select" };
+
+// Bending Spoons: the posting's own page carries the form in its __NEXT_DATA__.
+async function bendingspoonsForm(env, board, external) {
+  const html = await fetchBoard(env, `https://jobs.bendingspoons.com/positions/${encodeURIComponent(external)}`, { text: true });
+  const m = /<script id="__NEXT_DATA__" type="application\/json"[^>]*>([\s\S]*?)<\/script>/.exec(html);
+  let job;
+  try { job = m ? JSON.parse(m[1])?.props?.pageProps?.job : null; } catch { job = null; }
+  if (!isObject(job) || job.status !== "active") throw new BoardError("the board no longer has this posting; it may have closed");
+  const countries = [...new Set(records(job.officeLocations).map((o) => String(o.country?.name ?? "")).filter(Boolean))];
+  const form = isObject(job.applicationForm) ? job.applicationForm : {};
+  const asked = ["personalDetails", "applicationInformation", "survey"].flatMap((section) => records(form[section]))
+    .map((q) => {
+      const kind = String(q.type ?? "");
+      const options = kind === "job_country" ? countries : Array.isArray(q.choices) ? q.choices.map(String) : [];
+      return question(String(q.id), q.title, q.optional !== true, BENDING_SPOONS_TYPES[kind] ?? "text", options);
+    });
+  const standard = [question("name", "Full name", true, "text"), question("email", "Email", true, "email")];
+  if (job.applyEmailVerificationEnabled === true)
+    standard.push(question("email_code", "Code sent by email to confirm the address", true, "text"));
+  const text = [job.highLevelDescription, ...(Array.isArray(job.responsibilities) ? job.responsibilities : []),
+    ...records(job.requirements).map((r) => `${r.title ?? ""}: ${r.description ?? ""}`)]
+    .map((h) => htmlText(h)).filter(Boolean).join("\n\n");
+  return { apply_url: `https://jobs.bendingspoons.com/positions/${encodeURIComponent(external)}/apply`,
+           questions: [...standard, ...asked], description: text, captcha: null };
+}
+
 const BAMBOO_TYPES = { short: "text", long: "textarea", yes_no: "boolean", checkbox: "multiselect",
   multiple_choice: "select", radio: "select", dropdown: "select", date: "date", file: "file" };
 const BAMBOO_STANDARD = { firstName: "text", lastName: "text", email: "email", phone: "phone",
@@ -1475,7 +1503,7 @@ async function phenomForm(env, board, external, job) {
 
 const FORMS = { greenhouse: greenhouseForm, ashby: ashbyForm, lever: leverForm, workable: workableForm,
                 recruitee: recruiteeForm, teamtailor: teamtailorForm, workday: workdayForm, phenom: phenomForm,
-                bamboohr: bamboohrForm };
+                bamboohr: bamboohrForm, bendingspoons: bendingspoonsForm };
 
 // "ats:board:id"; the board may hold slashes (Workday), never a colon.
 function splitId(id) {
@@ -1496,7 +1524,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
   const read = parts && job.ats === parts[0] && Object.hasOwn(FORMS, job.ats) ? FORMS[job.ats] : null;
   if (!read)
     return { job: posting, apply_url: job.url, form_source: null, questions: null, description: null, captcha: null,
-             note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor and BambooHR forms, and Workday's ` +
+             note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR and Bending Spoons forms, and Workday's ` +
                    `and Phenom's postings; this posting is on ${job.ats}. ` +
                    "Open url in your browser and read the form there; classify its questions with the " +
                    "same rule (see application_guide)." };

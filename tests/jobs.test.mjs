@@ -694,4 +694,38 @@ const given = await spain.probeCompany(
 );
 assert.equal(given.kept?.board, "acme", "a board written out in data/careers.json is taken as it is");
 
+// Bending Spoons: the positions in its own site's __NEXT_DATA__; Apple's careers links read as its search for Spain.
+const { entry } = await import("../scripts/jobs.mjs");
+const spoonsAts = await loadAts();
+const office = (title, isoCode, name) => ({ title, country: { isoCode, name, enablesRemoteWork: true } });
+const spoonsList = [
+  { id: "aa1", status: "active", isEvent: false, jobTitle: "Software engineer", workSchedule: "full_time_and_part_time",
+    officeLocations: [office("Madrid (Spain)", "ES", "Spain"), office("Milan (Italy)", "IT", "Italy")],
+    availableAsRemoteInDefaultCountries: false, additionalRemoteWorkCountries: [],
+    highLevelDescription: "<span>We build apps.</span>", responsibilities: ["<span>Ship.</span>"],
+    requirements: [{ title: "Reasoning", description: "Sharp." }], sellingPoints: [] },
+  { id: "aa2", status: "active", isEvent: false, jobTitle: "Legal counsel, US",
+    officeLocations: [office("New York (NY)", "US", "United States")], availableAsRemoteInDefaultCountries: false,
+    additionalRemoteWorkCountries: [{ isoCode: "US", name: "United States", enablesRemoteWork: true }] },
+  { id: "aa3", status: "active", isEvent: true, jobTitle: "Hackathon", officeLocations: [office("Madrid (Spain)", "ES", "Spain")] },
+];
+globalThis.fetch = async () => new Response(`<html><script id="__NEXT_DATA__" type="application/json">${
+  JSON.stringify({ props: { pageProps: { list: spoonsList } } })}</script></html>`, { status: 200 });
+const spoonsBoard = { name: "Bending Spoons", ats: "bendingspoons", board: "jobs.bendingspoons.com", tier: "A", tags: ["spain"] };
+const spoonsJobs = await spoonsAts.adapterFor("bendingspoons").listJobs(spoonsAts.CompanySchema.parse(spoonsBoard), new Date().toISOString());
+assert.deepEqual(spoonsJobs.map((j) => j.externalId), ["aa1", "aa2"], "events are not postings");
+assert.deepEqual(spoonsJobs[0].locationsRaw, ["Madrid, Spain", "Milan, Italy"]);
+assert.equal(spoonsJobs[0].url, "https://jobs.bendingspoons.com/positions/aa1");
+assert.ok(/Reasoning/.test(spoonsJobs[0].descriptionText));
+const spoonsRows = spoonsJobs.map((j) => entry(j, spoonsBoard, "bending-spoons", spoonsAts.location)).filter(Boolean);
+assert.deepEqual(spoonsRows.map((r) => r.id), ["bendingspoons:jobs.bendingspoons.com:aa1"], "only the Madrid role is open to Spain");
+assert.throws(() => spoonsAts.CompanySchema.parse({ ...spoonsBoard, ats: "nextdata" }));
+await assert.rejects(spoonsAts.adapterFor("bendingspoons").listJobs(
+  spoonsAts.CompanySchema.parse({ ...spoonsBoard, board: "jobs.example.com" }), new Date().toISOString()));
+const apple = spoonsAts.adapterFor("apple");
+assert.equal(apple.boardFromUrl("https://www.apple.com/careers/us/")?.board, "spain-ESPC");
+assert.equal(apple.boardFromUrl("https://www.apple.com/iphone/"), null);
+assert.equal(spoonsAts.adapterFor("bendingspoons").boardFromUrl("https://jobs.bendingspoons.com/positions/x")?.board,
+             "jobs.bendingspoons.com");
+
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);
