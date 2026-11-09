@@ -804,13 +804,18 @@ function companies() {
     : `<td class="pay"><span>${money(v)}</span></td>`;
   const th = (k, label, tip, cls = "num") =>
     `<th class="${cls} sort${state.sort === k ? (state.asc ? " on asc" : " on") : ""}" data-sort="${k}"` +
-    ` title="${esc(tip)}" aria-sort="${state.sort === k ? (state.asc ? "ascending" : "descending") : "none"}"><span class="carets" aria-hidden="true"><i></i><i></i></span>${label}</th>`;
+    ` title="${esc(tip)}" aria-sort="${state.sort === k ? (state.asc ? "ascending" : "descending") : "none"}">` +
+    `<span class="th-in"><span class="carets" aria-hidden="true"><i></i><i></i></span><span>${label}</span></span></th>`;
+  // The share's heading reads base or total; both wordings take the same
+  // cell, one hidden, so switching never makes the heading taller.
+  const both = (k) => `<span class="swap">${LABELS[k].map((s, i) =>
+    `<span${i === (onTotal() ? 1 : 0) ? "" : ' aria-hidden="true"'}>${S[s]}</span>`).join("")}</span>`;
 
   $("companies").innerHTML = !rows.length ? emptyTable(all.length > 0) :
     `<thead><tr><th class="chev"></th><th>${S.col_company}</th>` +
     th("median", S.col_median, S.tip_median, `pay${onTotal() ? "" : " lead"}`) +
     (hasTotal ? th("total", S.col_total, S.tip_total, `pay${onTotal() ? " lead" : ""}`) : "") +
-    `${th("share", label("share"), label("tip_share"))}${th("n", S.col_n, S.tip_n)}</tr></thead><tbody>` +
+    `${th("share", hasTotal ? both("share") : label("share"), label("tip_share"))}${th("n", S.col_n, S.tip_n)}</tr></thead><tbody>` +
     shown.map((a) => {
       const c = D.companies[a.c];
       const open = opened.has(a.c);
