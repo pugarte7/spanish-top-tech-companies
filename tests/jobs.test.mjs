@@ -14,7 +14,8 @@ process.env.ATS_MIN_INTERVAL_MS = "0";
 process.env.ATS_LOG_LEVEL = "error";
 
 const KEYS = ["id", "company", "slug", "tier", "title", "url", "ats", "location", "location_classes",
-              "workplace", "department", "posted_at", "salary"];
+              "workplace", "department", "posted_at", "salary", "roles", "seniority", "years", "regions"];
+const SENIORITIES = ["intern", "junior", "mid", "senior", "staff", "lead", "head"];
 const CLASSES = new Set(["bay-area", "us-other", "canada", "remote-us", "remote-canada", "remote-global",
                          "spain", "remote-spain", "europe", "remote-europe", "other", "unknown"]);
 const OPEN = ["spain", "remote-spain", "remote-europe", "remote-global"];
@@ -50,6 +51,11 @@ function checkIndex(index, name) {
     assert.ok([null, "remote", "hybrid", "onsite"].includes(job.workplace), at);
     assert.ok(job.department === null || typeof job.department === "string", at);
     assert.ok(iso(job.posted_at), at);
+    assert.ok(Array.isArray(job.roles) && job.roles.length <= 3 && job.roles.every((r) => /^[a-z-]+$/.test(r)), at);
+    assert.ok(job.seniority === null || SENIORITIES.includes(job.seniority), at);
+    assert.ok(job.years === null || (job.years.length === 2 && Number.isInteger(job.years[0]) &&
+              (job.years[1] === null || job.years[1] > job.years[0])), `${at} years`);
+    assert.ok(Array.isArray(job.regions) && job.regions.every((r) => /^[A-Z]{2}$/.test(r)), at);
     if (job.salary !== null) {
       assert.deepEqual(Object.keys(job.salary), ["min", "max", "currency", "period"], at);
       assert.match(job.salary.currency, /^[A-Z]{3}$/, at);
@@ -70,7 +76,8 @@ const greenhouse = (id, title, location, extra = {}) =>
 const BOARDS = {
   "https://boards-api.greenhouse.io/v1/boards/cabify/jobs": { jobs: [
     greenhouse(1, "Backend Engineer", "Madrid",
-               { pay_input_ranges: [{ min_cents: 6000000, max_cents: 8000000, currency_type: "EUR" }] }),
+               { pay_input_ranges: [{ min_cents: 6000000, max_cents: 8000000, currency_type: "EUR" }],
+                 content: "&lt;p&gt;We build things. You have 3-5 years of experience with Go.&lt;/p&gt;" }),
     greenhouse(2, "Sales Manager", "Remote India"),
     greenhouse(3, "Site Reliability Engineer", "Remote"),
     greenhouse(4, "Account Executive", "Distributed", { offices: [{ location: "Atlanta, GA" }] }),
@@ -109,7 +116,8 @@ const boardsList = { version: 1, companies: [
   { name: "Job&Talent", ats: "lever", board: "jobandtalent", tier: "A", tags: ["spain"] },
   { name: "Nowhere", ats: "nope", board: "x", tier: "A", tags: [] },
 ] };
-const data = { companies: [{ name: "Cabify", levels: "cabify" }, { name: "Job&Talent", levels: "jobandtalent" }] };
+const data = { companies: [{ name: "Cabify", levels: "cabify" }, { name: "Job&Talent", levels: "jobandtalent" }],
+               roles: [{ slug: "software-engineer" }, { slug: "product-designer" }] };
 const { index } = await crawl(boardsList, data, await loadAts(), { minutes: 1 });
 
 checkIndex(index, "crawl");
@@ -126,7 +134,10 @@ assert.deepEqual(byId["greenhouse:cabify:1"], {
   location: "Madrid", location_classes: ["spain"], workplace: null, department: null,
   posted_at: "2026-10-20T10:00:00-04:00",
   salary: { min: 60000, max: 80000, currency: "EUR", period: "year" },
+  roles: ["software-engineer"], seniority: null, years: [3, 5], regions: ["MD"],
 });
+assert.deepEqual([byId["greenhouse:cabify:8"].roles, byId["greenhouse:cabify:8"].years], [["product-designer"], null],
+                 "a description naming no years of experience");
 assert.deepEqual(byId["greenhouse:cabify:3"].location_classes, ["remote-global"]);
 assert.equal(byId["greenhouse:cabify:3"].workplace, "remote");
 assert.deepEqual(byId["greenhouse:cabify:6"].location_classes, ["remote-europe"]);
@@ -136,6 +147,7 @@ assert.deepEqual([lever.slug, lever.tier, lever.workplace, lever.url, lever.loca
                  ["jobandtalent", "A", "hybrid", "https://jobs.lever.co/jobandtalent/aaaa-1", "Barcelona; Lisbon"]);
 assert.deepEqual(lever.location_classes, ["spain", "europe"]);
 assert.deepEqual(lever.salary, { min: 50000, max: 65000, currency: "EUR", period: "year" });
+assert.deepEqual(lever.regions, ["CT"], "Lisbon is no Spanish region");
 assert.ok(!JSON.stringify(index).includes("We build things"), "descriptions stay out of the index");
 assert.deepEqual(requested.sort(), ["https://api.lever.co/v0/postings/jobandtalent",
   "https://boards-api.greenhouse.io/v1/boards/cabify/jobs", "https://boards-api.greenhouse.io/v1/boards/gone/jobs"]);

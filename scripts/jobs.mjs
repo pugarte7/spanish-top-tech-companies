@@ -1,7 +1,9 @@
 // /api/v1/jobs.json: the open postings, today, at the companies the site lists
 // whose job board is known, kept to the ones a person in Spain could take.
 // The MCP server's job tools search it, so an agent can apply without
-// installing anything. Postings only: titles, links, locations, stated pay. No
+// installing anything. Postings only: titles, links, locations, stated pay,
+// and what api/_classify.js reads of each (roles and level from the title,
+// years of experience from the description, regions from the location). No
 // descriptions (size), nothing about any person.
 //
 //     node scripts/jobs.mjs                    # after site.py: crawl the boards
@@ -31,6 +33,7 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { pathToFileURL } from "node:url";
+import { classify } from "../api/_classify.js";
 
 export const VERSION = 1;
 /** lib/ats location classes for an office in Spain, or remote from it.
@@ -134,11 +137,12 @@ function salary(comp) {
 }
 
 /** One index entry from lib/ats's normalized Job, or null when nobody
- * in Spain could take it. `location` is lib/ats's ranking/location module. */
-export function entry(job, board, slug, location) {
+ * in Spain could take it. `location` is lib/ats's ranking/location module,
+ * `known` the role slugs data.json has, which the posting's roles come from. */
+export function entry(job, board, slug, location, known = new Set()) {
   const classes = openToSpain(job, location.analyzeLocation);
   if (!classes) return null;
-  return {
+  const row = {
     id: `${job.ats}:${job.board}:${job.externalId}`,
     company: board.name,
     slug: slug ?? null,
@@ -158,6 +162,8 @@ export function entry(job, board, slug, location) {
     posted_at: job.postedAt ?? null,
     salary: salary(job.compensation),
   };
+  // Read here because the description is: it is not stored.
+  return { ...row, ...classify(row, job.descriptionText, known) };
 }
 
 const sortJobs = (jobs) => jobs.sort((a, b) =>
@@ -174,6 +180,7 @@ export async function crawl(boardsList, data, ats, opts = {}) {
   const { discoverJobs, adapterFor, CompanySchema, location } = ats;
   const deadline = Date.now() + (opts.minutes ?? DEFAULTS.minutes) * 60_000;
   const slugOf = slugFinder(data);
+  const known = new Set((data?.roles ?? []).map((r) => r.slug));
   const issues = {};
   const failures = [];
   const jobs = new Map();
@@ -245,7 +252,7 @@ export async function crawl(boardsList, data, ats, opts = {}) {
         done.add(item.board);
         const slug = slugOf(item.board);
         for (const job of result.jobs) {
-          const row = entry(job, item.board, slug, location);
+          const row = entry(job, item.board, slug, location, known);
           if (row) jobs.set(row.id, row);
         }
       }
