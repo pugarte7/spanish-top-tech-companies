@@ -846,7 +846,7 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
         group = by_slug[slug]
         same = lib.by_name(companies, group["name"])
         if same and not same.get("levels_slug"):
-            # Filed from another source (Glassdoor since 2026-11-05) under the
+            # Filed from another source under the
             # same name with no Levels.fyi page: it is this employer. Refusing
             # it kept 186 companies' Levels.fyi engineers out on 2026-11-08.
             same.update(levels_slug=slug, levels_status="resolved")

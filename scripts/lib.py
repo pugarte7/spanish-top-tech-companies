@@ -79,14 +79,23 @@ EXCLUDED_SLUGS = {
 # Compensation older than this is shown as stale rather than quietly trusted.
 STALE_DAYS = 365
 
-SOURCES = ["levels.fyi", "company-published", "offer-letter", "community",
-           "job-posting", "glassdoor", "other"]
-
-# Kept in the CSV but published nowhere yet: not on the site, the MCP, the
-# digest or the review list. The 2026-11-05 Glassdoor import is 96k rows to
-# Levels.fyi's 6k, and on 2026-11-09 the maintainer kept it off the web
+# Sources kept in the CSV but published nowhere: not on the site, the MCP, the
+# digest or the review list. They are named one per line in
+# private-sources.txt beside the CSV, outside the repository; without that
+# file there are none. On 2026-11-09 the maintainer kept an import off the web
 # "sin perder los datos" until they decide how it shows.
-UNPUBLISHED_SOURCES = ("glassdoor",)
+def _private_sources() -> tuple[str, ...]:
+    try:
+        text = (DATA.parent / "private-sources.txt").read_text(encoding="utf-8")
+    except OSError:
+        return ()
+    return tuple(line.strip() for line in text.splitlines() if line.strip() and not line.startswith("#"))
+
+
+UNPUBLISHED_SOURCES = _private_sources()
+
+SOURCES = ["levels.fyi", "company-published", "offer-letter", "community",
+           "job-posting", "other", *UNPUBLISHED_SOURCES]
 
 
 def published(companies: list[dict]) -> list[dict]:
