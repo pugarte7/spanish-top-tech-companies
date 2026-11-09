@@ -416,9 +416,16 @@ td.co .co-in { display: flex; align-items: center; gap: 12px; justify-content: s
 .detail .links { display: none; }
 th.sort { cursor: pointer; user-select: none; }
 th.sort:hover, th.sort.on { color: var(--text); }
-/* The arrow sits before the label, so a right-aligned heading stays flush with its figures. */
-th.sort.on::before { content: "↓"; display: inline-block; margin-right: 4px; }
-th.sort.on.asc::before { content: "↑"; }
+/* Every sortable heading carries both carets, drawn rather than typed so
+   they sit on the label's middle whatever the font; the one the table is
+   sorted by lights up. A click changes which, never where the label sits. */
+.carets { display: inline-flex; flex-direction: column; gap: 2px; margin-right: 6px;
+          vertical-align: middle; position: relative; top: -1px; }
+.carets i { width: 0; height: 0; border-inline: 4px solid transparent; opacity: .3; transition: opacity .15s; }
+.carets i:first-child { border-bottom: 4px solid currentColor; }
+.carets i:last-child { border-top: 4px solid currentColor; }
+th.sort:hover .carets i { opacity: .55; }
+th.sort.on:not(.asc) .carets i:last-child, th.sort.on.asc .carets i:first-child { opacity: 1; }
 /* The name takes about half the row and the figures sit together on the right,
    so the middle of a row, where people click to open it, is never a link logo. */
 @media (min-width: 641px) {

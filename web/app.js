@@ -782,7 +782,7 @@ function companies() {
   const q = state.q.trim().toLowerCase();
   const by = SORTS[state.sort];
   // A company under min_ranked salaries goes after the rest whatever the
-  // column: its "median" is one person's pay. Ascending is the exact reverse.
+  // column and the direction: its "median" is one person's pay.
   // 3 until a refresh writes min_ranked into data.json.
   const thin = (a) => a.n < (D.min_ranked || 3);
   // Under min_ranked salaries in Spain, whatever the filters: the figure is
@@ -790,8 +790,8 @@ function companies() {
   // table says so. A big company down to one salary under a filter gets none;
   // the note would be untrue of it.
   const few = (a) => D.companies[a.c].n < (D.min_ranked || 3);
-  const rows = named(all, q).slice().sort((x, y) => (state.asc ? -1 : 1) *
-      (thin(x) - thin(y) || by(y) - by(x) || paid(y).median - paid(x).median));
+  const rows = named(all, q).slice().sort((x, y) => thin(x) - thin(y) ||
+      (state.asc ? -1 : 1) * (by(y) - by(x) || paid(y).median - paid(x).median));
   const shown = state.all ? rows : rows.slice(0, 15);
   const asterisk = (a) => `<button class="asterisk" type="button" data-c="${a.c}" ` +
     `aria-label="${esc(S.ast_label)}" aria-controls="asterisk-tip" aria-expanded="false">*</button>`;
@@ -804,7 +804,7 @@ function companies() {
     : `<td class="pay"><span>${money(v)}</span></td>`;
   const th = (k, label, tip, cls = "num") =>
     `<th class="${cls} sort${state.sort === k ? (state.asc ? " on asc" : " on") : ""}" data-sort="${k}"` +
-    ` title="${esc(tip)}" aria-sort="${state.sort === k ? (state.asc ? "ascending" : "descending") : "none"}">${label}</th>`;
+    ` title="${esc(tip)}" aria-sort="${state.sort === k ? (state.asc ? "ascending" : "descending") : "none"}"><span class="carets" aria-hidden="true"><i></i><i></i></span>${label}</th>`;
 
   $("companies").innerHTML = !rows.length ? emptyTable(all.length > 0) :
     `<thead><tr><th class="chev"></th><th>${S.col_company}</th>` +
