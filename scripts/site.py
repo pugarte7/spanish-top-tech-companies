@@ -1613,7 +1613,7 @@ def aggregates(refresh: bool) -> tuple[dict, dict[str, dict]]:
     """data.json and the per-role tables: from the private CSV when refreshing,
     which also rewrites data/, else from data/ as last committed."""
     if refresh:
-        data, tables = build_site(lib.load_companies())
+        data, tables = build_site(lib.published(lib.load_companies()))
         AGGREGATES.mkdir(exist_ok=True)
         (AGGREGATES / "data.json").write_text(dump(data) + "\n", encoding="utf-8")
         (AGGREGATES / "companies.json").write_text(dump(tables) + "\n", encoding="utf-8")

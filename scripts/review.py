@@ -55,7 +55,7 @@ def main(argv: list[str]) -> int:
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--limit", type=int, help="Rows to print; the rest is linked.")
     args = parser.parse_args(argv)
-    sys.stdout.write(render(lib.load_companies(), args.limit))
+    sys.stdout.write(render(lib.published(lib.load_companies()), args.limit))
     return 0
 
 
