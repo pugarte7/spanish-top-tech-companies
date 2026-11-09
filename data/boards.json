@@ -71,6 +71,7 @@
   "pfizer": {"ats":"workday","board":"pfizer/wd1/PfizerCareers","query":"Spain"},
   "picsart": {"ats":"greenhouse","board":"picsart"},
   "pleo": {"ats":"ashby","board":"pleo"},
+  "porsche-digital": {"ats":"jsonld","board":"www.porsche.digital/sitemap.xml","query":"sitemap;match=^/career/\\d+"},
   "preply": {"ats":"ashby","board":"preply"},
   "prima": {"ats":"lever","board":"prima","region":"eu"},
   "proton": {"ats":"greenhouse","board":"proton"},
