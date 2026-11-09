@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.5.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.6.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -39,7 +39,7 @@ const SELECTION = {
   role: { type: "string", description: "Role slug or name, e.g. software-engineer, " +
           "Data Scientist, product-manager. Omit for all roles." },
   region: { type: "string", description: "Spanish region code or name, e.g. MD, " +
-            "Madrid, CT, Cataluña. Omit for all of Spain." },
+            "Madrid, CT, Cataluña. Omit, or pass spain or remote, for all of Spain." },
   years: { type: "string", description: "Years of experience, as a number such as 6 " +
            "or a bucket such as 5-7. Omit for any experience." },
 };
@@ -57,7 +57,8 @@ const TOOLS = {
                    "60k+ base for a role, region and experience in Spain.",
       inputSchema: { type: "object", properties: SELECTION } }),
     run: (data, args) => stats(data, args),
-    measure: (out) => ({ result_count: out.result ? 1 : 0 }),
+    measure: (out) => ({ result_count: out.result ? 1 : 0,
+                         ...(out.wider_selections ? { suggested: out.wider_selections.length } : {}) }),
   },
   top_companies: {
     define: (data) => ({ title: "Best-paying companies",
@@ -102,7 +103,9 @@ const TOOLS = {
                    "the company's median base for the posting's role in Spain, as the " +
                    "site's companies table shows it, with how many people it comes from " +
                    `(few: true under ${data.min_group}). Pass the ids already applied to or turned ` +
-                   "down in exclude. The starting point when asked to find jobs or apply for " +
+                   "down in exclude. When nothing matches, no_match says how many results each " +
+                   "filter costs and suggests the closest postings, marked with the filter they miss. " +
+                   "The starting point when asked to find jobs or apply for " +
                    "someone; application_guide has the procedure.",
       inputSchema: { type: "object", properties: {
         query: { type: "string", description: "Words to find in the title, company or location, " +
@@ -119,8 +122,8 @@ const TOOLS = {
         seniority: { type: "string", enum: SENIORITIES, description: "The level the title names: " +
                      "intern, junior, mid, senior, staff (staff or principal), lead, or head (head, " +
                      "director, VP, chief). mid also takes titles that name no level." },
-        years: { type: "string", description: "The person's years of experience, a number such as 3 or " +
-                 "a bucket such as 2-4: leaves out postings whose description asks for more. Postings " +
+        years: { type: "string", description: "The person's years of experience, a number such as 3, " +
+                 "a range such as 3-4 or a bucket such as 2-4: leaves out postings whose description asks for more. Postings " +
                  "that state no figure stay." },
         company: { type: "string", description: "Company name or slug, e.g. Glovo." },
         min_salary_eur: { type: "integer", minimum: 0, description: "Gross euros a year. Checked " +
@@ -130,12 +133,13 @@ const TOOLS = {
                    "postings already applied to, shown or turned down." },
         limit: { type: "integer", minimum: 1, maximum: JOB_MAX, default: JOB_DEFAULT } } } }),
     run: (data, args, env) => findJobs(data, args, env),
-    measure: (out) => ({ result_count: out.matches }),
+    measure: (out) => ({ result_count: out.matches,
+                         ...(out.no_match ? { suggested: out.no_match.suggestions?.length ?? 0 } : {}) }),
   },
   job_questions: {
     define: () => ({ title: "One posting's application form",
       description: "The application form of one posting from find_jobs, read live from its " +
-                   "board (Greenhouse, Lever, Ashby, Workable and Recruitee; for Workday, whose form " +
+                   "board (Greenhouse, Lever, Ashby, Workable, Recruitee and Teamtailor; for Workday, whose form " +
                    "needs the person's account, the posting and Workday's standard steps; other " +
                    "boards are read in the browser): " +
                    "each question with its type, options, whether it is required and who answers " +
@@ -251,8 +255,14 @@ function resolveRole(data, role, roles = data.roles) {
 
 // A region code from a code, a region's name or a city; `city` is set when a
 // city named it. Exact names first, then a region name holding the text.
+// Salaries are per region; "Spain" or "remote" (ChatGPT asked for both,
+// 2026-11) is the whole country, with a note for remote.
+const WHOLE_COUNTRY = /^(spain|espana|es|all|todas?|national|nacional)$/;
+const REMOTE_PLACE = /^(remote|remoto|teletrabajo|remote spain|remoto espana|anywhere)$/;
 function resolvePlace(data, region) {
   if (blank(region)) return { code: "", city: null };
+  if (WHOLE_COUNTRY.test(words(region))) return { code: "", city: null };
+  if (REMOTE_PLACE.test(words(region))) return { code: "", city: null, remote: true };
   const want = norm(region);
   const unknown = () => new QueryError(`unknown region '${region}'; use a code like MD, a name like ` +
     "Cataluña or a city like Barcelona");
@@ -267,10 +277,16 @@ function resolvePlace(data, region) {
   throw unknown();
 }
 
+// A bucket, a number, or what agents write instead: "3-4", "3+", "3 years".
+// A range counts by its low end, as lib.years() does: "5-10" is at least five.
+const leadingYears = (value) => {
+  const found = String(value).trim().match(/^(\d{1,2})(?:\s*(?:[-–]|to|a)\s*(\d{1,2})|\s*\+)?(?:\s*(?:years?|yrs?|años?|anos?))?$/i);
+  return found ? { low: Number(found[1]), high: found[2] === undefined ? null : Number(found[2]) } : null;
+};
 function resolveYears(buckets, years) {
   if (blank(years)) return "";
   if (buckets.includes(String(years))) return String(years);
-  const n = whole(years);
+  const n = whole(years) ?? leadingYears(years)?.low ?? null;
   if (n === null)
     throw new QueryError(`years must be a number or one of ${buckets.join(", ")}`);
   for (const bucket of buckets) {
@@ -298,6 +314,8 @@ function select(data, { role, region, years }, table = null) {
   const notes = [
     place.city && `${place.city} is in ${g} (${data.regions[g].en}); salaries are per region, so ` +
       "these figures are for the whole region.",
+    place.remote && "Salaries are per region of Spain and remote work has none of its own, so these " +
+      "figures are for all of Spain.",
     special && r === special.slug && `${special.label} is counted as ${r} on Levels.fyi, so these ` +
       `figures are for every ${r.replace(/-/g, " ")}, not only ${special.label}.`,
   ].filter(Boolean);
@@ -315,10 +333,31 @@ const withheld = (data, selection) => ({
   reason: `fewer than ${data.min_group} salaries match; widen the selection (drop region or years)`,
 });
 
+// When a selection has too few people, the nearest wider ones that have
+// enough: without years, without region, then the role across Spain.
+function widened(data, selection) {
+  const { role, region, years } = selection;
+  const tries = [];
+  if (years) tries.push(["years", { role, region, years: null }]);
+  if (region) tries.push(["region", { role, region: null, years }]);
+  if (region && years) tries.push(["region and years", { role, region: null, years: null }]);
+  const out = [];
+  for (const [dropped, s] of tries) {
+    const a = data.cells[`${s.role ?? ""}|${s.region ?? ""}|${s.years ?? ""}`];
+    if (a) out.push({ dropped, selection: s, result: figures(a) });
+    if (out.length === 2) break;
+  }
+  return out;
+}
+
 export function stats(data, args = {}) {
   const [key, selection, note] = select(data, args);
   const a = data.cells[key];
-  return { ...(a ? { selection, result: figures(a) } : withheld(data, selection)), ...note };
+  if (a) return { selection, result: figures(a), ...note };
+  const wider = widened(data, selection);
+  return { ...withheld(data, selection), ...(wider.length ? { wider_selections: wider,
+    wider_note: "The nearest wider selections with enough salaries. They are not the selection " +
+      "asked for: say which one you quote." } : {}), ...note };
 }
 
 // --- Companies: the site's companies table ----------------------------------------
@@ -381,10 +420,15 @@ export async function topCompanies(data, args = {}, env = {}) {
   }
   const shown = rows.slice(0, limit);
   const ranked = data.min_ranked ?? 3;
+  const close = want && !rows.length
+    ? closeNames(found.map((r) => data.companies[rowOf(table, r).c]), args.search) : [];
   return { selection, companies_listed: rows.length,
            order: `By median base, highest first, as on the site's companies table; a company with ` +
              `fewer than ${ranked} salaries in the selection comes after every company with ${ranked} or more.`,
            ...(shown.some((x) => x.few) ? { few_note: fewNote(data) } : {}),
+           ...(want && !rows.length ? { search_note: `No company in this selection is named like ` +
+             `'${args.search}'.` + (close.length ? ` Close names: ${close.join(", ")}.` : "") +
+             " company_salaries says whether the site has it at all." } : {}),
            result: shown, ...note };
 }
 
@@ -444,12 +488,17 @@ export async function company(data, name, args = {}, env = {}) {
   if (exact.length) matches = exact;
   if (!want || !matches.length) {
     const close = closeNames(companies.map(([c]) => c), name);
+    const open = want ? await openPostings(env, name) : 0;
     throw new QueryError(`The site has no salaries for a company named '${name}'. It lists the ` +
       "companies with salaries in Spain on Levels.fyi that pass its rules (a LinkedIn page or a " +
       "website, and min_global_submissions in list_filters), so a company can be " +
       "missing for any of them, or go by another name. " + (close.length
-        ? `Close names on the site: ${close.join(", ")}.`
-        : "top_companies with search finds a company by part of its name."), "not_found");
+        ? `Close names on the site: ${close.join(", ")}. `
+        : "top_companies with search finds a company by part of its name. ") +
+      (open ? `It has ${open} open posting${open === 1 ? "" : "s"} in Spain or remote from Spain ` +
+        `today: find_jobs with company '${name}'. ` : "") +
+      "salary_stats gives the market figure for the role in Spain, which is the fair comparison " +
+      "when a company has no salaries here.", "not_found");
   }
   if (matches.length > 1)
     throw new QueryError("several companies match: " +
@@ -477,6 +526,17 @@ export async function company(data, name, args = {}, env = {}) {
            groups, ...(groups.length ? {} : { reason: "no salaries at this company for the selection; " +
              "drop role, region or years" }),
            ...(groups.some((g) => g.few) ? { few_note: fewNote(data) } : {}), ...note };
+}
+
+// How many postings today's index has for a company name; 0 when the index
+// cannot be read, since this only adds a hint to an answer.
+async function openPostings(env, name) {
+  try {
+    const want = words(name);
+    const index = await jobIndex(env);
+    return index.jobs.filter((j) => isObject(j) && (words(j.slug) === want ||
+      words(j.company) === want)).length;
+  } catch { return 0; }
 }
 
 export function filters(data) {
@@ -590,6 +650,8 @@ function resolveJobYears(data, value) {
   const n = whole(value);
   if (n !== null && n >= 0) return { years: n, read: String(n) };
   const bucket = String(value).trim();
+  const range = data.years.includes(bucket) ? null : leadingYears(bucket);
+  if (range) return { years: range.high ?? range.low, read: String(range.high ?? range.low) };
   if (n === null && data.years.includes(bucket))
     return { years: bucket.endsWith("+") ? Infinity : Number(bucket.split("-")[1]), read: bucket };
   throw new QueryError("years is the person's years of experience: a number such as 3, or one of " +
@@ -719,6 +781,67 @@ function posting({ p, role, context, basis, matched }, also, withTerms) {
   };
 }
 
+// What to do when find_jobs matches nothing: how many results each filter
+// costs (the search again without it), the best postings from the first
+// filter whose removal finds any, and what the index holds for a company or
+// a query that nothing in it names. Postings in exclude stay out throughout.
+const NEUTRAL = {
+  min_salary_eur: { minSalary: null }, years: { years: null }, seniority: { seniority: null },
+  workplace: { workplace: null }, region: { inRegion: () => true, inCity: null },
+  company: { company: "" }, role: { roleTest: () => true, special: null, classified: false },
+  query: { terms: [] },
+};
+// What the person is looking for; a suggestion must keep at least one, or it
+// is any posting at all (a Django search suggested a sales job without it).
+const TOPICAL = ["company", "role", "query"];
+const ALL_NEUTRAL = Object.assign({}, ...Object.values(NEUTRAL));
+const SUGGESTED = 5;
+function noMatch({ data, index, args, filtersSet, pass, withTerms, dropped }) {
+  const set = Object.keys(NEUTRAL).filter((k) => dropped[k]);
+  if (!set.length) return { no_match: { reason: "today's index has no posting outside exclude" } };
+  const without = set.map((k) => ({ drop: k, matches: pass({ ...filtersSet, ...NEUTRAL[k] }).results.length }));
+  const keepsTopic = (k) => TOPICAL.some((t) => t !== k && dropped[t]);
+  let source = without.find((w) => w.matches > 0 && keepsTopic(w.drop));
+  let sourceLabel = source && `without ${source.drop}`;
+  let results = source ? pass({ ...filtersSet, ...NEUTRAL[source.drop] }).results : [];
+  if (!results.length) {
+    // No single filter is the problem: keep only the most telling one.
+    const keep = TOPICAL.filter((k) => dropped[k]);
+    if (keep.length > 1) for (const k of keep) {
+      const only = { ...filtersSet };
+      for (const j of set) if (j !== k) Object.assign(only, NEUTRAL[j]);
+      results = pass(only).results;
+      sourceLabel = `with ${k} only`;
+      if (results.length) break;
+    }
+  }
+  const advice = {
+    reason: "no posting matches every filter",
+    without_each_filter: without,
+    ...(results.length ? { suggestions: results.slice(0, SUGGESTED).map(({ f, also }) => posting(f, also, withTerms)),
+      suggestions_are: `${sourceLabel}: they do not match every filter asked for, so tell the person ` +
+        "which one they miss." } : {}),
+  };
+  const list = prepared(data, index);
+  if (dropped.company) {
+    const want = words(args.company);
+    const listed = list.some((p) => p.slug === want || p.company.includes(want));
+    if (!listed) {
+      const counts = new Map();
+      for (const p of list) counts.set(p.job.company, (counts.get(p.job.company) ?? 0) + 1);
+      const close = closeNames([...counts].map(([name, n]) => ({ name, n })), args.company);
+      advice.company_note = `Today's index has no posting from '${args.company}'. It holds the open ` +
+        `postings of the ${counts.size} companies the site lists whose job board it reads, kept to the ` +
+        "ones open to someone in Spain." + (close.length ? ` Close names in the index: ${close.join(", ")}.` : "");
+    }
+  }
+  if (dropped.query && !pass({ ...filtersSet, ...ALL_NEUTRAL, terms: filtersSet.terms }).results.length)
+    advice.query_note = "No posting in today's index names these words. query matches a posting's " +
+      "title, company, department and location, not its description: a skill such as a framework " +
+      "rarely appears there, so search by role (role: frontend) and read the descriptions with job_questions.";
+  return { no_match: advice };
+}
+
 export async function findJobs(data, args = {}, env = {}) {
   const role = blank(args.role) ? "" : String(args.role);
   let roleSlug = null;
@@ -732,6 +855,7 @@ export async function findJobs(data, args = {}, env = {}) {
     : classified ? (p) => p.roles.includes(roleSlug)
     : (p) => p.title.includes(asWritten);
   const [regionRead, inRegion, inCity] = regionFilter(data, args.region);
+  const regionAsked = blank(args.region) ? null : String(args.region);
   const workplace = resolveWorkplace(args.workplace);
   const seniority = resolveSeniority(args.seniority);
   const years = resolveJobYears(data, args.years);
@@ -744,46 +868,54 @@ export async function findJobs(data, args = {}, env = {}) {
   const [index, table] = await Promise.all([jobIndex(env),
     companyTable(env).catch((e) => { if (e instanceof Unavailable) return null; throw e; })]);
 
-  let excluded = 0, unknownPay = 0, yearsUnstated = 0;
-  const found = [];
-  for (const p of prepared(data, index)) {
-    const job = p.job;
-    if (exclude.has(job.id)) { excluded++; continue; }
-    if (company && p.slug !== company && !p.company.includes(company)) continue;
-    let matched = [];
-    if (terms.length) {
-      matched = terms.filter((t) => t.pattern.test(p.text)).map((t) => t.term);
-      if (!matched.length) continue;
+  // One pass over the index with a set of filters; the no-match advice runs
+  // it again with one filter dropped at a time.
+  const filtersSet = { company, terms, roleTest, inRegion, inCity, workplace, seniority, years, minSalary,
+                       special, classified, roleSlug };
+  const pass = (g) => {
+    let excluded = 0, unknownPay = 0, yearsUnstated = 0;
+    const found = [];
+    for (const p of prepared(data, index)) {
+      const job = p.job;
+      if (exclude.has(job.id)) { excluded++; continue; }
+      if (g.company && p.slug !== g.company && !p.company.includes(g.company)) continue;
+      let matched = [];
+      if (g.terms.length) {
+        matched = g.terms.filter((t) => t.pattern.test(p.text)).map((t) => t.term);
+        if (!matched.length) continue;
+      }
+      if (!g.roleTest(p) || !g.inRegion(p)) continue;
+      if (g.workplace && p.workplace !== g.workplace) continue;
+      if (g.seniority && p.seniority !== g.seniority && !(g.seniority === "mid" && p.seniority === null)) continue;
+      if (g.years && p.years && p.years[0] > g.years.years) continue;
+      const jobRole = g.special ? g.special.slug
+        : g.classified && p.roles.includes(g.roleSlug) ? g.roleSlug : p.roles[0] ?? null;
+      const context = salaryContext(data, table, job, jobRole);
+      const own = p.eur;
+      let basis;
+      if (g.minSalary !== null) {
+        if (own) { if (own[1] < g.minSalary) continue; basis = "posting"; }
+        else if (context) { if (context.company_median_base_eur < g.minSalary) continue; basis = "company_median"; }
+        else { unknownPay++; continue; }
+      }
+      if (g.years && !p.years) yearsUnstated++;
+      const figure = own ? (own[0] + own[1]) / 2 : context?.company_median_base_eur ?? null;
+      found.push({ figure, posted: job.posted_at ?? "", p, role: jobRole, context, basis, matched });
     }
-    if (!roleTest(p) || !inRegion(p)) continue;
-    if (workplace && p.workplace !== workplace) continue;
-    if (seniority && p.seniority !== seniority && !(seniority === "mid" && p.seniority === null)) continue;
-    if (years && p.years && p.years[0] > years.years) continue;
-    const jobRole = special ? special.slug : classified && p.roles.includes(roleSlug) ? roleSlug : p.roles[0] ?? null;
-    const context = salaryContext(data, table, job, jobRole);
-    const own = p.eur;
-    let basis;
-    if (minSalary !== null) {
-      if (own) { if (own[1] < minSalary) continue; basis = "posting"; }
-      else if (context) { if (context.company_median_base_eur < minSalary) continue; basis = "company_median"; }
-      else { unknownPay++; continue; }
+    // A city keeps the postings that name it; when none does, the whole region stays.
+    const named = g.inCity ? found.filter((f) => g.inCity.test(f.p)) : [];
+    if (named.length) found.splice(0, found.length, ...named);
+    found.sort((a, b) => b.matched.length - a.matched.length || (b.figure ?? -1) - (a.figure ?? -1) ||
+      String(b.posted).localeCompare(String(a.posted)) || a.p.job.id.localeCompare(b.p.job.id));
+    // The first in order speaks for its group; the others stay reachable by id.
+    const groups = new Map();
+    for (const f of found) {
+      if (groups.has(f.p.group)) groups.get(f.p.group).also.push(f.p.job);
+      else groups.set(f.p.group, { f, also: [] });
     }
-    if (years && !p.years) yearsUnstated++;
-    const figure = own ? (own[0] + own[1]) / 2 : context?.company_median_base_eur ?? null;
-    found.push({ figure, posted: job.posted_at ?? "", p, role: jobRole, context, basis, matched });
-  }
-  // A city keeps the postings that name it; when none does, the whole region stays.
-  const named = inCity ? found.filter((f) => inCity.test(f.p)) : [];
-  if (named.length) found.splice(0, found.length, ...named);
-  found.sort((a, b) => b.matched.length - a.matched.length || (b.figure ?? -1) - (a.figure ?? -1) ||
-    String(b.posted).localeCompare(String(a.posted)) || a.p.job.id.localeCompare(b.p.job.id));
-  // The first in order speaks for its group; the others stay reachable by id.
-  const groups = new Map();
-  for (const f of found) {
-    if (groups.has(f.p.group)) groups.get(f.p.group).also.push(f.p.job);
-    else groups.set(f.p.group, { f, also: [] });
-  }
-  const results = [...groups.values()];
+    return { found, named, results: [...groups.values()], excluded, unknownPay, yearsUnstated };
+  };
+  const { found, named, results, excluded, unknownPay, yearsUnstated } = pass(filtersSet);
   const jobs = results.slice(0, limit).map(({ f, also }) => posting(f, also, terms.length > 0));
   return {
     generated_at: index.generated_at ?? null, salary_data_as_of: data.data_as_of || data.generated,
@@ -812,6 +944,10 @@ export async function findJobs(data, args = {}, env = {}) {
       "job_questions and exclude)",
     ...(minSalary !== null ? { left_out_without_salary_figure: unknownPay } : {}),
     ...(years ? { kept_without_years_figure: yearsUnstated } : {}),
+    ...(results.length ? {} : noMatch({ data, index, args, filtersSet, pass, withTerms: terms.length > 0,
+      dropped: { min_salary_eur: minSalary !== null, years: Boolean(years), seniority: Boolean(seniority),
+                 workplace: Boolean(workplace), region: Boolean(regionAsked), query: terms.length > 0,
+                 role: Boolean(role), company: Boolean(company) } })),
     ...(results.length > jobs.length ? { more: `${results.length - jobs.length} more match; narrow the ` +
         "filters, or call again with the ids shown so far (also_posted_as included) added to exclude." } : {}),
     order: ORDER,
@@ -838,6 +974,9 @@ const ATS_HOSTS = new Set(["boards-api.greenhouse.io", "boards-api.eu.greenhouse
 // Workday and Recruitee give each employer its own subdomain.
 const ATS_HOST_PATTERNS = [/^[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com$/, /^[a-z0-9-]+\.recruitee\.com$/];
 const allowedHost = (host) => ATS_HOSTS.has(host) || ATS_HOST_PATTERNS.some((p) => p.test(host));
+// Teamtailor serves each career site on the employer's own domain; its host is
+// the board in our own index, and only that host is read for that posting.
+const SITE_HOST = /^(?=.{4,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/;
 const LIVE_TIMEOUT_MS = 8000;
 const LIVE_MAX_CHARS = 4_000_000;
 // Live form reads per request: a batch of 50 must not become 100 calls to a board.
@@ -847,9 +986,10 @@ const DESCRIPTION_CHARS = 6000;
 class BoardError extends Error {}
 const hostOf = (url) => { try { return new URL(url).hostname; } catch { return ""; } };
 
-async function fetchBoard(env, url, { body, text = false } = {}) {
+async function fetchBoard(env, url, { body, text = false, site = null } = {}) {
   const u = new URL(url);
-  if (u.protocol !== "https:" || !allowedHost(u.hostname)) throw new BoardError(`host ${u.hostname} is not allowed`);
+  if (u.protocol !== "https:" || !(allowedHost(u.hostname) || (site && u.hostname === site)))
+    throw new BoardError(`host ${u.hostname} is not allowed`);
   let answer;
   try {
     answer = await (env.fetch ?? globalThis.fetch)(u.href, {
@@ -903,7 +1043,7 @@ function untrusted(text) {
 // down, with Spanish forms. Order matters: the first match names the category.
 const QUESTION_CATEGORIES = [
   ["bot-check", /\bare you (a |an )?(human|robot|bot|ai|artificial intelligence)\b|\bnot a robot\b|\b(completed|written|filled|submitted) (by|with|using) (an? )?(ai|bot|automated)\b|\beres (un )?(robot|humano)\b/],
-  ["work-authorization", /\b(authoriz|authoris)\w* to work\b|\bwork (authoriz|authoris)|\bright to work\b|\blegally (able|allowed|entitled) to work\b|\b(entitled|eligible|permitted) to work\b|\bwork(ing)? permit\b|\bpermiso de trabajo\b|\bautorizaci\w* (para|de) trabaj/],
+  ["work-authorization", /\b(authoriz|authoris)\w* to work\b|\bwork (authoriz|authoris)|\bright to work\b|\blegally (able|allowed|entitled) to work\b|\b(entitled|eligible|permitted) to work\b|\bwork(ing)? permit\b|\bpermit to work\b|\bpermiso de trabajo\b|\bautorizaci\w* (para|de) trabaj/],
   ["sponsorship", /\bsponsor|\bvisa\b|\bh 1b\b|\bimmigration\b|\bpatrocinio\b/],
   ["citizenship", /\bcitizen|\bnationality\b|\bpermanent resident\b|\bgreen card\b|\bnacionalidad\b|\bciudadan/],
   ["clearance", /\bclearance\b|\btop secret\b|\bpublic trust\b/],
@@ -1129,6 +1269,103 @@ async function recruiteeForm(env, board, external) {
            captcha: null };
 }
 
+// Teamtailor: the application page of the career site, server-rendered HTML.
+// The employer's own questions come first (data-question-uuid blocks), then
+// the standard fields, each a <label for="candidate_..."> with an asterisk
+// when required. The posting text is the page's JSON-LD JobPosting.
+const TEAMTAILOR_TYPES = { boolean: "boolean", choice: "select", number: "number", text: "text",
+  date: "date", range: "number", video: "video", file: "file" };
+const TEAMTAILOR_FIELDS = { first_name: "text", last_name: "text", email: "email", phone: "phone",
+  resume_remote_url: "file", file_remote_url: "file", cover_letter: "textarea", location: "text",
+  location_ids: "multiselect" };
+// The asterisk is drawn; the word for screen readers (Required, Obligatorio...) is in an sr-only span.
+const isRequired = (html) => /data-asterisk="true"/.test(html);
+const labelText = (html) => htmlText(String(html).replace(/<sup\b[\s\S]*?<\/sup>/gi, " ")
+  .replace(/<span[^>]*class="[^"]*\bsr-only\b[^"]*"[^>]*>[\s\S]*?<\/span>/gi, " "))
+  .replace(/\s+/g, " ").trim().slice(0, 400);
+const choiceLabels = (block, forPrefix) =>
+  [...block.matchAll(new RegExp(`<label\\b[^>]*for="${forPrefix}[^"]*"[^>]*>([\\s\\S]*?)<\\/label>`, "g")),
+   ...block.matchAll(/<option\b[^>]*value="[^"]+"[^>]*>([\s\S]*?)<\/option>/g)].map((m) => labelText(m[1])).filter(Boolean);
+const legendLabel = (block) => {
+  const legend = /<legend\b[^>]*>([\s\S]*?)<\/legend>/.exec(block)?.[1];
+  if (!legend) return null;
+  const title = /<span\b[^>]*>([\s\S]*?<\/span>)\s*<\/span>|<span\b[^>]*>([\s\S]*?)<\/span>/.exec(legend);
+  const titleText = labelText(title ? (title[1] ?? title[2]) : legend);
+  const detail = labelText(/<\/span>\s*<div\b[^>]*>([\s\S]*)<\/div>\s*$/.exec(legend)?.[1] ?? "");
+  return { label: [titleText, detail].filter(Boolean).join(": "), required: isRequired(legend) };
+};
+
+export function teamtailorQuestions(page) {
+  const start = page.indexOf('id="job-application-form"');
+  if (start < 0) throw new BoardError("the board no longer takes applications for this posting; it may have closed");
+  const end = page.indexOf("</form>", start);
+  const form = page.slice(start, end < 0 ? undefined : end);
+  const firstStandard = Math.max(form.search(/<label[^>]*for="candidate_first_name"/), 0);
+  // The employer's own questions: one block per data-question-mandatory, up to the next one.
+  const marks = [...form.slice(0, firstStandard || undefined).matchAll(/<div\b[^>]*\bdata-question-mandatory="(true|false)"/g)];
+  const own = marks.map((mark, i) => {
+    const block = form.slice(mark.index, marks[i + 1]?.index ?? (firstStandard || undefined)).split(/<h2\b/)[0];
+    // Teamtailor can place its own locations picker among the questions.
+    if (/name="candidate\[location_ids\]\[\]"/.test(block))
+      return question("location_ids", legendLabel(block)?.label || "Locations", mark[1] === "true", "multiselect",
+                      choiceLabels(block, "candidate_location_ids_"));
+    const id = /value="(\d+)"[^>]*name="candidate\[answers_attributes\]\[\d+\]\[question_id\]"/.exec(block)?.[1] ?? String(i);
+    const kind = [...block.matchAll(/name="candidate\[answers_attributes\]\[\d+\]\[(\w+)\]/g)]
+      .map((m) => m[1]).find((k) => !/question_id$/.test(k)) ?? "text";
+    const label = legendLabel(block)?.label
+      || labelText(/<label\b[^>]*for="candidate_answers_attributes_[^"]*"[^>]*>([\s\S]*?)<\/label>/.exec(block)?.[1] ?? "");
+    const options = kind === "boolean" ? choiceLabels(block, "boolean-") : choiceLabels(block, "candidate_answers_attributes_\\d+_choice");
+    const type = kind === "choice" && /data-question-multiple-choice="true"/.test(block) ? "multiselect"
+      : kind === "text" && /<textarea\b/.test(block) ? "textarea" : TEAMTAILOR_TYPES[kind] ?? "text";
+    return question(`question_${id}`, label, mark[1] === "true", type,
+                    kind === "boolean" && options.length !== 2 ? ["Yes", "No"] : options);
+  });
+  const rest = form.slice(firstStandard);
+  const standard = [...rest.matchAll(/<label\b[^>]*for="candidate_([a-z0-9_]+)"[^>]*>([\s\S]*?)<\/label>/g)]
+    .filter(([, field]) => !/^answers_attributes|^location_ids_/.test(field))
+    .map(([, field, html]) => {
+      const key = field.replace(/^job_applications_attributes_\d+_/, "");
+      // The privacy consent is always required; its label carries the word, not the asterisk.
+      return question(key, labelText(html), isRequired(html) || key === "consent_given",
+                      key.startsWith("consent_") ? "checkbox" : TEAMTAILOR_FIELDS[key] ?? "text", [], "application",
+                      key.startsWith("consent_") ? { who: "person", category: "consent" } : {});
+    });
+  // A fieldset of checkboxes such as the locations the person would work from.
+  for (const set of rest.matchAll(/<fieldset\b[\s\S]*?<\/fieldset>/g)) {
+    const field = /name="candidate\[([a-z_]+)\]\[\]"/.exec(set[0])?.[1];
+    const legend = legendLabel(set[0]);
+    if (!field || !legend) continue;
+    standard.push(question(field, legend.label, legend.required, TEAMTAILOR_FIELDS[field] ?? "multiselect",
+                           choiceLabels(set[0], `candidate_${field}_`)));
+  }
+  return [...own, ...standard];
+}
+
+function jobPostingText(page) {
+  for (const m of page.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)) {
+    try {
+      const data = JSON.parse(m[1]);
+      const posting = [data, ...(Array.isArray(data?.["@graph"]) ? data["@graph"] : [])].find((d) => d?.["@type"] === "JobPosting");
+      if (posting?.description) return htmlText(posting.description);
+    } catch { /* not this block */ }
+  }
+  return null;
+}
+
+async function teamtailorForm(env, board, external, job) {
+  const site = String(board).toLowerCase();
+  if (!SITE_HOST.test(site) || !/^\d+$/.test(external) || hostOf(job.url) !== site)
+    throw new BoardError("the posting's URL is not on its Teamtailor career site");
+  const apply = `https://${site}/jobs/${external}/applications/new`;
+  const page = await fetchBoard(env, apply, { text: true, site });
+  const questions = teamtailorQuestions(page);
+  let description = null;
+  try { description = jobPostingText(await fetchBoard(env, job.url, { text: true, site })); } catch { /* the form is what matters */ }
+  return { apply_url: apply, questions, description,
+           captcha: /h-captcha|g-recaptcha|recaptcha|turnstile/i.test(page),
+           source: "Teamtailor career site's application page, read now" };
+}
+
 // Workday publishes the posting, but its form only after the person signs in
 // to an account with the employer. job_questions reads the posting, says
 // whether the employer adds questions of its own (questionnaireId), and lists
@@ -1178,7 +1415,7 @@ async function workdayForm(env, board, external, job) {
 }
 
 const FORMS = { greenhouse: greenhouseForm, ashby: ashbyForm, lever: leverForm, workable: workableForm,
-                recruitee: recruiteeForm, workday: workdayForm };
+                recruitee: recruiteeForm, teamtailor: teamtailorForm, workday: workdayForm };
 
 // "ats:board:id"; the board may hold slashes (Workday), never a colon.
 function splitId(id) {
@@ -1199,7 +1436,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
   const read = parts && job.ats === parts[0] && Object.hasOwn(FORMS, job.ats) ? FORMS[job.ats] : null;
   if (!read)
     return { job: posting, apply_url: job.url, form_source: null, questions: null, description: null, captcha: null,
-             note: `job_questions reads Greenhouse, Lever, Ashby, Workable and Recruitee forms, and Workday's ` +
+             note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee and Teamtailor forms, and Workday's ` +
                    `postings; this posting is on ${job.ats}. ` +
                    "Open url in your browser and read the form there; classify its questions with the " +
                    "same rule (see application_guide)." };

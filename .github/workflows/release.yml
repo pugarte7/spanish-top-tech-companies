@@ -1,0 +1,50 @@
+name: release
+
+# Every merged PR becomes a release: patch by default, minor or major with
+# that label on the PR. Direct pushes (the weekly "Refresh salaries") make none.
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tag and release the merged PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          pr=$(gh api "repos/$REPO/commits/$SHA/pulls" \
+            --jq "[.[] | select(.merged_at != null and .merge_commit_sha == \"$SHA\")][0]")
+          if [ -z "$pr" ] || [ "$pr" = "null" ]; then
+            echo "No merged PR for $SHA, no release."
+            exit 0
+          fi
+          number=$(jq -r .number <<<"$pr")
+          title=$(jq -r .title <<<"$pr")
+          labels=$(jq -r '[.labels[].name] | join(" ")' <<<"$pr")
+
+          last=$(gh api "repos/$REPO/git/matching-refs/tags/v" --jq '.[].ref' \
+            | sed 's|refs/tags/v||' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          IFS=. read -r major minor patch <<<"${last:-0.0.0}"
+          case " $labels " in
+            *" major "*) next="$((major + 1)).0.0" ;;
+            *" minor "*) next="$major.$((minor + 1)).0" ;;
+            *) next="$major.$minor.$((patch + 1))" ;;
+          esac
+
+          printf -- '- %s (#%s)\n' "$title" "$number" > notes.md
+          gh release create "v$next" --repo "$REPO" --target "$SHA" \
+            --title "v$next" --notes-file notes.md --latest
