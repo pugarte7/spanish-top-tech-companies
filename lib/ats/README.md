@@ -5,7 +5,9 @@ The job-board code the site's crawl and board finder use: one adapter per ATS
 Teamtailor, Eightfold, Oracle Recruiting Cloud, Phenom, iCIMS and SuccessFactors career sites,
 Radancy, Cornerstone, Pinpoint, BambooHR, Rippling and a few employer sites (Google, Meta, Amazon, Apple, Bending Spoons); `sources/jsonapi.js` holds the employers
 whose careers page reads a public JSON API of their own, one small mapping
-each), a polite HTTP client with a per-host interval, the
+each, and `jsonld` for career sites of the employer's own making that publish each
+posting's schema.org JobPosting, its boards written by hand, see
+`sources/jsonld.js`), a polite HTTP client with a per-host interval, the
 location classifier and the rules that decide which board belongs to a company
 (`presets/spain.js`).
 

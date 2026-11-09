@@ -728,4 +728,41 @@ assert.equal(apple.boardFromUrl("https://www.apple.com/iphone/"), null);
 assert.equal(spoonsAts.adapterFor("bendingspoons").boardFromUrl("https://jobs.bendingspoons.com/positions/x")?.board,
              "jobs.bendingspoons.com");
 
+// --- JSON-LD career sites: a listing, then one JobPosting per page ----------
+const { jsonldAdapter, jobPostings } = await import("../lib/ats/sources/jsonld.js");
+const ld = (posting) => `<html><script type="application/ld+json">${JSON.stringify(posting)}</script></html>`;
+const SITE = {
+  "https://acme.example/careers/jobs/": `<a href="/jobs/backend-engineer/">Backend</a>
+    <a href="https://acme.example/jobs/sales-lead/#apply">Sales</a><a href="/careers/jobs/<%- url %>">x</a>
+    <a href="https://other.example/jobs/elsewhere/">elsewhere</a><a href="/about/">about</a>`,
+  "https://acme.example/jobs/backend-engineer/": ld({ "@context": "https://schema.org", "@type": "JobPosting",
+    title: "Backend Engineer", identifier: { "@type": "PropertyValue", value: "be-1" }, datePosted: "2026-11-01",
+    description: "<p>You have 3+ years of experience with Go.</p>",
+    jobLocation: { "@type": "Place", address: { "@type": "PostalAddress", addressLocality: "Barcelona", addressCountry: "ES" } },
+    baseSalary: { "@type": "MonetaryAmount", currency: "EUR", value: { minValue: 55000, maxValue: 70000, unitText: "YEAR" } } }),
+  "https://acme.example/jobs/sales-lead/": ld({ "@graph": [{ "@type": "WebPage" }, { "@type": "JobPosting",
+    title: "Sales Lead", jobLocation: [{ "@type": "Place", address: "Boston" }], validThrough: "2020-01-01" }] }),
+};
+const realFetch = globalThis.fetch;
+const seenLd = [];
+globalThis.fetch = async (url) => {
+  seenLd.push(String(url));
+  return String(url) in SITE ? new Response(SITE[String(url)], { status: 200 }) : new Response("gone", { status: 404 });
+};
+const acme = { name: "Acme", ats: "jsonld", board: "acme.example/careers/jobs/", tier: "B", tags: [], query: "" };
+const ldJobs = await jsonldAdapter.listJobs(acme, "2026-11-09T00:00:00Z");
+globalThis.fetch = realFetch;
+assert.deepEqual(ldJobs.map((j) => [j.externalId, j.title, j.locationsRaw]), [["be-1", "Backend Engineer", ["Barcelona, Spain"]]],
+                 "the closed posting is dropped, the template and foreign links never read");
+assert.deepEqual(seenLd.filter((u) => u.includes("other.example") || u.includes("%")), []);
+assert.equal(ldJobs[0].compensation.min, 55000);
+assert.equal(ldJobs[0].compensation.period, "year");
+assert.equal(jobPostings('<script type="application/ld+json">{"@type":"JobPosting","title":"A\nB"}</script>').length, 1,
+             "raw line breaks inside JSON-LD strings are tolerated");
+assert.throws(() => jsonldAdapter.listUrl({ ...acme, query: "everything" }), /unknown jsonld option/);
+const { pageLinks } = await import("../lib/ats/sources/jsonld.js");
+assert.deepEqual(pageLinks('<a href="/jobs/page/2/">2</a><a href="/jobs/?page=3">3</a><a href="/blog/page/2/">x</a>' +
+                           '<a href="/jobs/page/99/">99</a>', new URL("https://acme.example/jobs/")),
+                 ["https://acme.example/jobs/page/2/", "https://acme.example/jobs/?page=3"], "listing pages, capped at 10");
+
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);

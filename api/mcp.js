@@ -1525,7 +1525,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
   if (!read)
     return { job: posting, apply_url: job.url, form_source: null, questions: null, description: null, captcha: null,
              note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR and Bending Spoons forms, and Workday's ` +
-                   `and Phenom's postings; this posting is on ${job.ats}. ` +
+                   `and Phenom's postings; this posting is on ${job.ats === "jsonld" ? "the employer's own careers site" : job.ats}. ` +
                    "Open url in your browser and read the form there; classify its questions with the " +
                    "same rule (see application_guide)." };
   if (env.live) {
