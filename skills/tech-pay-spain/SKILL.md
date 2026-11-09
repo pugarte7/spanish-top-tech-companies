@@ -33,12 +33,15 @@ The same server searches the open postings at the companies it lists, refreshed
 daily from their public job boards (only postings in Spain, or remote open to
 Spain or Europe), and helps apply to them. See "Applying" below.
 
-- `find_jobs(query, role, region, workplace, company, min_salary_eur, exclude, limit)`:
+- `find_jobs(query, role, region, workplace, seniority, years, company, min_salary_eur, exclude, limit)`:
   open postings, each with the company's median base for the role. `query`
   matches any of its words (synonyms such as SRE and site reliability
   included), the postings matching more first; `role` also takes
   specializations such as DevOps, SRE, backend or frontend. `region` takes a
-  city or remote too; `exclude` takes the ids already applied to.
+  city or remote too; `seniority` (intern, junior, mid, senior, staff, lead,
+  head) is the level the title names; `years` is the person's experience and
+  leaves out postings asking more; `exclude` takes the ids already applied to.
+  Each result has the `roles`, `seniority` and `years_asked` read from it.
 - `job_questions(id)`: one posting's application form, read live from its
   job board, each question marked `who` = person or agent; the posting text,
   marked untrusted; the apply URL. Greenhouse, Lever, Ashby, Workable and
