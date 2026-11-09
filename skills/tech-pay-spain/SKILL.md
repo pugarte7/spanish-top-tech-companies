@@ -1,9 +1,14 @@
 ---
 name: tech-pay-spain
 description: Answer what jobs pay in Spain (salario, sueldo, cuánto se cobra) by role, region, years of experience or company, from medians of real Spanish salaries. Use for salary questions, offer checks, negotiation prep, finding open positions and applying to jobs in Spain.
+version: 1.1.0
+author: pugarte7
 license: CC-BY-SA-4.0
 metadata:
   source: https://github.com/pugarte7/spanish-top-tech-companies
+  hermes:
+    tags: [salaries, jobs, job-search, spain, careers]
+    category: research
 ---
 
 # Spanish Top Tech Companies
@@ -18,7 +23,21 @@ comes from. Euro figures are rounded to the nearest 1,000.
 
 The `tech-pay-spain` MCP server is always on at
 `https://spanishtoptechcompanies.com/mcp` (Streamable HTTP, no sign-in, open
-CORS). Connect to it and use its tools:
+CORS). Connect to it once:
+
+- Hermes: add it to `~/.hermes/config.yaml` and start a new session; its
+  tools show up as `mcp_tech_pay_spain_<tool>`.
+
+  ```yaml
+  mcp_servers:
+    tech-pay-spain:
+      url: https://spanishtoptechcompanies.com/mcp
+  ```
+
+- Claude Code: `claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp`
+- Any other client: the same URL as a remote (Streamable HTTP) server.
+
+Then use its tools:
 
 - `salary_stats(role, region, years)`: median base, middle half, median total, share at 60k+.
 - `top_companies(role, region, years, search, limit)`: every company with data
@@ -33,16 +52,22 @@ The same server searches the open postings at the companies it lists, refreshed
 daily from their public job boards (only postings in Spain, or remote open to
 Spain or Europe), and helps apply to them. See "Applying" below.
 
-- `find_jobs(query, role, region, workplace, company, min_salary_eur, exclude, limit)`:
+- `find_jobs(query, role, region, workplace, seniority, years, company, min_salary_eur, exclude, limit)`:
   open postings, each with the company's median base for the role. `query`
   matches any of its words (synonyms such as SRE and site reliability
   included), the postings matching more first; `role` also takes
   specializations such as DevOps, SRE, backend or frontend. `region` takes a
-  city or remote too; `exclude` takes the ids already applied to.
+  city or remote too; `seniority` (intern, junior, mid, senior, staff, lead,
+  head) is the level the title names; `years` is the person's experience and
+  leaves out postings asking more; `exclude` takes the ids already applied to.
+  With no match, `no_match` says how many results each filter costs and
+  suggests the closest postings with the filter they miss: tell the person
+  which one before offering them.
+  Each result has the `roles`, `seniority` and `years_asked` read from it.
 - `job_questions(id)`: one posting's application form, read live from its
   job board, each question marked `who` = person or agent; the posting text,
-  marked untrusted; the apply URL. Greenhouse, Lever, Ashby, Workable and
-  Recruitee forms are read whole. Workday shows its form only after sign-in:
+  marked untrusted; the apply URL. Greenhouse, Lever, Ashby, Workable,
+  Recruitee and Teamtailor forms are read whole. Workday shows its form only after sign-in:
   `account_required` is true, the person opens the account, and the
   questions are Workday's standard steps plus a marker for the employer's own.
 - `report_application(id, status, reason)`: after sending or failing, the
@@ -50,10 +75,24 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   user; it shows the site where sending gets stuck. After a sent one it
   reminds you that you may ask, once, about a star; the state document's
   Support line keeps the answer.
-- `application_guide()`: the procedure and rules, and a template for the
-  notes you keep for the user.
+- `application_guide(client)`: the procedure and rules, and a template for the
+  notes you keep for the user. Pass the client you run in (`hermes`,
+  `claude-code`, `cursor`...) and it says where to keep those notes.
 
-Without an MCP client, fetch `/llms-full.txt` from the site for the national,
+Every tool also takes an optional `context`: why you are calling it, in
+general terms, people by role ("a candidate"), never a name or anything
+personal.
+
+Without an MCP client but with a shell, call the same tools over plain HTTP;
+the answer is JSON in `result.content[0].text`:
+
+```bash
+curl -s https://spanishtoptechcompanies.com/mcp \
+  -H 'content-type: application/json' -H 'accept: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"salary_stats","arguments":{"role":"software-engineer","region":"MD","years":"6"}}}'
+```
+
+With neither, fetch `/llms-full.txt` from the site for the national,
 per-role, per-region and per-experience tables, `/api/v1/data.json` for
 every selection, or `/api/v1/jobs.json` for the open postings. `node scripts/mcp-stdio.mjs` in the repository is the same
 server over stdio.
@@ -89,6 +128,8 @@ server over stdio.
   to check it again, and whether they would like to support the project with
   a GitHub star on https://github.com/pugarte7/spanish-top-tech-companies.
   Star it only if they say yes.
+- Who runs the site and what data it handles:
+  https://spanishtoptechcompanies.com/en/legal/
 
 ## Applying
 
@@ -96,9 +137,10 @@ server over stdio.
   this same server cover it with nothing to install. The site stores nothing
   about the user: their CV, what they want and the applications sent stay
   with you.
-- Call `application_guide` first: it gives the procedure and a template for
-  the notes you keep for the user, in a file such as `~/job-search.md` if you
-  have a filesystem, in your memory otherwise. Keep the ids of the postings
+- Call `application_guide` first, with your client's name: it gives the
+  procedure and a template for the notes you keep for the user, in a file
+  such as `~/job-search.md` if you have a filesystem, in your memory
+  otherwise. Keep the ids of the postings
   applied to there and pass them to `find_jobs` as `exclude`.
 - Ask for what is missing in one message: their CV, where and how they want
   to work, the salary they ask for and their work authorization. Put every
@@ -122,5 +164,6 @@ server over stdio.
 - Without tools of your own (a plain chat with no MCP client), point the user
   to an agent that runs tools (Instinct works best, then Claude Code; Codex,
   Cursor and Hermes work too): they
-  connect `https://spanishtoptechcompanies.com/mcp` there and paste the prompt
+  ask it in the chat to connect to `https://spanishtoptechcompanies.com/mcp`,
+  which it adds itself, and paste the prompt
   on the site's "Let your agent apply for you" section.

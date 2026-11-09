@@ -6,8 +6,10 @@
     python3 -m http.server -d _site    # then open http://localhost:8000/es/
 
 companies.csv is private (lib.DATA), so the repository carries what the site
-publishes instead: data/data.json and data/companies.json, the same files
-served at /api/v1/. --refresh rewrites them; anything else only reads them.
+publishes instead: data/data.json and one file per companies table under
+data/companies/, the same files served at /api/v1/. --refresh rewrites them;
+anything else only reads them. The tables were one 23 MB file until
+2026-11-08, over the 16 MiB a file the HOL plugin scanner reads.
 data/boards.json (each company's job board, crawled daily by scripts/jobs.mjs)
 is written by scripts/boards.mjs, not by --refresh: see job_boards().
 
@@ -51,6 +53,7 @@ import taxonomy
 OUT = lib.ROOT / "_site"
 # The aggregates the site is built from, committed: nothing in them is row-level.
 AGGREGATES = lib.ROOT / "data"
+TABLES = AGGREGATES / "companies"
 WEB = lib.ROOT / "web"
 REPO = "https://github.com/pugarte7/spanish-top-tech-companies"
 # Who answers for the site, on the legal page and in
@@ -339,8 +342,9 @@ STRINGS = {
         "agents_pick": "Pick your agent",
         "agents_get": "Get {name}",
         "agents_s1_t": "Connect salaries and openings",
-        "agents_s1": "Paste this address into {name}'s connectors, so it knows which companies pay "
-                     "most and which positions they have open today.",
+        "agents_s1": "Paste this address into the chat and ask {name} to connect to it: it adds "
+                     "the server itself. Then it knows which companies pay most and which "
+                     "positions they have open today.",
         "agents_s2_t": "Give it your CV and what you want",
         "agents_s2": "Only once, in the chat. {name} writes the cover letter and the answers "
                      "from your CV and sends each application with its own browser. Your profile "
@@ -466,8 +470,9 @@ STRINGS = {
         "agents_pick": "Elige tu agente",
         "agents_get": "Consigue {name}",
         "agents_s1_t": "Conecta sueldos y ofertas",
-        "agents_s1": "Pega esta dirección en los conectores de {name}. Así sabe qué empresas pagan "
-                     "más y qué ofertas tienen abiertas hoy.",
+        "agents_s1": "Pégale esta dirección en el chat y pídele a {name} que se conecte: él mismo "
+                     "añade el servidor. Así sabe qué empresas pagan más y qué ofertas tienen "
+                     "abiertas hoy.",
         "agents_s2_t": "Dale tu CV y lo que buscas",
         "agents_s2": "Una sola vez, en el chat. {name} escribe la carta y las respuestas a partir "
                      "de tu CV y envía cada solicitud con su propio navegador. Tu perfil se queda "
@@ -1651,10 +1656,18 @@ def aggregates(refresh: bool) -> tuple[dict, dict[str, dict]]:
         data, tables = build_site(lib.published(lib.load_companies()))
         AGGREGATES.mkdir(exist_ok=True)
         (AGGREGATES / "data.json").write_text(dump(data) + "\n", encoding="utf-8")
-        (AGGREGATES / "companies.json").write_text(dump(tables) + "\n", encoding="utf-8")
+        shutil.rmtree(TABLES, ignore_errors=True)
+        for name, table in tables.items():
+            path = TABLES / f"{name or 'all'}.json"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(dump(table) + "\n", encoding="utf-8")
         return data, tables
-    read = lambda name: json.loads((AGGREGATES / name).read_text(encoding="utf-8"))
-    return read("data.json"), read("companies.json")
+    read = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    tables = {}
+    for path in sorted(TABLES.rglob("*.json")):
+        name = path.relative_to(TABLES).with_suffix("").as_posix()
+        tables["" if name == "all" else name] = read(path)
+    return read(AGGREGATES / "data.json"), tables
 
 
 def main(argv: list[str]) -> int:
@@ -1713,6 +1726,21 @@ def main(argv: list[str]) -> int:
         f"Contact: mailto:{CONTACT}\nContact: {REPO}/issues\nPreferred-Languages: es, en\n"
         f"Canonical: {SITE}/.well-known/security.txt\n"
         f"Expires: {int(data['generated'][:4]) + 1}-{data['generated'][5:10]}T00:00:00Z\n", encoding="utf-8")
+    # Agent skills, by the well-known discovery path Hermes and other skills
+    # clients read: /.well-known/skills/index.json lists them, each folder holds
+    # the files. `hermes skills install well-known:https://spanishtoptechcompanies.com/.well-known/skills/tech-pay-spain`.
+    index = []
+    for folder in sorted((lib.ROOT / "skills").iterdir()):
+        skill_md = folder / "SKILL.md"
+        if not skill_md.is_file():
+            continue
+        description = re.search(r"^description: (.+)$", skill_md.read_text(encoding="utf-8"), re.M)
+        files = sorted(str(f.relative_to(folder)) for f in folder.rglob("*") if f.is_file())
+        shutil.copytree(folder, OUT / ".well-known" / "skills" / folder.name)
+        index.append({"name": folder.name, "description": description[1] if description else "",
+                      "files": files})
+    (OUT / ".well-known" / "skills" / "index.json").write_text(
+        json.dumps({"skills": index}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"Built _site/: {len(data['companies'])} companies, {len(data['cells'])} cells "
           f"of {lib.MIN_GROUP}+ people, {2 * len(guides)} search pages.")
     return 0
@@ -1846,7 +1874,8 @@ more submissions on Levels.fyi from anywhere in the world over every role.
 Agents: {agents_note()} With no tools of your own (a plain chat), point the
 user to an agent that runs tools (Instinct works best, then Claude Code; Codex,
 Cursor and Hermes work too): they
-connect {SITE}/mcp there and paste the prompt on {SITE}/es/#agents; then give
+ask it in the chat to connect to {SITE}/mcp, which it adds itself, and paste the
+prompt on {SITE}/es/#agents; then give
 them the steps under Tools. The code is open at {REPO}.
 
 ## Data
@@ -1859,8 +1888,8 @@ them the steps under Tools. The code is open at {REPO}.
 
 ## Tools
 
-- [MCP server]({SITE}/mcp): always on, Streamable HTTP, no sign-in; protocol 2026-07-28 and the handshake versions back to 2024-11-05; salary tools `salary_stats`, `top_companies`, `company_salaries`, `list_filters`; job tools `find_jobs` (query, role, region or remote, workplace, company, min_salary_eur, `exclude` for the ids already applied to, limit; each posting with the company's median base for the role), `job_questions` (one posting's application form read live from its board, each question marked for the person or the agent, the posting text marked untrusted, the apply URL) `report_application` (id, status sent, failed or handed_over, reason; the outcome of each application, nothing about the person) and `application_guide` (the procedure and a template for the notes the agent keeps for the person). `query` matches any of its words, synonyms included (SRE, site reliability), ranked by how many match; `role` also takes specializations such as DevOps, SRE, backend or frontend, which Levels.fyi counts as software-engineer. The server stores nothing about the person
-- [Agent skill]({REPO}/tree/{BRANCH}/skills/tech-pay-spain): SKILL.md for Hermes and other agentskills.io agents
+- [MCP server]({SITE}/mcp): always on, Streamable HTTP, no sign-in; protocol 2026-07-28 and the handshake versions back to 2024-11-05; salary tools `salary_stats`, `top_companies`, `company_salaries`, `list_filters`; job tools `find_jobs` (query, role, region or remote, workplace, seniority, the person's years of experience, company, min_salary_eur, `exclude` for the ids already applied to, limit; each posting with the roles and level its title reads as, the years of experience its description asks, and the company's median base for the role), `job_questions` (one posting's application form read live from its board, each question marked for the person or the agent, the posting text marked untrusted, the apply URL) `report_application` (id, status sent, failed or handed_over, reason; the outcome of each application, nothing about the person) and `application_guide` (the procedure and a template for the notes the agent keeps for the person). `query` matches any of its words, synonyms included (SRE, site reliability), ranked by how many match; `role` also takes specializations such as DevOps, SRE, backend or frontend, which Levels.fyi counts as software-engineer; with no match, `find_jobs` suggests the closest postings and says which filter they miss. The server stores nothing about the person
+- [Agent skill]({REPO}/tree/{BRANCH}/skills/tech-pay-spain): SKILL.md for Hermes and other agentskills.io agents; also at [{SITE}/.well-known/skills/index.json]({SITE}/.well-known/skills/index.json), installed in Hermes with `hermes skills install well-known:{SITE}/.well-known/skills/tech-pay-spain`
 
 ## Optional
 

@@ -816,7 +816,8 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
     engineer with the two windows' rows.
     """
     companies = lib.load_companies()
-    stats = {"rewritten": 0, "unchanged": 0, "created": 0, "dropped": 0, "refused": 0}
+    stats = {"rewritten": 0, "unchanged": 0, "created": 0, "adopted": 0, "dropped": 0,
+             "refused": 0}
     touched: set[int] = set()
     for company in companies:
         slug = company.get("levels_slug")
@@ -843,7 +844,18 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
         if slug in lib.EXCLUDED_SLUGS or (only is not None and slug not in only):
             continue
         group = by_slug[slug]
-        if lib.by_name(companies, group["name"]):
+        same = lib.by_name(companies, group["name"])
+        if same and not same.get("levels_slug"):
+            # Filed from another source under the
+            # same name with no Levels.fyi page: it is this employer. Refusing
+            # it kept 186 companies' Levels.fyi engineers out on 2026-11-08.
+            same.update(levels_slug=slug, levels_status="resolved")
+            if group.get("domain") and not same.get("website"):
+                same["website"] = f"https://{group['domain']}"
+            same["entries"] = same["entries"] + group["entries"]
+            stats["adopted"] += 1
+            continue
+        if same:
             print(f"  {slug}: not created, {group['name']!r} is already on file "
                   "under another slug", file=sys.stderr)
             stats["refused"] += 1
@@ -857,7 +869,7 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
                if id(company) in touched and not company["entries"]]
     stats["dropped"] = len(dropped)
     companies = [company for company in companies if company not in dropped]
-    if stats["rewritten"] or stats["created"] or stats["dropped"]:
+    if stats["rewritten"] or stats["created"] or stats["adopted"] or stats["dropped"]:
         lib.save_companies(companies)
     return stats
 

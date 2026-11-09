@@ -7,6 +7,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import mcp, { analytics, respond as answer, sessionOf } from "../api/mcp.js";
 import { redact } from "../api/_track.js";
+import { seniorityOf, titleRoles, yearsAsked } from "../api/_classify.js";
 
 const DATA = "_site/api/v1/data.json";
 const JOBS = "tests/fixtures/jobs.sample.json";
@@ -511,6 +512,78 @@ report("find_jobs: city names resolve without accents or case", places.join() ==
   "AN,PV,PV,GA,CN,MU,AS,RI,NC,IB,CL,CB,CM,EX,AR", places);
 const md = await jobsIn("Madrid");
 report("find_jobs: a region's own name is the region, not a city", md.filters.region === "MD" && !("city" in md.filters));
+// --- Classification: roles, level and years of experience ----------------------------
+const known = new Set(data.roles.map((r) => r.slug));
+const rolesOf = Object.entries({
+  "Ingeniero/a de Software": "software-engineer", "Jefe/a de Proyecto": "project-manager",
+  "Delegad@ Comercial": "sales", "Landing Gear Engineer - System & Structure Design": "aerospace-engineer",
+  "Industrial Means Engineer": "", "Flight Software Engineer": "software-engineer",
+  "Ingeniero/a de Infraestructuras Eléctricas": "", "Ingeniero/a Eléctrico - Bilbao": "electrical-engineer",
+  "Derivatives Electrical Installation Designer": "", "Senior Product Designer": "product-designer",
+  "Associate Sales Engineering Director": "sales-engineer", "Manager I, Engineering - Husky": "software-engineering-manager",
+  "Senior Applied AI Scientist": "data-scientist", "Legal Counsel - Privacy": "legal",
+  "Solutions Architect for Automotive": "solution-architect", "Senior SAP Basis Administrator": "information-technologist",
+  "Technical Product Marketing Manager - Cybersecurity": "marketing", "Senior Marketing Data Analyst": "data-analyst,marketing",
+  "Sales Engineer": "sales-engineer", "Backend Engineer": "software-engineer",
+}).filter(([title, want]) => titleRoles(title, known).join() !== want);
+report("titles read as their roles: Spanish forms, engineering outside software, several roles",
+  rolesOf.length === 0, rolesOf.map(([t]) => `${t}: ${titleRoles(t, known).join() || "none"}`));
+const levels = Object.entries({
+  "Senior Director, Engineering": "head", "Senior Associate": "senior", "Associate Product Manager": null,
+  "Lead Generation Specialist": null, "Software Engineer II": "mid", "Becario/a de Marketing": "intern",
+  "Staff Engineer": "staff", "Principal Data Scientist": "staff", "Tech Lead": "lead", "Junior Developer": "junior",
+  "Backend Engineer": null,
+}).filter(([title, want]) => seniorityOf(title) !== want);
+report("titles read as their level", levels.length === 0, levels.map(([t]) => `${t}: ${seniorityOf(t)}`));
+const yearsWrong = Object.entries({
+  "You have 5+ years of professional experience": "5,", "3–5 years’ experience in Go": "3,5",
+  "al menos 4 años de experiencia demostrable": "4,", "experiencia mínima de 2 años": "2,",
+  "6+ years in pricing, ideally SaaS": "6,", "two years of experience with React": "2,",
+  "12 to 15+ years of experience across": "12,15", "a total of 1.5+ years of experience": "null",
+  "it all started 12 years ago": "null", "your data may be retained for 2 years": "null",
+  "over 20 years of experience in the market": "null", "3+ years of X. Nice to have: 8+ years of Y": "8,",
+}).filter(([text, want]) => String(yearsAsked(text)?.join() ?? null) !== want);
+report("descriptions read as the years of experience they ask", yearsWrong.length === 0,
+  yearsWrong.map(([t]) => `${t}: ${JSON.stringify(yearsAsked(t))}`));
+
+// The index jobs.mjs writes carries them; find_jobs reads what is stored, and works
+// out roles, level and regions for postings stored without them.
+const stored = { ...index, jobs: index.jobs.map((j) => ({ ...j,
+  roles: j.title === "Data Scientist, Pricing" ? ["software-engineer"] : titleRoles(j.title, known),
+  seniority: seniorityOf(j.title),
+  years: { "Senior Backend Engineer": [5, null], "Full Stack Developer": [2, 4], "Data Analyst": [1, null] }[j.title] ?? null,
+  regions: [] })) };
+const find = async (args, jobs = stored) => (await run("find_jobs", args, { jobs })).structuredContent;
+const seniors = await find({ seniority: "senior" });
+report("find_jobs: seniority keeps the titles naming that level", seniors.matches === 2 &&
+  seniors.jobs.every((j) => j.seniority === "senior" && /Senior/.test(j.title)) &&
+  seniors.filters.seniority === "senior", seniors.jobs.map((j) => j.title));
+const mids = await find({ seniority: "mid" });
+report("find_jobs: mid also takes titles naming no level", mids.jobs.length > 0 &&
+  mids.jobs.every((j) => j.seniority === null || j.seniority === "mid") && /name no level/.test(mids.filters.seniority_rule));
+const three = await find({ years: 3 });
+report("find_jobs: years leaves out postings asking more, keeps those naming none",
+  !three.jobs.some((j) => j.title === "Senior Backend Engineer") && three.jobs.some((j) => j.title === "Full Stack Developer") &&
+  three.kept_without_years_figure === three.postings_matched - 2 && three.filters.years === "3", three.filters);
+const bucket = await find({ years: "5-7" });
+report("find_jobs: a years bucket is read as its top", bucket.jobs.some((j) => j.title === "Senior Backend Engineer") &&
+  bucket.filters.years === "5-7");
+const asStored = await find({ role: "software-engineer" });
+report("find_jobs: the stored roles are what role filters, and what salary_context uses",
+  asStored.jobs.some((j) => j.title === "Data Scientist, Pricing" && j.role === "software-engineer") &&
+  !(await find({ role: "data-scientist" })).jobs.some((j) => j.title === "Data Scientist, Pricing"));
+const storedRegions = await find({ region: "MD" });
+report("find_jobs: stored regions are what region filters", storedRegions.matches === 0, storedRegions.matches);
+const older = await find({ role: "software-engineer", region: "MD" }, index);
+report("find_jobs: postings stored without the fields are classified on the fly",
+  older.jobs.length > 0 && older.jobs.every((j) => j.roles[0] === "software-engineer" && j.years_asked === null) &&
+  older.jobs.some((j) => j.title === "Ingeniero de Software Embebido"), older.jobs.map((j) => j.title));
+const badLevel = await run("find_jobs", { seniority: "guru" });
+const badYears = await run("find_jobs", { years: "lots" });
+report("find_jobs: an unknown level or years is a tool error naming the options",
+  badLevel.isError && /intern, junior, mid/.test(badLevel.content[0].text) &&
+  badYears.isError && /0-1, 2-4/.test(badYears.content[0].text));
+
 const salaryIn = async (name, args) => (await run(name, args)).structuredContent;
 const statsBcn = await salaryIn("salary_stats", { role: "software-engineer", region: "Barcelona" });
 const statsCt = await salaryIn("salary_stats", { role: "software-engineer", region: "CT" });
@@ -641,7 +714,11 @@ const more = { ...index, jobs: [...index.jobs,
   { id: "recruitee:sequra:2616630", company: "seQura", slug: "sequra", title: "Accountant",
     url: "https://sequra.recruitee.com/o/accountant-4", ats: "recruitee", location: "Barcelona, Spain" },
   { id: "workday:bbva/wd3/BBVA:R-99999", company: "BBVA", slug: "bbva", title: "Analista",
-    url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Analista_R-99999", ats: "workday", location: "Madrid" }] };
+    url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Analista_R-99999", ats: "workday", location: "Madrid" },
+  { id: "teamtailor:careers.vueling.com:8681660", company: "Vueling", slug: "vueling", title: "Training Specialist",
+    url: "https://careers.vueling.com/jobs/8681660-training-specialist", ats: "teamtailor", location: "Viladecans, Spain" },
+  { id: "teamtailor:careers.vueling.com:8681661", company: "Vueling", slug: "vueling", title: "Elsewhere",
+    url: "https://evil.example.com/jobs/8681661-elsewhere", ats: "teamtailor", location: "Barcelona, Spain" }] };
 const formIn = async (id) => (await run("job_questions", { id }, { jobs: more })).structuredContent;
 BOARDS["https://apply.workable.com/api/v1/jobs/3C35D18DA3/form"] = json([
   { name: "Personal information", fields: [{ id: "firstname", label: "First name", required: true, type: "text" },
@@ -666,6 +743,42 @@ BOARDS["https://sequra.recruitee.com/api/offers/2616630"] = json({ offer: {
       open_question_options: [{ body: "B2" }, { body: "C1" }] },
     { id: 3, body: "Would you now or in the future require work permit assistance?", kind: "boolean", required: true, open_question_options: [] },
     { id: 4, body: "Please tell us about your salary expectations.", kind: "salary", required: true, open_question_options: [] }] } });
+// Teamtailor serves the form as HTML on the employer's domain, as careers.vueling.com does.
+const ttQuestion = (n, mandatory, inner) => `<div data-question-uuid="u${n}" data-question-mandatory="${mandatory}" ` +
+  `data-question-multiple-choice="false"><input type="hidden" value="${6290540 + n}" ` +
+  `name="candidate[answers_attributes][${n}][question_id]" />${inner}</div>`;
+const ttLabel = (field, text, required) => `<label for="candidate_${field}">${text}` +
+  (required ? '<sup data-asterisk="true" aria-hidden="true">*</sup><span class="sr-only">Required</span>' : "") + "</label>";
+BOARDS["https://careers.vueling.com/jobs/8681660/applications/new"] = () => new Response(`<html><body>
+<form id="job-application-form" action="https://careers.vueling.com/applications" method="post">
+${ttQuestion(0, true, `<fieldset><legend><span>Work Permit<sup data-asterisk="true">*</sup><span class="sr-only">Required</span></span>
+  <div><p>Do you have a valid working permit in Spain?</p></div></legend>
+  <input id="boolean-1-true" type="radio" value="true" name="candidate[answers_attributes][0][boolean]" /><label for="boolean-1-true"> Sí </label>
+  <input id="boolean-1-false" type="radio" value="false" name="candidate[answers_attributes][0][boolean]" /><label for="boolean-1-false"> No </label></fieldset>`)}
+${ttQuestion(1, false, `<fieldset><legend><span>Gender</span></legend>
+  <input type="radio" value="1" name="candidate[answers_attributes][1][choice]" id="candidate_answers_attributes_1_choice_1" /><label for="candidate_answers_attributes_1_choice_1">Female</label>
+  <input type="radio" value="2" name="candidate[answers_attributes][1][choice]" id="candidate_answers_attributes_1_choice_2" /><label for="candidate_answers_attributes_1_choice_2">Prefer not to answer</label></fieldset>`)}
+${ttQuestion(2, true, `${ttLabel("answers_attributes_2_number", "What are your annual salary expectations?", true)}
+  <input type="number" name="candidate[answers_attributes][2][number]" id="candidate_answers_attributes_2_number" />`)}
+${ttQuestion(3, true, `${ttLabel("answers_attributes_3_text", "What languages do you speak?", true)}
+  <textarea name="candidate[answers_attributes][3][text]" id="candidate_answers_attributes_3_text"></textarea>`)}
+<div data-question-mandatory="true"><fieldset><legend><span>Locations<sup data-asterisk="true">*</sup></span></legend>
+  <input type="checkbox" value="11" name="candidate[location_ids][]" id="candidate_location_ids_11" /><label for="candidate_location_ids_11">Barcelona</label>
+  <input type="checkbox" value="12" name="candidate[location_ids][]" id="candidate_location_ids_12" /><label for="candidate_location_ids_12">Madrid</label></fieldset></div>
+<h2>Personal information</h2>
+${ttLabel("first_name", "First name", true)}<input name="candidate[first_name]" id="candidate_first_name" />
+${ttLabel("email", "Email", true)}<input type="email" name="candidate[email]" id="candidate_email" />
+${ttLabel("resume_remote_url", "Upload CV", true)}
+${ttLabel("job_applications_attributes_0_cover_letter", "Cover letter", false)}<textarea name="candidate[job_applications_attributes][0][cover_letter]"></textarea>
+<input type="checkbox" value="1" name="candidate[consent_given]" id="candidate_consent_given" />
+<label for="candidate_consent_given"><span class="sr-only">Required.</span><p><strong>I have read and understand the <a href="/privacy-policy">Privacy Policy<span class="sr-only">(opens new window)</span></a>.</strong></p></label>
+<input type="checkbox" value="1" name="candidate[consent_given_sms]" id="candidate_consent_given_sms" />
+<label for="candidate_consent_given_sms">Vueling can use my phone number for recruiting texts.</label>
+<input type="submit" value="Submit application" /></form></body></html>`);
+BOARDS["https://careers.vueling.com/jobs/8681660-training-specialist"] = () => new Response(`<html><head>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"JobPosting","title":"Training Specialist",
+"description":"&lt;p&gt;Shape customer service standards across the journey.&lt;/p&gt;"}</script></head><body></body></html>`);
+
 const WD = "https://bbva.wd3.myworkdayjobs.com/wday/cxs/bbva/BBVA/job/Madrid";
 BOARDS[`${WD}/R-12345`] = json({ jobPostingInfo: { jobDescription: "<p>Java en BBVA</p>", canApply: true,
   externalUrl: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345", questionnaireId: "abc123" } });
@@ -688,6 +801,22 @@ report("recruitee: the fields switched on, open questions, permit and pay to the
   byLabel(recruitee, /permit/).who === "person" && byLabel(recruitee, /salary/).who === "person" &&
   /Accounting degree/.test(recruitee.description.text) &&
   recruitee.apply_url === "https://sequra.recruitee.com/o/accountant-4/c/new", recruitee.questions);
+const teamtailor = await formIn("teamtailor:careers.vueling.com:8681660");
+report("teamtailor: own questions with their options, the locations picker, standard fields and consents",
+  teamtailor.form_source.startsWith("Teamtailor") && byLabel(teamtailor, /Work Permit/).who === "person" &&
+  byLabel(teamtailor, /Work Permit/).options.join() === "Sí,No" && byLabel(teamtailor, /Work Permit/).required === true &&
+  byLabel(teamtailor, /^Gender$/).category === "demographic" && byLabel(teamtailor, /^Gender$/).required === false &&
+  byLabel(teamtailor, /salary/).who === "person" && byLabel(teamtailor, /salary/).type === "number" &&
+  byLabel(teamtailor, /languages/).who === "agent" && byLabel(teamtailor, /languages/).type === "textarea" &&
+  byLabel(teamtailor, /^Locations$/).options.join() === "Barcelona,Madrid" && byLabel(teamtailor, /^Locations$/).type === "multiselect" &&
+  byLabel(teamtailor, /^First name$/).required === true && byLabel(teamtailor, /^Cover letter$/).required === false &&
+  byLabel(teamtailor, /Privacy Policy/).required === true && byLabel(teamtailor, /Privacy Policy/).who === "person" &&
+  !/Required|opens new window/.test(byLabel(teamtailor, /Privacy Policy/).label) &&
+  byLabel(teamtailor, /phone number/).who === "person" && /customer service standards/.test(teamtailor.description.text) &&
+  teamtailor.apply_url === "https://careers.vueling.com/jobs/8681660/applications/new", teamtailor.questions);
+const ttElsewhere = await run("job_questions", { id: "teamtailor:careers.vueling.com:8681661" }, { jobs: more });
+report("teamtailor: a posting whose URL is not on its board's host is not read", ttElsewhere.isError === true &&
+  !requests.some((r) => r.url.includes("evil.example.com")));
 const workday = await formIn("workday:bbva/wd3/BBVA:R-12345");
 report("workday: the posting, an account the person opens, the standard steps and the employer's questions",
   workday.account_required === true && workday.employer_questions === "after sign-in" && /sign-in/.test(workday.form_source) &&
@@ -705,7 +834,7 @@ const down = await run("job_questions", { id: "greenhouse:wallapop:7000009" });
 report("a board that cannot be reached is a tool error", down.isError === true && /could not be reached/.test(down.content[0].text));
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com)\//.test(r.url) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.vueling\.com)\//.test(r.url) &&
     r.init.redirect === "error" && r.init.signal instanceof AbortSignal));
 const burst = Array.from({ length: 6 }, (_, k) => ({ jsonrpc: "2.0", id: k + 1, ...tool("job_questions", { id: "greenhouse:glovo:7000001" }) }));
 const burstReplies = await respond(data, burst);
@@ -789,6 +918,53 @@ const steps = (await run("application_guide", {})).structuredContent.steps.join(
 report("application_guide says to report each outcome", /report_application/.test(steps));
 report("the state document template keeps whether the star was asked about",
   /## Support\n- Asked about a GitHub star/.test((await run("application_guide", {})).structuredContent.state_document.template));
+
+// No match: what each filter costs, suggestions that keep what the person is
+// looking for, and what the index holds (2026-11-08: ChatGPT got 0 for
+// company Zapier, GitLab, Doist... and for "Django FastAPI").
+const jobsOut = async (args) => (await toolCall("find_jobs", args)).structuredContent;
+const zapier = await jobsOut({ company: "Zapier", region: "spain", min_salary_eur: 60000 });
+report("a company with no posting says the index has none, and suggests no other company's",
+  zapier.matches === 0 && /no posting from 'Zapier'/.test(zapier.no_match.company_note) &&
+  !zapier.no_match.suggestions && zapier.no_match.without_each_filter.find((w) => w.drop === "company").matches > 0,
+  zapier.no_match);
+const glvo = await jobsOut({ company: "Glvo" });
+report("a misspelled company gets the close names in the index", /Close names in the index: Glovo/.test(glvo.no_match.company_note),
+  glvo.no_match);
+const frontMadrid = await jobsOut({ role: "frontend", region: "MD" });
+report("dropping one filter suggests the postings it finds, and says which filter they miss",
+  frontMadrid.matches === 0 && frontMadrid.no_match.suggestions?.[0]?.company === "Abacum" &&
+  /^without region/.test(frontMadrid.no_match.suggestions_are), frontMadrid.no_match);
+const rich = await jobsOut({ role: "backend", min_salary_eur: 900000 });
+report("a salary floor nobody reaches is the filter to drop",
+  rich.no_match.without_each_filter[0].drop === "min_salary_eur" && rich.no_match.suggestions.length > 0 &&
+  /^without min_salary_eur/.test(rich.no_match.suggestions_are), rich.no_match);
+const django = await jobsOut({ query: "Django FastAPI", workplace: "remote" });
+report("words no posting names say query reads titles, not descriptions, and suggest nothing",
+  /not its description/.test(django.no_match.query_note ?? "") && !django.no_match.suggestions, django.no_match);
+report("a search that matches has no no_match", !(await jobsOut({ company: "glovo" })).no_match);
+const remoteStats = (await toolCall("salary_stats", { region: "remote", role: "software-engineer" })).structuredContent;
+const spainStats = (await toolCall("salary_stats", { role: "software-engineer" })).structuredContent;
+report("region remote is all of Spain, with a note", remoteStats.selection.region === null &&
+  remoteStats.result.median_base_eur === spainStats.result.median_base_eur && /all of Spain/.test(remoteStats.note),
+  remoteStats);
+report("region Spain is all of Spain", (await toolCall("salary_stats", { region: "España" })).isError !== true);
+report("years written as a range count by the low end",
+  (await toolCall("salary_stats", { years: "3-4" })).structuredContent.selection.years === "2-4" &&
+  (await toolCall("salary_stats", { years: "6 years" })).structuredContent.selection.years === "5-7");
+report("find_jobs reads a range of years as its top", (await jobsOut({ years: "3-4" })).filters.years === "4");
+const wide = (await toolCall("salary_stats", { ...smallArgs, years: smallArgs.years ?? data.years.at(-1),
+  region: smallArgs.region ?? "MD" })).structuredContent;
+report("a selection under the minimum offers the nearest wider ones that have it",
+  wide.result === null && (wide.wider_selections ?? []).length > 0 && wide.wider_selections.every((w) =>
+    w.result.people === data.cells[`${w.selection.role ?? ""}|${w.selection.region ?? ""}|${w.selection.years ?? ""}`].n),
+  wide);
+const notOnFile = await toolCall("company_salaries", { name: "Not On File" });
+report("a company without salaries but with postings points to find_jobs", notOnFile.isError === true &&
+  /It has 1 open posting/.test(notOnFile.content[0].text) && /find_jobs with company 'Not On File'/.test(notOnFile.content[0].text),
+  notOnFile.content[0].text);
+const glvoTop = (await toolCall("top_companies", { search: "Glvo" })).structuredContent;
+report("top_companies' search with no hit offers close names", /Close names: Glovo/.test(glvoTop.search_note ?? ""), glvoTop);
 
 console.log(failed ? `${failed} failed` : "api/mcp.js answers as expected");
 process.exit(failed ? 1 : 0);

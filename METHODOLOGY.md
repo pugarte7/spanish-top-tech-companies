@@ -58,7 +58,7 @@ Every entry needs a source. In rough order of how much we trust them:
 2. `levels.fyi`, `company-published`: self-reported to an aggregator, or official
 3. `job-posting`: a published range
 4. `community`: reported directly to this repo
-5. `glassdoor`, `other`: treat with suspicion
+5. `other`: treat with suspicion
 
 A first-hand entry (`offer-letter`, `community`) sorts above any crowdsourced one, however large that one is.
 
