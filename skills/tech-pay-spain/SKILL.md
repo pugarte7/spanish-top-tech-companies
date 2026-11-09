@@ -60,6 +60,9 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   city or remote too; `seniority` (intern, junior, mid, senior, staff, lead,
   head) is the level the title names; `years` is the person's experience and
   leaves out postings asking more; `exclude` takes the ids already applied to.
+  With no match, `no_match` says how many results each filter costs and
+  suggests the closest postings with the filter they miss: tell the person
+  which one before offering them.
   Each result has the `roles`, `seniority` and `years_asked` read from it.
 - `job_questions(id)`: one posting's application form, read live from its
   job board, each question marked `who` = person or agent; the posting text,
