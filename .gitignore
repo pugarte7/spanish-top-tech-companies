@@ -2,10 +2,7 @@
 __pycache__/
 *.pyc
 .DS_Store
-.claude/*
-!.claude/skills/
-test-results/
-playwright-report/
+.claude/
 *.tmp
 _site/
 .cache/

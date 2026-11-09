@@ -675,8 +675,8 @@ const opened = new Set();
 // hover, so a phone gets it too: how many salaries it has in Spain and why
 // its figure may be off. One card for every asterisk, under the one clicked,
 // following it as the page scrolls; a second click, a click elsewhere,
-// Escape or a redrawn table closes it. Not a scroll: Playwright's click, and
-// a tap at the end of a flick, scroll the page just after the card opens.
+// Escape or a redrawn table closes it. Not a scroll: a tap at the end of a
+// flick scrolls the page just after the card opens.
 const astTip = $("asterisk-tip");
 let astAt = null;
 function closeAsterisk() {

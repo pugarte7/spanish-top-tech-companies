@@ -390,15 +390,58 @@ def test_feed_is_read_to_the_end() -> None:
         pages = ['not json']
         check("a page that does not parse makes the feed unread",
               fetch_spain.feed("token", "data-scientist", 0), None)
-        pages = [json.dumps({"rows": [{"uuid": "x"}] * 50})] * 40
+        pages = [json.dumps({"rows": [row(uuid="x")] * 50})] * 40
         try:
             fetch_spain.feed("token", "software-engineer", 0)
             truncated = False
         except fetch_spain.Truncated:
             truncated = True
-        check("a feed past the offset ceiling is truncated, not complete", truncated, True)
+        check("a query of one offer date past the ceiling is truncated", truncated, True)
         check("no offset past the ceiling is asked for",
               any("offset=1000" in u for u in calls), False)
+    finally:
+        fetch_spain.get = original
+
+
+def test_feed_moves_past_the_offset_ceiling_by_date() -> None:
+    """The API refuses an offset past 990; the date cursor reads on.
+
+    Until 2026-11-08 a newest-first and an oldest-first window left 2023 to
+    early 2026 readable only per company, and Alan, whose one Spanish
+    engineer reported in July 2024, was never asked for.
+    """
+    print("fetch_spain reads past the offset ceiling from the last date seen")
+    import fetch_spain, urllib.parse
+
+    def day(n):
+        return f"Mon Jan {n:02d} 2024 10:00:00 GMT+0000 (Coordinated Universal Time)"
+
+    # 1,100 rows over 22 days, 50 a day, oldest first: one query sees 1,000.
+    feed_rows = [row(uuid=f"r{i}", offerDate=day(1 + i // 50)) for i in range(1100)]
+    calls = []
+
+    def fake_get(url, delay, attempts=3, headers=None):
+        params = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(url).query))
+        calls.append(params)
+        assert params["sortOrder"] == "ASC" and int(params["offset"]) <= 990
+        since = params.get("sinceDate")
+        rows = [r for r in feed_rows
+                if not since or fetch_spain.since_date(r["offerDate"]) >= since]
+        offset = int(params["offset"])
+        return json.dumps({"total": 250, "rows": rows[offset:offset + 50]})
+
+    original = fetch_spain.get
+    fetch_spain.get = fake_get
+    try:
+        found = fetch_spain.feed("token", "software-engineer", 0)
+        check("every row is read, the ones past the ceiling included",
+              len({r["uuid"] for r in found}), 1100)
+        check("the second query starts a second before the last date seen",
+              [c.get("sinceDate") for c in calls if c["offset"] == "0"],
+              [None, "2024-01-20T09:59:59.000Z"])
+        check("an ISO offerDate works as a cursor too",
+              fetch_spain.since_date("2026-11-08T15:18:11.000Z"), "2026-11-08T15:18:10.000Z")
+        check("a row without a date gives no cursor", fetch_spain.since_date(None), None)
     finally:
         fetch_spain.get = original
 
@@ -423,20 +466,18 @@ def test_feed_is_read_to_the_end() -> None:
 
 
 def test_a_role_past_the_ceiling_is_read_per_company() -> None:
-    """One query sees at most 1,000 rows; software engineers are more.
+    """When the date cursor cannot move, read_role() reads per company.
 
-    On 2026-10-16 the all-roles run could not read software engineers: the
-    API refuses an offset past 990. Newest-first and oldest-first leave a
-    gap of years between them, so read_role() reads each employer on its own
-    and scopes the write to the companies it read.
+    That takes more than 1,000 rows on one offer date, which no role has;
+    the fallback reads every employer the feed named and every company on
+    file for the role, and scopes the write to the companies it read.
     """
-    print("fetch_spain reads a role past the offset ceiling company by company")
+    print("fetch_spain falls back to company by company when the cursor is stuck")
     import fetch_spain
 
-    def fake_feed(bearer, role, delay, company=None, order="DESC"):
+    def fake_feed(bearer, role, delay, company=None):
         if company is None:
-            raise fetch_spain.Truncated([row("newco", uuid="n1")] if order == "DESC"
-                                        else [row("oldco", uuid="o1")])
+            raise fetch_spain.Truncated([row("newco", uuid="n1")])
         if company == "broken":
             return None
         return [row(company, uuid=f"{company}-1"), row(company, uuid=f"{company}-2")]
@@ -449,8 +490,8 @@ def test_a_role_past_the_ceiling_is_read_per_company() -> None:
                    lib.blank_company("Analysts", levels_slug="analysts")
                    | {"entries": [entry(PER_LOCATION, role="data-analyst")]}]
         rows, scope = fetch_spain.read_role("t", "software-engineer", 0, on_file)
-        check("windows' employers and companies on file are read; others are not",
-              scope, {"newco", "oldco", "acme"})
+        check("the feed's employers and companies on file are read; others are not",
+              scope, {"newco", "acme"})
         check("the per-company rows are kept",
               sorted(r["uuid"] for r in rows if r["companySlug"] == "acme"), ["acme-1", "acme-2"])
         rows, scope = fetch_spain.read_role("t", "software-engineer", 0, on_file, {"lost"})
@@ -465,10 +506,8 @@ def test_a_role_past_the_ceiling_is_read_per_company() -> None:
             check("an empty scope writes nothing",
                   (stats["rewritten"], stats["dropped"], len(stored()["entries"])), (0, 0, 1))
 
-        def meeting(bearer, role, delay, company=None, order="DESC"):
-            raise fetch_spain.Truncated([row(uuid="same")])
-        fetch_spain.feed = meeting
-        check("windows that meet are the whole feed",
+        fetch_spain.feed = lambda bearer, role, delay, company=None: [row(uuid="all")]
+        check("a feed read whole is unscoped",
               fetch_spain.read_role("t", "software-engineer", 0, on_file)[1], None)
     finally:
         fetch_spain.feed = original
@@ -537,13 +576,31 @@ def test_companies_are_their_salaries() -> None:
     with temp_data():
         stats = write_role("software-engineer", {})
         check("nothing read, nothing created", (stats, stored()),
-              ({"rewritten": 0, "unchanged": 0, "created": 0, "dropped": 0, "refused": 0}, None))
+              ({"rewritten": 0, "unchanged": 0, "created": 0, "adopted": 0, "dropped": 0,
+                "refused": 0}, None))
 
     with temp_data():
         by_slug, _ = fed([row("newco")])
         stats = write_role("software-engineer", by_slug)
         check("a feed employer not on file is created",
               (stats["created"], stored("newco")["company"]), (1, "Newco"))
+
+    # 2026-11-08: 186 companies filed from Glassdoor, with no Levels.fyi slug,
+    # refused the Levels.fyi engineers of the employer of the same name.
+    glassdoor = lib.blank_company("Newco") | {"entries": [entry(None, source="glassdoor")]}
+    with temp_data(glassdoor):
+        by_slug, _ = fed([row("newco")])
+        stats = write_role("software-engineer", by_slug)
+        newco = stored("newco")
+        check("a same-name company with no Levels.fyi slug takes the feed's rows",
+              (stats["adopted"], stats["created"], len(lib.load_companies()),
+               sorted(e["source"] for e in newco["entries"])),
+              (1, 0, 1, ["glassdoor", "levels.fyi"]))
+    other = lib.blank_company("Newco", levels_slug="newco-inc") | {"entries": [entry(PER_LOCATION)]}
+    with temp_data(other):
+        by_slug, _ = fed([row("newco")])
+        check("a same-name company under another Levels.fyi slug still refuses",
+              write_role("software-engineer", by_slug)["refused"], 1)
 
     with temp_data(acme()):
         pass  # an empty hand-added row is validate.py's problem, checked below
@@ -766,7 +823,7 @@ def test_agents_see_only_groups_of_five() -> None:
     rows += [entry(PER_LOCATION, base=b, region="CT", city="Barcelona")
              for b in (60000, 65000, 70000, 80000)]
     with temp_data(acme(*rows, website="https://acme.example")):
-        data = site_build.build_data(lib.load_companies())
+        data = site_build.build_site(lib.load_companies())[0]
 
     def quartiles(region: str) -> list:
         a = data["cells"][f"|{region}|"]
@@ -923,7 +980,7 @@ def test_site_dates_and_minimum_base() -> None:
                             (90000, "2026-10-17", "2026-10"))]
     rows.append(entry(PER_LOCATION, base=1000, region="MD", city="Madrid", date="2026-10-18"))
     with temp_data(acme(*rows, website="https://acme.example")):
-        data = site_build.build_data(lib.load_companies())
+        data = site_build.build_site(lib.load_companies())[0]
     check("the 1,000 EUR base is left out", data["cells"]["||"]["n"], 5)
     check("the date is the latest read of a counted salary", data["data_as_of"], "2026-10-17")
     check("reported months: first, last and median",
@@ -950,15 +1007,53 @@ def test_aggregates_ignore_the_hash_seed() -> None:
     check("four seeds, one order of cells and tables", len(runs), 1)
 
 
+def test_offers_keep_the_first_and_last_day() -> None:
+    import offers
+    print("offers.csv: one row per posting and range, first and last day seen")
+
+    def job(id_, lo=50000, hi=60000, title="Backend Engineer"):
+        return {"id": id_, "company": "Acme", "slug": "acme", "title": title, "location": "Madrid",
+                "location_classes": ["spain"], "workplace": "hybrid", "ats": "ashby",
+                "url": "https://x", "posted_at": "2026-11-01T10:00:00Z",
+                "salary": {"min": lo, "max": hi, "currency": "EUR", "period": "year"}}
+
+    def index(day, jobs, stale=()):
+        return {"version": 1, "generated_at": f"{day}T05:00:00Z", "jobs": jobs,
+                "boards": {"stale_since": {k: "2026-11-01T05:00:00Z" for k in stale}}}
+
+    no_pay = {**job("ashby:acme:3"), "salary": None}
+    day, seen = offers.sightings(index("2026-11-08", [job("ashby:acme:1"), no_pay]))
+    rows, new, _ = offers.merge([], day, seen)
+    check("only postings that state pay", (len(rows), new), (1, 1))
+
+    day, seen = offers.sightings(index("2026-11-09", [job("ashby:acme:1", title="Backend Engineer II")]))
+    rows, new, again = offers.merge(rows, day, seen)
+    check("seen again moves last_seen only", [(r["first_seen"], r["last_seen"], r["title"]) for r in rows],
+          [("2026-11-08", "2026-11-09", "Backend Engineer II")])
+
+    day, seen = offers.sightings(index("2026-11-10", [job("ashby:acme:1", 55000, 65000)]))
+    rows, new, again = offers.merge(rows, day, seen)
+    check("a new range opens a new row", [(r["min"], r["first_seen"], r["last_seen"]) for r in rows],
+          [("50000", "2026-11-08", "2026-11-09"), ("55000", "2026-11-10", "2026-11-10")])
+
+    day, seen = offers.sightings(index("2026-11-11", [job("ashby:acme:1", 55000, 65000)], stale=["ashby:acme"]))
+    check("a carried-over board is not a sighting", seen, [])
+
+    day, seen = offers.sightings(index("2026-11-07", [job("ashby:acme:1", 55000, 65000)]))
+    rows, _, _ = offers.merge(rows, day, seen)
+    check("an older index never moves last_seen back",
+          [(r["first_seen"], r["last_seen"]) for r in rows if r["min"] == "55000"], [("2026-11-07", "2026-11-10")])
+
+
 def main() -> int:
-    for test in (test_aggregates_ignore_the_hash_seed, test_location_guard, test_unscoped_classifier,
+    for test in (test_offers_keep_the_first_and_last_day, test_aggregates_ignore_the_hash_seed, test_location_guard, test_unscoped_classifier,
                  test_purge_runs_even_when_spain_data_exists,
                  test_figures_are_converted_to_euros,
                  test_every_year_is_kept,
                  test_one_submission_is_one_entry,
                  test_the_world_vouches_for_a_company,
                  test_foreign_rows_are_skipped,
-                 test_feed_is_read_to_the_end,
+                 test_feed_is_read_to_the_end, test_feed_moves_past_the_offset_ceiling_by_date,
                  test_a_role_past_the_ceiling_is_read_per_company,
                  test_an_unread_feed_changes_nothing,
                  test_companies_are_their_salaries,

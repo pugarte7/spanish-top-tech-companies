@@ -89,6 +89,12 @@
       "title": "Desarrollador Java", "url": "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345",
       "ats": "workday", "location": "Madrid", "location_classes": ["spain"],
       "workplace": null, "department": null, "posted_at": "2026-10-05T09:00:00Z", "salary": null
+    },
+    {
+      "id": "smartrecruiters:ecovadis:744000000000001", "company": "EcoVadis", "slug": "ecovadis", "tier": "B",
+      "title": "Account Executive", "url": "https://jobs.smartrecruiters.com/ecovadis/744000000000001",
+      "ats": "smartrecruiters", "location": "Zaragoza, Spain", "location_classes": ["spain"],
+      "workplace": "onsite", "department": null, "posted_at": "2026-10-04T09:00:00Z", "salary": null
     }
   ]
 }
