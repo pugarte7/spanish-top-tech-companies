@@ -576,13 +576,31 @@ def test_companies_are_their_salaries() -> None:
     with temp_data():
         stats = write_role("software-engineer", {})
         check("nothing read, nothing created", (stats, stored()),
-              ({"rewritten": 0, "unchanged": 0, "created": 0, "dropped": 0, "refused": 0}, None))
+              ({"rewritten": 0, "unchanged": 0, "created": 0, "adopted": 0, "dropped": 0,
+                "refused": 0}, None))
 
     with temp_data():
         by_slug, _ = fed([row("newco")])
         stats = write_role("software-engineer", by_slug)
         check("a feed employer not on file is created",
               (stats["created"], stored("newco")["company"]), (1, "Newco"))
+
+    # 2026-11-08: 186 companies filed from Glassdoor, with no Levels.fyi slug,
+    # refused the Levels.fyi engineers of the employer of the same name.
+    glassdoor = lib.blank_company("Newco") | {"entries": [entry(None, source="glassdoor")]}
+    with temp_data(glassdoor):
+        by_slug, _ = fed([row("newco")])
+        stats = write_role("software-engineer", by_slug)
+        newco = stored("newco")
+        check("a same-name company with no Levels.fyi slug takes the feed's rows",
+              (stats["adopted"], stats["created"], len(lib.load_companies()),
+               sorted(e["source"] for e in newco["entries"])),
+              (1, 0, 1, ["glassdoor", "levels.fyi"]))
+    other = lib.blank_company("Newco", levels_slug="newco-inc") | {"entries": [entry(PER_LOCATION)]}
+    with temp_data(other):
+        by_slug, _ = fed([row("newco")])
+        check("a same-name company under another Levels.fyi slug still refuses",
+              write_role("software-engineer", by_slug)["refused"], 1)
 
     with temp_data(acme()):
         pass  # an empty hand-added row is validate.py's problem, checked below
@@ -805,7 +823,7 @@ def test_agents_see_only_groups_of_five() -> None:
     rows += [entry(PER_LOCATION, base=b, region="CT", city="Barcelona")
              for b in (60000, 65000, 70000, 80000)]
     with temp_data(acme(*rows, website="https://acme.example")):
-        data = site_build.build_data(lib.load_companies())
+        data = site_build.build_site(lib.load_companies())[0]
 
     def quartiles(region: str) -> list:
         a = data["cells"][f"|{region}|"]
@@ -962,7 +980,7 @@ def test_site_dates_and_minimum_base() -> None:
                             (90000, "2026-10-17", "2026-10"))]
     rows.append(entry(PER_LOCATION, base=1000, region="MD", city="Madrid", date="2026-10-18"))
     with temp_data(acme(*rows, website="https://acme.example")):
-        data = site_build.build_data(lib.load_companies())
+        data = site_build.build_site(lib.load_companies())[0]
     check("the 1,000 EUR base is left out", data["cells"]["||"]["n"], 5)
     check("the date is the latest read of a counted salary", data["data_as_of"], "2026-10-17")
     check("reported months: first, last and median",

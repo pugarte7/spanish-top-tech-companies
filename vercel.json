@@ -3,6 +3,7 @@
   "framework": null,
   "buildCommand": "python3 scripts/site.py && node scripts/jobs.mjs",
   "outputDirectory": "_site",
+  "regions": ["fra1"],
   "git": { "deploymentEnabled": false },
   "redirects": [
     { "source": "/", "destination": "/es/", "permanent": false },
