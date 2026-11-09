@@ -65,6 +65,10 @@ ROUND_EUR = 1_000
 SLUG_ALIASES = {
     "tiger-data": "timescale",   # Timescale renamed itself Tiger Data in 2025
     "meta": "facebook",          # same page; only `meta` has a table in the API
+    # Same LinkedIn page, joined by the maintainer on 2026-11-09.
+    "wtw": "willis-towers-watson",
+    "esw-eshopworld": "esw",
+    "alten-consulting-services": "alten",  # ALTEN's German subsidiary
 }
 # Slugs struck off by hand, with why. Never fetched, never discovered.
 EXCLUDED_SLUGS = {
