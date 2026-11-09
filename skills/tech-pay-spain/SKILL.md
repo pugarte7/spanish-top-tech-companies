@@ -52,15 +52,21 @@ The same server searches the open postings at the companies it lists, refreshed
 daily from their public job boards (only postings in Spain, or remote open to
 Spain or Europe), and helps apply to them. See "Applying" below.
 
-- `find_jobs(query, role, region, workplace, company, min_salary_eur, exclude, limit)`:
+- `find_jobs(query, role, region, workplace, seniority, years, company, min_salary_eur, exclude, limit)`:
   open postings, each with the company's median base for the role. `query`
   matches any of its words (synonyms such as SRE and site reliability
   included), the postings matching more first; `role` also takes
   specializations such as DevOps, SRE, backend or frontend. `region` takes a
-  city or remote too; `exclude` takes the ids already applied to.
+  city or remote too; `seniority` (intern, junior, mid, senior, staff, lead,
+  head) is the level the title names; `years` is the person's experience and
+  leaves out postings asking more; `exclude` takes the ids already applied to.
+  Each result has the `roles`, `seniority` and `years_asked` read from it.
 - `job_questions(id)`: one posting's application form, read live from its
   job board, each question marked `who` = person or agent; the posting text,
-  marked untrusted; the apply URL.
+  marked untrusted; the apply URL. Greenhouse, Lever, Ashby, Workable and
+  Recruitee forms are read whole. Workday shows its form only after sign-in:
+  `account_required` is true, the person opens the account, and the
+  questions are Workday's standard steps plus a marker for the employer's own.
 - `report_application(id, status, reason)`: after sending or failing, the
   outcome (sent, failed with its reason, or handed_over). Nothing about the
   user; it shows the site where sending gets stuck. After a sent one it
@@ -155,5 +161,6 @@ server over stdio.
 - Without tools of your own (a plain chat with no MCP client), point the user
   to an agent that runs tools (Instinct works best, then Claude Code; Codex,
   Cursor and Hermes work too): they
-  connect `https://spanishtoptechcompanies.com/mcp` there and paste the prompt
+  ask it in the chat to connect to `https://spanishtoptechcompanies.com/mcp`,
+  which it adds itself, and paste the prompt
   on the site's "Let your agent apply for you" section.

@@ -2,8 +2,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:site": "playwright test",
-    "shoot": "node tests/site/shoot.mjs",
     "og": "node tests/site/og-image.mjs"
   },
   "devDependencies": {

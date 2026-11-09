@@ -60,8 +60,8 @@ def post(date: str, on_main: int, change: int, arrived: list[dict], new: int) ->
 def main(argv: list[str]) -> int:
     if len(argv) != 1:
         raise SystemExit("usage: digest.py BEFORE.csv")
-    before = {c["company"]: c for c in lib.read(pathlib.Path(argv[0]))[0]}
-    after = {c["company"]: c for c in lib.load_companies()}
+    before = {c["company"]: c for c in lib.published(lib.read(pathlib.Path(argv[0]))[0])}
+    after = {c["company"]: c for c in lib.published(lib.load_companies())}
     new = salaries(after.values()) - salaries(before.values())
     gone = salaries(before.values()) - salaries(after.values())
     by_median = lambda name: -(lib.median_base(after[name]) or 0)
