@@ -1007,8 +1007,46 @@ def test_aggregates_ignore_the_hash_seed() -> None:
     check("four seeds, one order of cells and tables", len(runs), 1)
 
 
+def test_offers_keep_the_first_and_last_day() -> None:
+    import offers
+    print("offers.csv: one row per posting and range, first and last day seen")
+
+    def job(id_, lo=50000, hi=60000, title="Backend Engineer"):
+        return {"id": id_, "company": "Acme", "slug": "acme", "title": title, "location": "Madrid",
+                "location_classes": ["spain"], "workplace": "hybrid", "ats": "ashby",
+                "url": "https://x", "posted_at": "2026-11-01T10:00:00Z",
+                "salary": {"min": lo, "max": hi, "currency": "EUR", "period": "year"}}
+
+    def index(day, jobs, stale=()):
+        return {"version": 1, "generated_at": f"{day}T05:00:00Z", "jobs": jobs,
+                "boards": {"stale_since": {k: "2026-11-01T05:00:00Z" for k in stale}}}
+
+    no_pay = {**job("ashby:acme:3"), "salary": None}
+    day, seen = offers.sightings(index("2026-11-08", [job("ashby:acme:1"), no_pay]))
+    rows, new, _ = offers.merge([], day, seen)
+    check("only postings that state pay", (len(rows), new), (1, 1))
+
+    day, seen = offers.sightings(index("2026-11-09", [job("ashby:acme:1", title="Backend Engineer II")]))
+    rows, new, again = offers.merge(rows, day, seen)
+    check("seen again moves last_seen only", [(r["first_seen"], r["last_seen"], r["title"]) for r in rows],
+          [("2026-11-08", "2026-11-09", "Backend Engineer II")])
+
+    day, seen = offers.sightings(index("2026-11-10", [job("ashby:acme:1", 55000, 65000)]))
+    rows, new, again = offers.merge(rows, day, seen)
+    check("a new range opens a new row", [(r["min"], r["first_seen"], r["last_seen"]) for r in rows],
+          [("50000", "2026-11-08", "2026-11-09"), ("55000", "2026-11-10", "2026-11-10")])
+
+    day, seen = offers.sightings(index("2026-11-11", [job("ashby:acme:1", 55000, 65000)], stale=["ashby:acme"]))
+    check("a carried-over board is not a sighting", seen, [])
+
+    day, seen = offers.sightings(index("2026-11-07", [job("ashby:acme:1", 55000, 65000)]))
+    rows, _, _ = offers.merge(rows, day, seen)
+    check("an older index never moves last_seen back",
+          [(r["first_seen"], r["last_seen"]) for r in rows if r["min"] == "55000"], [("2026-11-07", "2026-11-10")])
+
+
 def main() -> int:
-    for test in (test_aggregates_ignore_the_hash_seed, test_location_guard, test_unscoped_classifier,
+    for test in (test_offers_keep_the_first_and_last_day, test_aggregates_ignore_the_hash_seed, test_location_guard, test_unscoped_classifier,
                  test_purge_runs_even_when_spain_data_exists,
                  test_figures_are_converted_to_euros,
                  test_every_year_is_kept,
