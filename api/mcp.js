@@ -175,7 +175,7 @@ const TOOLS = {
                    "is sent with the agent's own browser. Read it once before applying.",
       inputSchema: { type: "object", properties: {
         client: { type: "string", description: "The client you run in, e.g. claude-code, " +
-                  "claude-desktop, cursor, codex, chatgpt. Optional." } } } }),
+                  "claude-desktop, cursor, codex, hermes, chatgpt. Optional." } } } }),
     run: (data, args) => applicationGuide(args),
   },
 };
@@ -1236,6 +1236,7 @@ const CLIENTS = {
   "claude-desktop": { names: /claude ?(desktop|app|ai)|^claude$/, keeps: "memory" },
   cursor: { names: /cursor/, keeps: "file" },
   codex: { names: /codex/, keeps: "file" },
+  hermes: { names: /hermes/, keeps: "file" },
   chatgpt: { names: /chat ?gpt|openai/, keeps: "memory" },
 };
 

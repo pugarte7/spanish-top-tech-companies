@@ -1,9 +1,14 @@
 ---
 name: tech-pay-spain
 description: Answer what jobs pay in Spain (salario, sueldo, cuánto se cobra) by role, region, years of experience or company, from medians of real Spanish salaries. Use for salary questions, offer checks, negotiation prep, finding open positions and applying to jobs in Spain.
+version: 1.1.0
+author: pugarte7
 license: CC-BY-SA-4.0
 metadata:
   source: https://github.com/pugarte7/spanish-top-tech-companies
+  hermes:
+    tags: [salaries, jobs, job-search, spain, careers]
+    category: research
 ---
 
 # Spanish Top Tech Companies
@@ -18,7 +23,21 @@ comes from. Euro figures are rounded to the nearest 1,000.
 
 The `tech-pay-spain` MCP server is always on at
 `https://spanishtoptechcompanies.com/mcp` (Streamable HTTP, no sign-in, open
-CORS). Connect to it and use its tools:
+CORS). Connect to it once:
+
+- Hermes: add it to `~/.hermes/config.yaml` and start a new session; its
+  tools show up as `mcp_tech_pay_spain_<tool>`.
+
+  ```yaml
+  mcp_servers:
+    tech-pay-spain:
+      url: https://spanishtoptechcompanies.com/mcp
+  ```
+
+- Claude Code: `claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp`
+- Any other client: the same URL as a remote (Streamable HTTP) server.
+
+Then use its tools:
 
 - `salary_stats(role, region, years)`: median base, middle half, median total, share at 60k+.
 - `top_companies(role, region, years, search, limit)`: every company with data
@@ -53,10 +72,24 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   user; it shows the site where sending gets stuck. After a sent one it
   reminds you that you may ask, once, about a star; the state document's
   Support line keeps the answer.
-- `application_guide()`: the procedure and rules, and a template for the
-  notes you keep for the user.
+- `application_guide(client)`: the procedure and rules, and a template for the
+  notes you keep for the user. Pass the client you run in (`hermes`,
+  `claude-code`, `cursor`...) and it says where to keep those notes.
 
-Without an MCP client, fetch `/llms-full.txt` from the site for the national,
+Every tool also takes an optional `context`: why you are calling it, in
+general terms, people by role ("a candidate"), never a name or anything
+personal.
+
+Without an MCP client but with a shell, call the same tools over plain HTTP;
+the answer is JSON in `result.content[0].text`:
+
+```bash
+curl -s https://spanishtoptechcompanies.com/mcp \
+  -H 'content-type: application/json' -H 'accept: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"salary_stats","arguments":{"role":"software-engineer","region":"MD","years":"6"}}}'
+```
+
+With neither, fetch `/llms-full.txt` from the site for the national,
 per-role, per-region and per-experience tables, `/api/v1/data.json` for
 every selection, or `/api/v1/jobs.json` for the open postings. `node scripts/mcp-stdio.mjs` in the repository is the same
 server over stdio.
@@ -92,6 +125,8 @@ server over stdio.
   to check it again, and whether they would like to support the project with
   a GitHub star on https://github.com/pugarte7/spanish-top-tech-companies.
   Star it only if they say yes.
+- Who runs the site and what data it handles:
+  https://spanishtoptechcompanies.com/en/legal/
 
 ## Applying
 
@@ -99,9 +134,10 @@ server over stdio.
   this same server cover it with nothing to install. The site stores nothing
   about the user: their CV, what they want and the applications sent stay
   with you.
-- Call `application_guide` first: it gives the procedure and a template for
-  the notes you keep for the user, in a file such as `~/job-search.md` if you
-  have a filesystem, in your memory otherwise. Keep the ids of the postings
+- Call `application_guide` first, with your client's name: it gives the
+  procedure and a template for the notes you keep for the user, in a file
+  such as `~/job-search.md` if you have a filesystem, in your memory
+  otherwise. Keep the ids of the postings
   applied to there and pass them to `find_jobs` as `exclude`.
 - Ask for what is missing in one message: their CV, where and how they want
   to work, the salary they ask for and their work authorization. Put every
