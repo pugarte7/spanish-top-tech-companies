@@ -260,3 +260,9 @@ trusted the same way; add a company's careers page there rather than writing
 its board into `boards.json` by hand, which the next `--all` would undo.
 Santander UK, Santander Bank, Juniper and NTT Data are left out of it on
 purpose: their pages lead to another listed company's board or another entity.
+
+Releases are automatic: `.github/workflows/release.yml` tags every PR merged
+into `main` as the next patch (`minor` or `major` label on the PR for those)
+and publishes a GitHub Release whose one bullet is the PR title, so keep
+titles short. Direct pushes such as the weekly refresh make no release.
+Since 2026-11-09 the line restarts at v1.1.0; v2.0.0 was withdrawn.
