@@ -7,6 +7,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import mcp, { analytics, respond as answer, sessionOf } from "../api/mcp.js";
 import { redact } from "../api/_track.js";
+import { seniorityOf, titleRoles, yearsAsked } from "../api/_classify.js";
 
 const DATA = "_site/api/v1/data.json";
 const JOBS = "tests/fixtures/jobs.sample.json";
@@ -511,6 +512,78 @@ report("find_jobs: city names resolve without accents or case", places.join() ==
   "AN,PV,PV,GA,CN,MU,AS,RI,NC,IB,CL,CB,CM,EX,AR", places);
 const md = await jobsIn("Madrid");
 report("find_jobs: a region's own name is the region, not a city", md.filters.region === "MD" && !("city" in md.filters));
+// --- Classification: roles, level and years of experience ----------------------------
+const known = new Set(data.roles.map((r) => r.slug));
+const rolesOf = Object.entries({
+  "Ingeniero/a de Software": "software-engineer", "Jefe/a de Proyecto": "project-manager",
+  "Delegad@ Comercial": "sales", "Landing Gear Engineer - System & Structure Design": "aerospace-engineer",
+  "Industrial Means Engineer": "", "Flight Software Engineer": "software-engineer",
+  "Ingeniero/a de Infraestructuras Eléctricas": "", "Ingeniero/a Eléctrico - Bilbao": "electrical-engineer",
+  "Derivatives Electrical Installation Designer": "", "Senior Product Designer": "product-designer",
+  "Associate Sales Engineering Director": "sales-engineer", "Manager I, Engineering - Husky": "software-engineering-manager",
+  "Senior Applied AI Scientist": "data-scientist", "Legal Counsel - Privacy": "legal",
+  "Solutions Architect for Automotive": "solution-architect", "Senior SAP Basis Administrator": "information-technologist",
+  "Technical Product Marketing Manager - Cybersecurity": "marketing", "Senior Marketing Data Analyst": "data-analyst,marketing",
+  "Sales Engineer": "sales-engineer", "Backend Engineer": "software-engineer",
+}).filter(([title, want]) => titleRoles(title, known).join() !== want);
+report("titles read as their roles: Spanish forms, engineering outside software, several roles",
+  rolesOf.length === 0, rolesOf.map(([t]) => `${t}: ${titleRoles(t, known).join() || "none"}`));
+const levels = Object.entries({
+  "Senior Director, Engineering": "head", "Senior Associate": "senior", "Associate Product Manager": null,
+  "Lead Generation Specialist": null, "Software Engineer II": "mid", "Becario/a de Marketing": "intern",
+  "Staff Engineer": "staff", "Principal Data Scientist": "staff", "Tech Lead": "lead", "Junior Developer": "junior",
+  "Backend Engineer": null,
+}).filter(([title, want]) => seniorityOf(title) !== want);
+report("titles read as their level", levels.length === 0, levels.map(([t]) => `${t}: ${seniorityOf(t)}`));
+const yearsWrong = Object.entries({
+  "You have 5+ years of professional experience": "5,", "3–5 years’ experience in Go": "3,5",
+  "al menos 4 años de experiencia demostrable": "4,", "experiencia mínima de 2 años": "2,",
+  "6+ years in pricing, ideally SaaS": "6,", "two years of experience with React": "2,",
+  "12 to 15+ years of experience across": "12,15", "a total of 1.5+ years of experience": "null",
+  "it all started 12 years ago": "null", "your data may be retained for 2 years": "null",
+  "over 20 years of experience in the market": "null", "3+ years of X. Nice to have: 8+ years of Y": "8,",
+}).filter(([text, want]) => String(yearsAsked(text)?.join() ?? null) !== want);
+report("descriptions read as the years of experience they ask", yearsWrong.length === 0,
+  yearsWrong.map(([t]) => `${t}: ${JSON.stringify(yearsAsked(t))}`));
+
+// The index jobs.mjs writes carries them; find_jobs reads what is stored, and works
+// out roles, level and regions for postings stored without them.
+const stored = { ...index, jobs: index.jobs.map((j) => ({ ...j,
+  roles: j.title === "Data Scientist, Pricing" ? ["software-engineer"] : titleRoles(j.title, known),
+  seniority: seniorityOf(j.title),
+  years: { "Senior Backend Engineer": [5, null], "Full Stack Developer": [2, 4], "Data Analyst": [1, null] }[j.title] ?? null,
+  regions: [] })) };
+const find = async (args, jobs = stored) => (await run("find_jobs", args, { jobs })).structuredContent;
+const seniors = await find({ seniority: "senior" });
+report("find_jobs: seniority keeps the titles naming that level", seniors.matches === 2 &&
+  seniors.jobs.every((j) => j.seniority === "senior" && /Senior/.test(j.title)) &&
+  seniors.filters.seniority === "senior", seniors.jobs.map((j) => j.title));
+const mids = await find({ seniority: "mid" });
+report("find_jobs: mid also takes titles naming no level", mids.jobs.length > 0 &&
+  mids.jobs.every((j) => j.seniority === null || j.seniority === "mid") && /name no level/.test(mids.filters.seniority_rule));
+const three = await find({ years: 3 });
+report("find_jobs: years leaves out postings asking more, keeps those naming none",
+  !three.jobs.some((j) => j.title === "Senior Backend Engineer") && three.jobs.some((j) => j.title === "Full Stack Developer") &&
+  three.kept_without_years_figure === three.postings_matched - 2 && three.filters.years === "3", three.filters);
+const bucket = await find({ years: "5-7" });
+report("find_jobs: a years bucket is read as its top", bucket.jobs.some((j) => j.title === "Senior Backend Engineer") &&
+  bucket.filters.years === "5-7");
+const asStored = await find({ role: "software-engineer" });
+report("find_jobs: the stored roles are what role filters, and what salary_context uses",
+  asStored.jobs.some((j) => j.title === "Data Scientist, Pricing" && j.role === "software-engineer") &&
+  !(await find({ role: "data-scientist" })).jobs.some((j) => j.title === "Data Scientist, Pricing"));
+const storedRegions = await find({ region: "MD" });
+report("find_jobs: stored regions are what region filters", storedRegions.matches === 0, storedRegions.matches);
+const older = await find({ role: "software-engineer", region: "MD" }, index);
+report("find_jobs: postings stored without the fields are classified on the fly",
+  older.jobs.length > 0 && older.jobs.every((j) => j.roles[0] === "software-engineer" && j.years_asked === null) &&
+  older.jobs.some((j) => j.title === "Ingeniero de Software Embebido"), older.jobs.map((j) => j.title));
+const badLevel = await run("find_jobs", { seniority: "guru" });
+const badYears = await run("find_jobs", { years: "lots" });
+report("find_jobs: an unknown level or years is a tool error naming the options",
+  badLevel.isError && /intern, junior, mid/.test(badLevel.content[0].text) &&
+  badYears.isError && /0-1, 2-4/.test(badYears.content[0].text));
+
 const salaryIn = async (name, args) => (await run(name, args)).structuredContent;
 const statsBcn = await salaryIn("salary_stats", { role: "software-engineer", region: "Barcelona" });
 const statsCt = await salaryIn("salary_stats", { role: "software-engineer", region: "CT" });

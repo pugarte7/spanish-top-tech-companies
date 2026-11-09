@@ -1,11 +1,14 @@
 // /api/v1/jobs.json: the open postings, today, at the companies the site lists
 // whose job board is known, kept to the ones a person in Spain could take.
 // The MCP server's job tools search it, so an agent can apply without
-// installing anything. Postings only: titles, links, locations, stated pay. No
+// installing anything. Postings only: titles, links, locations, stated pay,
+// and what api/_classify.js reads of each (roles and level from the title,
+// years of experience from the description, regions from the location). No
 // descriptions (size), nothing about any person.
 //
 //     node scripts/jobs.mjs                    # after site.py: crawl the boards
 //     node scripts/jobs.mjs --fixture tests/fixtures/jobs.json   # offline copy
+//     node scripts/jobs.mjs --reuse 36         # production's index if under 36h old
 //
 // The boards are _site/api/v1/boards-list.json (site.py, from data/boards.json)
 // and every fetch goes through the ATS adapters and polite client in lib/ats
@@ -13,9 +16,13 @@
 // classes are exactly what lib/ats sees. Boards are crawled one at a
 // time per host, hosts side by side.
 //
-// vercel.json runs it after site.py in the build, so every deploy and the
-// daily scheduled one (deploy.yml) publish a fresh index. It never fails the
-// build. A host that refuses is retried with growing waits and slowed down.
+// vercel.json runs it after site.py in the build. The daily scheduled deploy
+// (deploy.yml) crawls; a deploy for a push to main passes JOBS_REUSE_HOURS
+// and republishes production's index unchanged while it is that fresh, so a
+// code change ships in minutes instead of waiting on every board (since
+// 2026-11-05: "porque tenemos que hacer el rastreo de ofertas cada vez que
+// hacemos un deploy?"). An older or unreadable index means a crawl. It never
+// fails the build. A host that refuses is retried with growing waits and slowed down.
 // A board that still fails is counted under boards.issues, and its postings
 // in production's previous jobs.json are carried over unchanged for up to a
 // week (boards.stale, boards.stale_since); a board that answers 404 or with
@@ -26,6 +33,7 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { pathToFileURL } from "node:url";
+import { classify } from "../api/_classify.js";
 
 export const VERSION = 1;
 /** lib/ats location classes for an office in Spain, or remote from it.
@@ -51,6 +59,9 @@ const DEFAULTS = {
   // A run past this publishes what it has; the boards not reached count as
   // "timeout". GitHub's build has room, a stuck host should not hold a deploy.
   minutes: Number(process.env.JOBS_MAX_MINUTES) || 20,
+  // Hours within which production's index is republished instead of a crawl;
+  // 0 always crawls.
+  reuse: Number(process.env.JOBS_REUSE_HOURS) || 0,
   concurrency: 6,
 };
 
@@ -126,11 +137,12 @@ function salary(comp) {
 }
 
 /** One index entry from lib/ats's normalized Job, or null when nobody
- * in Spain could take it. `location` is lib/ats's ranking/location module. */
-export function entry(job, board, slug, location) {
+ * in Spain could take it. `location` is lib/ats's ranking/location module,
+ * `known` the role slugs data.json has, which the posting's roles come from. */
+export function entry(job, board, slug, location, known = new Set()) {
   const classes = openToSpain(job, location.analyzeLocation);
   if (!classes) return null;
-  return {
+  const row = {
     id: `${job.ats}:${job.board}:${job.externalId}`,
     company: board.name,
     slug: slug ?? null,
@@ -150,6 +162,8 @@ export function entry(job, board, slug, location) {
     posted_at: job.postedAt ?? null,
     salary: salary(job.compensation),
   };
+  // Read here because the description is: it is not stored.
+  return { ...row, ...classify(row, job.descriptionText, known) };
 }
 
 const sortJobs = (jobs) => jobs.sort((a, b) =>
@@ -166,6 +180,7 @@ export async function crawl(boardsList, data, ats, opts = {}) {
   const { discoverJobs, adapterFor, CompanySchema, location } = ats;
   const deadline = Date.now() + (opts.minutes ?? DEFAULTS.minutes) * 60_000;
   const slugOf = slugFinder(data);
+  const known = new Set((data?.roles ?? []).map((r) => r.slug));
   const issues = {};
   const failures = [];
   const jobs = new Map();
@@ -237,7 +252,7 @@ export async function crawl(boardsList, data, ats, opts = {}) {
         done.add(item.board);
         const slug = slugOf(item.board);
         for (const job of result.jobs) {
-          const row = entry(job, item.board, slug, location);
+          const row = entry(job, item.board, slug, location, known);
           if (row) jobs.set(row.id, row);
         }
       }
@@ -323,6 +338,13 @@ export async function loadAts() {
            CompanySchema: campaign.CompanySchema, location };
 }
 
+/** Production's index, when it is one and younger than `hours`. */
+export function fresh(prior, hours, now = Date.now()) {
+  if (!(hours > 0) || !isIndex(prior)) return null;
+  const age = now - Date.parse(prior.generated_at);
+  return age >= 0 && age < hours * 3_600_000 ? prior : null;
+}
+
 /** True for a jobs.json this script could have written. */
 export function isIndex(value) {
   return value?.version === VERSION && typeof value.generated_at === "string"
@@ -354,7 +376,7 @@ function args(argv) {
   for (let i = 0; i < argv.length; i += 1) {
     const key = argv[i].replace(/^--/, "");
     if (!(key in out) && key !== "fixture") throw new Error(`unknown option ${argv[i]}`);
-    out[key] = key === "minutes" || key === "concurrency" ? Number(argv[++i]) : argv[++i];
+    out[key] = ["minutes", "concurrency", "reuse"].includes(key) ? Number(argv[++i]) : argv[++i];
   }
   return out;
 }
@@ -368,6 +390,17 @@ async function main() {
     if (!isIndex(index)) throw new Error(`${opts.fixture} is not a jobs index`);
     log(`${index.jobs.length} postings from ${opts.fixture} -> ${opts.out} (${write(opts.out, index)} bytes)`);
     return;
+  }
+
+  if (opts.reuse > 0) {
+    const prior = await previous(opts.previous);
+    const kept = typeof prior === "object" ? fresh(prior, opts.reuse) : null;
+    if (kept) {
+      log(`reused production's index of ${kept.generated_at} (${kept.jobs.length} postings, ` +
+          `${write(opts.out, kept)} bytes); no crawl`);
+      return;
+    }
+    log(`production's index is not under ${opts.reuse}h old (${typeof prior === "object" ? prior.generated_at : prior}); crawling`);
   }
 
   const started = Date.now();

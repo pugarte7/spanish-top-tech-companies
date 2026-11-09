@@ -16,7 +16,11 @@
       "workplace": "hybrid",
       "department": null,
       "posted_at": "2026-10-27T09:15:12-04:00",
-      "salary": null
+      "salary": null,
+      "roles": ["software-engineer"],
+      "seniority": "senior",
+      "years": null,
+      "regions": ["MD"]
     },
     {
       "id": "greenhouse:canonical:3400000002",
@@ -31,7 +35,11 @@
       "workplace": "remote",
       "department": null,
       "posted_at": "2026-09-30T10:00:00-04:00",
-      "salary": null
+      "salary": null,
+      "roles": ["software-engineer"],
+      "seniority": null,
+      "years": null,
+      "regions": []
     },
     {
       "id": "greenhouse:elastic:8200000003",
@@ -46,7 +54,11 @@
       "workplace": null,
       "department": null,
       "posted_at": "2026-10-19T10:17:00-04:00",
-      "salary": { "min": 100500, "max": 159000, "currency": "EUR", "period": "year" }
+      "salary": { "min": 100500, "max": 159000, "currency": "EUR", "period": "year" },
+      "roles": ["software-engineer"],
+      "seniority": "senior",
+      "years": null,
+      "regions": []
     },
     {
       "id": "greenhouse:feverup:4900000004",
@@ -61,7 +73,11 @@
       "workplace": "onsite",
       "department": null,
       "posted_at": "2026-10-01T04:26:54-04:00",
-      "salary": null
+      "salary": null,
+      "roles": ["software-engineer"],
+      "seniority": null,
+      "years": null,
+      "regions": ["MD"]
     },
     {
       "id": "lever:jobandtalent:00000000-aaaa-4bbb-8ccc-000000000005",
@@ -76,7 +92,11 @@
       "workplace": "hybrid",
       "department": null,
       "posted_at": "2026-10-14T15:54:07.599Z",
-      "salary": null
+      "salary": null,
+      "roles": ["software-engineer"],
+      "seniority": null,
+      "years": null,
+      "regions": ["MD"]
     },
     {
       "id": "ashby:kraken.com:00000000-dddd-4eee-8fff-000000000006",
@@ -91,7 +111,11 @@
       "workplace": "remote",
       "department": null,
       "posted_at": "2026-10-16T20:42:48.657+00:00",
-      "salary": { "min": 120000, "max": 160000, "currency": "USD", "period": "year" }
+      "salary": { "min": 120000, "max": 160000, "currency": "USD", "period": "year" },
+      "roles": ["software-engineer"],
+      "seniority": "staff",
+      "years": null,
+      "regions": []
     },
     {
       "id": "recruitee:sequra:2600000007",
@@ -106,7 +130,11 @@
       "workplace": "hybrid",
       "department": null,
       "posted_at": "2026-10-26T15:06:10Z",
-      "salary": null
+      "salary": null,
+      "roles": ["software-engineer"],
+      "seniority": null,
+      "years": null,
+      "regions": ["CT"]
     },
     {
       "id": "greenhouse:typeform:7900000008",
@@ -121,7 +149,11 @@
       "workplace": "remote",
       "department": null,
       "posted_at": "2026-10-19T11:29:57-04:00",
-      "salary": null
+      "salary": null,
+      "roles": ["software-engineer"],
+      "seniority": null,
+      "years": null,
+      "regions": []
     },
     {
       "id": "workday:zendesk/wd1/zendesk:0000000000000000000000000000ab09",
@@ -136,7 +168,11 @@
       "workplace": "hybrid",
       "department": null,
       "posted_at": "2026-10-30T00:00:00.000Z",
-      "salary": null
+      "salary": null,
+      "roles": ["software-engineer"],
+      "seniority": "mid",
+      "years": [2, null],
+      "regions": ["MD"]
     }
   ]
 }
