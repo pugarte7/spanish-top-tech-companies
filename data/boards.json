@@ -80,6 +80,7 @@
   "rti": {"ats":"greenhouse","board":"rti"},
   "sailpoint": {"ats":"workday","board":"sailpoint/wd1/SailPoint","query":"Spain"},
   "scopely": {"ats":"greenhouse","board":"scopely"},
+  "sennder": {"ats":"gem","board":"senndertechnologies-gmbh"},
   "sequra": {"ats":"recruitee","board":"sequra"},
   "solera": {"ats":"workday","board":"solera/wd5/Global_Career_Site","query":"Spain"},
   "sopra-steria": {"ats":"smartrecruiters","board":"SopraSteria1"},

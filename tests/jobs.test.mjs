@@ -274,4 +274,26 @@ assert.equal(JSON.parse(readFileSync(join(tmp, "reused.json"), "utf8")).jobs.len
              "a fresh production index is republished");
 server.close();
 
+// Gem's public job board API, read by lib/ats/sources/gem.js.
+BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
+  { id: "am9i1", title: "Backend Engineer", location: { name: "Barcelona, Spain" }, location_type: "hybrid",
+    offices: [{ location: { name: "Barcelona, Spain" }, name: "Barcelona" }], content: "<p>Go and Postgres.</p>",
+    absolute_url: "https://jobs.gem.com/acme-gmbh/am9i1", first_published_at: "2026-11-03T14:06:05.656Z" },
+  { id: "am9i2", title: "Account Executive", location: { name: "Berlin, Germany" }, location_type: "in_office" },
+];
+{
+  const ats = await loadAts();
+  const gem = ats.adapterFor("gem");
+  const acme = ats.CompanySchema.parse({ name: "Acme", ats: "gem", board: "acme-gmbh" });
+  const jobs = await gem.listJobs(acme, "2026-11-09T00:00:00Z");
+  assert.deepEqual(jobs.map((j) => [j.title, j.locationsRaw, j.url, j.workplaceType]), [
+    ["Backend Engineer", ["Barcelona, Spain"], "https://jobs.gem.com/acme-gmbh/am9i1", "hybrid"],
+    ["Account Executive", ["Berlin, Germany"], "https://jobs.gem.com/acme-gmbh/am9i2", "onsite"],
+  ]);
+  assert.equal((await gem.verifyBoard(acme)).postings, 2);
+  assert.deepEqual(gem.boardFromUrl("https://jobs.gem.com/acme-gmbh/am9i1"), { ats: "gem", board: "acme-gmbh", region: "global" });
+  assert.equal(gem.boardFromUrl("https://www.gem.com/pricing"), null);
+  assert.equal(gem.boardFromPage("https://acme.example/careers", '<a href="https://jobs.gem.com/acme-gmbh">Open roles</a>')?.board, "acme-gmbh");
+}
+
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);
