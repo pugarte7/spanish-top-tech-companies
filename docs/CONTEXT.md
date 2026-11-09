@@ -138,6 +138,13 @@ with `company` and `linkedin_ids` for a new one), set `base`,
 `community` = someone told you. `offer-letter` = you were offered it. Neither
 needs a `source_url`. Then `python3 scripts/validate.py && python3 scripts/site.py --refresh`.
 
+The CSV also holds the Glassdoor import of 2026-11-05 (`source` glassdoor,
+about 96k rows). On 2026-11-09 the maintainer kept it off the web while they
+decide how it shows: `lib.UNPUBLISHED_SOURCES` lists it, and `site.py`,
+`digest.py` and `review.py` read the CSV through `lib.published()`, which
+leaves those rows out. The fetchers and `validate.py` still see every row, so
+nothing is lost; publishing it later is removing it from that tuple.
+
 ## Last run
 
 The list has no fixed size: it is whatever the last signed-in run found.
