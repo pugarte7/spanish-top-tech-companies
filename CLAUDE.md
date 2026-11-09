@@ -254,7 +254,12 @@ ranking, and `scripts/jobs.mjs` crawls every board in it daily into
 `/api/v1/jobs.json`, which the MCP's job tools search. The ATS adapters both
 scripts use live in `lib/ats/` (since 2026-11-04: "vamos a migrar todo dentro
 de este repo"); fix them there. Applying goes through `/mcp` with nothing
-installed.
+installed. `data/careers.json` (slug to careers page, from the maintainer's
+careers-URL list of 2026-11-09) is read before the company's website and
+trusted the same way; add a company's careers page there rather than writing
+its board into `boards.json` by hand, which the next `--all` would undo.
+Santander UK, Santander Bank, Juniper and NTT Data are left out of it on
+purpose: their pages lead to another listed company's board or another entity.
 
 Releases are automatic: `.github/workflows/release.yml` tags every PR merged
 into `main` as the next patch (`minor` or `major` label on the PR for those)

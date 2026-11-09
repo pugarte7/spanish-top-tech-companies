@@ -106,6 +106,7 @@ globalThis.fetch = async (url) => {
     refuse[key] -= 1;
     return new Response("<html>Forbidden</html>", { status: 403 });
   }
+  if (typeof BOARDS[key] === "string") return new Response(BOARDS[key], { status: 200 });
   return key in BOARDS ? new Response(JSON.stringify(BOARDS[key]), { status: 200 })
                        : new Response("not found", { status: 404 });
 };
@@ -151,6 +152,52 @@ assert.deepEqual(lever.regions, ["CT"], "Lisbon is no Spanish region");
 assert.ok(!JSON.stringify(index).includes("We build things"), "descriptions stay out of the index");
 assert.deepEqual(requested.sort(), ["https://api.lever.co/v0/postings/jobandtalent",
   "https://boards-api.greenhouse.io/v1/boards/cabify/jobs", "https://boards-api.greenhouse.io/v1/boards/gone/jobs"]);
+
+// --- Teamtailor: one RSS feed per career site, the site's host as the board ------
+
+const ttItem = (id, title, places, remote = "hybrid") => `<item><title>${title}</title>
+  <description>&lt;p&gt;We fly. You have 2+ years of experience.&lt;/p&gt;</description>
+  <pubDate>Fri, 06 Nov 2026 15:14:31 +0100</pubDate>
+  <link>https://careers.vueling.com/jobs/${id}-${title.toLowerCase().replace(/\W+/g, "-")}</link>
+  <remoteStatus>${remote}</remoteStatus><guid>g-${id}</guid>
+  <tt:locations>${places.map(([city, country]) => `<tt:location><tt:name>${city}</tt:name>
+    <tt:city>${city}</tt:city><tt:country>${country}</tt:country></tt:location>`).join("")}</tt:locations>
+  <tt:department>Tech</tt:department><tt:role/></item>`;
+const rss = (items) => `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:tt="https://teamtailor.com/locations"><channel><title>Vueling</title>
+<link>https://careers.vueling.com/jobs</link>${items.join("")}</channel></rss>`;
+BOARDS["https://careers.vueling.com/jobs.rss"] = rss([
+  ttItem(8681660, "Data Engineer", [["Viladecans", "Spain"]]),
+  ttItem(8681661, "Backend Developer", [["Lisbon", "Portugal"], ["Barcelona", "Spain"]], "fully"),
+  ttItem(8681662, "Cabin Crew Paris", [["Paris", "France"]], "onsite"),
+]);
+BOARDS["https://careers.notteamtailor.com/jobs.rss"] = `<?xml version="1.0"?><rss version="2.0"><channel><title>x</title></channel></rss>`;
+const ttData = { companies: [{ name: "Vueling", levels: "vueling" }], roles: [{ slug: "software-engineer" }, { slug: "data-engineer" }] };
+const tt = await crawl({ companies: [
+  { name: "Vueling", ats: "teamtailor", board: "careers.vueling.com", tier: "B", tags: ["spain"] },
+  { name: "Plain RSS", ats: "teamtailor", board: "careers.notteamtailor.com", tier: "C", tags: [] },
+  { name: "Not a host", ats: "teamtailor", board: "vueling", tier: "C", tags: [] },
+] }, ttData, await loadAts(), { minutes: 1 });
+checkIndex(tt.index, "teamtailor crawl");
+assert.deepEqual(tt.index.boards.issues, { "teamtailor:invalid_board": 1, "teamtailor:invalid_source_payload": 1 });
+assert.deepEqual(tt.index.jobs.map((j) => j.id), ["teamtailor:careers.vueling.com:8681661", "teamtailor:careers.vueling.com:8681660"]);
+const ttJob = Object.fromEntries(tt.index.jobs.map((j) => [j.id, j]));
+assert.deepEqual([ttJob["teamtailor:careers.vueling.com:8681660"].location, ttJob["teamtailor:careers.vueling.com:8681660"].workplace,
+                  ttJob["teamtailor:careers.vueling.com:8681660"].url, ttJob["teamtailor:careers.vueling.com:8681660"].slug,
+                  ttJob["teamtailor:careers.vueling.com:8681660"].posted_at],
+                 ["Viladecans, Spain", "hybrid", "https://careers.vueling.com/jobs/8681660-data-engineer", "vueling", "2026-11-06T14:14:31.000Z"]);
+assert.equal(ttJob["teamtailor:careers.vueling.com:8681661"].workplace, "remote");
+const { teamtailorAdapter } = await import("../lib/ats/sources/teamtailor.js");
+assert.deepEqual(teamtailorAdapter.boardFromUrl("https://ironhackers.teamtailor.com/jobs/123-x"),
+                 { ats: "teamtailor", board: "ironhackers.teamtailor.com", region: "global" });
+assert.equal(teamtailorAdapter.boardFromUrl("https://www.teamtailor.com/en-us/"), null);
+assert.deepEqual(teamtailorAdapter.boardFromPage("https://www.mercadonatech.com/",
+  '<a href="https://www.teamtailor.com/en-us/?utm_campaign=poweredby&amp;utm_content=www.mercadonatech.com">Teamtailor</a>'),
+  { ats: "teamtailor", board: "www.mercadonatech.com", region: "global" });
+assert.deepEqual(teamtailorAdapter.boardFromPage("https://careers.idealista.com/",
+  '<link href="https://assets.teamtailor-cdn.com/x.css"><a href="/jobs">Jobs</a>'),
+  { ats: "teamtailor", board: "careers.idealista.com", region: "global" });
+assert.equal(teamtailorAdapter.boardFromPage("https://www.example.com/", '<a href="/jobs">Jobs</a>'), null);
 
 // --- A host that refuses -----------------------------------------------------
 
@@ -215,6 +262,79 @@ const dayAfter = carryOver({ ...today, jobs: [] }, failures.slice(0, 1), merged,
 assert.deepEqual(dayAfter.boards.stale_since, { "greenhouse:cabify": "2026-11-03T04:20:00Z" });
 assert.equal(dayAfter.jobs.length, 2);
 assert.deepEqual(carryOver(today, failures, null), today, "nothing to carry without a previous index");
+
+// --- Eightfold and Oracle -----------------------------------------------------
+
+const { adapterFor } = await import("../lib/ats/sources/registry.js");
+const eightfold = adapterFor("eightfold"), oracle = adapterFor("oracle");
+Object.assign(BOARDS, {
+  // A new tenant: ten a page, no description in the list.
+  "https://az.eightfold.ai/api/pcsx/search": { status: 200, data: { count: 2, positions: [
+    { id: 111, name: "Data Engineer", locations: ["Barcelona, , Spain"], standardizedLocations: ["Barcelona, CT, ES"],
+      postedTs: 1792972800, workLocationOption: "hybrid", positionUrl: "/careers/job/111" },
+    { id: 112, name: "Sales Lead", locations: ["London, England, United Kingdom"], standardizedLocations: ["London, ENG, GB"],
+      postedTs: 0, workLocationOption: "onsite", positionUrl: "/careers/job/112" },
+  ] } },
+  "https://az.eightfold.ai/api/pcsx/position_details": { status: 200, data: {
+    jobDescription: "<p>You have 4+ years of experience with Spark.</p>" } },
+  // An older tenant: the new API is not found, the old one carries the description.
+  "https://old.eightfold.ai/api/apply/v2/jobs": { count: 1, positions: [
+    { id: 790, name: "Consultant, Spain", location: "Madrid, Spain", locations: ["Madrid, Spain", "Barcelona, Spain"],
+      t_create: 1781170380, work_location_option: "onsite", job_description: "Strategy work.",
+      canonicalPositionUrl: "https://talent.example.com/careers/job/790" },
+  ] },
+  "https://pod.fa.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions": { items: [{
+    TotalJobsCount: 2, requisitionList: [
+      { Id: "2108", Title: "Backend Engineer", PostedDate: "2026-11-02", PrimaryLocation: "Madrid, Spain",
+        PrimaryLocationCountry: "ES", ShortDescriptionStr: "Short.", secondaryLocations: [] },
+      // The location filter is fuzzy: an Indian posting comes back for Spain.
+      { Id: "2109", Title: "Analyst", PostedDate: "2026-11-01", PrimaryLocation: "Pune, India",
+        PrimaryLocationCountry: "IN", secondaryLocations: [] },
+    ] }] },
+  "https://pod.fa.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails": { items: [{
+    ExternalDescriptionStr: "<p>Go and Kotlin.</p>", ExternalPostedStartDate: "2026-11-02T15:51:16+00:00",
+    WorkplaceType: "Hybrid", JobSchedule: "Full time" }] },
+});
+requested = [];
+const enterprise = await crawl({ companies: [
+  { name: "AZ", ats: "eightfold", board: "az.eightfold.ai/az.com", tier: "A", tags: ["spain"] },
+  { name: "Old", ats: "eightfold", board: "old.eightfold.ai/old.com", tier: "B", tags: ["spain"] },
+  { name: "Pod", ats: "oracle", board: "pod.fa.oraclecloud.com/CX_1", tier: "A", tags: ["spain"] },
+] }, { companies: [{ name: "AZ", levels: "az" }, { name: "Pod", levels: "pod" }], roles: [{ slug: "software-engineer" }] },
+await loadAts(), { minutes: 1 });
+checkIndex(enterprise.index, "eightfold and oracle");
+assert.deepEqual(enterprise.index.boards.issues, {});
+const ent = Object.fromEntries(enterprise.index.jobs.map((j) => [j.id, j]));
+assert.deepEqual(Object.keys(ent).sort(), ["eightfold:az.eightfold.ai/az.com:111", "eightfold:old.eightfold.ai/old.com:790",
+                                           "oracle:pod.fa.oraclecloud.com/CX_1:2108"]);
+const az = ent["eightfold:az.eightfold.ai/az.com:111"];
+assert.deepEqual([az.url, az.location, az.workplace, az.years],
+                 ["https://az.eightfold.ai/careers/job/111", "Barcelona, Spain", "hybrid", [4, null]]);
+assert.equal(ent["eightfold:old.eightfold.ai/old.com:790"].url, "https://talent.example.com/careers/job/790");
+const pod = ent["oracle:pod.fa.oraclecloud.com/CX_1:2108"];
+assert.deepEqual([pod.url, pod.location, pod.workplace, pod.posted_at],
+  ["https://pod.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/2108", "Madrid, Spain", "hybrid",
+   "2026-11-02T15:51:16+00:00"]);
+assert.ok(requested.includes("https://az.eightfold.ai/api/pcsx/position_details"), "pcsx descriptions are read");
+assert.ok(!requested.some((u) => u.startsWith("https://old.eightfold.ai/api/pcsx/position")), "v2 lists carry descriptions");
+// A posting dated 0 has no date rather than 1970.
+const london = await eightfold.listJobs({ name: "AZ", ats: "eightfold", board: "az.eightfold.ai/az.com", query: "" },
+                                        "2026-11-09T00:00:00Z");
+assert.equal(london.find((j) => j.externalId === "112").postedAt, null);
+// Boards read off the links employers publish.
+assert.deepEqual(eightfold.boardFromUrl("https://bcg.eightfold.ai/careers?domain=bcg.com&hl=en"),
+                 { ats: "eightfold", board: "bcg.eightfold.ai/bcg.com", region: "global" });
+assert.equal(eightfold.boardFromUrl("https://bcg.eightfold.ai/careers/join"), null, "no domain, no board");
+assert.deepEqual(eightfold.boardFromPage("https://telekom.eightfold.ai/careers", '<script>{"domain": "telekom.com"}</script>'),
+                 { ats: "eightfold", board: "telekom.eightfold.ai/telekom.com", region: "global" });
+assert.deepEqual(oracle.boardFromUrl("https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/jobs"),
+                 { ats: "oracle", board: "jpmc.fa.oraclecloud.com/CX_1001", region: "global" });
+assert.deepEqual(oracle.boardFromPage("https://www.honeywell.com/careers",
+  '<a href="https://ibqbjb.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/Honeywell/jobs">Jobs</a>'),
+  { ats: "oracle", board: "ibqbjb.fa.ocs.oraclecloud.com/Honeywell", region: "global" });
+assert.equal(oracle.boardFromUrl("https://evil.example.com/hcmUI/CandidateExperience/en/sites/CX_1"), null);
+for (const [adapter, bad] of [[eightfold, "az.eightfold.ai"], [eightfold, "a/b/c"], [oracle, "pod.example.com/CX_1"]])
+  await assert.rejects(adapter.listJobs({ name: "X", board: bad, query: "" }, "2026-11-09T00:00:00Z"), /must be/);
 
 // --- The committed fixture ----------------------------------------------------
 
@@ -331,5 +451,151 @@ server.close();
   assert.equal(rippling.boardFromUrl("https://www.chess.com/jobs"), null);
   globalThis.fetch = saved;
 }
+
+// --- SuccessFactors career sites, over a stubbed fetch -------------------------
+
+const sf = await import("../lib/ats/sources/successfactors.js");
+const sfRow = (id, title, place) => `<tr class="data-row">
+  <td class="colTitle"><span class="jobTitle"><a href="/job/Madrid-${id}/${id}/" class="jobTitle-link">${title}</a></span></td>
+  <td class="colLocation"><span class="jobLocation"> ${place} </span></td>
+  <td class="colDate"><span class="jobDate">Nov 3, 2026 </span></td></tr>`;
+const SF = {
+  "https://careers.acme.example/search/?q=&locationsearch=Spain":
+    `<link href="https://rmkcdn.successfactors.com/x/site.css"><span class="paginationLabel">Resultados <b>1 – 2</b> de <b>3</b></span>
+     ${sfRow("1000001", "Backend Engineer", "Madrid, M, ES")}${sfRow("1000002", "Data &amp; AI Lead", "MADRID, ES, 28046")}`,
+  "https://careers.acme.example/search/?q=&locationsearch=Spain&startrow=2": sfRow("1000003", "Sales Rep", "Lisboa, PT"),
+  "https://careers.acme.example/job/Madrid-1000001/1000001/":
+    `<span itemprop="jobLocation"><meta itemprop="addressLocality" content="Barcelona"><meta itemprop="addressRegion" content="B">
+     <meta itemprop="addressCountry" content="ES"></span><meta itemprop="datePosted" content="Sat Nov 07 08:00:00 UTC 2026">
+     <span itemprop="description"><span class="jobdescription"><p>Go and <span>Kafka</span>.</p></span></span>`,
+  "https://jobs.newer.example/search/?q=&locationsearch=Spain": `<script>var CSRFToken = "42b238cd-9b2d-4a8a";</script>`,
+  "https://jobs.newer.example/services/recruiting/v1/jobs": { totalJobs: 1, jobSearchResult: [{ response: {
+    id: "1425", unifiedStandardTitle: "SAP Lead", unifiedUrlTitle: "SAP-Lead", supportedLocales: ["en_US"],
+    jobLocationShort: ["Sant Cugat del Valles, B, ESP, "], unifiedStandardStart: "10/15/26" } }] },
+};
+const sfSeen = [];
+globalThis.fetch = async (url, init = {}) => {
+  sfSeen.push([String(url), init.method, init.headers?.["X-CSRF-Token"] ?? null]);
+  const body = SF[String(url)];
+  if (body === undefined) return new Response("not found", { status: 404 });
+  return new Response(typeof body === "string" ? body : JSON.stringify(body), { status: 200 });
+};
+const sfCompany = (name, board) => ({ name, ats: "successfactors", board, query: "", tier: "B", tags: [] });
+// Only the first posting page is read; the others keep what the table says.
+process.env.ATS_SUCCESSFACTORS_MAX_DETAILS = "1";
+const sfJobs = await sf.successfactorsAdapter.listJobs(sfCompany("Acme", "careers.acme.example"), "2026-11-09T00:00:00Z");
+assert.deepEqual(sfJobs.map((j) => [j.title, j.locationsRaw.join("|")]), [
+  ["Backend Engineer", "Barcelona, B, Spain"], ["Data & AI Lead", "MADRID, Spain"], ["Sales Rep", "Lisboa, Portugal"],
+], "postings from both pages, the posting page's place winning over the table's");
+assert.equal(sfJobs[0].postedAt, "2026-11-07T08:00:00.000Z");
+assert.match(sfJobs[0].descriptionText, /Go and Kafka/);
+const newer = await sf.successfactorsAdapter.listJobs(sfCompany("Newer", "jobs.newer.example"), "2026-11-09T00:00:00Z");
+assert.deepEqual(newer.map((j) => [j.title, j.url, j.locationsRaw[0], j.postedAt]),
+                 [["SAP Lead", "https://jobs.newer.example/job/SAP-Lead/1425-en_US/", "Sant Cugat del Valles, B, Spain", "2026-10-15T00:00:00.000Z"]]);
+assert.deepEqual(sfSeen.at(-1).slice(1), ["POST", "42b238cd-9b2d-4a8a"], "the API is asked with the page's own token");
+assert.deepEqual(sf.successfactorsAdapter.boardFromPage("https://careers.acme.example/", SF["https://careers.acme.example/search/?q=&locationsearch=Spain"]),
+                 { ats: "successfactors", board: "careers.acme.example", region: "global" });
+assert.equal(sf.successfactorsAdapter.boardFromPage("https://acme.example/", "<html>no board</html>"), null);
+assert.throws(() => sf.searchUrl({ board: "https://x.example/search" }), /career site's host/);
+
+// Phenom and iCIMS career sites live on the employer's own domain.
+const careerSite = (ats, board) => ({ name: ats === "phenom" ? "Roche" : "Keysight", ats, board, tier: "B", tags: [],
+                                active: true, region: "global", query: "" });
+const phenomJob = (jobId, extra) => ({ jobId, title: `Engineer ${jobId}`, country: "Spain", city: "Madrid",
+  multi_location: ["Madrid, Spain"], postedDate: "2026-10-13T00:00:00.000+0000", descriptionTeaser: "Teaser",
+  applyUrl: `https://roche.wd3.myworkdayjobs.com/roche-ext/job/Madrid/x_${jobId}/apply`, ...extra });
+const PHENOM = {
+  facets: { refineSearch: { status: 200, totalHits: 300, data: { jobs: [],
+    aggregations: [{ field: "country", value: { Switzerland: 200, SPAIN: 3 } }] } } },
+  spain: { refineSearch: { status: 200, totalHits: 3, data: { jobs: [
+    phenomJob("A-1", { RemoteType: "Hybrid" }),
+    phenomJob("A-2", { country: "Switzerland", city: "Zurich", multi_location: ["Zurich, Switzerland", "Barcelona, Spain"] }),
+    phenomJob("A-3", { country: "Switzerland", city: "Basel", multi_location: ["Basel, Switzerland"] })] } } },
+};
+const phenomBodies = [];
+globalThis.fetch = async (url, init = {}) => {
+  const u = String(url);
+  if (u === "https://careers.roche.com/widgets") {
+    const body = JSON.parse(init.body);
+    phenomBodies.push(body);
+    return new Response(JSON.stringify(body.selected_fields.country ? PHENOM.spain : PHENOM.facets));
+  }
+  if (u === "https://careers.roche.com/global/en/job/A-1")
+    return new Response(`<script>phApp.ddo = {"jobDetail":{"data":{"job":{"description":"<p>Full text</p>"}}}}; phApp.x = 1;</script>`);
+  if (u.startsWith("https://careers.keysight.com/api/jobs?"))
+    return new Response(JSON.stringify({ totalCount: 2, jobs: [
+      { data: { slug: "53254", title: "Solutions Architect", language: "en-us", city: "Las Rozas", state: "Madrid",
+        country: "Spain", country_code: "ES", description: "<p>About</p>", qualifications: "<p>RF</p>",
+        posted_date: "2026-07-16T10:08:00+0000", apply_url: "https://globalcareers-keysight.icims.com/jobs/53254/login" } },
+      { data: { slug: "53300", title: "Test Engineer", language: "en-us", city: "Milano", country: "Italy", country_code: "IT",
+        description: "<p>Milan</p>", additional_locations: [{ city: "Malaga", country: "Spain", country_code: "ES" }] } }] }));
+  return new Response("not found", { status: 404 });
+};
+process.env.ATS_PHENOM_MAX_DETAILS = "1";
+const phenomJobs = await adapterFor("phenom").listJobs(careerSite("phenom", "careers.roche.com/ROCHGLOBAL/global/en"), "2026-11-09T00:00:00Z");
+assert.deepEqual(phenomBodies.map((b) => b.selected_fields), [{}, { country: ["SPAIN"] }],
+                 "the Spain filter uses the value the site's own facet names");
+assert.equal(phenomBodies[1].refNum, "ROCHGLOBAL");
+const { spainPostings } = await import("../lib/ats/presets/spain.js");
+const inSpain = (jobs) => spainPostings(jobs).map((j) => j.externalId);
+assert.deepEqual(phenomJobs.map((j) => j.url), ["A-1", "A-2", "A-3"].map((id) => `https://careers.roche.com/global/en/job/${id}`));
+assert.deepEqual(inSpain(phenomJobs), ["A-1", "A-2"], "a fuzzy match in Basel only is not in Spain");
+assert.deepEqual([phenomJobs[0].descriptionText, phenomJobs[1].descriptionText], ["Full text", "Teaser"],
+                 "past ATS_PHENOM_MAX_DETAILS the search teaser stands in");
+assert.equal(phenomJobs[0].workplaceType, "hybrid");
+assert.equal(phenomJobs[0].postedAt, "2026-10-13T00:00:00.000Z");
+assert.match(phenomJobs[0].applyUrl, /myworkdayjobs\.com/);
+const icimsJobs = await adapterFor("icims").listJobs(careerSite("icims", "careers.keysight.com"), "2026-11-09T00:00:00Z");
+assert.deepEqual(icimsJobs.map((j) => j.url), ["53254", "53300"].map((id) => `https://careers.keysight.com/jobs/${id}?lang=en-us`));
+assert.deepEqual(inSpain(icimsJobs), ["53254", "53300"], "a second location in Spain counts");
+assert.match(icimsJobs[0].descriptionText, /About[\s\S]*RF/);
+assert.match(icimsJobs[0].applyUrl, /icims\.com/);
+const { phenomAdapter } = await import("../lib/ats/sources/phenom.js");
+const { icimsAdapter } = await import("../lib/ats/sources/icims.js");
+const phenomHome = '<script>phApp.ddo = {}; phApp.x = 1;</script><script>{"country":"global","locale":"en_global","refNum":"CISCISGLOBAL"}</script><img src="https://cdn.phenompeople.com/x.png">';
+assert.deepEqual(phenomAdapter.boardFromPage("https://careers.cisco.com/global/en/search-results", phenomHome),
+                 { ats: "phenom", board: "careers.cisco.com/CISCISGLOBAL/global/en", region: "global" });
+assert.equal(phenomAdapter.boardFromPage("https://careers.clarivate.com/", phenomHome.replace("CISCISGLOBAL", "CLACLAGB")).board,
+             "careers.clarivate.com/CLACLAGB", "a site with no locale path");
+assert.equal(phenomAdapter.boardFromPage("https://example.com/careers", "<html>careers</html>"), null);
+assert.deepEqual(icimsAdapter.boardFromPage("https://careers.keysight.com/external", '<div class="JIBE_INPUT-ADDRESS"></div>'),
+                 { ats: "icims", board: "careers.keysight.com", region: "global" });
+assert.throws(() => phenomAdapter.listUrl({ board: "careers.cisco.com" }), /host\/refNum/);
+
+// scripts/boards.mjs: how a board is read off a link or a careers page.
+const spain = await import("../lib/ats/presets/spain.js");
+assert.deepEqual(spain.boardFromUrl("https://redhat.wd5.myworkdayjobs.com/en-US/jobs"),
+                 { ats: "workday", board: "redhat/wd5/jobs", region: "global" }, "a Workday site may be called jobs");
+assert.deepEqual(spain.boardFromUrl("https://job-boards.eu.greenhouse.io/sahajsoftware"),
+                 { ats: "greenhouse", board: "sahajsoftware", region: "global" }, "EU Greenhouse");
+assert.equal(spain.boardFromUrl("https://boards.greenhouse.io/embed"), null);
+assert.deepEqual(spain.boardFromUrl("https://www.amazon.jobs/en/"), { ats: "amazon", board: "ESP", region: "global" });
+assert.equal(spain.boardFromUrl("https://www.google.com/about/careers/applications/")?.board, "Spain");
+assert.equal(spain.boardFromUrl("https://www.google.com/"), null, "Google's home page is not its board");
+assert.equal(spain.boardFromUrl("https://www.metacareers.com/careers")?.query, "Spain");
+assert.deepEqual(spain.boardsLinkedFrom('<a href="https://job-boards.eu.greenhouse.io/acme/jobs/1">').map((b) => b.board), ["acme"]);
+const rules = { threshold: 60_000, companyFloor: 45_000, minRanked: 3, dataAsOf: "" };
+const pages = {
+  "https://acme.example/": "<html>no board here</html>",
+  "https://acme.example/careers": '<a href="https://careers.smartrecruiters.com/Acme">Jobs</a>',
+};
+const seen = [];
+const probed = await spain.probeCompany(
+  { name: "Acme", levelsSlug: "acme", website: "https://acme.example/", careers: "https://acme.example/careers",
+    cities: [], engineerMedian: null, engineerCount: 0 },
+  rules,
+  { fetchPage: async (url) => pages[url] ?? null, resolve: async () => [],
+    listJobs: async (entry) => { seen.push(entry); return [{ locationClass: "spain", locationsRaw: ["Madrid, Spain"] }]; } },
+);
+assert.equal(probed.kept?.board, "Acme", "the careers page from data/careers.json is read");
+assert.equal(probed.candidates[0].source, "website");
+assert.equal(seen[0].country, "es", "SmartRecruiters is asked for postings in Spain only");
+const given = await spain.probeCompany(
+  { name: "Acme", levelsSlug: "acme", website: null, careers: { ats: "lever", board: "acme" },
+    cities: [], engineerMedian: null, engineerCount: 0 },
+  rules,
+  { resolve: async () => [], listJobs: async () => [{ locationClass: "spain", locationsRaw: ["Madrid, Spain"] }] },
+);
+assert.equal(given.kept?.board, "acme", "a board written out in data/careers.json is taken as it is");
 
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);
