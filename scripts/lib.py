@@ -106,21 +106,6 @@ def published(companies: list[dict]) -> list[dict]:
             for c in companies]
 
 
-# Kept in the CSV but published nowhere yet: not on the site, the MCP, the
-# digest or the review list. The 2026-11-05 Glassdoor import is 96k rows to
-# Levels.fyi's 6k, and on 2026-11-09 the maintainer kept it off the web
-# "sin perder los datos" until they decide how it shows.
-UNPUBLISHED_SOURCES = ("glassdoor",)
-
-
-def published(companies: list[dict]) -> list[dict]:
-    """The companies as the public outputs see them: copies without the rows
-    of UNPUBLISHED_SOURCES. Never save these; the CSV keeps every row."""
-    return [{**c, "entries": [e for e in c["entries"]
-                              if e.get("source") not in UNPUBLISHED_SOURCES]}
-            for c in companies]
-
-
 # A salary someone in Spain told the maintainer directly outranks anything
 # crowdsourced, so it sorts above it however large the crowdsourced one is.
 VOUCHED = ("offer-letter", "community")
