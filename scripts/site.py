@@ -342,8 +342,7 @@ STRINGS = {
         "data": "JSON", "repo": "GitHub", "web": "Website", "legal": "Legal and privacy",
         "stars_label": "GitHub, {n} stars",
         "star_title": "Finding it useful?",
-        "star_text": "I keep this site going on my own, with no ads and nothing to sell. Every star "
-                     "on GitHub moves it up, so more people looking for a tech job find it.",
+        "star_text": "Every star on GitHub moves it up, so more people looking for a tech job find it.",
         "star_how": "It is the Star button at the top right of the repo, with your GitHub account.",
         "star_button": "Give it a star", "star_close": "Close",
         "share_text": "Know someone looking for a tech job in Spain? Send them the site. "
@@ -477,8 +476,8 @@ STRINGS = {
         "data": "JSON", "repo": "GitHub", "web": "Web", "legal": "Aviso legal y privacidad",
         "stars_label": "GitHub, {n} estrellas",
         "star_title": "¿Te está sirviendo?",
-        "star_text": "Esta web la mantengo yo solo, sin anuncios ni nada que vender. Cada estrella "
-                     "en GitHub la hace subir y que la encuentre más gente que busca trabajo en tech.",
+        "star_text": "Cada estrella en GitHub la hace subir y que la encuentre más gente que busca "
+                     "trabajo en tech.",
         "star_how": "Es el botón Star, arriba a la derecha del repo, con tu cuenta de GitHub.",
         "star_button": "Darle una estrella", "star_close": "Cerrar",
         "share_text": "¿Conoces a alguien que busca trabajo en tech en España? Pásale la web. "

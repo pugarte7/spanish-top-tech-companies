@@ -920,13 +920,15 @@ function agents() {
 }
 
 // --- star prompt ----------------------------------------------------------------
-// Once a reader has opened a second company, a small card asks for a GitHub
+// Once a reader has opened a third company, a small card asks for a GitHub
 // star; on a phone, where few are signed in to GitHub (the Reddit app's
 // browser above all), it asks them to share the site instead. A star or a
 // share is never asked again; closing waits a month. Until 2026-11-09 it came
 // after 40 seconds for everyone: 3,621 sessions closed it in a month, 78
 // clicked, 65 of them on phones.
-const STAR_AFTER_OPENS = 2;
+const STAR_AFTER_OPENS = 3;
+// A beat after that click, so the card does not land on the row opening.
+const STAR_SHOW_MS = 1200;
 const STAR_SNOOZE_DAYS = 30;
 // A new key with each new card, so a reader who closed the old one sees the
 // new one once. Whoever clicked through from an older card is never asked.
@@ -942,7 +944,7 @@ function store(value) {
   } catch { return null; }
 }
 
-// Called with each company opened; shows the card at the second.
+// Called with each company opened; shows the card after the third.
 let starOpen = () => {};
 function starPrompt() {
   const seen = store();
@@ -969,8 +971,10 @@ function starPrompt() {
   let opens = 0;
   starOpen = () => {
     if (++opens !== STAR_AFTER_OPENS) return;
-    pop.hidden = false;
-    track("star_prompt", { action: "shown", mode });
+    setTimeout(() => {
+      pop.hidden = false;
+      track("star_prompt", { action: "shown", mode });
+    }, STAR_SHOW_MS);
   };
 }
 
