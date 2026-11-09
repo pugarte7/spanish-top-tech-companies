@@ -532,11 +532,17 @@ function summary() {
       ` style="height:${c ? Math.max(4, (c / max) * 100) : 4}%"></i></span>`;
   }).join("");
   const bar = ((1 + (D.threshold - low) / step) / a.hist.length) * 100;
-  el.innerHTML =
+  // The card at the top is everyone in Spain; under filters this one is a
+  // part of it, and says which part, or the two read as contradicting.
+  const on = Object.values(FILTERS).filter((f) => f.active());
+  const scope = on.length ? `<p class="scope">` + esc(S.sum_scope)
+    .replace("{filters}", () => `<b>${on.map((f) => esc(f.text())).join(" · ")}</b>`)
+    .replace("{n}", grouped(a.n)).replace("{all}", grouped(D.cells["||"].n)) + `</p>` : "";
+  el.innerHTML = scope +
     `<dl><dt>${label("median")}</dt><dd>${money(a.median)}</dd></dl>` +
     `<dl><dt>${S.sum_range}</dt><dd>${range(a)}</dd></dl>` +
     `<dl><dt>${label("share")}</dt><dd>${pct(a.share)}</dd></dl>` +
-    `<dl><dt>${S.col_n}</dt><dd>${a.n.toLocaleString(LOCALE)}</dd></dl>` +
+    `<dl><dt>${S.col_n}</dt><dd>${grouped(a.n)}</dd></dl>` +
     `<div class="dist" aria-hidden="true"><div class="bars">${bars}<span class="ref" style="left:${bar}%"></span></div>` +
     `<div class="axis"><span>${short(low)}</span>` +
     `<span style="left:${bar}%">${short(D.threshold)}</span>` +
@@ -916,15 +922,17 @@ function agents() {
 // repo for someone. Closing it waits a day; a click, never again.
 const STAR_DELAY_MS = 40_000;
 const STAR_SNOOZE_DAYS = 1;
-// A new key since the blue redesign, so a reader who closed the old card sees
-// the new one once. Whoever starred from the old card is still never asked.
-const STAR_KEY = "star-prompt-2";
-const STAR_OLD_KEY = "star-prompt";
+// A new key with each new card (2026-11-09: it shows where the button is on
+// GitHub), so a reader who closed the old one sees the new one once. Whoever
+// clicked through from an older card is still never asked.
+const STAR_KEY = "star-prompt-3";
+const STAR_OLD_KEYS = ["star-prompt-2", "star-prompt"];
 
 function store(value) {
   try {
     if (value !== undefined) return localStorage.setItem(STAR_KEY, value);
-    return localStorage.getItem(STAR_KEY) ?? (localStorage.getItem(STAR_OLD_KEY) === "starred" ? "starred" : null);
+    return localStorage.getItem(STAR_KEY) ??
+      (STAR_OLD_KEYS.some((k) => localStorage.getItem(k) === "starred") ? "starred" : null);
   } catch { return null; }
 }
 
@@ -932,11 +940,13 @@ function starPrompt() {
   const seen = store();
   if (seen === "starred" || (seen && Date.now() < +seen)) return;
   const pop = $("star");
-  const close = (value) => { pop.hidden = true; store(value); };
-  $("star-go").onclick = () => close("starred");
-  $("star-close").onclick = () => close(String(Date.now() + STAR_SNOOZE_DAYS * 864e5));
+  // Shown, clicked and closed go to PostHog: two weeks of clicks with no new
+  // star is how the old card was found wanting.
+  const close = (value, action) => { pop.hidden = true; store(value); track("star_prompt", { action }); };
+  $("star-go").onclick = () => close("starred", "click");
+  $("star-close").onclick = () => close(String(Date.now() + STAR_SNOOZE_DAYS * 864e5), "close");
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !pop.hidden) $("star-close").click(); });
-  setTimeout(() => { pop.hidden = false; }, STAR_DELAY_MS);
+  setTimeout(() => { pop.hidden = false; track("star_prompt", { action: "shown" }); }, STAR_DELAY_MS);
 }
 
 // --- render -------------------------------------------------------------------

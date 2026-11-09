@@ -204,6 +204,14 @@ YEAR_BUCKETS = [(0, 2), (2, 5), (5, 8), (8, 12), (12, 20), (20, None)]
 # Histogram bins of 10k; the ends are open so a lone outlier joins a crowd.
 HIST_LOW, HIST_HIGH, HIST_STEP = 20_000, 150_000, 10_000
 
+# GitHub's filled star (octicon star-fill-16), the button once starred.
+STAR_FILL = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .25a.75.75 0 0 1 '
+             '.673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791'
+             'L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611'
+             'L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>')
+# The pointer in the star prompt's demo.
+POINTER = ('<svg viewBox="0 0 16 20" aria-hidden="true"><path d="M1 1v15l4-4 3 7 3-1.3-3-6.7h5.5z" '
+           'fill="#fff" stroke="#1f2328" stroke-width="1.2" stroke-linejoin="round"/></svg>')
 # GitHub's outline star (octicon star-16), the one on its Star button.
 STAR_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .25a.75.75 0 0 1 '
              '.673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791'
@@ -288,6 +296,7 @@ STRINGS = {
         "matrix_sub": "Median gross yearly base salary for the roles with most data. "
                       "Click a cell to see which companies pay most there.",
         "sum_range": "Middle half earns",
+        "sum_scope": "Only {filters}: {n} of the {all} salaries in Spain above.",
         "companies_title": "Companies",
         "search": "Search",
         "col_company": "Company", "col_median": "Median base salary",
@@ -326,9 +335,11 @@ STRINGS = {
         "people": "salaries", "median": "Median", "range": "p25–p75",
         "updated": "Updated {date}",
         "data": "JSON", "repo": "GitHub", "web": "Website", "legal": "Legal and privacy",
-        "star_title": "Finding this useful?",
-        "star_text": "Give the repo a star on GitHub. It helps more people find it.",
-        "star_button": "Star on GitHub", "star_close": "Close",
+        "star_title": "Did this help?",
+        "star_text": "It is free and has no ads. A star on GitHub is what gets it in front of more "
+                     "people looking for a tech job in Spain.",
+        "star_how": "On GitHub it is the Star button, top right. You need to be signed in.",
+        "star_button": "Star it on GitHub", "star_close": "Close",
         "under": "Under", "over": "Over",
         "role_label": "Role", "mode_label": "Work", "loc_label": "Location", "all_spain": "All of Spain",
         "mode_remote": "Remote", "mode_hybrid": "Hybrid", "mode_office": "Office",
@@ -417,6 +428,7 @@ STRINGS = {
         "matrix_sub": "Sueldo base bruto anual mediano de los roles con más datos. "
                       "Pulsa una celda para ver qué empresas pagan más en ese caso.",
         "sum_range": "La mitad cobra entre",
+        "sum_scope": "Solo {filters}: {n} de los {all} salarios de España de arriba.",
         "companies_title": "Empresas",
         "search": "Buscar",
         "col_company": "Empresa", "col_median": "Sueldo base mediano",
@@ -454,9 +466,11 @@ STRINGS = {
         "people": "salarios", "median": "Mediana", "range": "p25–p75",
         "updated": "Actualizado {date}",
         "data": "JSON", "repo": "GitHub", "web": "Web", "legal": "Aviso legal y privacidad",
-        "star_title": "¿Te está sirviendo?",
-        "star_text": "Dale una estrella al repo en GitHub. Ayuda a que lo encuentre más gente.",
-        "star_button": "Dar una estrella en GitHub", "star_close": "Cerrar",
+        "star_title": "¿Te ha servido?",
+        "star_text": "Es gratis y sin anuncios. Una estrella en GitHub es lo que hace que llegue a más "
+                     "gente que busca trabajo en tech en España.",
+        "star_how": "En GitHub es el botón Star, arriba a la derecha. Hace falta haber iniciado sesión.",
+        "star_button": "Dar la estrella en GitHub", "star_close": "Cerrar",
         "under": "Menos de", "over": "Más de",
         "role_label": "Rol", "mode_label": "Modalidad", "loc_label": "Ubicación", "all_spain": "Toda España",
         "mode_remote": "Remoto", "mode_hybrid": "Híbrido", "mode_office": "Presencial",
@@ -1406,7 +1420,13 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
   <button class="star-x" id="star-close" type="button" aria-label="{e['star_close']}">×</button>
   <p class="star-title" id="star-title">{e['star_title']}</p>
   <p class="star-text">{e['star_text']}</p>
-  <a class="star-btn" id="star-go" href="{REPO}" target="_blank" rel="noopener" aria-label="{e['star_button']}" title="{e['star_button']}">{STAR_ICON}</a>
+  <div class="star-demo" aria-hidden="true">
+    <span class="gh-repo">pugarte7 / <b>spanish-top-tech-companies</b></span>
+    <span class="gh-btn"><span class="gh-off">{STAR_ICON}Star</span><span class="gh-on">{STAR_FILL}Starred</span></span>
+    <span class="gh-pointer">{POINTER}</span>
+  </div>
+  <p class="star-how">{e['star_how']}</p>
+  <a class="star-btn" id="star-go" href="{REPO}" target="_blank" rel="noopener">{STAR_ICON}<span>{e['star_button']}</span></a>
 </aside>
 <script>window.S={json.dumps(s, ensure_ascii=False)};window.DATA_V="{data_version}";</script>
 <script src="/app.js?v={asset_version("app.js")}"></script>

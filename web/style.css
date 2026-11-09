@@ -374,6 +374,8 @@ input[type=search]:focus-visible { border-color: var(--text); outline: 1px solid
 .summary dd { margin: 0; font: 300 28px/32px var(--display); white-space: nowrap; }
 .summary dl:first-child dd { font-weight: 400; }
 .summary .empty { grid-column: 1 / -1; padding: 8px 0; }
+.summary .scope { grid-column: 1 / -1; margin: 0 0 -4px; font-size: 13px; line-height: 18px; color: var(--muted); }
+.summary .scope b { font-weight: 600; color: var(--text); }
 .dist .bars { position: relative; display: flex; align-items: flex-end; gap: 2px; height: 44px; }
 .dist .col { flex: 1; height: 100%; display: flex; align-items: flex-end; cursor: default; }
 .dist .bars i { flex: 1; background: var(--quiet); }
@@ -511,7 +513,7 @@ footer .foot-links::before { inset: -20px -28px; }
 
 /* Star prompt: a piece of the blue field, lacería and all. It floats, so it
    is the one card with a shadow. After .field, so it stays fixed. */
-.star-pop { position: fixed; z-index: 25; width: 320px; max-width: calc(100vw - 32px);
+.star-pop { position: fixed; z-index: 25; width: 340px; max-width: calc(100vw - 32px);
             right: max(20px, env(safe-area-inset-right, 0px)); bottom: max(20px, env(safe-area-inset-bottom, 0px));
             padding: 18px 20px 20px; border-radius: var(--radius-card); border: 1px solid var(--field-line);
             box-shadow: var(--float); animation: star-in .25s ease-out; }
@@ -519,12 +521,47 @@ footer .foot-links::before { inset: -20px -28px; }
 .star-pop > .wall { opacity: .55; }
 @keyframes star-in { from { opacity: 0; transform: translateY(12px); } }
 .star-title { margin: 0 28px 6px 0; font: 300 28px/32px var(--display); color: var(--field-bright); }
-.star-text { margin: 0 0 16px; color: var(--field-soft); }
-/* The one action: a flat light square with GitHub's star in the field's blue. */
-.star-btn { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto;
-            border-radius: var(--radius-control); background: var(--field-ink); color: var(--field); }
-.star-btn:hover { background: var(--field-bright); }
-.star-btn svg { width: 24px; height: 24px; }
+.star-text { margin: 0 0 14px; color: var(--field-soft); }
+/* Where the star is once on GitHub: its repo header, drawn in GitHub's own
+   light colours so it is recognised there, with a pointer pressing Star.
+   79 clicks in two weeks of 2026-11 brought no star: readers reached the
+   repo and did not find the button. */
+.star-demo { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+             padding: 10px 12px; border-radius: 6px; background: #fff; color: #1f2328;
+             font: 12px/16px -apple-system, "Segoe UI", system-ui, sans-serif; overflow: hidden; }
+.gh-repo { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #59636e; }
+.gh-repo b { font-weight: 600; color: #0969da; }
+.gh-btn { flex: none; display: grid; height: 28px; padding: 0 10px; border: 1px solid #d1d9e0; border-radius: 6px;
+          background: #f6f8fa; font-weight: 500; }
+.gh-btn > span { grid-area: 1 / 1; display: flex; align-items: center; gap: 6px; }
+.gh-btn svg { width: 14px; height: 14px; color: #59636e; }
+.gh-on { opacity: 0; }
+.gh-on svg { color: #d4a72c; }
+.gh-pointer { position: absolute; right: 26px; top: 22px; width: 14px; pointer-events: none; }
+.gh-pointer svg { display: block; width: 14px; height: 18px; }
+@media (prefers-reduced-motion: no-preference) {
+  .gh-pointer { animation: gh-point 4.5s ease-in-out infinite; }
+  .gh-off { animation: gh-off 4.5s step-end infinite; }
+  .gh-on { animation: gh-on 4.5s step-end infinite; }
+}
+@keyframes gh-point {
+  0% { opacity: 0; transform: translate(-150px, 18px); }
+  10% { opacity: 1; transform: translate(-150px, 18px); }
+  40% { transform: translate(0, 0) scale(1); }
+  45% { transform: translate(0, 0) scale(.8); }
+  50%, 85% { opacity: 1; transform: translate(0, 0) scale(1); }
+  95%, 100% { opacity: 0; transform: translate(0, 0); }
+}
+@keyframes gh-off { 0% { opacity: 1; } 45% { opacity: 0; } 95% { opacity: 1; } }
+@keyframes gh-on { 0% { opacity: 0; } 45% { opacity: 1; } 95% { opacity: 0; } }
+.star-how { margin: 8px 0 16px; font-size: 13px; line-height: 18px; color: var(--field-soft); }
+/* The one action, labelled: an icon alone drew clicks but said nothing of what
+   happens next. .field a:hover would turn it white on white. */
+.star-btn { display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px;
+            border-radius: var(--radius-control); background: var(--field-ink); color: var(--field);
+            font-weight: 600; text-decoration: none; }
+.star-pop .star-btn:hover { background: var(--field-bright); color: var(--field); text-decoration: none; }
+.star-btn svg { width: 18px; height: 18px; }
 .star-x { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: 0; border-radius: 2px;
           background: none; color: var(--field-muted); font-size: 20px; line-height: 1; cursor: pointer; }
 .star-x:hover { background: color-mix(in srgb, var(--field-ink) 16%, transparent); color: var(--field-bright); }
