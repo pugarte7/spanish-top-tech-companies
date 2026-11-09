@@ -715,6 +715,8 @@ const more = { ...index, jobs: [...index.jobs,
     url: "https://sequra.recruitee.com/o/accountant-4", ats: "recruitee", location: "Barcelona, Spain" },
   { id: "workday:bbva/wd3/BBVA:R-99999", company: "BBVA", slug: "bbva", title: "Analista",
     url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Analista_R-99999", ats: "workday", location: "Madrid" },
+  { id: "bamboohr:wallbox:123", company: "Wallbox", slug: "wallbox", title: "HR Labor Relations Internship",
+    url: "https://wallbox.bamboohr.com/careers/123", ats: "bamboohr", location: "Barcelona, Spain" },
   { id: "phenom:careers.roche.com/ROCHGLOBAL/global/en:202602-104409", company: "Roche", slug: "roche",
     title: "Team Lead Engineering", url: "https://careers.roche.com/global/en/job/202602-104409", ats: "phenom",
     location: "Madrid, Spain" },
@@ -788,6 +790,14 @@ const WD = "https://bbva.wd3.myworkdayjobs.com/wday/cxs/bbva/BBVA/job/Madrid";
 BOARDS[`${WD}/R-12345`] = json({ jobPostingInfo: { jobDescription: "<p>Java en BBVA</p>", canApply: true,
   externalUrl: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345", questionnaireId: "abc123" } });
 BOARDS[`${WD}/Analista_R-99999`] = json({ jobPostingInfo: { canApply: false } });
+BOARDS["https://wallbox.bamboohr.com/careers/123/detail"] = json({ result: {
+  jobOpening: { description: "<p>Join People at Wallbox</p>", jobOpeningShareUrl: "https://wallbox.bamboohr.com/careers/123" },
+  formFields: { firstName: { isRequired: true, label: "First Name" }, email: { isRequired: true, label: "Email" },
+    resumeFileId: { isRequired: true, label: "Resume" }, desiredPay: { isRequired: false, label: "Desired Pay" },
+    linkedinUrl: { isRequired: true, label: "LinkedIn URL" },
+    customQuestions: [{ id: "91", isRequired: false, question: "Are you based in Barcelona?", type: "short", options: [] },
+      { id: "92", isRequired: true, question: "Do you need a work permit to work in Spain?", type: "yes_no", options: [] }],
+    genderId: [] } } });
 // Phenom pages carry the posting in phApp.ddo; the apply link names the ATS behind it.
 const phenomPage = (job) => () => new Response(`<html><script>phApp.ddo = ${JSON.stringify({ jobDetail: { data: { job } } })}; ` +
   "phApp.experimentData = {};</script></html>");
@@ -816,6 +826,14 @@ report("recruitee: the fields switched on, open questions, permit and pay to the
   byLabel(recruitee, /permit/).who === "person" && byLabel(recruitee, /salary/).who === "person" &&
   /Accounting degree/.test(recruitee.description.text) &&
   recruitee.apply_url === "https://sequra.recruitee.com/o/accountant-4/c/new", recruitee.questions);
+const bamboo = await formIn("bamboohr:wallbox:123");
+report("bamboohr: standard fields with their labels, the employer's questions, permit and pay to the person",
+  bamboo.form_source === "bamboohr public API, read now" && byLabel(bamboo, /^First Name$/).who === "agent" &&
+  byLabel(bamboo, /^Resume$/).type === "file" && byLabel(bamboo, /Desired Pay/).who === "person" &&
+  byLabel(bamboo, /Desired Pay/).required === false && byLabel(bamboo, /based in Barcelona/).type === "text" &&
+  byLabel(bamboo, /work permit/).options.join() === "Yes,No" && byLabel(bamboo, /work permit/).who === "person" &&
+  /Join People/.test(bamboo.description.text) && bamboo.apply_url === "https://wallbox.bamboohr.com/careers/123",
+  bamboo.questions);
 const teamtailor = await formIn("teamtailor:careers.vueling.com:8681660");
 report("teamtailor: own questions with their options, the locations picker, standard fields and consents",
   teamtailor.form_source.startsWith("Teamtailor") && byLabel(teamtailor, /Work Permit/).who === "person" &&
@@ -860,7 +878,7 @@ const down = await run("job_questions", { id: "greenhouse:wallapop:7000009" });
 report("a board that cannot be reached is a tool error", down.isError === true && /could not be reached/.test(down.content[0].text));
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com)\//.test(r.url) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com)\//.test(r.url) &&
     r.init.redirect === "error" && r.init.signal instanceof AbortSignal));
 const burst = Array.from({ length: 6 }, (_, k) => ({ jsonrpc: "2.0", id: k + 1, ...tool("job_questions", { id: "greenhouse:glovo:7000001" }) }));
 const burstReplies = await respond(data, burst);
