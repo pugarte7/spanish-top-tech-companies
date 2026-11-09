@@ -942,7 +942,7 @@ def job_boards(data: dict, tables: dict) -> dict:
         cities = [t for t in map(board_tag, company.get("cities", [])[:3]) if t]
         out.append({"name": company["name"], "ats": board["ats"], "board": board["board"],
                     "tier": tier, "tags": list(dict.fromkeys(["spain", *cities])),
-                    **{k: board[k] for k in ("region", "query") if board.get(k)}})
+                    **{k: board[k] for k in ("region", "query", "country") if board.get(k)}})
     return {"version": 1, "data_as_of": data["data_as_of"],
             "companies": sorted(out, key=lambda e: e["name"].casefold())}
 
