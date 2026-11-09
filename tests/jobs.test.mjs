@@ -465,6 +465,10 @@ assert.deepEqual(spain.boardFromUrl("https://redhat.wd5.myworkdayjobs.com/en-US/
 assert.deepEqual(spain.boardFromUrl("https://job-boards.eu.greenhouse.io/sahajsoftware"),
                  { ats: "greenhouse", board: "sahajsoftware", region: "global" }, "EU Greenhouse");
 assert.equal(spain.boardFromUrl("https://boards.greenhouse.io/embed"), null);
+assert.deepEqual(spain.boardFromUrl("https://www.amazon.jobs/en/"), { ats: "amazon", board: "ESP", region: "global" });
+assert.equal(spain.boardFromUrl("https://www.google.com/about/careers/applications/")?.board, "Spain");
+assert.equal(spain.boardFromUrl("https://www.google.com/"), null, "Google's home page is not its board");
+assert.equal(spain.boardFromUrl("https://www.metacareers.com/careers")?.query, "Spain");
 assert.deepEqual(spain.boardsLinkedFrom('<a href="https://job-boards.eu.greenhouse.io/acme/jobs/1">').map((b) => b.board), ["acme"]);
 const rules = { threshold: 60_000, companyFloor: 45_000, minRanked: 3, dataAsOf: "" };
 const pages = {
