@@ -394,6 +394,52 @@ assert.equal(JSON.parse(readFileSync(join(tmp, "reused.json"), "utf8")).jobs.len
              "a fresh production index is republished");
 server.close();
 
+// --- SuccessFactors career sites, over a stubbed fetch -------------------------
+
+const sf = await import("../lib/ats/sources/successfactors.js");
+const sfRow = (id, title, place) => `<tr class="data-row">
+  <td class="colTitle"><span class="jobTitle"><a href="/job/Madrid-${id}/${id}/" class="jobTitle-link">${title}</a></span></td>
+  <td class="colLocation"><span class="jobLocation"> ${place} </span></td>
+  <td class="colDate"><span class="jobDate">Nov 3, 2026 </span></td></tr>`;
+const SF = {
+  "https://careers.acme.example/search/?q=&locationsearch=Spain":
+    `<link href="https://rmkcdn.successfactors.com/x/site.css"><span class="paginationLabel">Resultados <b>1 – 2</b> de <b>3</b></span>
+     ${sfRow("1000001", "Backend Engineer", "Madrid, M, ES")}${sfRow("1000002", "Data &amp; AI Lead", "MADRID, ES, 28046")}`,
+  "https://careers.acme.example/search/?q=&locationsearch=Spain&startrow=2": sfRow("1000003", "Sales Rep", "Lisboa, PT"),
+  "https://careers.acme.example/job/Madrid-1000001/1000001/":
+    `<span itemprop="jobLocation"><meta itemprop="addressLocality" content="Barcelona"><meta itemprop="addressRegion" content="B">
+     <meta itemprop="addressCountry" content="ES"></span><meta itemprop="datePosted" content="Sat Nov 07 08:00:00 UTC 2026">
+     <span itemprop="description"><span class="jobdescription"><p>Go and <span>Kafka</span>.</p></span></span>`,
+  "https://jobs.newer.example/search/?q=&locationsearch=Spain": `<script>var CSRFToken = "42b238cd-9b2d-4a8a";</script>`,
+  "https://jobs.newer.example/services/recruiting/v1/jobs": { totalJobs: 1, jobSearchResult: [{ response: {
+    id: "1425", unifiedStandardTitle: "SAP Lead", unifiedUrlTitle: "SAP-Lead", supportedLocales: ["en_US"],
+    jobLocationShort: ["Sant Cugat del Valles, B, ESP, "], unifiedStandardStart: "10/15/26" } }] },
+};
+const sfSeen = [];
+globalThis.fetch = async (url, init = {}) => {
+  sfSeen.push([String(url), init.method, init.headers?.["X-CSRF-Token"] ?? null]);
+  const body = SF[String(url)];
+  if (body === undefined) return new Response("not found", { status: 404 });
+  return new Response(typeof body === "string" ? body : JSON.stringify(body), { status: 200 });
+};
+const sfCompany = (name, board) => ({ name, ats: "successfactors", board, query: "", tier: "B", tags: [] });
+// Only the first posting page is read; the others keep what the table says.
+process.env.ATS_SUCCESSFACTORS_MAX_DETAILS = "1";
+const sfJobs = await sf.successfactorsAdapter.listJobs(sfCompany("Acme", "careers.acme.example"), "2026-11-09T00:00:00Z");
+assert.deepEqual(sfJobs.map((j) => [j.title, j.locationsRaw.join("|")]), [
+  ["Backend Engineer", "Barcelona, B, Spain"], ["Data & AI Lead", "MADRID, Spain"], ["Sales Rep", "Lisboa, Portugal"],
+], "postings from both pages, the posting page's place winning over the table's");
+assert.equal(sfJobs[0].postedAt, "2026-11-07T08:00:00.000Z");
+assert.match(sfJobs[0].descriptionText, /Go and Kafka/);
+const newer = await sf.successfactorsAdapter.listJobs(sfCompany("Newer", "jobs.newer.example"), "2026-11-09T00:00:00Z");
+assert.deepEqual(newer.map((j) => [j.title, j.url, j.locationsRaw[0], j.postedAt]),
+                 [["SAP Lead", "https://jobs.newer.example/job/SAP-Lead/1425-en_US/", "Sant Cugat del Valles, B, Spain", "2026-10-15T00:00:00.000Z"]]);
+assert.deepEqual(sfSeen.at(-1).slice(1), ["POST", "42b238cd-9b2d-4a8a"], "the API is asked with the page's own token");
+assert.deepEqual(sf.successfactorsAdapter.boardFromPage("https://careers.acme.example/", SF["https://careers.acme.example/search/?q=&locationsearch=Spain"]),
+                 { ats: "successfactors", board: "careers.acme.example", region: "global" });
+assert.equal(sf.successfactorsAdapter.boardFromPage("https://acme.example/", "<html>no board</html>"), null);
+assert.throws(() => sf.searchUrl({ board: "https://x.example/search" }), /career site's host/);
+
 // Phenom and iCIMS career sites live on the employer's own domain.
 const careerSite = (ats, board) => ({ name: ats === "phenom" ? "Roche" : "Keysight", ats, board, tier: "B", tags: [],
                                 active: true, region: "global", query: "" });
