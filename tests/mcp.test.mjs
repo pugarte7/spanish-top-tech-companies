@@ -714,7 +714,10 @@ const more = { ...index, jobs: [...index.jobs,
   { id: "recruitee:sequra:2616630", company: "seQura", slug: "sequra", title: "Accountant",
     url: "https://sequra.recruitee.com/o/accountant-4", ats: "recruitee", location: "Barcelona, Spain" },
   { id: "workday:bbva/wd3/BBVA:R-99999", company: "BBVA", slug: "bbva", title: "Analista",
-    url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Analista_R-99999", ats: "workday", location: "Madrid" }] };
+    url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Analista_R-99999", ats: "workday", location: "Madrid" },
+  { id: "bendingspoons:jobs.bendingspoons.com:63c548b3521886004f3daec0", company: "Bending Spoons",
+    slug: "bending-spoons", title: "Product manager", ats: "bendingspoons", location: "Madrid, Spain",
+    url: "https://jobs.bendingspoons.com/positions/63c548b3521886004f3daec0" }] };
 const formIn = async (id) => (await run("job_questions", { id }, { jobs: more })).structuredContent;
 BOARDS["https://apply.workable.com/api/v1/jobs/3C35D18DA3/form"] = json([
   { name: "Personal information", fields: [{ id: "firstname", label: "First name", required: true, type: "text" },
@@ -739,6 +742,20 @@ BOARDS["https://sequra.recruitee.com/api/offers/2616630"] = json({ offer: {
       open_question_options: [{ body: "B2" }, { body: "C1" }] },
     { id: 3, body: "Would you now or in the future require work permit assistance?", kind: "boolean", required: true, open_question_options: [] },
     { id: 4, body: "Please tell us about your salary expectations.", kind: "salary", required: true, open_question_options: [] }] } });
+const BS_JOB = { id: "63c548b3521886004f3daec0", status: "active", jobTitle: "Product manager",
+  highLevelDescription: "<span>Build products people love.</span>", responsibilities: ["<span>Investigate.</span>"],
+  requirements: [{ title: "Reasoning ability", description: "You think from first principles." }],
+  applyEmailVerificationEnabled: true,
+  officeLocations: [{ title: "Madrid (Spain)", country: { isoCode: "ES", name: "Spain" } },
+                    { title: "Milan (Italy)", country: { isoCode: "IT", name: "Italy" } }],
+  applicationForm: { personalDetails: [], survey: [], applicationInformation: [
+    { id: "cv", title: "CV/Resume (in English)", type: "pdf_upload", optional: false, choices: [] },
+    { id: "where", title: "In which country do you plan to be based?", type: "job_country", optional: false, choices: [] },
+    { id: "visa", title: "Will you require visa sponsorship to work in the country you selected?", type: "dropdown",
+      optional: false, choices: ["Yes", "No", "I'm not sure"] },
+    { id: "site", title: "Your personal website", type: "url", optional: true, choices: [] }] } };
+BOARDS["https://jobs.bendingspoons.com/positions/63c548b3521886004f3daec0"] = () => new Response(
+  `<html><script id="__NEXT_DATA__" type="application/json">${JSON.stringify({ props: { pageProps: { job: BS_JOB } } })}</script></html>`);
 const WD = "https://bbva.wd3.myworkdayjobs.com/wday/cxs/bbva/BBVA/job/Madrid";
 BOARDS[`${WD}/R-12345`] = json({ jobPostingInfo: { jobDescription: "<p>Java en BBVA</p>", canApply: true,
   externalUrl: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345", questionnaireId: "abc123" } });
@@ -768,6 +785,12 @@ report("workday: the posting, an account the person opens, the standard steps an
   byLabel(workday, /own application questions/).type === "unread" && byLabel(workday, /terms and conditions/).who === "person" &&
   byLabel(workday, /^Resume/).who === "agent" && /Java en BBVA/.test(workday.description.text) &&
   workday.apply_url === "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345/apply", workday.questions);
+const spoons = await formIn("bendingspoons:jobs.bendingspoons.com:63c548b3521886004f3daec0");
+report("bending spoons: the form in the posting's page, its offices as countries, sponsorship to the person",
+  byLabel(spoons, /^CV/).type === "file" && byLabel(spoons, /based/).options.join() === "Spain,Italy" &&
+  byLabel(spoons, /sponsorship/).who === "person" && byLabel(spoons, /website/).required === false &&
+  byLabel(spoons, /Code sent by email/).required === true && /first principles/.test(spoons.description.text) &&
+  spoons.apply_url === "https://jobs.bendingspoons.com/positions/63c548b3521886004f3daec0/apply", spoons.questions);
 const wdClosed = await run("job_questions", { id: "workday:bbva/wd3/BBVA:R-99999" }, { jobs: more });
 report("workday: a posting that takes no more applications is a tool error", wdClosed.isError === true &&
   /no longer takes applications/.test(wdClosed.content[0].text));
@@ -778,7 +801,7 @@ const down = await run("job_questions", { id: "greenhouse:wallapop:7000009" });
 report("a board that cannot be reached is a tool error", down.isError === true && /could not be reached/.test(down.content[0].text));
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com)\//.test(r.url) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|jobs\.bendingspoons\.com)\//.test(r.url) &&
     r.init.redirect === "error" && r.init.signal instanceof AbortSignal));
 const burst = Array.from({ length: 6 }, (_, k) => ({ jsonrpc: "2.0", id: k + 1, ...tool("job_questions", { id: "greenhouse:glovo:7000001" }) }));
 const burstReplies = await respond(data, burst);

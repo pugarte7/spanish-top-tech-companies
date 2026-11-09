@@ -2,7 +2,7 @@
 
 The job-board code the site's crawl and board finder use: one adapter per ATS
 (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, Workable, Recruitee and a
-few employer sites), a polite HTTP client with a per-host interval, the
+few employer sites: Google, Meta, Amazon, Apple and Bending Spoons), a polite HTTP client with a per-host interval, the
 location classifier and the rules that decide which board belongs to a company
 (`presets/spain.js`).
 
