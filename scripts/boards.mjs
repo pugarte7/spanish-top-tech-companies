@@ -22,6 +22,8 @@
 // data/careers.json (slug -> careers page URL, set by hand) is read before the
 // company's website: many employers' home pages never link their board, and a
 // board on the employer's own domain is only recognisable from its careers page.
+// An entry may instead be the board itself, {"ats", "board", "query"?}, for
+// sites nothing on the page identifies.
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
