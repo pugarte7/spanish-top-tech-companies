@@ -542,7 +542,9 @@ So `seo.py` writes a page for each of those shapes, with the answer in its
 first line ("cuánto cobra un programador" is answered with the yearly
 median; the maintainer asked for no monthly figure), and the home page titles lead with
 "salario programador" and "software engineer salary in Spain". The README
-links into the pages but still holds no figure.
+linked into the pages until 2026-11-09, when the maintainer rewrote it to lead
+with the MCP server and dropped the link lists and FAQ; it holds no salary
+figure.
 
 ## Known gaps
 

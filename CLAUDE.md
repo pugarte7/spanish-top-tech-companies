@@ -38,11 +38,16 @@ in the median.
 
 **The website is the product; the README introduces it.** Since 2026-11-01
 spanishtoptechcompanies.com is what people use, built and deployed from
-`main`. `README.md` introduces the site in Spanish, then English, written for
-search, and holds no data: on 2026-11-01 the maintainer had the
-software-engineer tables and `scripts/build.py` that wrote them removed
-("Elimina del readme todo lo que había antes"). Do not bring tables back to
-the README; the data is on the site and in `data/`.
+`main`. Since 2026-11-09 the README leads with the MCP server, "the core":
+connecting is the `/mcp` link alone, then how `find_jobs` finds postings
+(400+ boards, 1,000+ postings a day), applying, the tools, then the site.
+Spanish is `README.md`, English `README.en.md`; the search link lists and
+FAQ were dropped. Its flow diagram is drawn by `scripts/readme_flow.mjs`
+into `docs/img/`, one white-card SVG per language (a dark variant followed
+the system theme, not the page's). It holds no salary data: on 2026-11-01
+the maintainer had the software-engineer tables and `scripts/build.py` that
+wrote them removed ("Elimina del readme todo lo que había antes"). Do not
+bring tables back to the README; the data is on the site and in `data/`.
 
 **Search pages.** Since 2026-11-04 `scripts/seo.py` writes a static page per
 role, region, role in a region and company in both languages (`/es/salarios/`,
