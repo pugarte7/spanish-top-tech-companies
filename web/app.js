@@ -15,7 +15,9 @@ const share = (x) => x > 0 && x < 0.001 ? `<${(0.1).toLocaleString(LOCALE)}%`
 
 let D;
 // Filters belong to the companies table only; the charts above it show everyone.
-const state = { role: "", years: [], modes: [], loc: "", q: "", all: false, sort: "median", asc: false };
+// `pay` is which column the summary, the 60k+ share and the years follow:
+// base, or total pay (base + bonus + stock), whichever the reader last sorted.
+const state = { role: "", years: [], modes: [], loc: "", q: "", all: false, sort: "median", asc: false, pay: "base" };
 const MODES = ["remote", "hybrid", "office"];
 const cell = (o = {}) => D.cells[`${o.role || ""}|${o.region || ""}|${o.years || ""}`];
 const regionName = (code) => D.regions[code]?.[LANG] || code;
@@ -248,13 +250,17 @@ const trackFilters = settle(1000, (via) => track("filter", {
 // and PostHog hears of them once they settle. `via` is "menu", "matrix", "map"
 // or "empty" (a way out of an empty table).
 function saveHash(via = "menu") {
+  writeHash();
+  trackFilters(via);
+}
+function writeHash() {
   const h = new URLSearchParams();
   if (state.role) h.set("role", state.role);
   if (state.years.length) h.set("years", state.years.join(","));
   if (state.modes.length) h.set("work", state.modes.join(","));
   if (state.loc) h.set("loc", state.loc);
+  if (state.pay === "total") h.set("pay", "total");
   history.replaceState(null, "", h.toString() ? "#" + h : location.pathname);
-  trackFilters(via);
 }
 
 document.addEventListener("click", (e) => {
@@ -495,6 +501,20 @@ function matrix() {
   $("matrix-legend").innerHTML = payLegend();
 }
 
+// --- pay -----------------------------------------------------------------------
+// A row or summary of the companies table, its figures on the pay followed:
+// on total, the t-prefixed ones stand in for the base ones. A table from
+// before total was published has none, and stays on base.
+const onTotal = () => state.pay === "total" && T[state.role]?.fields?.includes("tshare");
+const paid = (a) => !onTotal() ? a : {
+  ...a, median: a.total, p25: a.tp25, p75: a.tp75, share: a.tshare, hist: a.thist || a.hist,
+};
+const LABELS = {
+  median: ["col_median", "col_total"], share: ["col_share", "col_share_total"],
+  tip_median: ["tip_median", "tip_total"], tip_share: ["tip_share", "tip_share_total"],
+};
+const label = (k) => S[LABELS[k][onTotal() ? 1 : 0]];
+
 // --- summary ------------------------------------------------------------------
 // Everyone under the table's filters, before search: the figures the old
 // experience and distribution cards gave, now for the case the reader picked.
@@ -502,7 +522,7 @@ function summary() {
   const t = T[state.role], row = at((state.loc ? T[placeFile()] : t)?.summary, tkey());
   const el = $("summary");
   if (!row) { el.innerHTML = `<p class="empty">${esc(S.none)}</p>`; return; }
-  const a = Object.fromEntries(t.summary_fields.map((f, i) => [f, row[i]]));
+  const a = paid(Object.fromEntries(t.summary_fields.map((f, i) => [f, row[i]])));
   const { low, step } = D.hist, max = Math.max(...a.hist.map((c) => c || 0));
   // Each band is a full-height column, so hovering above a short bar still
   // finds it.
@@ -513,9 +533,9 @@ function summary() {
   }).join("");
   const bar = ((1 + (D.threshold - low) / step) / a.hist.length) * 100;
   el.innerHTML =
-    `<dl><dt>${S.col_median}</dt><dd>${money(a.median)}</dd></dl>` +
+    `<dl><dt>${label("median")}</dt><dd>${money(a.median)}</dd></dl>` +
     `<dl><dt>${S.sum_range}</dt><dd>${range(a)}</dd></dl>` +
-    `<dl><dt>${S.col_share}</dt><dd>${pct(a.share)}</dd></dl>` +
+    `<dl><dt>${label("share")}</dt><dd>${pct(a.share)}</dd></dl>` +
     `<dl><dt>${S.col_n}</dt><dd>${a.n.toLocaleString(LOCALE)}</dd></dl>` +
     `<div class="dist" aria-hidden="true"><div class="bars">${bars}<span class="ref" style="left:${bar}%"></span></div>` +
     `<div class="axis"><span>${short(low)}</span>` +
@@ -527,7 +547,8 @@ function summary() {
 // --- companies ------------------------------------------------------------------
 const SORTS = {
   median: (a) => a.median,
-  share: (a) => a.share,
+  total: (a) => a.total,
+  share: (a) => paid(a).share,
   n: (a) => a.n,
 };
 
@@ -633,7 +654,11 @@ function table(o) {
 const companyYears = (id) => {
   const p = state.loc && T[placeFile()];
   const per = (p && !p.whole.has(id) ? p : T[state.role])?.years?.[modeKey()]?.[id];
-  return bands().map((b, i) => [b, per?.[i] || null]);
+  // [median base, count, median total]: on total, the total takes the base's place.
+  return bands().map((b, i) => {
+    const y = per?.[i];
+    return [b, y ? (onTotal() && y[2] != null ? [y[2], y[1]] : y) : null];
+  });
 };
 
 function detail(a) {
@@ -760,19 +785,26 @@ function companies() {
   // the note would be untrue of it.
   const few = (a) => D.companies[a.c].n < (D.min_ranked || 3);
   const rows = named(all, q).slice().sort((x, y) => (state.asc ? -1 : 1) *
-      (thin(x) - thin(y) || by(y) - by(x) || y.median - x.median));
+      (thin(x) - thin(y) || by(y) - by(x) || paid(y).median - paid(x).median));
   const shown = state.all ? rows : rows.slice(0, 15);
   const asterisk = (a) => `<button class="asterisk" type="button" data-c="${a.c}" ` +
     `aria-label="${esc(S.ast_label)}" aria-controls="asterisk-tip" aria-expanded="false">*</button>`;
   closeAsterisk();
+  const hasTotal = !!T[state.role]?.fields?.includes("tshare");
+  // The column followed leads: bold, with the asterisk when it has one; the
+  // other pay is there to compare, quieter.
+  const pay = (a, v, lead) => lead
+    ? `<td class="pay lead${few(a) ? " few" : ""}"><b>${money(v)}</b>${few(a) ? asterisk(a) : ""}</td>`
+    : `<td class="pay"><span>${money(v)}</span></td>`;
   const th = (k, label, tip, cls = "num") =>
     `<th class="${cls} sort${state.sort === k ? (state.asc ? " on asc" : " on") : ""}" data-sort="${k}"` +
     ` title="${esc(tip)}" aria-sort="${state.sort === k ? (state.asc ? "ascending" : "descending") : "none"}">${label}</th>`;
 
   $("companies").innerHTML = !rows.length ? emptyTable(all.length > 0) :
     `<thead><tr><th class="chev"></th><th>${S.col_company}</th>` +
-    th("median", S.col_median, S.tip_median, "pay") +
-    `${th("share", S.col_share, S.tip_share)}${th("n", S.col_n, S.tip_n)}</tr></thead><tbody>` +
+    th("median", S.col_median, S.tip_median, `pay${onTotal() ? "" : " lead"}`) +
+    (hasTotal ? th("total", S.col_total, S.tip_total, `pay${onTotal() ? " lead" : ""}`) : "") +
+    `${th("share", label("share"), label("tip_share"))}${th("n", S.col_n, S.tip_n)}</tr></thead><tbody>` +
     shown.map((a) => {
       const c = D.companies[a.c];
       const open = opened.has(a.c);
@@ -781,12 +813,13 @@ function companies() {
         `<td class="co"><div class="co-in"><div><span class="name">${esc(c.name)}</span>` +
         `<span class="cities">${esc(c.cities.join(", "))}</span></div>` +
         `<span class="links">${companyLinks(c)}</span></div></td>` +
-        `<td class="pay${few(a) ? " few" : ""}"><b>${money(a.median)}</b>${few(a) ? asterisk(a) : ""}</td>` +
-        `<td class="num">${pct(a.share)}</td>` +
+        pay(a, a.median, !onTotal()) + (hasTotal ? pay(a, a.total, onTotal()) : "") +
+        `<td class="num">${pct(paid(a).share)}</td>` +
         `<td class="num">${a.n}</td></tr>` +
-        `<tr class="det"${open ? "" : " hidden"}><td colspan="5">${open ? detail(a) : ""}</td></tr>`;
+        `<tr class="det"${open ? "" : " hidden"}><td colspan="${hasTotal ? 6 : 5}">${open ? detail(a) : ""}</td></tr>`;
     }).join("") + `</tbody>`;
   $("few-note").hidden = !shown.some(few);
+  $("pay-note").hidden = !hasTotal || !rows.length;
   if (!rows.length) wireEmpty();
   $("companies").querySelectorAll("tr.main").forEach((tr, i) => {
     tr.onkeydown = (e) => {
@@ -812,8 +845,13 @@ function companies() {
     t.onclick = () => {
       state.asc = state.sort === t.dataset.sort ? !state.asc : false;
       state.sort = t.dataset.sort;
+      // Sorting by a pay makes it the one followed; share and count keep it.
+      const was = state.pay;
+      if (state.sort === "median") state.pay = "base";
+      if (state.sort === "total") state.pay = "total";
+      if (state.pay !== was) writeHash();
       companies();
-      track("sort", { by: state.sort, asc: state.asc });
+      track("sort", { by: state.sort, asc: state.asc, pay: state.pay });
     });
 
   const more = $("more");
@@ -929,6 +967,7 @@ async function main() {
   const span = years.length && years.every((y, i) => bands()[first + i] === y);
   state.years = span && years.length < bands().length ? years : [];
   state.modes = list("work", MODES);
+  if (h.get("pay") === "total") { state.pay = "total"; state.sort = "total"; }
   if (state.modes.length === MODES.length) state.modes = [];
   await loadTable(state.role);
   const loc = h.get("loc") || "";

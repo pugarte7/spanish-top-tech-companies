@@ -411,8 +411,8 @@ th.sort.on.asc::before { content: "↑"; }
 /* The name takes about half the row and the figures sit together on the right,
    so the middle of a row, where people click to open it, is never a link logo. */
 @media (min-width: 641px) {
-  #companies th.pay, #companies td.pay { width: 22%; }
-  #companies th.num, #companies td.num { width: 15%; }
+  #companies th.pay, #companies td.pay { width: 17%; }
+  #companies th.num, #companies td.num { width: 13%; }
 }
 td.co .cities { display: block; font-size: 12px; line-height: 16px; color: var(--muted); }
 tr.main { cursor: pointer; }
@@ -423,6 +423,12 @@ tr.main:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
 tr.open .chev span { transform: rotate(90deg); }
 tr.open td { border-bottom-color: transparent; background: var(--tint); }
 td.pay b { font-weight: 700; }
+/* Base and total side by side: the one the summary, the 60k+ share and the
+   bars follow leads, the other is there to compare. */
+td.pay > span { color: var(--muted); }
+th.pay.lead { color: var(--text); }
+.pay-note { margin: 14px 0 0; max-width: 72ch; font-size: 12px; line-height: 16px; color: var(--muted); }
+.pay-note + .few-note { margin-top: 6px; }
 /* A figure from one or two salaries in Spain: quieter, with an asterisk. The
    asterisk is a button that opens a card about the company; it hangs in the
    padding, so the figures stay aligned. */

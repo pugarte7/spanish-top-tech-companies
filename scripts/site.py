@@ -292,6 +292,11 @@ STRINGS = {
         "col_share": "Earning 60k+",
         "tip_median": "Gross yearly base salary: half earn more, half earn less",
         "tip_share": "Share of salaries with a base of 60,000 € or more",
+        "col_total": "Median total pay", "col_share_total": "Total of 60k+",
+        "tip_total": "Gross yearly base + bonus + stock: half earn more, half earn less",
+        "tip_share_total": "Share of salaries with a total of 60,000 € or more",
+        "pay_note": "Sort by base or by total in the header: the summary, the 60k+ share and "
+                    "each company's bars follow that column.",
         "tip_n": "How many salaries this company has under the filters chosen. "
                  f"Under {lib.MIN_RANKED}, the company is listed after the rest",
         "few_note": "Companies with fewer than {ranked} salaries in Spain. They are real ({global} "
@@ -415,6 +420,11 @@ STRINGS = {
         "col_share": "Cobran 60k o más",
         "tip_median": "Salario base bruto anual: la mitad cobra más y la mitad menos",
         "tip_share": "Porcentaje de salarios con una base de 60.000 € o más",
+        "col_total": "Total mediano", "col_share_total": "Total de 60k o más",
+        "tip_total": "Base + bonus + acciones, bruto anual: la mitad cobra más y la mitad menos",
+        "tip_share_total": "Porcentaje de salarios con un total de 60.000 € o más",
+        "pay_note": "Ordena por sueldo base o por total en la cabecera: el resumen, el 60k+ y "
+                    "las barras de cada empresa siguen a esa columna.",
         "tip_n": "Cuántos salarios de esta empresa hay con los filtros elegidos. "
                  f"Con menos de {lib.MIN_RANKED}, la empresa va después del resto",
         "few_note": "Empresas con menos de {ranked} salarios en España. Existen ({global} o más "
@@ -541,7 +551,8 @@ def aggregate(entries: list[dict], hist: bool = False,
     bases = sorted(e["base"] for e in entries if e.get("base"))
     if not bases or len(bases) < min_group:
         return None
-    totals = [e["total"] for e in entries if e.get("total")]
+    # A total left empty is the base alone: no bonus or stock reported.
+    totals = [e.get("total") or e["base"] for e in entries if e.get("base")]
     quartiles = (statistics.quantiles(bases, n=4, method="inclusive")
                  if len(bases) >= lib.QUARTILE_MIN else None)
     at_bar = sum(1 for b in bases if b >= lib.THRESHOLD_EUR)
@@ -556,6 +567,25 @@ def aggregate(entries: list[dict], hist: bool = False,
     }
     if hist:
         out["hist"] = histogram(bases)
+    return out
+
+
+def total_stats(entries: list[dict], hist: bool = False) -> dict:
+    """The companies table's figures on total pay, beside aggregate()'s on
+    base: its middle half, share at the bar and histogram. The median total
+    is aggregate()'s own `total`. The same people as the base figures: every
+    row with a base, its total, which is the base when there is no bonus or
+    stock (maintainer, 2026-11-09: a column per pay, the one sorted drives)."""
+    totals = sorted(e.get("total") or e["base"] for e in entries if e.get("base"))
+    quartiles = (statistics.quantiles(totals, n=4, method="inclusive")
+                 if len(totals) >= lib.QUARTILE_MIN else None)
+    out = {
+        "tp25": rounded(quartiles[0]) if quartiles else None,
+        "tp75": rounded(quartiles[2]) if quartiles else None,
+        "tshare": round(sum(1 for t in totals if t >= lib.THRESHOLD_EUR) / len(totals), 3),
+    }
+    if hist:
+        out["thist"] = histogram(totals)
     return out
 
 
@@ -669,9 +699,9 @@ def _spans(values: list[str]) -> list[tuple[str, ...]]:
 
 
 def company_years(cells: dict, bands: list[str], index: dict) -> dict[str, dict[int, list]]:
-    """Each listed company's median base and count per experience band, keyed
-    by arrangements and then by the company's index in data.json. A band of
-    one person has its median too, rounded to ROUND_EUR."""
+    """Each listed company's [median base, count, median total] per experience
+    band, keyed by arrangements and then by the company's index in data.json.
+    A band of one person has its medians too, rounded to ROUND_EUR."""
     out = {}
     for key, by_company in cells.items():
         modes, span = key.split("|")
@@ -683,8 +713,10 @@ def company_years(cells: dict, bands: list[str], index: dict) -> dict[str, dict[
                 continue
             row = []
             for b in bands:
-                bases = [e["base"] for e in cells.get(f"{modes}|{b}", {}).get(i, ()) if e.get("base")]
-                row.append([rounded(statistics.median(bases)), len(bases)] if bases else None)
+                band = [e for e in cells.get(f"{modes}|{b}", {}).get(i, ()) if e.get("base")]
+                row.append([rounded(statistics.median(e["base"] for e in band)), len(band),
+                            rounded(statistics.median(e.get("total") or e["base"] for e in band))]
+                           if band else None)
             per[index[i]] = row
         if per:
             out[modes] = per
@@ -777,19 +809,23 @@ def company_filters(rows: list, index: dict) -> dict[str, dict]:
                     groups[t][key][i].append(e)
 
     files = {}
-    fields = ["c", "n", "median", "p25", "p75", "total", "share", "mix"]
+    # t-prefixed: the same figures on total pay, for when the reader sorts by it.
+    fields = ["c", "n", "median", "p25", "p75", "total", "share", "mix", "tp25", "tp75", "tshare"]
     # The summary above the table: everyone under the same filters, one
     # aggregate per key, with its histogram.
-    summary_fields = ["n", "median", "p25", "p75", "share", "hist"]
+    summary_fields = ["n", "median", "p25", "p75", "share", "hist",
+                      "total", "tp25", "tp75", "tshare", "thist"]
     for name, cells in groups.items():
         out, summary = {}, {}
         for key, by_company in cells.items():
-            if a := aggregate([e for entries in by_company.values() for e in entries],
-                              hist=True, min_group=1):
+            everyone = [e for entries in by_company.values() for e in entries]
+            if a := aggregate(everyone, hist=True, min_group=1):
+                a.update(total_stats(everyone, hist=True))
                 summary[key] = [a[f] for f in summary_fields]
             found = []
             for i, entries in by_company.items():
                 if a := aggregate(entries, min_group=1):
+                    a.update(total_stats(entries))
                     a["mix"] = pay_mix(entries)
                     found.append({"c": index[i], **a})
             if found:
@@ -1344,6 +1380,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     </div>
     <div class="summary" id="summary" aria-live="polite"></div>
     <div class="table-wrap"><table id="companies"></table></div>
+    <p class="pay-note" id="pay-note" hidden>{e['pay_note']}</p>
     <p class="few-note" id="few-note" hidden><sup>*</sup>{e['few_note']}</p>
     <button class="more" id="more" hidden></button>
     {noscript_companies(e, data)}
