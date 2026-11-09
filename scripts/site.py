@@ -345,8 +345,7 @@ STRINGS = {
         "star_text": "Every star on GitHub moves it up, so more people looking for a tech job find it.",
         "star_how": "It is the Star button at the top right of the repo, with your GitHub account.",
         "star_button": "Give it a star", "star_close": "Close",
-        "share_text": "Know someone looking for a tech job in Spain? Send them the site. "
-                      "It is free and has no ads.",
+        "share_text": "Know someone looking for a tech job in Spain? Send them the site.",
         "share_button": "Share", "share_copied": "Link copied",
         "under": "Under", "over": "Over",
         "role_label": "Role", "mode_label": "Work", "loc_label": "Location", "all_spain": "All of Spain",
@@ -480,8 +479,7 @@ STRINGS = {
                      "trabajo en tech.",
         "star_how": "Es el botón Star, arriba a la derecha del repo, con tu cuenta de GitHub.",
         "star_button": "Darle una estrella", "star_close": "Cerrar",
-        "share_text": "¿Conoces a alguien que busca trabajo en tech en España? Pásale la web. "
-                      "Es gratis y sin anuncios.",
+        "share_text": "¿Conoces a alguien que busca trabajo en tech en España? Pásale la web.",
         "share_button": "Compartir", "share_copied": "Enlace copiado",
         "under": "Menos de", "over": "Más de",
         "role_label": "Rol", "mode_label": "Modalidad", "loc_label": "Ubicación", "all_spain": "Toda España",
