@@ -576,13 +576,31 @@ def test_companies_are_their_salaries() -> None:
     with temp_data():
         stats = write_role("software-engineer", {})
         check("nothing read, nothing created", (stats, stored()),
-              ({"rewritten": 0, "unchanged": 0, "created": 0, "dropped": 0, "refused": 0}, None))
+              ({"rewritten": 0, "unchanged": 0, "created": 0, "adopted": 0, "dropped": 0,
+                "refused": 0}, None))
 
     with temp_data():
         by_slug, _ = fed([row("newco")])
         stats = write_role("software-engineer", by_slug)
         check("a feed employer not on file is created",
               (stats["created"], stored("newco")["company"]), (1, "Newco"))
+
+    # 2026-11-08: 186 companies filed from Glassdoor, with no Levels.fyi slug,
+    # refused the Levels.fyi engineers of the employer of the same name.
+    glassdoor = lib.blank_company("Newco") | {"entries": [entry(None, source="glassdoor")]}
+    with temp_data(glassdoor):
+        by_slug, _ = fed([row("newco")])
+        stats = write_role("software-engineer", by_slug)
+        newco = stored("newco")
+        check("a same-name company with no Levels.fyi slug takes the feed's rows",
+              (stats["adopted"], stats["created"], len(lib.load_companies()),
+               sorted(e["source"] for e in newco["entries"])),
+              (1, 0, 1, ["glassdoor", "levels.fyi"]))
+    other = lib.blank_company("Newco", levels_slug="newco-inc") | {"entries": [entry(PER_LOCATION)]}
+    with temp_data(other):
+        by_slug, _ = fed([row("newco")])
+        check("a same-name company under another Levels.fyi slug still refuses",
+              write_role("software-engineer", by_slug)["refused"], 1)
 
     with temp_data(acme()):
         pass  # an empty hand-added row is validate.py's problem, checked below
