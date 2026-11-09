@@ -263,6 +263,79 @@ assert.deepEqual(dayAfter.boards.stale_since, { "greenhouse:cabify": "2026-11-03
 assert.equal(dayAfter.jobs.length, 2);
 assert.deepEqual(carryOver(today, failures, null), today, "nothing to carry without a previous index");
 
+// --- Eightfold and Oracle -----------------------------------------------------
+
+const { adapterFor } = await import("../lib/ats/sources/registry.js");
+const eightfold = adapterFor("eightfold"), oracle = adapterFor("oracle");
+Object.assign(BOARDS, {
+  // A new tenant: ten a page, no description in the list.
+  "https://az.eightfold.ai/api/pcsx/search": { status: 200, data: { count: 2, positions: [
+    { id: 111, name: "Data Engineer", locations: ["Barcelona, , Spain"], standardizedLocations: ["Barcelona, CT, ES"],
+      postedTs: 1792972800, workLocationOption: "hybrid", positionUrl: "/careers/job/111" },
+    { id: 112, name: "Sales Lead", locations: ["London, England, United Kingdom"], standardizedLocations: ["London, ENG, GB"],
+      postedTs: 0, workLocationOption: "onsite", positionUrl: "/careers/job/112" },
+  ] } },
+  "https://az.eightfold.ai/api/pcsx/position_details": { status: 200, data: {
+    jobDescription: "<p>You have 4+ years of experience with Spark.</p>" } },
+  // An older tenant: the new API is not found, the old one carries the description.
+  "https://old.eightfold.ai/api/apply/v2/jobs": { count: 1, positions: [
+    { id: 790, name: "Consultant, Spain", location: "Madrid, Spain", locations: ["Madrid, Spain", "Barcelona, Spain"],
+      t_create: 1781170380, work_location_option: "onsite", job_description: "Strategy work.",
+      canonicalPositionUrl: "https://talent.example.com/careers/job/790" },
+  ] },
+  "https://pod.fa.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions": { items: [{
+    TotalJobsCount: 2, requisitionList: [
+      { Id: "2108", Title: "Backend Engineer", PostedDate: "2026-11-02", PrimaryLocation: "Madrid, Spain",
+        PrimaryLocationCountry: "ES", ShortDescriptionStr: "Short.", secondaryLocations: [] },
+      // The location filter is fuzzy: an Indian posting comes back for Spain.
+      { Id: "2109", Title: "Analyst", PostedDate: "2026-11-01", PrimaryLocation: "Pune, India",
+        PrimaryLocationCountry: "IN", secondaryLocations: [] },
+    ] }] },
+  "https://pod.fa.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails": { items: [{
+    ExternalDescriptionStr: "<p>Go and Kotlin.</p>", ExternalPostedStartDate: "2026-11-02T15:51:16+00:00",
+    WorkplaceType: "Hybrid", JobSchedule: "Full time" }] },
+});
+requested = [];
+const enterprise = await crawl({ companies: [
+  { name: "AZ", ats: "eightfold", board: "az.eightfold.ai/az.com", tier: "A", tags: ["spain"] },
+  { name: "Old", ats: "eightfold", board: "old.eightfold.ai/old.com", tier: "B", tags: ["spain"] },
+  { name: "Pod", ats: "oracle", board: "pod.fa.oraclecloud.com/CX_1", tier: "A", tags: ["spain"] },
+] }, { companies: [{ name: "AZ", levels: "az" }, { name: "Pod", levels: "pod" }], roles: [{ slug: "software-engineer" }] },
+await loadAts(), { minutes: 1 });
+checkIndex(enterprise.index, "eightfold and oracle");
+assert.deepEqual(enterprise.index.boards.issues, {});
+const ent = Object.fromEntries(enterprise.index.jobs.map((j) => [j.id, j]));
+assert.deepEqual(Object.keys(ent).sort(), ["eightfold:az.eightfold.ai/az.com:111", "eightfold:old.eightfold.ai/old.com:790",
+                                           "oracle:pod.fa.oraclecloud.com/CX_1:2108"]);
+const az = ent["eightfold:az.eightfold.ai/az.com:111"];
+assert.deepEqual([az.url, az.location, az.workplace, az.years],
+                 ["https://az.eightfold.ai/careers/job/111", "Barcelona, Spain", "hybrid", [4, null]]);
+assert.equal(ent["eightfold:old.eightfold.ai/old.com:790"].url, "https://talent.example.com/careers/job/790");
+const pod = ent["oracle:pod.fa.oraclecloud.com/CX_1:2108"];
+assert.deepEqual([pod.url, pod.location, pod.workplace, pod.posted_at],
+  ["https://pod.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/2108", "Madrid, Spain", "hybrid",
+   "2026-11-02T15:51:16+00:00"]);
+assert.ok(requested.includes("https://az.eightfold.ai/api/pcsx/position_details"), "pcsx descriptions are read");
+assert.ok(!requested.some((u) => u.startsWith("https://old.eightfold.ai/api/pcsx/position")), "v2 lists carry descriptions");
+// A posting dated 0 has no date rather than 1970.
+const london = await eightfold.listJobs({ name: "AZ", ats: "eightfold", board: "az.eightfold.ai/az.com", query: "" },
+                                        "2026-11-09T00:00:00Z");
+assert.equal(london.find((j) => j.externalId === "112").postedAt, null);
+// Boards read off the links employers publish.
+assert.deepEqual(eightfold.boardFromUrl("https://bcg.eightfold.ai/careers?domain=bcg.com&hl=en"),
+                 { ats: "eightfold", board: "bcg.eightfold.ai/bcg.com", region: "global" });
+assert.equal(eightfold.boardFromUrl("https://bcg.eightfold.ai/careers/join"), null, "no domain, no board");
+assert.deepEqual(eightfold.boardFromPage("https://telekom.eightfold.ai/careers", '<script>{"domain": "telekom.com"}</script>'),
+                 { ats: "eightfold", board: "telekom.eightfold.ai/telekom.com", region: "global" });
+assert.deepEqual(oracle.boardFromUrl("https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/jobs"),
+                 { ats: "oracle", board: "jpmc.fa.oraclecloud.com/CX_1001", region: "global" });
+assert.deepEqual(oracle.boardFromPage("https://www.honeywell.com/careers",
+  '<a href="https://ibqbjb.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/Honeywell/jobs">Jobs</a>'),
+  { ats: "oracle", board: "ibqbjb.fa.ocs.oraclecloud.com/Honeywell", region: "global" });
+assert.equal(oracle.boardFromUrl("https://evil.example.com/hcmUI/CandidateExperience/en/sites/CX_1"), null);
+for (const [adapter, bad] of [[eightfold, "az.eightfold.ai"], [eightfold, "a/b/c"], [oracle, "pod.example.com/CX_1"]])
+  await assert.rejects(adapter.listJobs({ name: "X", board: bad, query: "" }, "2026-11-09T00:00:00Z"), /must be/);
+
 // --- The committed fixture ----------------------------------------------------
 
 const fixture = JSON.parse(readFileSync("tests/fixtures/jobs.json", "utf8"));
