@@ -27,7 +27,7 @@ on:
   workflow_dispatch:
 
 # Deploys queue instead of cancelling each other: a push during the daily
-# crawl (up to 45 minutes) used to cancel it, losing the day's postings
+# crawl (some 45 minutes, up to 90) used to cancel it, losing the day's postings
 # (2026-11-09). A queued push deploy then reuses the fresh index.
 concurrency:
   group: deploy
