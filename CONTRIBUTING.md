@@ -1,10 +1,10 @@
 # Contributing
 
-Two ways in. Pick whichever you're comfortable with.
+Two ways in. Pick whichever you're comfortable with. Everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## 0. Add your salary on Levels.fyi
 
-The easiest way, and anonymous. Add it at [levels.fyi/salaries/add](https://www.levels.fyi/salaries/add) with your city in Spain and your years of experience, in whichever job family fits. The dataset is rebuilt from Levels.fyi's Spanish submissions, so any role and any seniority is picked up on the next run — and a company that is not here yet arrives with it. The website shows a company once the median base over all its salaries reaches 45.000 €.
+The easiest way, and anonymous. Add it at [levels.fyi/salaries/add](https://www.levels.fyi/salaries/add) with your city in Spain and your years of experience, in whichever job family fits. The dataset is rebuilt from Levels.fyi's Spanish submissions, so any role and any seniority is picked up on the next run — and a company that is not here yet arrives with it. The website shows every verified company, whatever it pays.
 
 ## 1. Open an issue
 
@@ -115,6 +115,8 @@ python3 tests/test_pipeline.py   # regressions we have actually shipped
 python3 scripts/validate.py      # must pass
 python3 scripts/site.py --refresh  # rewrites data/ and builds the site
 ```
+
+Label the pull request `patch` (fixes, copy, data, tooling), `minor` (something new and visible) or `major` (breaks whoever reads `data/`, the API or the MCP tools): merging it publishes a release named after its title.
 
 Commit the regenerated `data/`, never `companies.csv`: it is private and git ignores it. CI has no data, so it runs the tests and builds the site from `data/`; `validate.py` and `site.py --refresh` run wherever the file is, and in the weekly refresh.
 
