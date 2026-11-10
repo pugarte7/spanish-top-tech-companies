@@ -1731,8 +1731,10 @@ export function applicationGuide(args = {}) {
           "call report_application with it.",
       ],
       get_a_browser: {
-        why: "No browser tool is no reason to hand the form over: set one up first, tell the person what " +
-          "you add, and go on once it works. Pasting answers is the last resort.",
+        when: "Only when an approved application is about to be sent. Searching, reading forms and " +
+          "drafting need no browser, so do not set one up for them.",
+        why: "No browser tool at that point is no reason to hand the form over: set one up, tell the " +
+          "person what you add, and send once it works. Pasting answers is the last resort.",
         how: known ? [known[1].browser, ANY_BROWSER]
           : [...Object.entries(CLIENTS).map(([name, c]) => `${name}: ${c.browser}`), ANY_BROWSER],
       },

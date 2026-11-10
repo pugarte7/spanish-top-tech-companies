@@ -157,7 +157,8 @@ server over stdio.
 - Show the user the full application, privacy and data-processing consents
   included, and send it only after an explicit yes. Never accept a consent
   without their explicit permission. Send it with your own browser at the
-  posting's apply URL. Without a browser tool, set one up first:
+  posting's apply URL. If you have no browser tool when it is time to send,
+  set one up then (searching and reading forms need none):
   `application_guide` says how for each client (Claude in Chrome, the
   Playwright MCP server). Only if none can be set up, hand them the URL and
   the answers to send themselves. Then note it in their notes and call
