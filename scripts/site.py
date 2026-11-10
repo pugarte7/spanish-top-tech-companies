@@ -259,14 +259,11 @@ STRINGS = {
         "title": "Spanish Top Tech Companies", "theme": "Light or dark mode",
         "page_title": "Software Engineer Salary in Spain ({year}): Best-Paying Tech Companies",
         "h1": "Today's tech openings in Spain, in your agent",
-        "pay_title": "The tech companies in Spain that pay the most",
         "source": "Data: Levels.fyi",
         "hero_lede": "**Over 1,000 openings a day** at the tech companies in Spain, read every morning from "
                      "over 400 job boards. Your agent searches them, writes the application from your CV "
                      "and **sends it once you say yes**.",
         "hero_mcp": "Add this link to your agent", "hero_start": "How to start",
-        "pay_lede": "**{people} real salaries** from {levels}, at **{companies} companies** in Spain. "
-                    "See what each one pays by role, years of experience and region.",
         "today_title": "Open positions today", "today_read": "Read on {date}",
         "today_remote": "Remote", "today_software": "in software engineering",
         "today_companies": "companies hiring", "today_boards": "job boards read today",
@@ -275,7 +272,6 @@ STRINGS = {
                     "paying over 100,000 €, reads the form, asks for your salary, shows you the "
                     "application and sends it when you say yes.",
         "hero_see": "See the companies",
-        "hero_cut": "{bar} or more",
         "how_title": "How it is calculated",
         "how_source_t": "Source.",
         "how_source": "Individual salaries from Levels.fyi, each kept only if its own location is in Spain. "
@@ -291,7 +287,7 @@ STRINGS = {
                      "counting every role. With fewer than {ranked} salaries in Spain a company is listed "
                      "after the rest, whichever column is sorted.",
         "how_groups_t": "At least {min} salaries.",
-        "how_groups": "The map, the role by experience table, the figures at the top and the "
+        "how_groups": "The map, the role by experience table and the "
                       "middle half (p25–p75) only come from groups of {min} salaries or more. "
                       "Every amount is rounded to the nearest {round}. The companies table is "
                       "the exception: a company is listed even with a single salary, and under "
@@ -301,9 +297,6 @@ STRINGS = {
                        "and the share with a base of {bar} or more.",
         "all_roles": "All roles", "all_years": "Any",
         "years_label": "Experience", "years_unit": "yrs", "years_axis": "Years of experience",
-        "hero_label": "Median base salary",
-        "kpi_share": "earn a base of {bar} or more", "kpi_total": "median total with bonus and stock",
-        "kpi_companies": "companies with {min} or more salaries",
         "map_title": "By region",
         "map_pay": "Median base", "map_count": "No. of salaries",
         "map_pay_sub": "Median gross yearly base salary of everyone reported in each region.",
@@ -350,7 +343,6 @@ STRINGS = {
         "clear_role": "All roles", "clear_loc": "All of Spain", "clear_years": "Any experience",
         "clear_modes": "Any work arrangement", "clear_search": "Clear the search",
         "people": "salaries", "median": "Median", "range": "p25–p75",
-        "updated": "Updated {date}",
         "data": "JSON", "repo": "GitHub", "web": "Website", "legal": "Legal and privacy",
         "stars_label": "GitHub, {n} stars",
         "star_title": "Finding it useful?",
@@ -405,14 +397,11 @@ STRINGS = {
         "title": "Spanish Top Tech Companies", "theme": "Modo claro u oscuro",
         "page_title": "Salario programador en España ({year}): las empresas tech que más pagan",
         "h1": "Las ofertas tech de hoy en España, en tu agente",
-        "pay_title": "Las empresas tech que más pagan en España",
         "source": "Datos: Levels.fyi",
         "hero_lede": "**Más de 1.000 ofertas al día** en las empresas tech de España, leídas cada mañana "
                      "de más de 400 portales. Tu agente las busca, prepara la solicitud con tu CV y "
                      "**la envía cuando le dices que sí**.",
         "hero_mcp": "Añade este enlace a tu agente", "hero_start": "Cómo empezar",
-        "pay_lede": "**{people} salarios** reales de {levels}, de **{companies} empresas** en España. "
-                    "Mira cuánto paga cada una según el rol, los años de experiencia y la comunidad.",
         "today_title": "Ofertas abiertas hoy", "today_read": "Leídas el {date}",
         "today_remote": "En remoto", "today_software": "de ingeniería de software",
         "today_companies": "empresas contratando", "today_boards": "portales leídos hoy",
@@ -421,7 +410,6 @@ STRINGS = {
                     "pagan más de 100.000 €, lee el formulario, te pregunta el sueldo, te enseña la "
                     "solicitud y la envía cuando le dices que sí.",
         "hero_see": "Ver las empresas",
-        "hero_cut": "{bar} o más",
         "how_title": "Cómo se calcula",
         "how_source_t": "Fuente.",
         "how_source": "Salarios individuales de Levels.fyi. Cada uno se acepta solo si su propia "
@@ -438,7 +426,7 @@ STRINGS = {
                      "menos de {ranked} salarios en España, la empresa se lista después de las demás, se "
                      "ordene por la columna que se ordene.",
         "how_groups_t": "Mínimo de {min} salarios.",
-        "how_groups": "El mapa, la tabla de rol por experiencia, las cifras de arriba y el rango "
+        "how_groups": "El mapa, la tabla de rol por experiencia y el rango "
                       "p25–p75 solo salen de grupos de {min} salarios o más. Todos los importes "
                       "se redondean a {round}. La tabla de empresas es la excepción: una empresa "
                       "sale aunque tenga un solo salario, y con menos de {ranked} lleva un aviso.",
@@ -447,9 +435,6 @@ STRINGS = {
                        "+ acciones) y el porcentaje con una base de {bar} o más.",
         "all_roles": "Todos los roles", "all_years": "Todas",
         "years_label": "Experiencia", "years_unit": "años", "years_axis": "Años de experiencia",
-        "hero_label": "Salario base mediano",
-        "kpi_share": "cobra {bar} o más de base", "kpi_total": "total mediano con bonus y acciones",
-        "kpi_companies": "empresas con {min} o más salarios",
         "map_title": "Por comunidad",
         "map_pay": "Base mediana", "map_count": "N. Salarios",
         "map_pay_sub": "Salario base bruto anual mediano de todos los salarios de cada comunidad.",
@@ -495,7 +480,6 @@ STRINGS = {
         "clear_role": "Todos los roles", "clear_loc": "Toda España", "clear_years": "Cualquier experiencia",
         "clear_modes": "Cualquier modalidad", "clear_search": "Borrar la búsqueda",
         "people": "salarios", "median": "Mediana", "range": "p25–p75",
-        "updated": "Actualizado {date}",
         "data": "JSON", "repo": "GitHub", "web": "Web", "legal": "Aviso legal y privacidad",
         "stars_label": "GitHub, {n} estrellas",
         "star_title": "¿Te está sirviendo?",
@@ -1226,7 +1210,7 @@ def agents_section(e: dict, lang: str) -> str:
     <h2 id="agents-title" tabindex="-1">{e['agents_title']}</h2>
     <p class="lede">{e['agents_lede']}</p>
     <figure class="agents-demo">
-      <video id="demo" muted loop playsinline controls preload="none" width="1440" height="900"
+      <video id="demo" muted loop playsinline controls preload="none" width="1920" height="1200"
              poster="/mcp-demo.{lang}.jpg" aria-label="{e['demo_alt']}">
         <source src="/mcp-demo.{lang}.mp4" type="video/mp4">
         <source src="/mcp-demo.{lang}.webm" type="video/webm"></video>
@@ -1395,9 +1379,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     steps = "".join(f"\n          <li><b>{e[f'how_{k}_t']}</b> {e[f'how_{k}']}</li>"
                     for k in ("source", "when", "floor", "groups", "figures"))
     # **bold** in the copy; the salary count is filled in by app.js.
-    bold = lambda k: re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", e[k]).replace(
-        "{people}", '<span id="k-people"></span>').replace("{levels}", levels)
-    lede, pay_lede = bold("hero_lede"), bold("pay_lede")
+    lede = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", e["hero_lede"])
     foot = seo.footer_links(data, lang)
     return f"""<!doctype html>
 <html lang="{lang}">
@@ -1453,21 +1435,6 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 
 <main class="bento">
 {agents_section(e, lang)}
-  <section class="tile wide pay-tile" id="pay-card" aria-labelledby="pay-title">
-    <div class="hero-card-head"><h2 id="pay-title">{e['pay_title']}</h2><span id="updated"></span></div>
-    <p class="lede pay-lede">{pay_lede}</p>
-    <div class="pay-main">
-      <p class="pay-label">{e['hero_label']}</p>
-      <p class="hero-median" id="k-median"></p>
-      <div class="hero-dist" id="k-dist"></div>
-    </div>
-    <dl class="hero-stats">
-      <div><dt><i aria-hidden="true"></i>{e['kpi_share']}</dt><dd id="k-share"></dd></div>
-      <div><dt>{e['kpi_total']}</dt><dd id="k-total"></dd></div>
-      <div><dt>{e['kpi_companies']}</dt><dd id="k-companies"></dd></div>
-    </dl>
-  </section>
-
   <section class="tile wide map-tile" id="map-card">
     <div class="tile-head">
       <div><h2>{e['map_title']}</h2><p class="lede" id="map-sub"></p></div>

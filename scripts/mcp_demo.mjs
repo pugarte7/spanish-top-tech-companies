@@ -33,12 +33,12 @@ for (const lang of process.argv.slice(2).length ? process.argv.slice(2) : ["es",
   }
   await tab.close();
   const input = ["-framerate", String(FPS), "-i", join(frames, "f%04d.png")];
-  ffmpeg(...input, "-vf", "scale=1440:900:flags=lanczos,format=yuv420p", "-c:v", "libx264",
-         "-preset", "slow", "-crf", "23", "-movflags", "+faststart", join(root, "web", `mcp-demo.${lang}.mp4`));
-  ffmpeg(...input, "-vf", "scale=1440:900:flags=lanczos", "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "36",
+  // The site's copies at the frames' own size, 1920x1200 (960x600 at 2x).
+  ffmpeg(...input, "-vf", "format=yuv420p", "-c:v", "libx264",
+         "-preset", "slow", "-crf", "19", "-tune", "animation", "-movflags", "+faststart", join(root, "web", `mcp-demo.${lang}.mp4`));
+  ffmpeg(...input, "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "32",
          "-row-mt", "1", join(root, "web", `mcp-demo.${lang}.webm`));
-  ffmpeg("-i", join(frames, `f${String(POSTER_AT * FPS).padStart(4, "0")}.png`), "-vf", "scale=1440:900",
-         "-q:v", "7", join(root, "web", `mcp-demo.${lang}.jpg`));
+  ffmpeg("-i", join(frames, `f${String(POSTER_AT * FPS).padStart(4, "0")}.png`), "-q:v", "6", join(root, "web", `mcp-demo.${lang}.jpg`));
   // 25 fps (4 centiseconds a frame, which GIF can say exactly) and one palette
   // for the whole loop keep it under GitHub's 10 MB.
   ffmpeg(...input, "-vf", "fps=25,scale=960:600:flags=lanczos,split[a][b];[a]palettegen=max_colors=96:stats_mode=diff[p];" +

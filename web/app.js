@@ -311,44 +311,6 @@ const bandTip = (a, i) => {
 // Grouped like the other figures: es-ES leaves four digits without a dot.
 const grouped = (n) => n.toLocaleString(LOCALE, { useGrouping: "always" });
 
-// Everyone in Spain: the median, the histogram and three figures, each with its unit.
-function kpis() {
-  const a = cell();
-  $("k-median").textContent = a ? money(a.median) : "—";
-  $("k-total").textContent = a ? money(a.total) : "—";
-  $("k-share").textContent = a ? pct(a.share) : "—";
-  $("k-people").textContent = a ? grouped(a.n) : "—";
-  $("k-companies").textContent = grouped((D.company_cells["||"] || []).length);
-  heroDist(a);
-}
-
-// Bars to scale on a 0..max+8% axis with round gridlines, one tick every 20k,
-// and the 60k line, the bar the whole site is drawn around.
-function heroDist(a) {
-  const el = $("k-dist");
-  if (!a) { el.innerHTML = ""; return; }
-  const { low, step, high } = D.hist, n = a.hist.length;
-  const top = Math.max(...a.hist.map((c) => c || 0)) * 1.08;
-  const every = [100, 200, 250, 500, 1000, 2000, 2500, 5000].find((g) => top / g <= 3) || 10000;
-  const x = (edge) => (edge / n) * 100;
-  const lines = [];
-  for (let v = every; v < top; v += every)
-    lines.push(`<span class="gl" style="bottom:${(v / top) * 100}%"><b>${grouped(v)}</b></span>`);
-  const bars = a.hist.map((c, i) => {
-    const high = i > 0 && low + (i - 1) * step >= D.threshold;
-    return `<span class="col" data-i="${i}"><i class="${high ? "hi" : ""}" style="height:${((c || 0) / top) * 100}%"></i></span>`;
-  }).join("");
-  const ticks = [];
-  for (let v = low; v < high - step; v += 2 * step)
-    ticks.push(`<span${v === D.threshold ? ' class="at"' : ""} style="left:${x(1 + (v - low) / step)}%">${short(v)}</span>`);
-  ticks.push(`<span style="left:${x(n - 0.5)}%">${short(high)}+</span>`);
-  el.innerHTML = `<div class="plot"><div class="area">${lines.join("")}` +
-    `<div class="bars" style="grid-template-columns:repeat(${n},minmax(0,1fr))">${bars}</div></div>` +
-    `<span class="cut" style="left:${x(1 + (D.threshold - low) / step)}%"><b>${esc(S.hero_cut)}</b></span></div>` +
-    `<div class="axis" aria-hidden="true">${ticks.join("")}</div>`;
-  el.querySelectorAll(".col").forEach((col) => hover(col, () => bandTip(a, +col.dataset.i)));
-}
-
 // The veil behind the banner's text hugs the text, so the tiles stop as far
 // from it on every side. Its box is the column, which is wider than a balanced
 // title, and the title's line box starts above its letters. The text and the
@@ -1022,14 +984,10 @@ function demo() {
 async function main() {
   D = await (await fetch(`/api/v1/data.json?v=${window.DATA_V}`)).json();
   log("info", "salary site data loaded", { language: LANG });
-  // The day the salaries were read, not the day the page was built.
-  const asOf = new Date(`${D.data_as_of || D.generated}T00:00:00Z`);
-  $("updated").textContent = S.updated.replace("{date}", asOf.toLocaleDateString(LOCALE,
-    { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }));
   wire();
   agents();
   starPrompt();
-  kpis(); map();
+  map();
   today(); demo();
   // Again whenever the column changes width or the method opens, and once the fonts are in.
   // After the observer's turn: hugVeil resizes what it observes.
