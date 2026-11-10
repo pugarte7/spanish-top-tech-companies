@@ -2,4 +2,7 @@ blank_issues_enabled: true
 contact_links:
   - name: How this list is built
     url: https://github.com/pugarte7/spanish-top-tech-companies/blob/main/METHODOLOGY.md
-    about: What the 60k threshold means, how bands are sourced, and what we won't publish.
+    about: Where the salaries come from, which companies are listed, and what we won't publish.
+  - name: Report a vulnerability
+    url: https://github.com/pugarte7/spanish-top-tech-companies/security/advisories/new
+    about: Privately, not in a public issue.
