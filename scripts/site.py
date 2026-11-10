@@ -369,7 +369,7 @@ STRINGS = {
                 "the site keeps nothing of yours.",
         "how3_t": "Tell it what you want",
         "how3": "It shows you each application in full and sends it when you say yes.",
-        "agents_best": "Best with Instinct, or else Claude Code",
+        "agents_pick": "Agents it works with", "agents_get": "Download",
         "copy": "Copy", "copied": "Copied",
         "description": "What software engineers earn in Spain and which tech companies pay most: "
                        "median base salary by company, role, experience and city, from real salaries.",
@@ -486,7 +486,7 @@ STRINGS = {
                 "guarda nada tuyo.",
         "how3_t": "Dile qué buscas",
         "how3": "Te enseña cada solicitud completa y la envía cuando le dices que sí.",
-        "agents_best": "Mejor con Instinct y, si no, con Claude Code",
+        "agents_pick": "Agentes con los que funciona", "agents_get": "Descargar",
         "copy": "Copiar", "copied": "Copiado",
         "description": "Cuánto cobra un programador en España y qué empresas tecnológicas pagan más: "
                        "sueldo base mediano por empresa, rol, experiencia y comunidad, con salarios reales.",
@@ -1164,13 +1164,14 @@ def agent_tile(i: int, cls: str = "agent-tile") -> str:
 
 def agents_section(e: dict, lang: str) -> str:
     """How it works: the recorded demo beside three short steps, then the
-    agents it works with."""
+    agents it works with: a click on one shows its name and where to get it."""
     step = lambda n, body: (f'<li><span class="step-n" aria-hidden="true">{n}</span><div>'
                             f'<h3>{e[f"how{n}_t"]}</h3><p>{e[f"how{n}"]}</p>{body}</div></li>')
     logos = "".join(
-        f'<a class="agent-link" href="{html.escape(url)}" target="_blank" rel="noopener" '
-        f'aria-label="{html.escape(n)}" title="{html.escape(n)}">{agent_tile(i, "agent-tile on")}</a>'
-        for i, (n, *_, url) in enumerate(AGENTS))
+        f'<button class="agent-link" type="button" data-name="{html.escape(n)}" data-by="{html.escape(by)}" '
+        f'data-url="{html.escape(url)}" aria-label="{html.escape(n)}" aria-expanded="false" '
+        f'aria-controls="agent-bubble">{agent_tile(i, "agent-tile on")}</button>'
+        for i, (n, by, *_, url) in enumerate(AGENTS))
     return f"""
   <section class="tile wide agents" id="agents" aria-labelledby="agents-title">
     <h2 id="agents-title" tabindex="-1">{e['agents_title']}</h2>
@@ -1187,8 +1188,9 @@ def agents_section(e: dict, lang: str) -> str:
         {step(3, "")}
       </ol>
     </div>
-    <div class="agents-with"><span class="agent-logos">{logos}</span>
-      <span class="agents-best">{e['agents_best']}</span></div>
+    <div class="agents-with"><div class="agent-logos" role="group" aria-label="{e['agents_pick']}">{logos}</div>
+      <div class="agent-bubble" id="agent-bubble" hidden><p><b id="ab-name"></b><span id="ab-by"></span></p>
+        <a id="ab-get" target="_blank" rel="noopener">{e['agents_get']} {OUT_ICON}</a></div></div>
   </section>"""
 
 

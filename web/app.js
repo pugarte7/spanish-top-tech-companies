@@ -853,8 +853,39 @@ function agents() {
       setTimeout(() => say(false), 2000);
     };
   });
-  document.querySelectorAll(".agent-link").forEach((a) => {
-    a.addEventListener("click", () => track("agent_get", { agent: a.title }));
+  // A click on an agent's icon shows its name and download link over it; another
+  // click, a click elsewhere or Escape closes it.
+  const bubble = $("agent-bubble");
+  if (!bubble) return;
+  let open = null;
+  const close = () => { bubble.hidden = true; open?.setAttribute("aria-expanded", "false"); open = null; };
+  document.querySelectorAll(".agent-link").forEach((b) => {
+    b.onclick = (ev) => {
+      ev.stopPropagation();
+      if (open === b) return close();
+      close();
+      $("ab-name").textContent = b.dataset.name;
+      $("ab-by").textContent = b.dataset.by;
+      $("ab-get").href = b.dataset.url;
+      bubble.hidden = false;
+      open = b;
+      b.setAttribute("aria-expanded", "true");
+      const box = bubble.parentElement.getBoundingClientRect(), r = b.getBoundingClientRect();
+      const mid = r.left + r.width / 2 - box.left, w = bubble.offsetWidth;
+      const left = Math.max(0, Math.min(mid - w / 2, box.width - w));
+      bubble.style.left = `${left}px`;
+      bubble.style.top = `${r.top - box.top - bubble.offsetHeight - 12}px`;
+      bubble.style.setProperty("--arrow", `${mid - left}px`);
+      track("agent_pick", { agent: b.dataset.name });
+    };
+  });
+  $("ab-get").addEventListener("click", () => track("agent_get", { agent: $("ab-name").textContent }));
+  document.addEventListener("click", (ev) => { if (open && !bubble.contains(ev.target)) close(); });
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Escape" || !open) return;
+    const b = open;
+    close();
+    b.focus();
   });
 }
 
