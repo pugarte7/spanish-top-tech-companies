@@ -311,44 +311,6 @@ const bandTip = (a, i) => {
 // Grouped like the other figures: es-ES leaves four digits without a dot.
 const grouped = (n) => n.toLocaleString(LOCALE, { useGrouping: "always" });
 
-// Everyone in Spain: the median, the histogram and three figures, each with its unit.
-function kpis() {
-  const a = cell();
-  $("k-median").textContent = a ? money(a.median) : "—";
-  $("k-total").textContent = a ? money(a.total) : "—";
-  $("k-share").textContent = a ? pct(a.share) : "—";
-  $("k-people").textContent = a ? grouped(a.n) : "—";
-  $("k-companies").textContent = grouped((D.company_cells["||"] || []).length);
-  heroDist(a);
-}
-
-// Bars to scale on a 0..max+8% axis with round gridlines, one tick every 20k,
-// and the 60k line, the bar the whole site is drawn around.
-function heroDist(a) {
-  const el = $("k-dist");
-  if (!a) { el.innerHTML = ""; return; }
-  const { low, step, high } = D.hist, n = a.hist.length;
-  const top = Math.max(...a.hist.map((c) => c || 0)) * 1.08;
-  const every = [100, 200, 250, 500, 1000, 2000, 2500, 5000].find((g) => top / g <= 3) || 10000;
-  const x = (edge) => (edge / n) * 100;
-  const lines = [];
-  for (let v = every; v < top; v += every)
-    lines.push(`<span class="gl" style="bottom:${(v / top) * 100}%"><b>${grouped(v)}</b></span>`);
-  const bars = a.hist.map((c, i) => {
-    const high = i > 0 && low + (i - 1) * step >= D.threshold;
-    return `<span class="col" data-i="${i}"><i class="${high ? "hi" : ""}" style="height:${((c || 0) / top) * 100}%"></i></span>`;
-  }).join("");
-  const ticks = [];
-  for (let v = low; v < high - step; v += 2 * step)
-    ticks.push(`<span${v === D.threshold ? ' class="at"' : ""} style="left:${x(1 + (v - low) / step)}%">${short(v)}</span>`);
-  ticks.push(`<span style="left:${x(n - 0.5)}%">${short(high)}+</span>`);
-  el.innerHTML = `<div class="plot"><div class="area">${lines.join("")}` +
-    `<div class="bars" style="grid-template-columns:repeat(${n},minmax(0,1fr))">${bars}</div></div>` +
-    `<span class="cut" style="left:${x(1 + (D.threshold - low) / step)}%"><b>${esc(S.hero_cut)}</b></span></div>` +
-    `<div class="axis" aria-hidden="true">${ticks.join("")}</div>`;
-  el.querySelectorAll(".col").forEach((col) => hover(col, () => bandTip(a, +col.dataset.i)));
-}
-
 // The veil behind the banner's text hugs the text, so the tiles stop as far
 // from it on every side. Its box is the column, which is wider than a balanced
 // title, and the title's line box starts above its letters. The text and the
@@ -387,6 +349,13 @@ function hugVeil() {
   const ink = (parseFloat(cs.lineHeight) - m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2
     + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent;
   v.style.setProperty("--hug-top", `${Math.max(0, ink) || 0}px`);
+  // The card beside it takes the veil's box, 20px past the letters above and the
+  // buttons below, measured with the method closed so opening it never moves the card.
+  if (!v.querySelector("details.how")?.open) {
+    const head = v.closest(".head"), top = Math.max(0, ink) || 0;
+    head.style.setProperty("--veil-top", `${top - 20}px`);
+    head.style.setProperty("--veil-h", `${box.height - top + 40}px`);
+  }
 }
 
 // --- pay shades -----------------------------------------------------------------
@@ -877,50 +846,65 @@ function companies() {
 // The section shows one agent at a time and turns to the next every few
 // seconds; picking one stops the turn. Nothing turns for readers
 // who ask for less motion.
-const AGENT_TURN_MS = 3000;
 const STILL = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// The copy buttons of the /mcp link (header and step 1), a tick for two seconds
+// once copied, and which agent a reader goes to get.
+// Step 1's box with the /mcp link takes the width of the text above it: the
+// widest of its lines, which ends short of the column.
+function fitCopy() {
+  for (const box of document.querySelectorAll(".agent-steps .copy-box")) {
+    const r = document.createRange();
+    r.selectNodeContents(box.previousElementSibling);
+    const lines = [...r.getClientRects()];
+    if (!lines.length) continue;
+    box.style.width = `${Math.ceil(Math.max(...lines.map((q) => q.right)) - Math.min(...lines.map((q) => q.left)))}px`;
+  }
+}
+
 function agents() {
-  const tabs = [...document.querySelectorAll(".agent-tab")];
-  const names = [...document.querySelectorAll(".agent-name")];
-  let at = 0, picked = false;
-  const name = (k) => names.forEach((n) => { n.textContent = tabs[k].dataset.name; });
-  const show = (k) => {
-    at = k;
-    document.querySelectorAll(".agent-stack .agent-tile").forEach((el, j) => el.classList.toggle("on", j === k));
-    tabs.forEach((t, j) => t.setAttribute("aria-pressed", String(j === k)));
-    name(k);
-    $("agent-by").textContent = tabs[k].dataset.by;
-    $("agent-get").href = tabs[k].dataset.url;
-  };
-  // Names differ in length: "Claude Code" wrapped a line the others did not,
-  // so the page grew at every turn and the browser scrolled to make up for
-  // it. Every box that holds a name keeps the height of its longest one.
-  const steady = () => {
-    const boxes = [...document.querySelectorAll(".agent-say, .agent-steps p")]
-      .filter((b) => b.querySelector(".agent-name"));
-    boxes.forEach((b) => { b.style.minHeight = ""; });
-    const tall = boxes.map(() => 0);
-    tabs.forEach((_, k) => {
-      name(k);
-      boxes.forEach((b, i) => { tall[i] = Math.max(tall[i], b.getBoundingClientRect().height); });
-    });
-    name(at);
-    boxes.forEach((b, i) => { b.style.minHeight = `${tall[i]}px`; });
-  };
-  steady();
-  document.fonts.ready.then(steady);
-  let width = innerWidth;
-  addEventListener("resize", () => { if (innerWidth !== width) { width = innerWidth; steady(); } });
-  tabs.forEach((t, k) => { t.onclick = () => { picked = true; show(k); track("agent_pick", { agent: t.dataset.name }); }; });
-  if (!STILL) setInterval(() => { if (!picked && !document.hidden) show((at + 1) % tabs.length); }, AGENT_TURN_MS);
   document.querySelectorAll(".copy-btn").forEach((b) => {
     b.onclick = async () => {
       try { await navigator.clipboard.writeText($(b.dataset.copy).textContent.trim()); } catch { return; }
-      track("copy", { what: b.dataset.copy, agent: tabs[at].dataset.name });
-      b.textContent = S.copied;
-      setTimeout(() => { b.textContent = S.copy; }, 2000);
+      track("copy", { what: b.dataset.copy });
+      const say = (on) => { b.classList.toggle("done", on); b.title = on ? S.copied : S.copy; b.setAttribute("aria-label", b.title); };
+      say(true);
+      setTimeout(() => say(false), 2000);
     };
+  });
+  // A click on an agent's icon shows its name and download link over it; another
+  // click, a click elsewhere or Escape closes it.
+  const bubble = $("agent-bubble");
+  if (!bubble) return;
+  let open = null;
+  const close = () => { bubble.hidden = true; open?.setAttribute("aria-expanded", "false"); open = null; };
+  document.querySelectorAll(".agent-link").forEach((b) => {
+    b.onclick = (ev) => {
+      ev.stopPropagation();
+      if (open === b) return close();
+      close();
+      $("ab-name").textContent = b.dataset.name;
+      $("ab-by").textContent = b.dataset.by;
+      $("ab-get").href = b.dataset.url;
+      bubble.hidden = false;
+      open = b;
+      b.setAttribute("aria-expanded", "true");
+      const box = bubble.parentElement.getBoundingClientRect(), r = b.getBoundingClientRect();
+      const mid = r.left + r.width / 2 - box.left, w = bubble.offsetWidth;
+      const left = Math.max(0, Math.min(mid - w / 2, box.width - w));
+      bubble.style.left = `${left}px`;
+      bubble.style.top = `${r.top - box.top - bubble.offsetHeight - 12}px`;
+      bubble.style.setProperty("--arrow", `${mid - left}px`);
+      track("agent_pick", { agent: b.dataset.name });
+    };
+  });
+  $("ab-get").addEventListener("click", () => track("agent_get", { agent: $("ab-name").textContent }));
+  document.addEventListener("click", (ev) => { if (open && !bubble.contains(ev.target)) close(); });
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Escape" || !open) return;
+    const b = open;
+    close();
+    b.focus();
   });
 }
 
@@ -983,6 +967,44 @@ function starPrompt() {
   };
 }
 
+// --- the header's card and the demo ----------------------------------------------
+// Today's postings: jobs-summary.json is written by scripts/jobs.mjs after the
+// build, so the card is filled here; without it the dashes stay.
+async function today() {
+  let t;
+  try { t = await (await fetch("/api/v1/jobs-summary.json", { cache: "no-cache" })).json(); } catch { return; }
+  if (!t?.postings) return;
+  const n = (v) => grouped(v);
+  $("t-postings").textContent = n(t.postings);
+  $("t-companies").textContent = n(t.companies);
+  $("t-remote").textContent = n(t.remote);
+  $("t-boards").textContent = n(t.boards);
+  const date = $("t-date");
+  date.textContent = date.dataset.tpl.replace("{date}", new Date(t.generated_at).toLocaleDateString(LOCALE,
+    { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Madrid" }));
+  // The roles with the most postings as bars, the next three named under them.
+  const bars = $("t-bars"), names = JSON.parse(bars.dataset.names);
+  const roles = Object.entries(t.roles).sort((a, b) => b[1] - a[1]).map(([slug, v]) => [names[slug] || slug, v]);
+  const tpl = (id, fill) => { const el = $(id); el.textContent = Object.entries(fill).reduce((s, [k, v]) => s.replace(`{${k}}`, v), el.dataset.tpl); };
+  tpl("t-roles", { n: n(roles.length) });
+  const shown = roles.slice(0, 6), top = shown[0]?.[1] || 1;
+  bars.innerHTML = shown.map(([name, v]) =>
+    `<li><span title="${esc(name)}">${esc(name)}</span><i><b style="width:${(100 * v / top).toFixed(1)}%"></b></i><strong>${n(v)}</strong></li>`).join("");
+  const rest = roles.slice(6);
+  if (rest.length) tpl("t-more", { n: n(rest.length), list: rest.slice(0, 3).map(([name]) => name.toLowerCase()).join(", ") });
+  else $("t-more").hidden = true;
+}
+
+// The recorded demo plays, muted, while it is on screen, unless the reader
+// asked for less motion; its controls stay for pausing it.
+function demo() {
+  const v = $("demo");
+  if (!v || STILL) return;
+  new IntersectionObserver(([e]) => {
+    if (e.isIntersecting) v.play().catch(() => {}); else v.pause();
+  }, { threshold: 0.4 }).observe(v);
+}
+
 // The topbar's star count is the one GitHub gave the build, once a day; this
 // brings it up to the minute (ten, the CDN's cache). On any failure the
 // built count stays.
@@ -1003,18 +1025,18 @@ async function freshStars() {
 async function main() {
   D = await (await fetch(`/api/v1/data.json?v=${window.DATA_V}`)).json();
   log("info", "salary site data loaded", { language: LANG });
-  // The day the salaries were read, not the day the page was built.
-  const asOf = new Date(`${D.data_as_of || D.generated}T00:00:00Z`);
-  $("updated").textContent = S.updated.replace("{date}", asOf.toLocaleDateString(LOCALE,
-    { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }));
   wire();
   agents();
   starPrompt();
-  kpis(); map();
+  map();
+  today(); demo();
   // Again whenever the column changes width or the method opens, and once the fonts are in.
   // After the observer's turn: hugVeil resizes what it observes.
   new ResizeObserver(() => requestAnimationFrame(hugVeil)).observe(document.querySelector(".pitch"));
   document.fonts.ready.then(hugVeil);
+  const steps = document.querySelector(".agent-steps");
+  if (steps) new ResizeObserver(() => requestAnimationFrame(fitCopy)).observe(steps);
+  document.fonts.ready.then(fitCopy);
   await loadTable("");
   matrix();
   const h = new URLSearchParams(location.hash.slice(1));

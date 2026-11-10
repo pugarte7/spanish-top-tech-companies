@@ -44,7 +44,20 @@ connecting is the `/mcp` link alone, then how `find_jobs` finds postings
 Spanish is `README.md`, English `README.en.md`; the search link lists and
 FAQ were dropped. Its flow diagram is drawn by `scripts/readme_flow.mjs`
 into `docs/img/`, one white-card SVG per language (a dark variant followed
-the system theme, not the page's). It holds no salary data: on 2026-11-01
+the system theme, not the page's). Since 2026-11-10 the home page leads with
+the MCP too: its header card is today's postings, which app.js reads from
+`/api/v1/jobs-summary.json` (written by `scripts/jobs.mjs` beside jobs.json,
+after `site.py` builds). The salary card with the histogram was removed the
+same day at the maintainer's request. The header reads "Cada día, las ofertas
+top de tech en España, en tu agente" with the salaries as the filter ("para que
+solo apliques donde te interesa"), and the agent's section under it is "Así
+funciona": the video beside three short steps (the first with the /mcp link)
+and the agents' logos, which open each agent's name and link on a click,
+without the rotating agent stage. Both READMEs and that section show the same
+recorded demo (an agent finding Workato postings for someone asking 110,000 €
+and applying), drawn by `scripts/mcp_demo.mjs` from `scripts/mcp_demo/demo.html`:
+its find_jobs and job_questions answers are real, the sending is acted out.
+It holds no salary data: on 2026-11-01
 the maintainer had the software-engineer tables and `scripts/build.py` that
 wrote them removed ("Elimina del readme todo lo que había antes"). Do not
 bring tables back to the README; the data is on the site and in `data/`.

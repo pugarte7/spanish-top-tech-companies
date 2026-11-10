@@ -243,6 +243,16 @@ THEME_ICON = ('<svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path fi
 DOWN_ICON = ('<svg class="down" viewBox="0 0 12 12" aria-hidden="true" fill="none" stroke="currentColor" '
              'stroke-width="1.5"><path d="M6 1v9M2 6.5 6 10.5l4-4"/></svg>')
 # The brand's mark: the eight-point star of the lacería behind the header, drawn in the bar's colour.
+LINK_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" '
+             'stroke-linecap="round"><path d="M6.8 9.2a3 3 0 0 0 4.2 0l2.2-2.2a3 3 0 0 0-4.2-4.2l-.9.9"/>'
+             '<path d="M9.2 6.8a3 3 0 0 0-4.2 0L2.8 9a3 3 0 0 0 4.2 4.2l.9-.9"/></svg>')
+# Two sheets, the one in front being the copy; a tick once copied.
+COPY_ICON = ('<svg class="copy" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" '
+             'stroke-width="1.4" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/>'
+             '<path d="M10.5 3.5v-.5A1.5 1.5 0 0 0 9 1.5H4A1.5 1.5 0 0 0 2.5 3v5A1.5 1.5 0 0 0 4 9.5h.5"/></svg>'
+             '<svg class="ok" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" '
+             'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>')
+
 EMBLEM = ('<svg class="emblem" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" '
           'stroke-width="1" stroke-linejoin="round"><path d="M23,12L19.78,15.22L19.78,19.78L15.22,19.78L12,23'
           'L8.78,19.78L4.22,19.78L4.22,15.22L1,12L4.22,8.78L4.22,4.22L8.78,4.22L12,1L15.22,4.22L19.78,4.22'
@@ -258,13 +268,19 @@ STRINGS = {
     "en": {
         "title": "Spanish Top Tech Companies", "theme": "Light or dark mode",
         "page_title": "Software Engineer Salary in Spain ({year}): Best-Paying Tech Companies",
-        "h1": "The tech companies in Spain that pay the most",
+        "h1": "Every day, the top tech openings in Spain, in your agent",
         "source": "Data: Levels.fyi",
-        "hero_lede": "**{people} real salaries** from {levels}, at **{companies} companies** in Spain. "
-                     "See what each one pays by role, years of experience and region.",
-        "hero_see": "See the companies", "hero_by_role": "By role", "hero_by_region": "By region",
-        "hero_cut": "{bar} or more",
-        "how_title": "How it is calculated",
+        "hero_lede": "With **what each company really pays**, so you only apply where it is worth it. "
+                     "Your agent does the rest.",
+        "hero_mcp": "Add this link to your agent", "hero_start": "How to start",
+        "today_title": "Open positions today", "today_read": "Read on {date}",
+        "today_remote": "remote", "today_in_roles": "in {n} roles", "today_more": "and {n} more: {list}…",
+        "today_companies": "companies hiring", "today_boards": "job boards read today",
+        "demo_alt": "Your agent, connected to the MCP, finds senior openings in Barcelona at companies "
+                    "paying over 100,000 €, reads the form, asks for your salary, shows you the "
+                    "application and sends it when you say yes.",
+        "hero_see": "See the companies",
+        "how_title": "How salaries are calculated",
         "how_source_t": "Source.",
         "how_source": "Individual salaries from Levels.fyi, each kept only if its own location is in Spain. "
                       "A base under {minbase} a year is left out.",
@@ -279,7 +295,7 @@ STRINGS = {
                      "counting every role. With fewer than {ranked} salaries in Spain a company is listed "
                      "after the rest, whichever column is sorted.",
         "how_groups_t": "At least {min} salaries.",
-        "how_groups": "The map, the role by experience table, the figures at the top and the "
+        "how_groups": "The map, the role by experience table and the "
                       "middle half (p25–p75) only come from groups of {min} salaries or more. "
                       "Every amount is rounded to the nearest {round}. The companies table is "
                       "the exception: a company is listed even with a single salary, and under "
@@ -289,9 +305,6 @@ STRINGS = {
                        "and the share with a base of {bar} or more.",
         "all_roles": "All roles", "all_years": "Any",
         "years_label": "Experience", "years_unit": "yrs", "years_axis": "Years of experience",
-        "hero_label": "Median base salary",
-        "kpi_share": "earn a base of {bar} or more", "kpi_total": "median total with bonus and stock",
-        "kpi_companies": "companies with {min} or more salaries",
         "map_title": "By region",
         "map_pay": "Median base", "map_count": "No. of salaries",
         "map_pay_sub": "Median gross yearly base salary of everyone reported in each region.",
@@ -338,7 +351,6 @@ STRINGS = {
         "clear_role": "All roles", "clear_loc": "All of Spain", "clear_years": "Any experience",
         "clear_modes": "Any work arrangement", "clear_search": "Clear the search",
         "people": "salaries", "median": "Median", "range": "p25–p75",
-        "updated": "Updated {date}",
         "data": "JSON", "repo": "GitHub", "web": "Website", "legal": "Legal and privacy",
         "stars_label": "GitHub, {n} stars",
         "star_title": "Finding it useful?",
@@ -351,35 +363,14 @@ STRINGS = {
         "role_label": "Role", "mode_label": "Work", "loc_label": "Location", "all_spain": "All of Spain",
         "mode_remote": "Remote", "mode_hybrid": "Hybrid", "mode_office": "Office",
         "any": "Any", "loading": "Loading…", "load_failed": "The table could not load.", "retry": "Retry", "from": "From", "to": "To",
-        "agents_title": "Let your agent apply for you",
-        "agents_lede": "Connect it and apply to the companies on this page without filling in a form: "
-                       "it searches their open positions, writes the application from your CV and "
-                       "sends it once you say yes. Nothing to install. It saves you hours. It works "
-                       "best with Instinct, or else Claude Code; the others work too.",
-        "agents_call": "Let {name} apply for you",
-        "agents_pick": "Pick your agent",
-        "agents_get": "Get {name}",
-        "agents_s1_t": "Connect salaries and openings",
-        "agents_s1": "Paste this address into the chat and ask {name} to connect to it: it adds "
-                     "the server itself. Then it knows which companies pay most and which "
-                     "positions they have open today.",
-        "agents_s2_t": "Give it your CV and what you want",
-        "agents_s2": "Only once, in the chat. {name} writes the cover letter and the answers "
-                     "from your CV and sends each application with its own browser. Your profile "
-                     "stays with {name}: the site stores nothing about you. If a board emails a "
-                     "code, it reads it from your mail if you connect it, or asks you.",
-        "agents_needs": "Your CV|Where and how you want to work|The salary you ask for",
-        "agents_s3_t": "Tell it to apply",
-        "agents_s3": "Paste this or ask in your own words. It shows you each application in full "
-                     "and sends it when you say yes.",
-        "agents_prompt": "Apply for me to openings at the companies on spanishtoptechcompanies.com "
-                         "that pay 60,000 € or more to someone with my experience in Madrid.",
-        "agents_examples_t": "For example:",
-        "agents_examples": "Apply to 5 backend openings in Barcelona|Which companies on the list "
-                           "haven't I applied to?|Find remote openings I can take from Spain",
-        "agents_note": "Sensitive questions, like salary or work permit, it asks you once, all in "
-                       "one message. If a form asks for a CAPTCHA, it hands you the page: you "
-                       "solve it and it sends the application.",
+        "agents_title": "How it works",
+        "how1_t": "Connect your agent",
+        "how1": "Paste this link into the chat or add it as an MCP server.",
+        "how2_t": "Give it your profile",
+        "how2": "Your CV and whatever else you want to tell it. It asks for anything it needs to apply.",
+        "how3_t": "Start applying",
+        "how3": "Tell it what you are looking for and it offers you the openings that fit you best.",
+        "agents_pick": "Agents it works with", "agents_get": "Download",
         "copy": "Copy", "copied": "Copied",
         "description": "What software engineers earn in Spain and which tech companies pay most: "
                        "median base salary by company, role, experience and city, from real salaries.",
@@ -392,13 +383,19 @@ STRINGS = {
     "es": {
         "title": "Spanish Top Tech Companies", "theme": "Modo claro u oscuro",
         "page_title": "Salario programador en España ({year}): las empresas tech que más pagan",
-        "h1": "Las empresas tech que más pagan en España",
+        "h1": "Cada día, las ofertas top de tech en España, en tu agente",
         "source": "Datos: Levels.fyi",
-        "hero_lede": "**{people} salarios** reales de {levels}, de **{companies} empresas** en España. "
-                     "Mira cuánto paga cada una según el rol, los años de experiencia y la comunidad.",
-        "hero_see": "Ver las empresas", "hero_by_role": "Por rol", "hero_by_region": "Por comunidad",
-        "hero_cut": "{bar} o más",
-        "how_title": "Cómo se calcula",
+        "hero_lede": "Con **el sueldo real de cada empresa**, para que solo apliques donde te interesa. "
+                     "Tu agente hace el resto.",
+        "hero_mcp": "Añade este enlace a tu agente", "hero_start": "Cómo empezar",
+        "today_title": "Ofertas abiertas hoy", "today_read": "Leídas el {date}",
+        "today_remote": "en remoto", "today_in_roles": "en {n} roles", "today_more": "y {n} más: {list}…",
+        "today_companies": "empresas contratando", "today_boards": "portales leídos hoy",
+        "demo_alt": "Tu agente, conectado al MCP, busca ofertas senior en Barcelona de empresas que "
+                    "pagan más de 100.000 €, lee el formulario, te pregunta el sueldo, te enseña la "
+                    "solicitud y la envía cuando le dices que sí.",
+        "hero_see": "Ver las empresas",
+        "how_title": "Cómo se calculan los salarios",
         "how_source_t": "Fuente.",
         "how_source": "Salarios individuales de Levels.fyi. Cada uno se acepta solo si su propia "
                       "ubicación está en España. Un sueldo base de menos de {minbase} al año se "
@@ -414,7 +411,7 @@ STRINGS = {
                      "menos de {ranked} salarios en España, la empresa se lista después de las demás, se "
                      "ordene por la columna que se ordene.",
         "how_groups_t": "Mínimo de {min} salarios.",
-        "how_groups": "El mapa, la tabla de rol por experiencia, las cifras de arriba y el rango "
+        "how_groups": "El mapa, la tabla de rol por experiencia y el rango "
                       "p25–p75 solo salen de grupos de {min} salarios o más. Todos los importes "
                       "se redondean a {round}. La tabla de empresas es la excepción: una empresa "
                       "sale aunque tenga un solo salario, y con menos de {ranked} lleva un aviso.",
@@ -423,9 +420,6 @@ STRINGS = {
                        "+ acciones) y el porcentaje con una base de {bar} o más.",
         "all_roles": "Todos los roles", "all_years": "Todas",
         "years_label": "Experiencia", "years_unit": "años", "years_axis": "Años de experiencia",
-        "hero_label": "Salario base mediano",
-        "kpi_share": "cobra {bar} o más de base", "kpi_total": "total mediano con bonus y acciones",
-        "kpi_companies": "empresas con {min} o más salarios",
         "map_title": "Por comunidad",
         "map_pay": "Base mediana", "map_count": "N. Salarios",
         "map_pay_sub": "Salario base bruto anual mediano de todos los salarios de cada comunidad.",
@@ -471,7 +465,6 @@ STRINGS = {
         "clear_role": "Todos los roles", "clear_loc": "Toda España", "clear_years": "Cualquier experiencia",
         "clear_modes": "Cualquier modalidad", "clear_search": "Borrar la búsqueda",
         "people": "salarios", "median": "Mediana", "range": "p25–p75",
-        "updated": "Actualizado {date}",
         "data": "JSON", "repo": "GitHub", "web": "Web", "legal": "Aviso legal y privacidad",
         "stars_label": "GitHub, {n} estrellas",
         "star_title": "¿Te está sirviendo?",
@@ -485,35 +478,14 @@ STRINGS = {
         "role_label": "Rol", "mode_label": "Modalidad", "loc_label": "Ubicación", "all_spain": "Toda España",
         "mode_remote": "Remoto", "mode_hybrid": "Híbrido", "mode_office": "Presencial",
         "any": "Cualquiera", "loading": "Cargando…", "load_failed": "No se pudo cargar la tabla.", "retry": "Reintentar", "from": "Desde", "to": "Hasta",
-        "agents_title": "Deja que tu agente aplique por ti",
-        "agents_lede": "Conéctalo y aplica a las empresas de esta página sin tocar un formulario: "
-                       "busca sus ofertas abiertas, prepara la solicitud con tu CV y la envía cuando "
-                       "le dices que sí. Sin instalar nada. Te ahorras horas. Funciona mejor con "
-                       "Instinct y, si no, con Claude Code; los demás también sirven.",
-        "agents_call": "Que {name} aplique por ti",
-        "agents_pick": "Elige tu agente",
-        "agents_get": "Consigue {name}",
-        "agents_s1_t": "Conecta sueldos y ofertas",
-        "agents_s1": "Pégale esta dirección en el chat y pídele a {name} que se conecte: él mismo "
-                     "añade el servidor. Así sabe qué empresas pagan más y qué ofertas tienen "
-                     "abiertas hoy.",
-        "agents_s2_t": "Dale tu CV y lo que buscas",
-        "agents_s2": "Una sola vez, en el chat. {name} escribe la carta y las respuestas a partir "
-                     "de tu CV y envía cada solicitud con su propio navegador. Tu perfil se queda "
-                     "en {name}: la web no guarda nada tuyo. Si una empresa manda un código por "
-                     "correo, lo lee de tu correo si se lo conectas, o te lo pide.",
-        "agents_needs": "Tu CV|Dónde y cómo quieres trabajar|El sueldo que pides",
-        "agents_s3_t": "Dile que aplique",
-        "agents_s3": "Pégale esto o pídeselo con tus palabras. Te enseña cada solicitud completa "
-                     "y la envía cuando le dices que sí.",
-        "agents_prompt": "Aplica por mí a las ofertas de las empresas de spanishtoptechcompanies.com "
-                         "que pagan 60.000 € o más a alguien con mi experiencia en Madrid.",
-        "agents_examples_t": "Por ejemplo:",
-        "agents_examples": "Aplica a 5 ofertas de backend en Barcelona|¿A qué empresas de la "
-                           "lista no he aplicado?|Busca ofertas en remoto que pueda hacer desde España",
-        "agents_note": "Las preguntas delicadas, como sueldo o permiso de trabajo, te las hace "
-                       "una vez, todas en un mensaje. Si un formulario pide un CAPTCHA, te pasa la "
-                       "página: lo resuelves y envía la solicitud.",
+        "agents_title": "Así funciona",
+        "how1_t": "Conecta tu agente",
+        "how1": "Pégale este enlace en el chat o añádelo como servidor MCP.",
+        "how2_t": "Pásale tu perfil",
+        "how2": "Tu CV y lo que quieras contarle. Te preguntará los datos que necesite para aplicar.",
+        "how3_t": "Ponte a aplicar",
+        "how3": "Dile qué buscas y te ofrecerá las ofertas que mejor encajan contigo.",
+        "agents_pick": "Agentes con los que funciona", "agents_get": "Descargar",
         "copy": "Copiar", "copied": "Copiado",
         "description": "Cuánto cobra un programador en España y qué empresas tecnológicas pagan más: "
                        "sueldo base mediano por empresa, rol, experiencia y comunidad, con salarios reales.",
@@ -1174,61 +1146,105 @@ def strings(lang: str, data: dict) -> dict:
     return out
 
 
+# The header card's names for the roles postings are read as (scripts/jobs.mjs),
+# as areas of work: (English, Spanish). A role missing here shows its slug.
+JOB_ROLES = {
+    "software-engineer": ("Software engineering", "Ingeniería de software"),
+    "software-engineering-manager": ("Engineering management", "Mánager de ingeniería"),
+    "sales": ("Sales", "Ventas"),
+    "sales-engineer": ("Sales engineering", "Preventa"),
+    "business-development": ("Business development", "Desarrollo de negocio"),
+    "customer-success": ("Customer success", "Customer success"),
+    "customer-service": ("Customer service", "Atención al cliente"),
+    "product-manager": ("Product", "Producto"),
+    "product-designer": ("Product design", "Diseño de producto"),
+    "ux-researcher": ("UX research", "UX research"),
+    "marketing": ("Marketing", "Marketing"),
+    "marketing-operations": ("Marketing operations", "Marketing operations"),
+    "management-consultant": ("Consulting", "Consultoría"),
+    "project-manager": ("Project management", "Gestión de proyectos"),
+    "program-manager": ("Program management", "Program management"),
+    "technical-program-manager": ("Technical program management", "Technical program management"),
+    "solution-architect": ("Solution architecture", "Arquitectura de soluciones"),
+    "data-scientist": ("Data science", "Ciencia de datos"),
+    "data-science-manager": ("Data science management", "Mánager de datos"),
+    "data-analyst": ("Data analysis", "Análisis de datos"),
+    "business-analyst": ("Business analysis", "Análisis de negocio"),
+    "financial-analyst": ("Finance", "Finanzas"),
+    "accountant": ("Accounting", "Contabilidad"),
+    "bizops-manager": ("Business operations", "Operaciones de negocio"),
+    "security-analyst": ("Security", "Ciberseguridad"),
+    "information-technologist": ("IT", "Sistemas"),
+    "hardware-engineer": ("Hardware", "Hardware"),
+    "electrical-engineer": ("Electrical engineering", "Ingeniería eléctrica"),
+    "mechanical-engineer": ("Mechanical engineering", "Ingeniería mecánica"),
+    "aerospace-engineer": ("Aerospace engineering", "Ingeniería aeroespacial"),
+    "legal": ("Legal", "Legal"),
+    "recruiter": ("Recruiting", "Selección"),
+    "human-resources": ("People", "Recursos humanos"),
+}
+
+
+def copy_box(e: dict, target: str) -> str:
+    """The /mcp link in a box with its copy button inside. The scheme is
+    copied but not shown, so the address fits one line."""
+    url = MCP_URL.replace("https://", '<span class="scheme">https://</span>').replace("/mcp", "<wbr>/mcp")
+    return (f'<div class="copy-box"><code id="{target}">{url}</code>'
+            f'<button class="copy-btn" type="button" data-copy="{target}" aria-label="{e["copy"]}" '
+            f'title="{e["copy"]}">{COPY_ICON}</button></div>')
+
+
 def agent_tile(i: int, cls: str = "agent-tile") -> str:
     logo, fit, bg = AGENTS[i][2:5]
     return (f'<span class="{cls}" style="background:{bg}">'
             f'<img class="fit-{fit}" src="/agents/{logo}" alt="" decoding="async"></span>')
 
 
-def agent_stack() -> str:
-    """Every agent's logo stacked in one box; the script shows one at a time."""
-    tiles = "".join(agent_tile(i, "agent-tile on" if i == 0 else "agent-tile") for i in range(len(AGENTS)))
-    return f'<span class="agent-stack" aria-hidden="true">{tiles}</span>'
-
-
-def agents_section(e: dict) -> str:
-    name = f'<span class="agent-name">{html.escape(AGENTS[0][0])}</span>'
-    with_name = lambda k: e[k].replace("{name}", name)
-    tabs = "".join(
-        f'<button class="agent-tab" type="button" data-name="{html.escape(n)}" data-by="{html.escape(by)}" '
-        f'data-url="{html.escape(url)}" aria-label="{html.escape(n)}" '
-        f'aria-pressed="{str(i == 0).lower()}">{agent_tile(i)}</button>'
+def agents_section(e: dict, lang: str) -> str:
+    """How it works: the recorded demo beside three short steps, then the
+    agents it works with: a click on one shows its name and where to get it."""
+    step = lambda n, body: (f'<li><span class="step-n" aria-hidden="true">{n}</span><div>'
+                            f'<h3>{e[f"how{n}_t"]}</h3><p>{e[f"how{n}"]}</p>{body}</div></li>')
+    logos = "".join(
+        f'<button class="agent-link" type="button" data-name="{html.escape(n)}" data-by="{html.escape(by)}" '
+        f'data-url="{html.escape(url)}" aria-label="{html.escape(n)}" aria-expanded="false" '
+        f'aria-controls="agent-bubble">{agent_tile(i, "agent-tile on")}</button>'
         for i, (n, by, *_, url) in enumerate(AGENTS))
-    items = lambda k: "".join(f"<li>{x}</li>" for x in e[k].split("|"))
-    copy = lambda target: (f'<button class="copy-btn" type="button" data-copy="{target}">'
-                           f'{e["copy"]}</button>')
     return f"""
   <section class="tile wide agents" id="agents" aria-labelledby="agents-title">
     <h2 id="agents-title" tabindex="-1">{e['agents_title']}</h2>
-    <p class="lede">{e['agents_lede']}</p>
     <div class="agents-grid">
-      <div class="agents-stage field tiled">{WALL}
-        {agent_stack()}
-        <div class="agent-say veil"><p class="agent-call">{with_name('agents_call')}</p><p class="agent-by" id="agent-by">{html.escape(AGENTS[0][1])}</p>
-          <a class="agent-get" id="agent-get" href="{html.escape(AGENTS[0][5])}" target="_blank" rel="noopener">{with_name('agents_get')} {OUT_ICON}</a></div>
-        <div class="agent-tabs" role="group" aria-label="{e['agents_pick']}">{tabs}</div>
-      </div>
-      <div class="agents-how">
-        <ol class="agent-steps">
-          <li><span class="step-n" aria-hidden="true">1</span><div>
-            <h3>{e['agents_s1_t']}</h3><p>{with_name('agents_s1')}</p>
-            <div class="copy-row"><code id="agent-mcp">{MCP_URL.replace('/mcp', '<wbr>/mcp')}</code>{copy('agent-mcp')}</div>
-          </div></li>
-          <li><span class="step-n" aria-hidden="true">2</span><div>
-            <h3>{e['agents_s2_t']}</h3><p>{with_name('agents_s2')}</p>
-            <ul class="agent-needs">{items('agents_needs')}</ul>
-          </div></li>
-          <li><span class="step-n" aria-hidden="true">3</span><div>
-            <h3>{e['agents_s3_t']}</h3><p>{e['agents_s3']}</p>
-            <div class="copy-row"><blockquote id="agent-prompt">{e['agents_prompt']}</blockquote>{copy('agent-prompt')}</div>
-            <p class="agent-ex-t">{e['agents_examples_t']}</p>
-            <ul class="agent-examples">{items('agents_examples')}</ul>
-          </div></li>
-        </ol>
-        <p class="agents-note">{e['agents_note']}</p>
-      </div>
+      <figure class="agents-demo">
+        <video id="demo" muted loop playsinline controls preload="none" width="1920" height="1200"
+               poster="/mcp-demo.{lang}.jpg" aria-label="{e['demo_alt']}">
+          <source src="/mcp-demo.{lang}.mp4" type="video/mp4">
+          <source src="/mcp-demo.{lang}.webm" type="video/webm"></video>
+      </figure>
+      <ol class="agent-steps">
+        {step(1, copy_box(e, "agent-mcp"))}
+        {step(2, "")}
+        {step(3, "")}
+      </ol>
     </div>
+    <div class="agents-with"><div class="agent-logos" role="group" aria-label="{e['agents_pick']}">{logos}</div>
+      <div class="agent-bubble" id="agent-bubble" hidden><p><b id="ab-name"></b><span id="ab-by"></span></p>
+        <a id="ab-get" target="_blank" rel="noopener" aria-label="{e['agents_get']}" title="{e['agents_get']}">{LINK_ICON}</a></div></div>
   </section>"""
+
+
+def today_card(e: dict, lang: str) -> str:
+    """The header's card: today's open postings, from /api/v1/jobs-summary.json,
+    which scripts/jobs.mjs writes after this build; app.js fills it in."""
+    stat = lambda k, n: f'<div><dt>{e[k]}</dt><dd id="{n}">—</dd></div>'
+    names = html.escape(json.dumps({k: v[lang == "es"] for k, v in JOB_ROLES.items()}, ensure_ascii=False))
+    return f"""<article class="hero-card today-card" aria-labelledby="today-title">
+    <div class="hero-card-head"><span id="today-title">{e['today_title']}</span>
+      <span id="t-date" data-tpl="{e['today_read']}"></span></div>
+    <div class="t-top"><p class="hero-median" id="t-postings">—</p><span id="t-roles" data-tpl="{e['today_in_roles']}"></span></div>
+    <ol class="t-bars" id="t-bars" data-names="{names}"></ol>
+    <p class="t-more" id="t-more" data-tpl="{e['today_more']}"></p>
+    <dl class="hero-stats">{stat('today_companies', 't-companies')}{stat('today_remote', 't-remote')}{stat('today_boards', 't-boards')}</dl>
+  </article>"""
 
 
 def noscript_companies(e: dict, data: dict) -> str:
@@ -1351,8 +1367,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     steps = "".join(f"\n          <li><b>{e[f'how_{k}_t']}</b> {e[f'how_{k}']}</li>"
                     for k in ("source", "when", "floor", "groups", "figures"))
     # **bold** in the copy; the salary count is filled in by app.js.
-    lede = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", e["hero_lede"]).replace(
-        "{people}", '<span id="k-people"></span>').replace("{levels}", levels)
+    lede = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", e["hero_lede"])
     foot = seo.footer_links(data, lang)
     return f"""<!doctype html>
 <html lang="{lang}">
@@ -1388,10 +1403,13 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
   <div class="pitch veil">
     <h1>{e['h1']}</h1>
     <p class="hero-lede">{lede}</p>
-    <nav class="cta" aria-label="{e['hero_see']}">
-      <a class="btn main wide" href="#companies-card">{e['hero_see']} {DOWN_ICON}</a>
-      <a class="btn alt" href="#matrix-card">{e['hero_by_role']}</a>
-      <a class="btn alt" href="#map-card">{e['hero_by_region']}</a>
+    <nav class="cta" aria-label="{e['hero_start']}">
+      <div class="hero-mcp wide">
+        <p>{e['hero_mcp']}</p>
+        {copy_box(e, "hero-mcp")}
+      </div>
+      <a class="btn main" href="#agents">{e['hero_start']} {DOWN_ICON}</a>
+      <a class="btn alt" href="#companies-card">{e['hero_see']}</a>
       <details class="how wide">
         <summary class="btn main">{e['how_title']}</summary>
         <ol class="steps">{steps}
@@ -1399,19 +1417,11 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
       </details>
     </nav>
   </div>
-  <article class="hero-card" aria-label="{e['hero_label']}">
-    <div class="hero-card-head"><span>{e['hero_label']}</span><span id="updated"></span></div>
-    <p class="hero-median" id="k-median"></p>
-    <div class="hero-dist" id="k-dist"></div>
-    <dl class="hero-stats">
-      <div><dt><i aria-hidden="true"></i>{e['kpi_share']}</dt><dd id="k-share"></dd></div>
-      <div><dt>{e['kpi_total']}</dt><dd id="k-total"></dd></div>
-      <div><dt>{e['kpi_companies']}</dt><dd id="k-companies"></dd></div>
-    </dl>
-  </article>
+  {today_card(e, lang)}
 </div></header>
 
 <main class="bento">
+{agents_section(e, lang)}
   <section class="tile wide map-tile" id="map-card">
     <div class="tile-head">
       <div><h2>{e['map_title']}</h2><p class="lede" id="map-sub"></p></div>
@@ -1445,7 +1455,6 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     <button class="more" id="more" hidden></button>
     {noscript_companies(e, data)}
   </section>
-{agents_section(e)}
 </main>
 
 <footer class="field tiled">{WALL}<div class="foot">
@@ -1771,8 +1780,10 @@ def main(argv: list[str]) -> int:
     # The favicon is a tile of the lacería with an S: favicon.svg for browsers that
     # take SVG, the .ico for the rest, and a square PNG for a phone's home screen.
     # og-*.png is the link preview, drawn by tests/site/og-image.mjs.
+    # mcp-demo.* is the recorded demo of an agent applying, drawn by scripts/mcp_demo.mjs.
     for name in ("app.js", "style.css", "cenefa.svg",
-                 "favicon.svg", "favicon.ico", "apple-touch-icon.png", "og-es.png", "og-en.png"):
+                 "favicon.svg", "favicon.ico", "apple-touch-icon.png", "og-es.png", "og-en.png",
+                 *(f"mcp-demo.{lang}.{ext}" for lang in ("es", "en") for ext in ("mp4", "webm", "jpg"))):
         shutil.copy(WEB / name, OUT / name)
     shutil.copytree(WEB / "fonts", OUT / "fonts")
     shutil.copytree(WEB / "agents", OUT / "agents")

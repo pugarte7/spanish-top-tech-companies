@@ -1,0 +1,245 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>MCP demo</title>
+<style>
+@font-face { font-family: "Antonio"; font-weight: 100 700; src: url("../../web/fonts/Antonio-Variable.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 400; src: url("../../web/fonts/Barlow-Regular.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 500; src: url("../../web/fonts/Barlow-Medium.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 600; src: url("../../web/fonts/Barlow-SemiBold.woff2") format("woff2"); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 960px; height: 600px; overflow: hidden; }
+body { position: relative; background: #0000f2; color: #0000f2; font: 14px/20px "Barlow", sans-serif; -webkit-font-smoothing: antialiased; }
+.wall { position: absolute; left: 0; top: 38px; width: 100%; height: 100%; }
+.frz { position: absolute; left: 0; top: 6px; width: 100%; height: 22px; }
+.stage { position: absolute; inset: 44px 28px 22px; display: grid; grid-template-columns: 300px 1fr; gap: 28px; }
+
+.side { position: relative; z-index: 1; color: #f2f2f2; display: flex; flex-direction: column; gap: 12px; padding: 4px 0; }
+.side::before { content: ""; position: absolute; z-index: -1; inset: -8px -12px; border-radius: 22px; background: #0000f2; box-shadow: 0 0 34px 20px #0000f2; }
+.brand { font: 500 13px/16px "Antonio", sans-serif; letter-spacing: .16em; color: #dcdcfa; }
+.title { margin: 0 0 4px; font: 200 31px/34px "Antonio", sans-serif; color: #fff; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; position: relative; }
+.hl { position: absolute; left: 0; right: 0; top: 0; border-radius: 4px; background: #f2f2f2; z-index: 0; }
+.step { position: relative; z-index: 1; display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; padding: 8px 10px; color: #8a8ae8; }
+.step .n { width: 26px; height: 26px; border-radius: 50%; border: 1px solid currentColor; display: grid; place-items: center; font: 400 14px/1 "Antonio", sans-serif; }
+.step b { display: block; font: 400 17px/22px "Antonio", sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+.step .c { display: block; overflow: hidden; height: 0; font-size: 13px; line-height: 17px; color: #4f4fcc; }
+.step .c > span { display: block; }
+.step.done { color: #c8c8f8; }
+.step.on { color: #0000f2; }
+.step.on .n { background: #0000f2; color: #fff; border-color: #0000f2; }
+.url { margin-top: auto; font: 500 13px/18px ui-monospace, Menlo, monospace; color: #fff; padding: 9px 12px; background: #0000d0; border: 1px solid rgba(242,242,242,.35); border-radius: 3px; }
+
+.chat { position: relative; z-index: 1; display: flex; flex-direction: column; background: #fafafa; border: 1px solid #0000f2; border-radius: 4px; overflow: hidden; }
+.chead { display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #dadaf0; font: 400 12px/16px "Antonio", sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #4f4fcc; }
+.chead i { font-style: normal; color: #0000f2; }
+.log { flex: 1; overflow: hidden; padding: 14px 16px 6px; display: flex; flex-direction: column; gap: 9px; }
+.log > * { flex: none; }
+.me { align-self: flex-end; max-width: 80%; background: #0000f2; color: #fff; padding: 9px 13px; border-radius: 12px 12px 2px 12px; }
+.ag { align-self: flex-start; max-width: 90%; background: #efeffe; padding: 9px 13px; border-radius: 12px 12px 12px 2px; white-space: pre-line; }
+.ag b, .me b { font-weight: 600; }
+.tool { display: flex; gap: 8px; align-items: center; font-size: 13px; color: #4f4fcc; }
+.tool code { background: #e3e3ff; color: #0000f2; padding: 2px 8px; border-radius: 3px; font: 600 12.5px/18px ui-monospace, Menlo, monospace; }
+.tool.web code { background: #fff; border: 1px solid #a8a8e0; }
+.tool .ok { color: #0000f2; font-weight: 600; }
+.dots { display: inline-block; width: 1.2em; text-align: left; }
+.job { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 9px 12px; background: #fff; border: 1px solid #dadaf0; border-radius: 4px; }
+.job.pick { border: 2px solid #0000f2; }
+.job p { margin: 0; }
+.job .t { font-weight: 600; }
+.job .s { font-size: 12.5px; color: #4f4fcc; }
+.job .fig { font: 300 22px/24px "Antonio", sans-serif; text-align: right; }
+.job .src { font-size: 11.5px; color: #4f4fcc; text-align: right; }
+.app { align-self: stretch; background: #fff; border: 1px solid #0000f2; border-radius: 4px; overflow: hidden; }
+.app h4 { margin: 0; padding: 8px 12px; background: #0000f2; color: #fff; font: 400 13px/18px "Antonio", sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+.row { display: grid; grid-template-columns: 170px 1fr; gap: 10px; padding: 5px 12px; border-top: 1px solid #ececf2; font-size: 13px; line-height: 18px; }
+.row:first-of-type { border-top: 0; }
+.row span:first-child { color: #4f4fcc; }
+.row.hi { background: #e3e3ff; font-weight: 600; }
+.btns { display: flex; gap: 8px; }
+.btns span { height: 36px; padding: 0 16px; display: flex; align-items: center; border-radius: 3px; font: 600 13px/1 "Antonio", sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+.btns .yes { background: #0000f2; color: #fff; }
+.btns .no { border: 1px solid #0000f2; }
+.input { display: flex; gap: 8px; align-items: center; margin: 6px 12px 12px; padding: 0 6px 0 12px; min-height: 44px; border: 1px solid #a8a8e0; border-radius: 6px; background: #fff; color: #0000f2; }
+.input .txt { flex: 1; min-width: 0; padding: 10px 0; }
+.input .ph { color: #8a8aa4; }
+.caret { display: inline-block; width: 1.5px; height: 16px; background: #0000f2; vertical-align: -3px; margin-left: 1px; }
+.send { width: 32px; height: 32px; border-radius: 50%; background: #0000f2; display: grid; place-items: center; flex: none; }
+.end { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; background: #0000f2; color: #fff; text-align: center; }
+.end h2 { margin: 0 0 14px; font: 200 46px/48px "Antonio", sans-serif; }
+.end code { display: inline-block; padding: 12px 18px; background: #fafafa; color: #0000f2; border-radius: 3px; font: 600 20px/24px ui-monospace, Menlo, monospace; }
+.end p { margin: 14px 0 0; font: 400 14px/18px "Antonio", sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #dcdcfa; }
+</style>
+</head>
+<body>
+<svg class="wall" aria-hidden="true"><defs><g id="lz"><polygon points="-17.32,90 -34.64,80 -51.96,90 -51.96,70 -69.28,60 -51.96,50 -51.96,30 -34.64,40 -17.32,30 -17.32,50 0,60 -17.32,70"></polygon><polygon points="17.32,30 0,20 -17.32,30 -17.32,10 -34.64,0 -17.32,-10 -17.32,-30 0,-20 17.32,-30 17.32,-10 34.64,0 17.32,10"></polygon><polygon points="51.96,90 34.64,80 17.32,90 17.32,70 -0,60 17.32,50 17.32,30 34.64,40 51.96,30 51.96,50 69.28,60 51.96,70"></polygon><polygon points="17.32,150 0,140 -17.32,150 -17.32,130 -34.64,120 -17.32,110 -17.32,90 -0,100 17.32,90 17.32,110 34.64,120 17.32,130"></polygon><polygon points="86.6,30 69.28,20 51.96,30 51.96,10 34.64,0 51.96,-10 51.96,-30 69.28,-20 86.6,-30 86.6,-10 103.92,0 86.6,10"></polygon><polygon points="121.24,90 103.92,80 86.6,90 86.6,70 69.28,60 86.6,50 86.6,30 103.92,40 121.24,30 121.24,50 138.56,60 121.24,70"></polygon><polygon points="86.6,150 69.28,140 51.96,150 51.96,130 34.64,120 51.96,110 51.96,90 69.28,100 86.6,90 86.6,110 103.92,120 86.6,130"></polygon></g><pattern id="lazo" patternUnits="userSpaceOnUse" width="69.28" height="120"><use href="#lz" fill="rgba(0,0,0,.14)"></use><use href="#lz" fill="none" stroke="rgba(242,242,242,.92)" stroke-width="6.4" stroke-linejoin="round"></use><use href="#lz" fill="none" stroke="#0000d0" stroke-width="5" stroke-linejoin="round"></use></pattern></defs><rect width="100%" height="100%" fill="url(#lazo)"></rect></svg>
+<svg class="frz" aria-hidden="true"><defs><pattern id="cen" patternUnits="userSpaceOnUse" width="28" height="22"><path d="M0,1L28,1M0,21L28,21M0,11L5,11M23,11L28,11M23,11L20.36,13.64L20.36,17.36L16.64,17.36L14,20L11.36,17.36L7.64,17.36L7.64,13.64L5,11L7.64,8.36L7.64,4.64L11.36,4.64L14,2L16.64,4.64L20.36,4.64L20.36,8.36ZM18.16,12.72L16.44,13.44L15.72,15.16L14,14.44L12.28,15.16L11.56,13.44L9.84,12.72L10.56,11L9.84,9.28L11.56,8.56L12.28,6.84L14,7.56L15.72,6.84L16.44,8.56L18.16,9.28L17.44,11Z" fill="none" stroke="#f2f2f2" stroke-width="1" stroke-linejoin="round"></path></pattern></defs><rect width="100%" height="22" fill="url(#cen)"></rect></svg>
+
+<div class="stage">
+  <aside class="side">
+    <div class="brand">SPANISH TOP TECH COMPANIES · MCP</div>
+    <h1 class="title" id="title"></h1>
+    <ol class="steps" id="steps"><li class="hl" id="hl"></li></ol>
+    <div class="url">spanishtoptechcompanies.com/mcp</div>
+  </aside>
+  <section class="chat">
+    <div class="chead"><span id="who"></span><span>MCP <i id="conn"></i></span></div>
+    <div class="log" id="log"></div>
+    <div class="input"><div class="txt" id="typing"></div><span class="send"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></span></div>
+    <div class="end" id="end" style="opacity:0"><div><h2 id="endh"></h2><code>spanishtoptechcompanies.com/mcp</code><p id="endp"></p></div></div>
+  </section>
+</div>
+
+<script>
+// A real session, replayed: find_jobs and job_questions answered as below on 2026-11-10
+// (Workato, 4th in the software-engineer ranking; its live Greenhouse form).
+const L = {
+  es: {
+    title: "Así aplica tu agente por ti", who: "Tu agente", conn: "● conectado", ph: "Escribe a tu agente…",
+    steps: [["Pides lo que buscas", "Con tus palabras, en el chat de tu agente."],
+            ["Busca entre +1.000 ofertas", "find_jobs filtra por nivel, comunidad y sueldo mínimo."],
+            ["Lee el formulario", "job_questions separa lo que responde él de lo que es tuyo."],
+            ["Te pregunta lo tuyo", "Sueldo, visado y consentimientos: una vez, en un mensaje."],
+            ["Tú das el sí", "Ves la solicitud completa antes de que salga."],
+            ["Enviada", "La anota para no repetirla nunca."]],
+    ask1: "Busca ofertas senior en Barcelona de empresas que paguen más de 100.000 € y aplica a la que mejor encaje con mi CV.",
+    fj: "senior · Cataluña · 100.000 €+", fjok: "3 de 2.370 ofertas",
+    found: "Las 3 son de <b>Workato</b>, una de las 10 empresas que más pagan a ingenieros en España:",
+    s1: "Workato · Barcelona · senior · pide 7+ años", s: "Workato · Barcelona · senior",
+    fig: "120.000 €", src: "mediana en Workato · 12 personas",
+    pick: "La primera es la que mejor encaja con tu CV. Leo su formulario.",
+    jq: "formulario de Workato, en directo", jqok: "15 preguntas: 8 suyas, 7 tuyas",
+    ask: "Tiene <b>15 preguntas</b>. 8 las respondo yo con tu CV (carta incluida). Para las tuyas:\n1. ¿Qué sueldo pides?\n2. ¿Necesitarás visado?\n3. ¿Aceptas SMS de Workato?\nY 4 demográficas, que puedes no responder.",
+    ask2: "Pido 110.000 €. No necesito visado. SMS no, y las demográficas prefiero no responderlas.", pay: "110.000 €",
+    app: "Solicitud · Workato · Senior Software Engineer (Go)",
+    rows: [["CV", "Adjunto ✓"], ["Carta", "Escrita con tu CV ✓"], ["¿Por qué tendrás éxito?", "Escrita con tu CV ✓"],
+           ["Sueldo que pides", "110.000 €", 1], ["Visado", "No lo necesito"], ["SMS de Workato", "No"], ["Demográficas (4)", "Prefiero no responder"]],
+    send: "Aquí tienes la solicitud completa. ¿La envío?", yes: "Sí, envíala", no: "Cambiar algo", yes2: "Sí, envíala.",
+    br: "navegador", brw: "enviando en job-boards.greenhouse.io", brok: "enviada ✓",
+    done: "<b>Enviada a Workato ✓</b> La anoto en tus notas para no repetirla. ¿Busco más?",
+    endh: "Conecta tu agente", endp: "Gratis · sin registro · nada se envía sin tu sí",
+  },
+  en: {
+    title: "Your agent applies for you", who: "Your agent", conn: "● connected", ph: "Message your agent…",
+    steps: [["You say what you want", "In your own words, in your agent's chat."],
+            ["It searches 1,000+ openings", "find_jobs filters by level, region and minimum pay."],
+            ["It reads the form", "job_questions splits what it answers from what is yours."],
+            ["It asks what is yours", "Salary, visa and consents: once, in one message."],
+            ["You say yes", "You see the full application before it goes."],
+            ["Sent", "It notes it so it never applies twice."]],
+    ask1: "Find senior openings in Barcelona at companies that pay over 100,000 € and apply to the one that best fits my CV.",
+    fj: "senior · Catalonia · 100,000 €+", fjok: "3 of 2,370 openings",
+    found: "All 3 are at <b>Workato</b>, one of the 10 companies in Spain that pay engineers the most:",
+    s1: "Workato · Barcelona · senior · asks 7+ years", s: "Workato · Barcelona · senior",
+    fig: "120,000 €", src: "Workato median · 12 people",
+    pick: "The first one fits your CV best. Reading its form.",
+    jq: "Workato's form, read live", jqok: "15 questions: 8 for me, 7 for you",
+    ask: "It has <b>15 questions</b>. I answer 8 from your CV (cover letter included). For yours:\n1. What salary do you ask for?\n2. Will you need a visa?\n3. Do you accept SMS from Workato?\nPlus 4 demographic ones you can skip.",
+    ask2: "I ask for 110,000 €. No visa needed. No SMS, and I'd rather not answer the demographic ones.", pay: "110,000 €",
+    app: "Application · Workato · Senior Software Engineer (Go)",
+    rows: [["CV", "Attached ✓"], ["Cover letter", "Written from your CV ✓"], ["Why will you succeed?", "Written from your CV ✓"],
+           ["Salary you ask for", "110,000 €", 1], ["Visa", "Not needed"], ["SMS from Workato", "No"], ["Demographics (4)", "Prefer not to answer"]],
+    send: "Here is the full application. Shall I send it?", yes: "Yes, send it", no: "Change something", yes2: "Yes, send it.",
+    br: "browser", brw: "sending on job-boards.greenhouse.io", brok: "sent ✓",
+    done: "<b>Sent to Workato ✓</b> I've noted it so I never apply twice. Shall I look for more?",
+    endh: "Connect your agent", endp: "Free · no sign-up · nothing is sent without your yes",
+  },
+};
+const S = L[new URLSearchParams(location.search).get("lang") || "es"];
+document.documentElement.lang = S === L.en ? "en" : "es";
+for (const id of ["title", "who", "conn", "endh", "endp"]) document.getElementById(id).textContent = S[id];
+document.getElementById("steps").insertAdjacentHTML("beforeend", S.steps.map(([b, c], i) =>
+  `<li class="step"><span class="n">${i + 1}</span><div><b>${b}</b><span class="c"><span>${c}</span></span></div></li>`).join(""));
+
+const job = (t, s, cls = "") =>
+  `<div class="job ${cls}"><div><p class="t">${t}</p><p class="s">${s}</p></div><div><p class="fig">${S.fig}</p><p class="src">${S.src}</p></div></div>`;
+const dots = '<span class="dots" data-dots></span>';
+// [time, step, html]
+const EV = [
+  [5.0, 0, `<div class="me">${S.ask1}</div>`],
+  [5.8, 1, `<div class="tool"><code>find_jobs</code><span id="fj">${S.fj} ${dots}</span></div>`],
+  [7.6, 1, `<div class="ag">${S.found}</div>`],
+  [8.2, 1, job("Senior Software Engineer (Golang, Engine)", S.s1, "pick")],
+  [8.6, 1, job("Senior Infrastructure Engineer (PostgreSQL)", S.s)],
+  [9.0, 1, job("Senior Rust Developer", S.s)],
+  [10.6, 1, `<div class="ag">${S.pick}</div>`],
+  [11.6, 2, `<div class="tool"><code>job_questions</code><span id="jq">${S.jq} ${dots}</span></div>`],
+  [13.8, 3, `<div class="ag">${S.ask}</div>`],
+  [21.0, 3, `<div class="me">${S.ask2.replace(S.pay, `<b>${S.pay}</b>`)}</div>`],
+  [22.0, 4, `<div class="app"><h4>${S.app}</h4>${S.rows.map(([a, b, hi]) => `<div class="row${hi ? " hi" : ""}"><span>${a}</span><span>${b}</span></div>`).join("")}</div>`],
+  [22.8, 4, `<div class="ag">${S.send}</div>`],
+  [23.2, 4, `<div class="btns"><span class="yes" id="yes">${S.yes}</span><span class="no">${S.no}</span></div>`],
+  [26.4, 4, `<div class="me">${S.yes2}</div>`],
+  [27.2, 5, `<div class="tool web"><code>${S.br}</code><span id="br">${S.brw} ${dots}</span></div>`],
+  [29.2, 5, `<div class="tool"><code>report_application</code><span>sent <span class="ok">✓</span></span></div>`],
+  [30.0, 5, `<div class="ag">${S.done}</div>`],
+];
+const CHANGES = [
+  [7.2, "fj", `${S.fj} → <span class="ok">${S.fjok}</span>`],
+  [13.2, "jq", `${S.jq} → <span class="ok">${S.jqok}</span>`],
+  [28.8, "br", `job-boards.greenhouse.io → <span class="ok">${S.brok}</span>`],
+];
+const TYPING = [[1.0, 4.6, S.ask1], [15.6, 20.6, S.ask2]];
+const PRESS = [25.5, 26.2];
+const END = [32.5, 33.4];
+const TOTAL = 37;
+// The step on show: the latest event's, and "asks what is yours" while you type the answer.
+const stepAt = (t) => { let s = 0; for (const [at, st] of EV) if (at <= t + 0.6) s = st; return (t >= 15.6 && t < 21.4) ? 3 : s; };
+const stepStart = (i) => i === 0 ? 0 : (EV.find(([, s]) => s === i)?.[0] ?? 0.6) - 0.6;
+
+const ease = (x) => 1 - Math.pow(1 - Math.max(0, Math.min(1, x)), 3);
+const log = document.getElementById("log"), typing = document.getElementById("typing");
+const stepsEl = [...document.querySelectorAll(".step")], hl = document.getElementById("hl");
+let shown = 0, changed = 0, scroll = 0, last = 0, hlY = null, hlH = null;
+function render(t) {
+  const dt = Math.max(0, t - last); last = t;
+  while (shown < EV.length && EV[shown][0] <= t) {
+    log.insertAdjacentHTML("beforeend", EV[shown][2]);
+    log.lastElementChild.dataset.at = EV[shown][0]; shown++;
+  }
+  while (changed < CHANGES.length && CHANGES[changed][0] <= t) { const [, id, html] = CHANGES[changed++]; document.getElementById(id).innerHTML = html; }
+  // New messages fade and slide in.
+  for (const el of log.children) {
+    const k = ease((t - Number(el.dataset.at)) / 0.4);
+    el.style.opacity = k; el.style.transform = `translateY(${(1 - k) * 10}px)`;
+  }
+  for (const d of document.querySelectorAll("[data-dots]")) d.textContent = ".".repeat(1 + Math.floor(t * 3) % 3);
+
+  // Steps: the current one's caption opens and the highlight glides to it.
+  const step = stepAt(t);
+  stepsEl.forEach((el, i) => {
+    const c = el.querySelector(".c"), full = c.firstElementChild.offsetHeight + 2;
+    const open = i === step ? ease((t - Math.max(stepStart(i), i === 3 && t >= 15.6 && t < 21.4 ? 13.2 : 0)) / 0.35) : 0;
+    c.style.height = `${full * open}px`; c.style.marginTop = `${2 * open}px`;
+    el.classList.toggle("on", i === step); el.classList.toggle("done", i < step);
+  });
+  const cur = stepsEl[step], y = cur.offsetTop, h = cur.offsetHeight;
+  const a = 1 - Math.exp(-dt * 14);
+  hlY = hlY === null ? y : hlY + (y - hlY) * a; hlH = hlH === null ? h : hlH + (h - hlH) * a;
+  hl.style.transform = `translateY(${hlY}px)`; hl.style.height = `${hlH}px`;
+
+  let txt = null;
+  for (const [a0, b, s] of TYPING) if (t >= a0 && t < b + 0.4) txt = s.slice(0, Math.round(s.length * Math.min(1, (t - a0) / (b - a0))));
+  const typingNow = txt !== null && txt.length > 0;
+  const caretOn = typingNow || Math.floor(t * 2) % 2 === 0;
+  typing.innerHTML = txt === null ? `<span class="ph">${S.ph}</span>` : `${txt}<span class="caret" style="opacity:${caretOn ? 1 : 0}"></span>`;
+  const yes = document.getElementById("yes");
+  if (yes) {
+    const p = t >= PRESS[0] && t < PRESS[1] ? Math.sin(Math.PI * (t - PRESS[0]) / (PRESS[1] - PRESS[0])) : 0;
+    yes.style.transform = `scale(${1 - 0.06 * p})`; yes.style.background = p > 0.3 ? "#0000a8" : "#0000f2";
+  }
+  // The log follows its newest message, eased.
+  const target = Math.max(0, log.scrollHeight - log.clientHeight);
+  scroll += (target - scroll) * (1 - Math.exp(-dt * 7));
+  if (Math.abs(target - scroll) < 0.5) scroll = target;
+  log.scrollTop = scroll;
+  const e = ease((t - END[0]) / (END[1] - END[0]));
+  const end = document.getElementById("end");
+  end.style.opacity = e; end.firstElementChild.style.transform = `translateY(${(1 - e) * 12}px)`;
+}
+window.render = render;
+window.TOTAL = TOTAL;
+</script>
+</body>
+</html>

@@ -213,37 +213,41 @@ h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-s
 .hero-card-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px;
                   font: 400 13px/16px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 /* The date keeps the top right corner, on its own line too if the label leaves it no room. */
-#updated { margin-left: auto; }
+#t-date { margin-left: auto; }
+/* Beside the text, as tall as its veil and level with it (app.js's hugVeil measures it);
+   the extra height spaces out the bars. */
+.today-card { margin-top: var(--veil-top, 0px); min-height: var(--veil-h, 0px); grid-template-rows: auto auto 1fr auto auto; }
+.today-card .t-bars { align-content: space-evenly; }
 .hero-median { margin: -8px 0 0; font: 300 44px/48px var(--display); letter-spacing: -0.01em;
                font-variant-numeric: tabular-nums; }
-/* Salaries per band of the base, to scale; blue from the 60k line, grey under it. */
-.hero-dist .plot { position: relative; padding-top: 20px; }
-.hero-dist .area { position: relative; height: 124px; border-bottom: 1px solid var(--quiet); }
-.hero-dist .gl { position: absolute; left: 0; right: 0; border-top: 1px solid var(--rule); }
-.hero-dist .gl b { position: absolute; left: 0; bottom: 2px; font-size: 11px; line-height: 12px; font-weight: 400;
-                   color: var(--muted); font-variant-numeric: tabular-nums; }
-.hero-dist .bars { position: absolute; inset: 0; display: grid; gap: 2px; }
-.hero-dist .col { display: flex; align-items: flex-end; min-width: 0; cursor: default; }
-.hero-dist .col i { flex: 1; min-height: 1px; background: var(--quiet); }
-.hero-dist .col i.hi { background: var(--hue); }
-.hero-dist .bars:hover i { opacity: .45; }
-.hero-dist .bars .col:hover i { opacity: 1; }
-.hero-dist .cut { position: absolute; top: 0; bottom: 0; border-left: 1px dashed var(--text); pointer-events: none; }
-.hero-dist .cut b { position: absolute; top: 0; left: 6px; white-space: nowrap; font-size: 12px; line-height: 14px;
-                    font-weight: 600; color: var(--text); }
-.hero-dist .axis { position: relative; height: 16px; margin-top: 4px; font-size: 11px; line-height: 14px;
-                   color: var(--muted); }
-.hero-dist .axis span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
-.hero-dist .axis .at { color: var(--text); font-weight: 600; }
 .hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding-top: 14px;
               border-top: 1px solid var(--rule); }
-.hero-stats div { display: grid; align-content: start; gap: 4px; min-width: 0; padding: 0 12px; }
-.hero-stats div:first-child { padding-left: 0; }
+.hero-stats div { display: grid; align-content: start; justify-items: center; gap: 4px; min-width: 0; padding: 0 12px;
+                  text-align: center; }
 .hero-stats div + div { border-left: 1px solid var(--rule); }
 .hero-stats dd { margin: 0; font: 300 28px/30px var(--display); white-space: nowrap; }
 /* As wide as the narrowest column's, so every label breaks into the same two lines at any width. */
 .hero-stats dt { order: 2; max-width: 9.5em; font-size: 13px; line-height: 17px; color: var(--muted); text-wrap: balance; }
-.hero-stats dt i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; background: var(--hue); }
+/* The MCP link in the header, on the field: what a visitor copies first. */
+.hero-mcp { display: grid; gap: 8px; margin-bottom: 4px; }
+.hero-mcp p { margin: 0; text-align: center; font: 400 13px/16px var(--display); letter-spacing: .14em;
+              text-transform: uppercase; color: var(--field-soft); }
+.hero-mcp .copy-box { background: var(--field-deep); border-color: var(--field-line); color: var(--field-bright); }
+
+/* The header's card: today's open positions, filled by app.js from jobs-summary.json.
+   One bar per role with the most, in the pay blue. */
+.t-top { display: flex; align-items: baseline; gap: 12px; margin-top: -8px; }
+.t-top .hero-median { margin: 0; }
+#t-roles { font-size: 14px; color: var(--muted); }
+.t-more { margin: -6px 0 0; font-size: 13px; line-height: 18px; color: var(--muted); }
+.t-bars { margin: -6px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.t-bars li { display: grid; grid-template-columns: 176px minmax(0, 1fr) 44px; gap: 12px; align-items: center; font-size: 14px; white-space: nowrap; }
+.t-bars i { display: block; height: 10px; background: var(--empty); }
+.t-bars i b { display: block; height: 100%; background: var(--hue); }
+.t-bars strong { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.t-bars span { overflow: hidden; text-overflow: ellipsis; }
+
+
 /* The buttons jump past the sticky bar. */
 #map-card, #matrix-card, #companies-card { scroll-margin-top: 72px; }
 
@@ -601,67 +605,67 @@ footer .foot-links::before { inset: -20px -28px; }
    own; the stack shows one tile at a time. */
 .agents { scroll-margin-top: 72px; }
 .agents h2:focus { outline: none; }
-.agents-grid { display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch; }
-.agents-stage { flex: 1 1 340px; min-width: 0; min-height: 420px; padding: calc(36px + var(--frieze-end)) 24px 36px;
-                border-radius: var(--radius-card); display: flex; flex-direction: column;
-                align-items: center; justify-content: center; gap: 22px; text-align: center; }
-.agent-stack { position: relative; display: block; flex: none; width: 132px; height: 132px; }
-.agent-tile { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden;
-              border-radius: 28px; opacity: 0; transform: scale(.88);
-              transition: opacity .6s ease, transform .6s ease; }
-.agent-tile.on { opacity: 1; transform: none; }
-.agents-stage .agent-tile { border: 1px solid var(--field-line); box-shadow: 0 10px 30px rgba(0, 0, 60, .35); }
+/* How it works: the demo beside three short steps, the agents under both. */
+/* Side by side, the video and the steps are as tall as each other: the steps
+   spread over the video's height, and a video shorter than them is letterboxed in the field blue. */
+.agents-grid { display: flex; flex-wrap: wrap; gap: 28px; }
+.agents-demo { flex: 999 1 560px; min-width: 0; margin: 0; display: flex; }
+.agents-demo video { display: block; width: 100%; height: 100%; object-fit: contain; border: 1px solid var(--border);
+                     border-radius: var(--radius-card); background: var(--field); }
+.agent-steps { flex: 1 1 400px; min-width: 0; margin: 0; padding: 0; list-style: none; display: grid; gap: 22px;
+               align-content: space-between; }
+.agents-with { position: relative; display: flex; justify-content: center; margin-top: 24px; padding-top: 20px;
+               border-top: 1px solid var(--rule); }
+.agent-logos { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.agent-link { display: block; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 10px; background: none;
+              cursor: pointer; transition: transform .15s; }
+.agent-link[aria-expanded="true"] { outline: 2px solid var(--hue); outline-offset: 2px; }
+.agent-link:hover { transform: translateY(-2px); }
+.agent-link .agent-tile { position: static; width: 100%; height: 100%; border-radius: 10px; border: 1px solid var(--rule);
+                          opacity: 1; transform: none; }
+.agent-tile { display: grid; place-items: center; overflow: hidden; }
 .agent-tile img { display: block; }
 .fit-cover { width: 100%; height: 100%; object-fit: cover; }
 .fit-mark { width: 76%; height: auto; }
-/* app.js gives it the height of the longest name; this keeps a shorter one
-   centred in that height. */
-.agent-say { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.agent-say::before { inset: -12px -18px; box-shadow: 0 0 32px 18px var(--field); }
-/* The logo and the tabs sit over the veil, so its feathered edge never dims them. */
-.agents-stage .agent-stack, .agent-tabs { position: relative; z-index: 2; }
-.agent-call { margin: 0; font: 200 40px/1.08 var(--display); color: var(--field-bright); }
-.agent-by { margin: 6px 0 0; color: var(--field-muted); }
-.agent-get { display: inline-flex; align-items: center; gap: 6px; height: 40px; margin-top: 16px; padding: 0 16px;
-  border-radius: var(--radius-control); background: var(--field-ink); color: var(--field); text-decoration: none;
-  font: 500 14px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; }
-.agent-get:hover { background: var(--field-bright); }
-.agent-get .out { width: 12px; height: 12px; flex: none; }
-/* Six 40px tabs fit one row of the 292px a narrow stage leaves. */
-.agent-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.agent-tab { width: 40px; height: 40px; padding: 0; border: 0; border-radius: 10px; background: none;
-             cursor: pointer; outline: 2px solid transparent; outline-offset: 3px;
-             transition: transform .2s ease, outline-color .2s ease; }
-.agent-tab[aria-pressed=true] { outline-color: var(--field-ink); }
-.agent-tab:hover { transform: translateY(-2px); }
-.agent-tab .agent-tile { position: static; width: 100%; height: 100%; border-radius: 10px; opacity: 1; transform: none; }
-.agents-how { flex: 999 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
-.agent-steps { list-style: none; margin: 0; padding: 4px 0 0; display: grid; gap: 26px; }
+/* The agent picked: its name, its maker and where to get it, over its icon. */
+.agent-bubble { position: absolute; z-index: 5; display: grid; justify-items: center; gap: 8px; padding: 12px 16px;
+                text-align: center;
+                background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-control);
+                box-shadow: var(--float); white-space: nowrap; }
+.agent-bubble[hidden] { display: none; }
+.agent-bubble::after { content: ""; position: absolute; top: 100%; left: var(--arrow, 50%); width: 10px; height: 10px;
+                       margin: -5px 0 0 -6px; background: var(--surface); border: solid var(--border);
+                       border-width: 0 1px 1px 0; transform: rotate(45deg); }
+.agents .agent-bubble p { margin: 0; display: grid; line-height: 18px; }
+.agent-bubble b { font-weight: 600; }
+.agent-bubble span { font-size: 13px; color: var(--muted); }
+.agent-bubble a { display: grid; place-items: center; width: 36px; height: 36px;
+                  border-radius: calc(var(--radius-control) - 2px); background: var(--text); color: var(--surface); }
+.agent-bubble a:hover { background: var(--hue); }
+.agent-bubble a svg { width: 18px; height: 18px; }
 .agent-steps > li { display: flex; gap: 16px; }
 .agent-steps > li > div { flex: 1; min-width: 0; }
 .step-n { flex: none; display: grid; place-items: center; width: 32px; height: 32px;
           border: 1px solid var(--border); border-radius: 50%; font: 400 16px/1 var(--display); }
-.agent-steps h3 { margin: 4px 0 0; font: 400 20px/24px var(--display); letter-spacing: .04em; text-transform: uppercase; }
+/* The title on the number's line, centred on it. */
+.agents .agent-steps h3 { margin: 0; font: 400 20px/32px var(--display); letter-spacing: .04em; text-transform: uppercase; }
 .agent-steps p { margin: 4px 0 10px; color: var(--muted); }
-.agent-steps .agent-name { font-weight: 600; color: var(--text); }
-.copy-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
-.copy-row code, .copy-row blockquote { flex: 1 1 240px; min-width: 0; margin: 0; padding: 12px 14px;
-  background: var(--tint); border: 1px solid var(--control); border-radius: var(--radius-control); color: var(--text); }
-.copy-row code { font: 500 14px/20px ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
-.copy-row blockquote { font-size: 15px; line-height: 22px; }
-.copy-btn { flex: none; height: 44px; min-width: 104px; padding: 0 16px; border: 1px solid var(--border);
-            border-radius: var(--radius-control); background: var(--surface); color: var(--text); cursor: pointer;
-            font: 500 14px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; }
-.copy-btn:hover { background: var(--text); color: var(--surface); }
-.agent-needs, .agent-examples { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.agent-needs li { padding: 7px 12px; background: var(--tint); border: 1px solid var(--control); border-radius: var(--radius-control); }
-.agent-steps .agent-ex-t { margin: 12px 0 6px; }
-.agent-examples li { padding: 7px 12px; border: 1px dashed var(--control); border-radius: var(--radius-control); }
-.agents-note { margin: 0; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted);
-               font-size: 13px; line-height: 18px; }
-@media (prefers-reduced-motion: reduce) {
-  .agent-tile, .agent-tab { transition: none; }
-}
+/* The /mcp link with its copy button inside the box (header and step 1). */
+/* The address centred in the box: the left padding matches the button's side. */
+.copy-box { display: flex; align-items: center; gap: 4px; min-height: 44px; padding: 3px 3px 3px 43px;
+            background: var(--tint); border: 1px solid var(--control); border-radius: var(--radius-control); color: var(--text); }
+.copy-box code { flex: 1; min-width: 0; text-align: center; font: 500 14px/20px ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+.copy-box .scheme { display: none; }
+/* In step 1 the box is as wide as the text above it (app.js's fitCopy sets the width). */
+.agent-steps .copy-box { width: fit-content; max-width: 100%; box-sizing: border-box; }
+.agent-steps .copy-box code { font-size: 12.5px; }
+.copy-btn { flex: none; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0;
+            border-radius: calc(var(--radius-control) - 2px); background: transparent; color: inherit; cursor: pointer; }
+.copy-btn:hover { background: color-mix(in srgb, currentColor 14%, transparent); }
+.copy-btn svg { width: 18px; height: 18px; }
+.copy-btn .ok, .copy-btn.done .copy { display: none; }
+.copy-btn.done .ok { display: block; }
+@media (prefers-reduced-motion: reduce) { .agent-link { transition: none; } }
 
 #tip { position: fixed; z-index: 30; pointer-events: none; font-size: 12px; line-height: 18px;
        padding: 8px 10px; border-radius: var(--radius-control); max-width: 260px;
@@ -675,6 +679,7 @@ footer .foot-links::before { inset: -20px -28px; }
           padding-top: calc(40px + var(--frieze-end)); padding-bottom: 40px; }
   .pitch.veil::before { inset: calc(var(--hug-top, 0px) - 14px) calc(var(--hug-right, 0px) - 10px) -14px -10px;
                        box-shadow: 0 0 28px 18px var(--field); }
+  .today-card { margin-top: 0; min-height: 0; }
   .summary { grid-template-columns: repeat(4, 1fr); }
   .dist { grid-column: 1 / -1; }
   .map-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -695,6 +700,7 @@ footer .foot-links::before { inset: -20px -28px; }
   .cta { width: 100%; }
   .btn { padding: 0 12px; }
   .hero-card { padding: 18px 16px 16px; }
+  .t-bars li { grid-template-columns: 148px minmax(0, 1fr) 40px; gap: 10px; font-size: 13px; }
   .hero-median { font-size: 40px; line-height: 44px; }
   .hero-stats div { padding: 0 8px; }
   .hero-stats dd { font-size: 24px; line-height: 28px; }
@@ -748,10 +754,10 @@ footer .foot-links::before { inset: -20px -28px; }
   .summary { grid-template-columns: 1fr 1fr; }
   .filter-row { flex-wrap: wrap; }
   .star-pop { width: auto; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
-  .agents-stage { min-height: 0; padding: calc(28px + var(--frieze-end)) 16px 28px; gap: 18px; }
-  .agent-say::before { inset: -12px -14px; box-shadow: 0 0 28px 18px var(--field); }
-  .agent-call { font-size: 32px; }
   .agent-steps > li { gap: 12px; }
+  /* Narrow enough that the domain keeps one line and /mcp takes the next. */
+  .agent-steps .copy-box { padding-left: 14px; }
+  .agent-steps .copy-box code { font-size: 12px; }
   .matrix { min-width: 560px; }
   .matrix thead th:first-child { width: 112px; }
   .matrix tbody th { white-space: normal; min-width: 104px; max-width: 120px; font-size: 12px; line-height: 16px; }

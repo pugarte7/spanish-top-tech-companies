@@ -354,11 +354,37 @@ export function isIndex(value) {
     && Array.isArray(value.jobs) && typeof value.boards === "object";
 }
 
-function write(path, index) {
-  const body = JSON.stringify(index);
+/** The figures the home page's card shows, so it never downloads the whole index:
+ * postings, companies, boards read, remote ones and postings per role, most first
+ * (a title read as two roles counts in each). */
+export function summary(index) {
+  const companies = new Set();
+  const roles = {};
+  let remote = 0;
+  for (const job of index.jobs) {
+    companies.add(job.slug ?? job.company);
+    if (job.workplace === "remote" || (job.location_classes ?? []).some((c) => /remote/i.test(String(c)))) remote += 1;
+    for (const role of new Set(job.roles ?? [])) roles[role] = (roles[role] ?? 0) + 1;
+  }
+  return { version: VERSION, generated_at: index.generated_at, postings: index.jobs.length,
+           companies: companies.size, boards: index.boards.queried, remote,
+           roles: Object.fromEntries(Object.entries(roles).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))) };
+}
+
+function put(path, body) {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(`${path}.tmp`, body);
   renameSync(`${path}.tmp`, path);
+}
+
+/** jobs.json's summary is jobs-summary.json, beside it. */
+export const summaryPath = (path) => path.replace(/(\.json)?$/, "-summary.json");
+
+/** Writes the index and, beside it, its summary. */
+function write(path, index) {
+  const body = JSON.stringify(index);
+  put(path, body);
+  put(summaryPath(path), JSON.stringify(summary(index)));
   return Buffer.byteLength(body);
 }
 
