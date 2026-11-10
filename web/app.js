@@ -850,6 +850,18 @@ const STILL = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // The copy buttons of the /mcp link (header and step 1), a tick for two seconds
 // once copied, and which agent a reader goes to get.
+// Step 1's box with the /mcp link takes the width of the text above it: the
+// widest of its lines, which ends short of the column.
+function fitCopy() {
+  for (const box of document.querySelectorAll(".agent-steps .copy-box")) {
+    const r = document.createRange();
+    r.selectNodeContents(box.previousElementSibling);
+    const lines = [...r.getClientRects()];
+    if (!lines.length) continue;
+    box.style.width = `${Math.ceil(Math.max(...lines.map((q) => q.right)) - Math.min(...lines.map((q) => q.left)))}px`;
+  }
+}
+
 function agents() {
   document.querySelectorAll(".copy-btn").forEach((b) => {
     b.onclick = async () => {
@@ -1003,6 +1015,9 @@ async function main() {
   // After the observer's turn: hugVeil resizes what it observes.
   new ResizeObserver(() => requestAnimationFrame(hugVeil)).observe(document.querySelector(".pitch"));
   document.fonts.ready.then(hugVeil);
+  const steps = document.querySelector(".agent-steps");
+  if (steps) new ResizeObserver(() => requestAnimationFrame(fitCopy)).observe(steps);
+  document.fonts.ready.then(fitCopy);
   await loadTable("");
   matrix();
   const h = new URLSearchParams(location.hash.slice(1));

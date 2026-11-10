@@ -651,7 +651,9 @@ footer .foot-links::before { inset: -20px -28px; }
             background: var(--tint); border: 1px solid var(--control); border-radius: var(--radius-control); color: var(--text); }
 .copy-box code { flex: 1; min-width: 0; text-align: center; font: 500 14px/20px ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
 .copy-box .scheme { display: none; }
-.agent-steps .copy-box code { font-size: 13px; }
+/* In step 1 the box is as wide as the text above it (app.js's fitCopy sets the width). */
+.agent-steps .copy-box { width: fit-content; max-width: 100%; box-sizing: border-box; }
+.agent-steps .copy-box code { font-size: 12.5px; }
 .copy-btn { flex: none; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0;
             border-radius: calc(var(--radius-control) - 2px); background: transparent; color: inherit; cursor: pointer; }
 .copy-btn:hover { background: color-mix(in srgb, currentColor 14%, transparent); }
@@ -748,7 +750,8 @@ footer .foot-links::before { inset: -20px -28px; }
   .star-pop { width: auto; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
   .agent-steps > li { gap: 12px; }
   /* Narrow enough that the domain keeps one line and /mcp takes the next. */
-  .agent-steps .copy-box code { font-size: 12px; overflow-wrap: break-word; }
+  .agent-steps .copy-box { padding-left: 14px; }
+  .agent-steps .copy-box code { font-size: 12px; }
   .matrix { min-width: 560px; }
   .matrix thead th:first-child { width: 112px; }
   .matrix tbody th { white-space: normal; min-width: 104px; max-width: 120px; font-size: 12px; line-height: 16px; }
