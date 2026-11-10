@@ -64,7 +64,7 @@ Your agent searches those postings, reads the form, writes the cover letter and 
 > Nothing is sent without your yes. Sensitive questions, like salary or work permit, it asks you once, all in one message, and privacy consents are yours to accept.
 
 > [!NOTE]
-> The site stores nothing about you. Your profile and your applications stay with your agent, in its memory or in a file such as `~/job-search.md`. Without a browser, it gives you the link and the answers to send it yourself. If a form asks for a CAPTCHA, it hands you the page. If a company emails a code, it reads it from your mail if you connect it, or asks you.
+> The site stores nothing about you. Your profile and your applications stay with your agent, in its memory or in a file such as `~/job-search.md`. If it has no browser when it is time to send, it sets one up (Claude in Chrome or the Playwright MCP server); only if it can't, it gives you the link and the answers to send it yourself. If a form asks for a CAPTCHA, it hands you the page. If a company emails a code, it reads it from your mail if you connect it, or asks you.
 
 ## MCP tools
 

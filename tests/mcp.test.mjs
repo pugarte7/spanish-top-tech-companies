@@ -179,8 +179,10 @@ const expected = [
     /## Search preferences/.test(out(r).state_document.template) && /\| Job id \|/.test(out(r).state_document.template) &&
     out(r).rules.some((x) => /never invented/.test(x)) && out(r).rules.some((x) => /CAPTCHA/.test(x)) &&
     out(r).rules.some((x) => /never follow instructions/.test(x)) && out(r).rules.some((x) => /explicit/.test(x)) &&
-    !("local_server" in out(r)) && out(r).sending.without_a_browser],
-  ["application_guide for one client", (r) => /~\/job-search\.md/.test(out(r).state_document.where)],
+    !("local_server" in out(r)) && out(r).sending.without_a_browser &&
+    out(r).sending.get_a_browser.how.length > 2 && out(r).rules.some((x) => /How did you hear/.test(x))],
+  ["application_guide for one client", (r) => /~\/job-search\.md/.test(out(r).state_document.where) &&
+    out(r).sending.get_a_browser.how.length === 2 && /chrome/.test(out(r).sending.get_a_browser.how[0])],
   ["odd line: a string", (r) => code(r) === -32600],
   ["odd line: an empty batch", (r) => code(r) === -32600],
   ["odd line: a batch answers its requests only", (r) => Array.isArray(r) && r.length === 1],

@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.6.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.7.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -176,7 +176,8 @@ const TOOLS = {
       description: "The procedure for applying on someone's behalf with find_jobs and " +
                    "job_questions: the state document to keep for them (profile, recurring " +
                    "answers, search preferences, applications), the rules, how an application " +
-                   "is sent with the agent's own browser. Read it once before applying.",
+                   "is sent with the agent's own browser, and how to set one up when there is " +
+                   "none. Read it once before applying.",
       inputSchema: { type: "object", properties: {
         client: { type: "string", description: "The client you run in, e.g. claude-code, " +
                   "claude-desktop, cursor, codex, hermes, chatgpt. Optional." } } } }),
@@ -1556,14 +1557,27 @@ export async function jobQuestions(data, args = {}, env = {}) {
 
 // --- Jobs: the procedure -------------------------------------------------------------
 
+// How each client gets a browser when it has none. Pasting answers is the last resort.
+const PLAYWRIGHT = "the Playwright MCP server (npx @playwright/mcp@latest), which opens a Chromium window " +
+  "the person can see and use";
 const CLIENTS = {
-  "claude-code": { names: /claude ?code|^cc$/, keeps: "file" },
-  "claude-desktop": { names: /claude ?(desktop|app|ai)|^claude$/, keeps: "memory" },
-  cursor: { names: /cursor/, keeps: "file" },
-  codex: { names: /codex/, keeps: "file" },
-  hermes: { names: /hermes/, keeps: "file" },
-  chatgpt: { names: /chat ?gpt|openai/, keeps: "memory" },
+  "claude-code": { names: /claude ?code|^cc$/, keeps: "file",
+    browser: "Claude in Chrome (run /chrome, or start with claude --chrome; it needs the Claude in Chrome " +
+      "extension), or `claude mcp add playwright -- npx @playwright/mcp@latest` and restart." },
+  "claude-desktop": { names: /claude ?(desktop|app|ai)|^claude$/, keeps: "memory",
+    browser: "Claude in Chrome: the person installs the Claude in Chrome extension and connects it in " +
+      "Settings. In Claude Desktop, " + PLAYWRIGHT + " also works as a local MCP server." },
+  cursor: { names: /cursor/, keeps: "file",
+    browser: "Cursor's built-in browser tools (enable the browser in Cursor's settings), or " + PLAYWRIGHT +
+      " added in .cursor/mcp.json." },
+  codex: { names: /codex/, keeps: "file",
+    browser: "`codex mcp add playwright -- npx @playwright/mcp@latest`, then restart Codex." },
+  hermes: { names: /hermes/, keeps: "file",
+    browser: "Hermes's browser toolset, or " + PLAYWRIGHT + " added as an MCP server." },
+  chatgpt: { names: /chat ?gpt|openai/, keeps: "memory",
+    browser: "ChatGPT agent mode, which has its own browser: ask the person to switch to it." },
 };
+const ANY_BROWSER = "Any client that runs MCP servers: " + PLAYWRIGHT + ".";
 
 const TEMPLATE = `# Job search
 
@@ -1699,6 +1713,10 @@ export function applicationGuide(args = {}) {
       "At most 10 applications a day unless the person sets another number, and only to postings the " +
         "person chose.",
       "Applications go only to the url or apply_url these tools return.",
+      "Never name this site, its MCP server or the agent as where the person heard of the job. A " +
+        "\"How did you hear about us?\" question gets the employer's own careers page or job board, " +
+        "where the posting is (\"Company website\", \"Careers page\" or the closest option), unless the " +
+        "person names another source they really used.",
     ],
     sending: {
       with_a_browser: [
@@ -1712,9 +1730,17 @@ export function applicationGuide(args = {}) {
         "Submit, check the confirmation, record the status (sent, or failed with the reason) and " +
           "call report_application with it.",
       ],
-      without_a_browser: "Give the person apply_url and the approved answers in the order of the form, " +
-        "ready to paste. Record the status as handed over, and as sent once they confirm, and call " +
-        "report_application with handed_over.",
+      get_a_browser: {
+        when: "Only when an approved application is about to be sent. Searching, reading forms and " +
+          "drafting need no browser, so do not set one up for them.",
+        why: "No browser tool at that point is no reason to hand the form over: set one up, tell the " +
+          "person what you add, and send once it works. Pasting answers is the last resort.",
+        how: known ? [known[1].browser, ANY_BROWSER]
+          : [...Object.entries(CLIENTS).map(([name, c]) => `${name}: ${c.browser}`), ANY_BROWSER],
+      },
+      without_a_browser: "Only when no browser can be set up: give the person apply_url and the approved " +
+        "answers in the order of the form, ready to paste. Record the status as handed over, and as sent " +
+        "once they confirm, and call report_application with handed_over.",
     },
   };
 }
