@@ -42,7 +42,7 @@ More than 400 job boards, more than 1,000 postings a day, each with the company'
 - **Filters that understand what you ask.** Text with synonyms (SRE is site reliability), role or specialization (backend, frontend, DevOps), region or remote, workplace, level, your years of experience, company and minimum salary. The minimum salary is checked against the pay the posting states, if it states one, and otherwise against the company's median.
 - **Never empty-handed.** When nothing matches, it says how many postings each filter removes and suggests the closest ones.
 - **No repeats.** Postings you have already seen or applied to do not come back.
-- **You apply from the same MCP.** `job_questions` reads the posting's application form live (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, and Workday with your account) and marks which questions are yours and which the agent answers.
+- **You apply from the same MCP.** `job_questions` reads the posting's application form live (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, and Workday with your account) and marks which questions are yours and which the agent answers.
 
 ## Apply with your agent
 

@@ -77,7 +77,7 @@ const calls = [
   tool("find_jobs", { exclude: [1, 2] }),
   tool("job_questions", { id: "greenhouse:nobody:1" }),
   tool("job_questions", {}),
-  tool("job_questions", { id: "smartrecruiters:ecovadis:744000000000001" }),
+  tool("job_questions", { id: "successfactors:ecovadis:744000000000001" }),
   tool("application_guide", {}),
   tool("application_guide", { client: "Claude Code" }),
 ].map((c, i) => ({ jsonrpc: "2.0", id: i + 1, ...c }));
@@ -173,7 +173,7 @@ const expected = [
   ["an id not in the index is a tool error", (r) => toolError(r) && /no job 'greenhouse:nobody:1'/.test(r.result.content[0].text)],
   ["job_questions needs an id", toolError],
   ["a board without a form API sends the agent to the URL", (r) => out(r).questions === null &&
-    /smartrecruiters/.test(out(r).note) && out(r).apply_url === index.jobs.at(-1).url],
+    /successfactors/.test(out(r).note) && out(r).apply_url === index.jobs.at(-1).url],
   ["application_guide holds the template and rules, and no other server", (r) =>
     /## Profile/.test(out(r).state_document.template) && /## Answers to recurring questions/.test(out(r).state_document.template) &&
     /## Search preferences/.test(out(r).state_document.template) && /\| Job id \|/.test(out(r).state_document.template) &&
@@ -898,7 +898,123 @@ const moved = (await run("job_questions", { id: "bendingspoons:jobs.bendingspoon
 report("job_questions warns when the board names another location than the index",
   moved.location_check?.index === "Lisbon, Portugal" && /Madrid/.test(moved.location_check.board) &&
   /Go by the board/.test(moved.location_check.warning), moved.location_check);
-const viaPhenom = await formIn("phenom:careers.roche.com/ROCHGLOBAL/global/en:202602-104409");
+// Pinpoint, Rippling and SmartRecruiters, as the boards answer.
+const PP_UUID = "aa3e397e-830f-4fbd-ab9f-6ad62b2d6473", INF_UUID = "4895a936-6c02-46cd-b028-58eb7098b326";
+const RP_UUID = "8269c420-4e45-4836-9dbb-bdfb63e070b5";
+const boards3 = { ...more, jobs: [...more.jobs,
+  { id: "pinpoint:gig.pinpointhq.com:591458", company: "GiG", slug: "gig", title: "Senior Big Data Engineer", ats: "pinpoint",
+    url: `https://gig.pinpointhq.com/en/postings/${PP_UUID}`, location: "Remote, Spain" },
+  { id: "pinpoint:infor.pinpointhq.com:587949", company: "Infor", slug: "infor", title: "Consultant", ats: "pinpoint",
+    url: `https://careers.infor.com/en/postings/${INF_UUID}`, location: "Barcelona, Spain" },
+  { id: "pinpoint:other.pinpointhq.com:1", company: "Other", slug: "other", title: "Elsewhere", ats: "pinpoint",
+    url: `https://evil.example.com/en/postings/${INF_UUID}`, location: "Madrid, Spain" },
+  { id: `rippling:chess:${RP_UUID}`, company: "Chess.com", slug: "chess", title: "Site Reliability Engineer", ats: "rippling",
+    url: `https://ats.rippling.com/chess/jobs/${RP_UUID}`, location: "Remote" },
+  { id: "smartrecruiters:Mirantis:744000159424229", company: "Mirantis", slug: "mirantis", title: "Platform Engineer",
+    ats: "smartrecruiters", url: "https://jobs.smartrecruiters.com/Mirantis/744000159424229", location: "Spain" }] };
+const formOf = async (id) => (await run("job_questions", { id }, { jobs: boards3 })).structuredContent;
+const ppScript = (name, props) => `<div id="${name}-react-component-x"></div><script type="application/json"  ` +
+  `data-component-name="${name}" data-dom-id="x">${JSON.stringify(props)}</script>`;
+const ppQuestion = (kind, index, questionId, questionType, title, required, extra = {}) => ppScript(`Shared::Form::Questions::${kind}`,
+  { questionDetails: { index, questionId, questionType, title, additionalInformation: extra.info ?? "", required },
+    options: extra.options, translations: kind === "Boolean" ? { yes: "Yes", no: "No" } : undefined,
+    conditionalQuestionParentQuestionId: extra.parent ?? null, conditionalQuestionConditions: extra.when ?? null });
+const ppForm = `<html><body><form class="external-form" action="/en/postings/${PP_UUID}/applications" method="post">
+<input type="hidden" name="authenticity_token" value="t" />
+<label class="external-form__label external-form__label--required" for="application_form_application_first_name">First Name</label>
+<input required="required" type="text" name="application_form[application][first_name]" id="application_form_application_first_name" />
+<label class="external-form__label external-form__label--required" for="application_form_application_email">Email Address</label>
+<input required="required" type="email" name="application_form[application][email]" id="application_form_application_email" />
+<label for="application_form_application_linkedin_url"><span>LinkedIn URL</span></label>
+<input type="text" name="application_form[application][linkedin_url]" id="application_form_application_linkedin_url" />
+${ppScript("Shared::Form::Phonenumberinput", { name: "application_form[application][phone]", required: true, id: "application_form_application_phone", companySettings: { careers_site_form_captchas: false } })}
+${ppScript("Shared::Form::Filefield", { labelText: "Attach Résumé / CV", name: "application_form[application][cv]", accept: ["pdf"] })}
+${ppQuestion("Numberinput", 0, 11, "number", "How many years of experience do you have as a data engineer?", true)}
+${ppQuestion("Singleselect", 1, 12, "multiple_choice", "How did you first hear about this job opportunity?", true,
+  { options: [{ value: "Job Board", label: "Job Board" }, { value: "Referral", label: "Referral" }] })}
+${ppQuestion("Singleselect", 2, 13, "multiple_choice", "Please Specify", true,
+  { parent: 12, when: [{ operator: "equals", value: "Job Board" }], options: [{ value: "LinkedIn", label: "LinkedIn" }] })}
+${ppQuestion("Numberinput", 3, 14, "number", "What is your annual gross salary expectation?", true)}
+${ppQuestion("Boolean", 4, 15, "boolean", "Work in the European Union", true,
+  { info: "Are you legally authorized to work in the European Union (EU)?" })}
+<label for="application_form_equality_monitoring_what_is_your_age_range" class="external-form__label"> What is your age range? </label>
+${ppScript("External::Jobs::Equalitymonitoring::Tsselect", { inputId: "application_form_equality_monitoring_what_is_your_age_range",
+  options: [{ value: 1, label: "18-24" }, { value: 2, label: "25-34" }], required: true })}
+<input required="required" type="checkbox" value="1" name="application[process_information]" id="application_process_information" />
+<label class="external-form__label" for="application_process_information"> (Required) Allow us to process your personal information.</label>
+</form></body></html>`;
+BOARDS[`https://gig.pinpointhq.com/en/postings/${PP_UUID}/applications/new`] = () => new Response(ppForm);
+BOARDS[`https://gig.pinpointhq.com/en/postings/${PP_UUID}`] = () => new Response(`<script type="application/ld+json">` +
+  `${JSON.stringify({ "@type": "JobPosting", description: "<p>Pay: €70,000 to €85,000 gross per year.</p>" })}</script>`);
+// Pinpoint sends a page asked for as HTML on the board's host to the employer's domain.
+BOARDS[`https://infor.pinpointhq.com/en/postings/${INF_UUID}/applications/new`] = (init) =>
+  init.redirect === "manual" && init.headers?.Accept === "text/html"
+    ? new Response(null, { status: 301, headers: { location: `https://careers.infor.com/en/postings/${INF_UUID}/applications/new` } })
+    : new Response(ppForm);
+BOARDS[`https://careers.infor.com/en/postings/${INF_UUID}/applications/new`] = () =>
+  new Response(ppForm.replace("</form>", '<div class="h-captcha"></div></form>'));
+BOARDS[`https://careers.infor.com/en/postings/${INF_UUID}`] = () => new Response("<html></html>");
+const pinpoint = await formOf("pinpoint:gig.pinpointhq.com:591458");
+report("pinpoint: standard fields, the employer's questions with conditions, diversity and consent to the person",
+  pinpoint.form_source.startsWith("Pinpoint") && byLabel(pinpoint, /^First Name$/).required === true &&
+  byLabel(pinpoint, /^LinkedIn URL$/).type === "url" && byLabel(pinpoint, /^LinkedIn URL$/).required === false &&
+  byLabel(pinpoint, /^Phone$/).type === "phone" && byLabel(pinpoint, /^Resume\/CV$/).type === "file" &&
+  byLabel(pinpoint, /years of experience/).type === "number" && byLabel(pinpoint, /years of experience/).who === "agent" &&
+  byLabel(pinpoint, /first hear/).options.join() === "Job Board,Referral" &&
+  byLabel(pinpoint, /Please Specify/).shown_if === "How did you first hear about this job opportunity? is Job Board" &&
+  byLabel(pinpoint, /salary/).who === "person" && byLabel(pinpoint, /European Union/).category === "work-authorization" &&
+  byLabel(pinpoint, /European Union/).options.join() === "Yes,No" && /legally authorized/.test(byLabel(pinpoint, /European Union/).label) &&
+  byLabel(pinpoint, /age range/).category === "demographic" && byLabel(pinpoint, /age range/).options.join() === "18-24,25-34" &&
+  byLabel(pinpoint, /^Allow us to process/).who === "person" && byLabel(pinpoint, /^Allow us to process/).required === true &&
+  pinpoint.captcha === false && /70,000 to €85,000/.test(pinpoint.conditions.pay[0]) &&
+  pinpoint.apply_url === `https://gig.pinpointhq.com/en/postings/${PP_UUID}/applications/new`, pinpoint.questions);
+const infor = await formOf("pinpoint:infor.pinpointhq.com:587949");
+report("pinpoint: a board that sends its pages to the employer's domain is read there",
+  infor.questions.length === pinpoint.questions.length && infor.captcha === true &&
+  infor.apply_url === `https://careers.infor.com/en/postings/${INF_UUID}/applications/new`, infor);
+requests.length = 0;
+await formOf("pinpoint:other.pinpointhq.com:1");
+report("pinpoint: a posting URL on another host is not read unless the board sends it there",
+  !requests.some((r) => r.url.includes("evil.example.com")), requests.map((r) => r.url));
+BOARDS[`https://api.rippling.com/platform/api/ats/v2/board/chess/jobs/${RP_UUID}`] = json({
+  name: "Site Reliability Engineer", url: `https://ats.rippling.com/chess/jobs/${RP_UUID}`, workLocations: ["Remote"],
+  description: { company: "<p>About Chess.com</p>", role: "<p>Keep the servers up.</p>" },
+  eeocQuestionnaireEnabledForJobPost: true,
+  activeJobApplication: {
+    basicQuestions: [{ oid: "first_name", fieldType: "SHORT_ANSWER", title: "First name", required: true },
+      { oid: "email", fieldType: "SHORT_ANSWER", title: "Email", required: true },
+      { oid: "pronouns", fieldType: "PRONOUN", title: "Pronouns", required: false },
+      { oid: "linkedin_link", fieldType: "SHORT_ANSWER", title: "LinkedIn link", required: false },
+      { oid: "resume", fieldType: "FILE", title: "Resume", required: true }],
+    additionalQuestions: [{ id: "g", form: { questions: [
+      { uniqueKey: "q1", title: "What is your Chess.com username?", questionType: "SHORT_ANSWER", isRequired: true, strChoices: [], intChoices: [] },
+      { uniqueKey: "q2", title: "Disk I/O Saturation", description: "A database server has <b>write latency spikes</b>. What do you run?",
+        questionType: "LONG_ANSWER", isRequired: true, strChoices: [], intChoices: [] },
+      { uniqueKey: "q3", title: "Which time zones can you cover?", questionType: "MULTIPLE_CHOICE", isMultiSelectEnabled: true,
+        isRequired: false, strChoices: ["CET", "EST"], intChoices: [] },
+      { uniqueKey: "q4", title: "Have you used AI for this questionnaire? Please expand on your approach.",
+        questionType: "LONG_ANSWER", isRequired: true, strChoices: [], intChoices: [] }] } }] } });
+const rippling = await formOf(`rippling:chess:${RP_UUID}`);
+report("rippling: standard fields, the employer's questions with their text, AI use and EEOC to the person",
+  rippling.form_source.startsWith("Rippling") && byLabel(rippling, /^Email$/).type === "email" &&
+  byLabel(rippling, /^LinkedIn link$/).type === "url" && byLabel(rippling, /^Pronouns$/).who === "person" &&
+  byLabel(rippling, /^Resume$/).type === "file" && byLabel(rippling, /username/).required === true &&
+  byLabel(rippling, /Disk I\/O/).type === "textarea" && /write latency spikes/.test(byLabel(rippling, /Disk I\/O/).detail) &&
+  byLabel(rippling, /time zones/).type === "multiselect" && byLabel(rippling, /time zones/).options.join() === "CET,EST" &&
+  byLabel(rippling, /used AI/).category === "bot-check" && byLabel(rippling, /self-identification/).who === "person" &&
+  /Keep the servers up/.test(rippling.description.text) &&
+  rippling.apply_url === `https://ats.rippling.com/chess/jobs/${RP_UUID}/apply`, rippling.questions);
+BOARDS["https://api.smartrecruiters.com/v1/companies/Mirantis/postings/744000159424229"] = json({
+  id: "744000159424229", name: "Platform Engineer", active: true,
+  applyUrl: "https://jobs.smartrecruiters.com/Mirantis/744000159424229-platform-engineer?oga=true",
+  location: { city: "Madrid", country: "es", fullLocation: "Madrid, Spain" },
+  jobAd: { sections: { jobDescription: { title: "Job Description", text: "<p>Run Kubernetes for customers.</p>" } } } });
+const smart = await formOf("smartrecruiters:Mirantis:744000159424229");
+report("smartrecruiters: the posting and its apply URL; the form, not public, is read in the browser",
+  smart.questions.length === 1 && smart.questions[0].type === "unread" && /not public/.test(smart.form_source) &&
+  /Run Kubernetes/.test(smart.description.text) &&
+  smart.apply_url === "https://jobs.smartrecruiters.com/Mirantis/744000159424229-platform-engineer?oga=true", smart);
+const viaPhenom =await formIn("phenom:careers.roche.com/ROCHGLOBAL/global/en:202602-104409");
 report("phenom: a posting applied to on Workday reads as Workday, through the Phenom page",
   viaPhenom.account_required === true && /Phenom/.test(viaPhenom.form_source) &&
   byLabel(viaPhenom, /account with Roche/).who === "person" && /Reliability at Roche/.test(viaPhenom.description.text) &&
@@ -919,8 +1035,10 @@ const down = await run("job_questions", { id: "greenhouse:wallapop:7000009" });
 report("a board that cannot be reached is a tool error", down.isError === true && /could not be reached/.test(down.content[0].text));
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com)\//.test(r.url) &&
-    r.init.redirect === "error" && r.init.signal instanceof AbortSignal));
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com)\//.test(r.url) &&
+    // The one exception: asking a Pinpoint board where it sends a page, without following it.
+    (r.init.redirect === "error" || (r.init.redirect === "manual" && /\.pinpointhq\.com\//.test(r.url))) &&
+    r.init.signal instanceof AbortSignal));
 const burst = Array.from({ length: 6 }, (_, k) => ({ jsonrpc: "2.0", id: k + 1, ...tool("job_questions", { id: "greenhouse:glovo:7000001" }) }));
 const burstReplies = await respond(data, burst);
 report("a request reads at most five forms live", burstReplies.slice(0, 5).every((r) => !r.result.isError) &&

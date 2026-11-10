@@ -75,12 +75,12 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   another office), which you tell the person before they choose. A
   `location_check` means the board now gives another location than the index.
   `required` is what the board's data says: the rendered page decides. Greenhouse, Lever, Ashby, Workable,
-  Recruitee, Teamtailor, BambooHR and Bending Spoons forms are read whole. Workday shows its form only after sign-in:
+  Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling and Bending Spoons forms are read whole. Workday shows its form only after sign-in:
   `account_required` is true, the person opens the account, and the
   questions are Workday's standard steps plus a marker for the employer's own.
   A Phenom career site (Cisco, Roche, HPE) whose application is on Workday
-  answers the same way; on any other system behind Phenom, and on iCIMS
-  career sites, the form is read in the browser.
+  answers the same way. SmartRecruiters gives the posting but not its form; there,
+  on any other system behind Phenom, and on iCIMS career sites, the form is read in the browser.
 - `report_application(id, status, reason, browser, steps, attempts, notes)`: after sending or failing, the
   outcome: sent (the board confirmed it), uncertain (submitted, but the board
   showed an error or confirmed nothing), failed with its reason, or

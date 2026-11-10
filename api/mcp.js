@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.9.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.10.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -139,16 +139,17 @@ const TOOLS = {
   job_questions: {
     define: () => ({ title: "One posting's application form",
       description: "The application form of one posting from find_jobs, read live from its " +
-                   "board (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR and Bending Spoons; for Workday, whose form " +
+                   "board (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling and Bending Spoons; for Workday, whose form " +
                    "needs the person's account, the posting and Workday's standard steps, also when a " +
-                   "Phenom career site leads to it; other boards are read in the browser): " +
+                   "Phenom career site leads to it; for SmartRecruiters, the posting only; other boards are read in the browser): " +
                    "each question with its type, options, whether it is required and who answers " +
                    "it (person or agent), the posting text marked as untrusted, and the URL to " +
                    "apply at.",
       inputSchema: { type: "object", required: ["id"], properties: {
         id: { type: "string", description: "A job id from find_jobs, e.g. greenhouse:cabify:1234567." } } } }),
     run: (data, args, env) => jobQuestions(data, args, env),
-    measure: (out) => ({ result_count: out.questions?.length ?? 0, form_read: out.form_source !== null,
+    measure: (out) => ({ result_count: out.questions?.length ?? 0,
+                         form_read: out.form_source !== null && !out.questions?.some((q) => q.key === "application_form"),
                          ats: out.job?.ats ?? undefined }),
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
@@ -1001,7 +1002,7 @@ export async function findJobs(data, args = {}, env = {}) {
 // The only hosts job_questions calls, over HTTPS, without following redirects.
 const ATS_HOSTS = new Set(["boards-api.greenhouse.io", "boards-api.eu.greenhouse.io",
   "api.lever.co", "api.eu.lever.co", "jobs.lever.co", "jobs.eu.lever.co", "jobs.ashbyhq.com",
-  "apply.workable.com", "jobs.bendingspoons.com"]);
+  "apply.workable.com", "jobs.bendingspoons.com", "api.rippling.com", "api.smartrecruiters.com"]);
 // Workday and Recruitee give each employer its own subdomain.
 const ATS_HOST_PATTERNS = [/^[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com$/, /^[a-z0-9-]+\.recruitee\.com$/,
   /^[a-z0-9-]+\.bamboohr\.com$/];
@@ -1044,6 +1045,16 @@ async function fetchBoard(env, url, { body, text = false, site = null } = {}) {
   try { return JSON.parse(content); } catch { throw new BoardError("the board's answer was not JSON"); }
 }
 
+// The host an allowed board's page redirects to, without following it; null when it does not.
+async function redirectHost(env, url) {
+  try {
+    const answer = await (env.fetch ?? globalThis.fetch)(url, { redirect: "manual", signal: AbortSignal.timeout(LIVE_TIMEOUT_MS),
+      headers: { Accept: "text/html", "User-Agent": `${SERVER.name}/${SERVER.version} (+https://spanishtoptechcompanies.com/mcp)` } });
+    const to = answer.headers.get("location");
+    return answer.status >= 300 && answer.status < 400 && to ? hostOf(new URL(to, url).href) : null;
+  } catch { return null; }
+}
+
 const ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", rsquo: "’",
   lsquo: "‘", rdquo: "”", ldquo: "“", ndash: "–", mdash: "—", hellip: "…",
   euro: "€", bull: "•", middot: "·" };
@@ -1076,7 +1087,7 @@ function untrusted(text) {
 // (and, for a box to tick, its options); the question classifier, cut
 // down, with Spanish forms. Order matters: the first match names the category.
 const QUESTION_CATEGORIES = [
-  ["bot-check", /\bare you (a |an )?(human|robot|bot|ai|artificial intelligence)\b|\bnot a robot\b|\b(completed|written|filled|submitted) (by|with|using) (an? )?(ai|bot|automated)\b|\beres (un )?(robot|humano)\b/],
+  ["bot-check", /\bare you (a |an )?(human|robot|bot|ai|artificial intelligence)\b|\bnot a robot\b|\b(completed|written|filled|submitted) (by|with|using) (an? )?(ai|bot|automated)\b|\b(used?|using) (an? )?(ai|chatgpt|llm)\b.{0,40}\b(questionnaire|application|answers?|form)\b|\beres (un )?(robot|humano)\b/],
   ["work-authorization", /\b(authoriz|authoris)\w* to work\b|\bwork (authoriz|authoris)|\bright to work\b|\blegally (able|allowed|entitled) to work\b|\b(entitled|eligible|permitted) to work\b|\bwork(ing)? permit\b|\bpermit to work\b|\bpermiso de trabajo\b|\bautorizaci\w* (para|de) trabaj/],
   ["sponsorship", /\bsponsor|\bvisa\b|\bh 1b\b|\bimmigration\b|\bpatrocinio\b/],
   ["citizenship", /\bcitizen|\bnationality\b|\bpermanent resident\b|\bgreen card\b|\bnacionalidad\b|\bciudadan/],
@@ -1543,9 +1554,143 @@ async function phenomForm(env, board, external, job) {
                    "and is not public" };
 }
 
+// Pinpoint: the application page of the career site (<employer>.pinpointhq.com or
+// the employer's own domain), server-rendered. Name, email and LinkedIn are plain
+// inputs; the phone, address, CV, the employer's questions and the diversity
+// section are components whose props sit in the page as JSON.
+const PINPOINT_TYPES = { long_text: "textarea", short_text: "text", text: "text", boolean: "boolean",
+  number: "number", date: "date", file: "file", multiple_choice: "select", checkboxes: "multiselect" };
+const PINPOINT_FIELDS = [["first_name", "First name", "text"], ["last_name", "Last name", "text"],
+  ["email", "Email", "email"], ["linkedin_url", "LinkedIn URL", "url"]];
+const PINPOINT_FILES = { cv: "Resume/CV", cover_letter: "Cover letter" };
+
+export function pinpointQuestions(page) {
+  const at = page.indexOf('name="application_form[');
+  if (at < 0) throw new BoardError("the board no longer takes applications for this posting; it may have closed");
+  const begin = page.lastIndexOf("<form", at), end = page.indexOf("</form>", at);
+  const form = page.slice(Math.max(begin, 0), end < 0 ? undefined : end);
+  const labelFor = (id) => labelText(new RegExp(`<label\\b[^>]*for="${escapeRe(String(id ?? ""))}"[^>]*>([\\s\\S]*?)<\\/label>`)
+    .exec(form)?.[1] ?? "");
+  const out = [];
+  for (const [field, fallback, type] of PINPOINT_FIELDS) {
+    const tag = new RegExp(`<input\\b[^>]*name="application_form\\[application\\]\\[${field}\\]"[^>]*>`).exec(form)?.[0];
+    if (tag) out.push(question(field, labelFor(attribute(tag, "id")) || fallback, tagRequired(tag), type));
+  }
+  const titles = new Map();
+  for (const [, component, body] of form.matchAll(/<script\b[^>]*data-component-name="([^"]+)"[^>]*>([\s\S]*?)<\/script>/g)) {
+    let p;
+    try { p = JSON.parse(body); } catch { continue; }
+    if (!isObject(p)) continue;
+    const kind = component.split("::").pop();
+    const options = records(p.options).map((o) => String(o.label ?? o.value ?? "").trim()).filter(Boolean);
+    if (isObject(p.questionDetails)) {
+      const q = p.questionDetails;
+      const title = labelText(q.title ?? ""), info = labelText(q.additionalInformation ?? "");
+      titles.set(q.questionId, title);
+      const type = /multi|checkbox/i.test(kind) ? "multiselect" : PINPOINT_TYPES[q.questionType] ?? "text";
+      const parent = p.conditionalQuestionParentQuestionId;
+      const when = records(p.conditionalQuestionConditions).map((c) => String(c.value ?? "")).filter(Boolean);
+      out.push(question(`question_${q.questionId}`, info && info !== title ? `${title}: ${info}` : title, q.required, type,
+        type === "boolean" ? [p.translations?.yes ?? "Yes", p.translations?.no ?? "No"] : options, "application",
+        parent == null ? {} : { shown_if: `${titles.get(parent) ?? "an earlier question"} is ${when.join(" or ") || "answered"}` }));
+    } else if (kind === "Phonenumberinput") {
+      out.push(question("phone", labelFor(p.id) || "Phone", p.required, "phone"));
+    } else if (kind === "Address") {
+      out.push(question("address", "Address (street, town, postcode, country)", false, "text"));
+    } else if (kind === "Filefield") {
+      const key = /\[(\w+)\]$/.exec(String(p.name ?? ""))?.[1] ?? "file";
+      out.push(question(key, PINPOINT_FILES[key] ?? labelText(p.labelText ?? key), p.required, "file"));
+    } else if (/equalitymonitoring/i.test(component)) {
+      out.push(question(`equality_${out.length}`, labelFor(p.inputId) || "Diversity question", p.required, "select",
+                        options, "demographic", { who: "person", category: "demographic" }));
+    }
+  }
+  const consent = /<input\b[^>]*name="application\[process_information\]"[^>]*>/.exec(form)?.[0];
+  if (consent)
+    out.push(question("process_information", labelFor(attribute(consent, "id")).replace(/^\(required\)\s*/i, "") ||
+      "Allow us to process your personal information", tagRequired(consent), "consent", [], "consent",
+      { who: "person", category: "consent" }));
+  return { questions: out, captcha: /h-captcha|g-recaptcha|recaptcha|turnstile/i.test(page) };
+}
+
+async function pinpointForm(env, board, external, job) {
+  const site = String(board).toLowerCase();
+  let u = null;
+  try { u = new URL(job.url); } catch { /* checked below */ }
+  if (!SITE_HOST.test(site) || !u || !/^(\/[a-z]{2}(-[a-z]{2})?)?\/postings\/[0-9a-f-]{36}\/?$/i.test(u.pathname))
+    throw new BoardError("the posting's URL is not a Pinpoint posting");
+  // The posting's URL may be on the employer's own domain (careers.infor.com for
+  // infor.pinpointhq.com). That host is read only when the board's own host sends
+  // the page there.
+  const path = u.pathname.replace(/\/$/, "");
+  const apply = `https://${site}${path}/applications/new`;
+  const host = u.hostname === site || await redirectHost(env, apply) === u.hostname ? u.hostname : site;
+  const page = await fetchBoard(env, `https://${host}${path}/applications/new`, { text: true, site: host });
+  let description = null;
+  try { description = jobPostingText(await fetchBoard(env, `https://${host}${path}`, { text: true, site: host })); } catch { /* the form is what matters */ }
+  return { apply_url: `https://${host}${path}/applications/new`, ...pinpointQuestions(page), description,
+           source: "Pinpoint career site's application page, read now" };
+}
+
+// Rippling: the job board API carries the form, standard fields and the
+// employer's questions, whose description often holds the question itself.
+const RIPPLING_TYPES = { SHORT_ANSWER: "text", LONG_ANSWER: "textarea", PHONE_NUMBER: "phone", FILE: "file",
+  PRONOUN: "select", MULTIPLE_CHOICE: "select", DROPDOWN: "select", CHECKBOXES: "multiselect", YES_NO: "boolean",
+  DATE: "date", NUMBER: "number" };
+
+export function ripplingQuestions(post) {
+  const app = post?.activeJobApplication;
+  if (!isObject(app)) throw new BoardError("the board no longer takes applications for this posting; it may have closed");
+  const basic = records(app.basicQuestions).map((q) => {
+    const key = String(q.oid ?? "");
+    const type = key === "email" ? "email" : /_link$/.test(key) ? "url" : RIPPLING_TYPES[q.fieldType] ?? "text";
+    return question(key, q.title, q.required, type);
+  });
+  const own = records(app.additionalQuestions).flatMap((g) => records(g.form?.questions)).map((q) => {
+    const options = [...(Array.isArray(q.strChoices) ? q.strChoices : []), ...(Array.isArray(q.intChoices) ? q.intChoices : [])]
+      .map((c) => String(isObject(c) ? c.label ?? c.value ?? "" : c).trim()).filter(Boolean);
+    const type = q.isMultiSelectEnabled === true ? "multiselect" : RIPPLING_TYPES[q.questionType] ?? (options.length ? "select" : "text");
+    const detail = htmlText(q.description ?? "");
+    return question(`question_${q.uniqueKey}`, q.title, q.isRequired, type, options, "application", detail ? { detail } : {});
+  });
+  const eeoc = post.eeocQuestionnaireEnabledForJobPost === true
+    ? [question("eeoc", "Voluntary self-identification (gender, race, veteran and disability status)", false, "select", [],
+                "demographic", { who: "person", category: "demographic" })] : [];
+  return [...basic, ...own, ...eeoc];
+}
+
+async function ripplingForm(env, board, external) {
+  const at = `${encodeURIComponent(board)}/jobs/${encodeURIComponent(external)}`;
+  const post = await fetchBoard(env, `https://api.rippling.com/platform/api/ats/v2/board/${at}`);
+  const parts = isObject(post?.description) ? Object.values(post.description) : [post?.description];
+  return { apply_url: `https://ats.rippling.com/${at}/apply`, questions: ripplingQuestions(post),
+           description: parts.map((h) => htmlText(h)).filter(Boolean).join("\n\n"), captcha: null,
+           location: Array.isArray(post.workLocations) ? post.workLocations : [],
+           source: "Rippling public job board API, read now" };
+}
+
+// SmartRecruiters publishes the posting but not its form: the form's
+// configuration takes an API key, and the apply page turns away clients that are
+// not browsers. The posting gives the description and the place.
+async function smartrecruitersForm(env, board, external, job) {
+  const p = await fetchBoard(env, `https://api.smartrecruiters.com/v1/companies/${encodeURIComponent(board)}/postings/` +
+                                  encodeURIComponent(external));
+  if (!isObject(p) || p.active === false) throw new BoardError("the board no longer has this posting; it may have closed");
+  const sections = isObject(p.jobAd?.sections) ? Object.values(p.jobAd.sections).filter(isObject) : [];
+  const apply = typeof p.applyUrl === "string" && hostOf(p.applyUrl) === "jobs.smartrecruiters.com" ? p.applyUrl : job.url;
+  return { apply_url: apply, captcha: null,
+           description: sections.map((s) => [s.title, htmlText(s.text)].filter(Boolean).join("\n")).filter(Boolean).join("\n\n"),
+           location: [p.location?.fullLocation, [p.location?.city, p.location?.country].filter(Boolean).join(", ")],
+           questions: [question("application_form", "The application form on jobs.smartrecruiters.com, not public: " +
+             "read it in the browser and classify each question with the same rule", true, "unread", [], "application",
+             { who: "agent", category: "unread" })],
+           source: "SmartRecruiters public posting API; the application form itself is not public" };
+}
+
 const FORMS = { greenhouse: greenhouseForm, ashby: ashbyForm, lever: leverForm, workable: workableForm,
                 recruitee: recruiteeForm, teamtailor: teamtailorForm, workday: workdayForm, phenom: phenomForm,
-                bamboohr: bamboohrForm, bendingspoons: bendingspoonsForm };
+                bamboohr: bamboohrForm, bendingspoons: bendingspoonsForm, pinpoint: pinpointForm,
+                rippling: ripplingForm, smartrecruiters: smartrecruitersForm };
 
 // "ats:board:id"; the board may hold slashes (Workday), never a colon.
 function splitId(id) {
@@ -1609,8 +1754,8 @@ export async function jobQuestions(data, args = {}, env = {}) {
   const read = parts && job.ats === parts[0] && Object.hasOwn(FORMS, job.ats) ? FORMS[job.ats] : null;
   if (!read)
     return { job: posting, apply_url: job.url, form_source: null, questions: null, description: null, captcha: null,
-             note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR and Bending Spoons forms, and Workday's ` +
-                   `and Phenom's postings; this posting is on ${job.ats === "jsonld" ? "the employer's own careers site" : job.ats}. ` +
+             note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling and ` +
+                   `Bending Spoons forms, and Workday's, Phenom's and SmartRecruiters' postings; this posting is on ${job.ats === "jsonld" ? "the employer's own careers site" : job.ats}. ` +
                    "Open url in your browser and read the form there; classify its questions with the " +
                    "same rule (see application_guide)." };
   if (env.live) {
