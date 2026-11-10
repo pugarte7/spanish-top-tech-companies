@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """PreToolUse gate: a PR into main must say how big a release it is.
 
-release.yml turns every merged PR into a release, bumped by its label. This
-blocks `gh pr create` into main without --label patch|minor|major, so the
-choice is made when the PR is opened, not forgotten until after the merge.
+release.yml makes one release a week of the PRs merged, bumped by their
+biggest label. This blocks `gh pr create` into main without --label
+patch|minor|major, so the choice is made when the PR is opened, not
+forgotten until after the merge.
 """
 import json
 import re
@@ -12,8 +13,8 @@ import sys
 
 LEVELS = {"patch", "minor", "major"}
 WHY = (
-    "Every PR merged into main becomes a release (release.yml). Add one label "
-    "to `gh pr create`: --label patch (fixes, copy, data, small tweaks, tooling), "
+    "The weekly release (release.yml) bumps by its PRs' biggest label. Add one "
+    "label to `gh pr create`: --label patch (fixes, copy, data, small tweaks, tooling), "
     "--label minor (something new and visible: a site section, an MCP tool, a "
     "data field), --label major (breaks whoever consumes us: data/ format, MCP "
     "tool names or arguments, URLs removed). When unsure, patch."

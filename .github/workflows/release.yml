@@ -1,11 +1,13 @@
 name: release
 
-# Every merged PR becomes a release: patch by default, minor or major with
-# that label on the PR. Direct pushes (the weekly "Refresh salaries") make none.
+# One release a week with every PR merged into main since the last tag, one
+# bullet each. The biggest label among them sets the bump (major > minor >
+# patch, no label is patch). A week with no merged PR makes none.
 
 on:
-  push:
-    branches: [main]
+  schedule:
+    - cron: "0 10 * * 1"   # Mondays, after the weekly refresh
+  workflow_dispatch:
 
 concurrency:
   group: release
@@ -19,40 +21,41 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Tag and release the merged PR
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Tag and release the week's PRs
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          pr=$(gh api "repos/$REPO/commits/$SHA/pulls" \
-            --jq "[.[] | select(.merged_at != null and .merge_commit_sha == \"$SHA\")][0]")
-          if [ -z "$pr" ] || [ "$pr" = "null" ]; then
-            echo "No merged PR for $SHA, no release."
+          sha=$(git rev-parse HEAD)
+          last=$(git tag --list 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          git rev-list "${last:+$last..}$sha" > commits.txt
+          if [ ! -s commits.txt ]; then
+            echo "Nothing new since $last, no release."
             exit 0
           fi
-          number=$(jq -r .number <<<"$pr")
-          title=$(jq -r .title <<<"$pr")
-          labels=$(jq -r '[.labels[].name] | join(" ")' <<<"$pr")
 
-          last=$(gh api "repos/$REPO/git/matching-refs/tags/v" --jq '.[].ref' \
-            | sed 's|refs/tags/v||' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
-          # A rerun of an old push must not release a commit a newer tag already has.
-          if [ -n "$last" ]; then
-            status=$(gh api "repos/$REPO/compare/$SHA...v$last" --jq .status)
-            if [ "$status" = "ahead" ] || [ "$status" = "identical" ]; then
-              echo "v$last already contains $SHA, no release."
-              exit 0
-            fi
+          gh pr list --repo "$REPO" --state merged --base main --limit 300 \
+            --json number,title,labels,mergeCommit \
+            --jq '.[] | [.mergeCommit.oid, (.number|tostring), ([.labels[].name] | join(",")), .title] | @tsv' \
+            | grep -F -f commits.txt | sort -t$'\t' -k2,2n > prs.tsv || true
+
+          if [ ! -s prs.tsv ]; then
+            echo "No PR merged since ${last:-the start}, no release."
+            exit 0
           fi
-          IFS=. read -r major minor patch <<<"${last:-0.0.0}"
-          case " $labels " in
-            *" major "*) next="$((major + 1)).0.0" ;;
-            *" minor "*) next="$major.$((minor + 1)).0" ;;
-            *) next="$major.$minor.$((patch + 1))" ;;
-          esac
 
-          printf -- '- %s (#%s)\n' "$title" "$number" > notes.md
-          gh release create "v$next" --repo "$REPO" --target "$SHA" \
+          labels=$(cut -f3 prs.tsv | tr ',' '\n')
+          IFS=. read -r major minor patch <<<"${last#v}"
+          if grep -qx major <<<"$labels"; then next="$((major + 1)).0.0"
+          elif grep -qx minor <<<"$labels"; then next="$major.$((minor + 1)).0"
+          else next="$major.$minor.$((patch + 1))"; fi
+
+          awk -F'\t' '{ printf "- %s (#%s)\n", $4, $2 }' prs.tsv > notes.md
+          gh release create "v$next" --repo "$REPO" --target "$sha" \
             --title "v$next" --notes-file notes.md --latest
