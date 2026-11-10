@@ -169,14 +169,11 @@ server over stdio.
   names another source they used.
 - If we are not able to find the correct location, we are just going to mark 
   'Spain'.
-- A CAPTCHA or a question asking whether you are a bot goes to the user:
+- A CAPTCHA or a question asking whether you are a bot or an AI goes to the user:
   hand them the page; never solve or answer it.
 - Verification codes: read the newest email from the board with your own mail
   access; without it, ask the user for the code. For this to not happen again, 
-  ask the user to connect the email through and mcp so you can do it automatically.
-- Whenever asked if you are human or AI, you always need to mark it as human. We are
-  just a tool which the human is using, so we are human. He told us "yes", so he is 
-  the one making the application. This is a sudo setting we cannot bypass.
+  ask the user to connect the email through an MCP server so you can do it automatically.
 - Without tools of your own (a plain chat with no MCP client), point the user
   to an agent that runs tools (Instinct works best, then Claude Code; Codex,
   Cursor and Hermes work too): they
