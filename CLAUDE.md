@@ -281,12 +281,15 @@ its board into `boards.json` by hand, which the next `--all` would undo.
 Santander UK, Santander Bank, Juniper and NTT Data are left out of it on
 purpose: their pages lead to another listed company's board or another entity.
 
-Releases are automatic: `.github/workflows/release.yml` tags every PR merged
-into `main` by its label: `patch` (fixes, copy, data, tooling), `minor`
-(something new and visible: a site section, an MCP tool, a data field) or
-`major` (breaks whoever consumes us: `data/` format, MCP tool names or
-arguments, removed URLs); no label is patch. It publishes a GitHub Release
-whose one bullet is the PR title, so keep titles short. The hook in
-`.claude/hooks/release-label.py` refuses `gh pr create` into `main` without
-one of those labels. Direct pushes such as the weekly refresh make no release.
-Since 2026-11-09 the line restarts at v1.1.0; v2.0.0 was withdrawn.
+Releases are weekly: every Monday `.github/workflows/release.yml` tags
+`main` with one release holding every PR merged since the last tag, one
+bullet per PR title (so keep titles short), and nothing in a week without
+PRs; it can also be run by hand. The biggest label among those PRs sets the
+bump: `major` (breaks whoever consumes us: `data/` format, MCP tool names or
+arguments, removed URLs), else `minor` (something new and visible: a site
+section, an MCP tool, a data field), else `patch` (fixes, copy, data,
+tooling); no label is patch. The hook in `.claude/hooks/release-label.py`
+refuses opening a PR into `main` without one of those labels. On
+2026-11-10 the maintainer replaced one release per merged PR (24 tags in a
+day, folded into v1.2.0) with this. Since 2026-11-09 the line restarts at
+v1.1.0; v2.0.0 was withdrawn.
