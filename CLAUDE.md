@@ -48,7 +48,11 @@ the system theme, not the page's). Since 2026-11-10 the home page leads with
 the MCP too: its header card is today's postings, which app.js reads from
 `/api/v1/jobs-summary.json` (written by `scripts/jobs.mjs` beside jobs.json,
 after `site.py` builds). The salary card with the histogram was removed the
-same day at the maintainer's request; the agent's section comes first. Both READMEs and that section show the same
+same day at the maintainer's request. The header reads "Cada día, las ofertas
+top de tech en España, en tu agente" with the salaries as the filter ("para que
+solo apliques donde te interesa"), and the agent's section under it is "Así
+funciona": the video beside three short steps and the agents' logos, without
+the rotating agent stage or a second copy of the /mcp link. Both READMEs and that section show the same
 recorded demo (an agent finding Workato postings for someone asking 110,000 €
 and applying), drawn by `scripts/mcp_demo.mjs` from `scripts/mcp_demo/demo.html`:
 its find_jobs and job_questions answers are real, the sending is acted out.

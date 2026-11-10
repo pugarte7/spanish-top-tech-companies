@@ -247,10 +247,6 @@ h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-s
 .t-bars strong { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
 .t-note { margin: -8px 0 0; font-size: 12px; line-height: 16px; color: var(--muted); }
 
-/* The demo: the whole flow, recorded, at the top of the agent's section. */
-.agents-demo { margin: 0 0 24px; }
-.agents-demo video { display: block; width: 100%; height: auto; border: 1px solid var(--border);
-                     border-radius: var(--radius-card); background: var(--field); }
 
 /* The buttons jump past the sticky bar. */
 #map-card, #matrix-card, #companies-card { scroll-margin-top: 72px; }
@@ -609,49 +605,31 @@ footer .foot-links::before { inset: -20px -28px; }
    own; the stack shows one tile at a time. */
 .agents { scroll-margin-top: 72px; }
 .agents h2:focus { outline: none; }
-.agents-grid { display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch; }
-.agents-stage { flex: 1 1 340px; min-width: 0; min-height: 420px; padding: calc(36px + var(--frieze-end)) 24px 36px;
-                border-radius: var(--radius-card); display: flex; flex-direction: column;
-                align-items: center; justify-content: center; gap: 22px; text-align: center; }
-.agent-stack { position: relative; display: block; flex: none; width: 132px; height: 132px; }
-.agent-tile { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden;
-              border-radius: 28px; opacity: 0; transform: scale(.88);
-              transition: opacity .6s ease, transform .6s ease; }
-.agent-tile.on { opacity: 1; transform: none; }
-.agents-stage .agent-tile { border: 1px solid var(--field-line); box-shadow: 0 10px 30px rgba(0, 0, 60, .35); }
+/* How it works: the demo beside three short steps, the agents under both. */
+.agents-grid { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+.agents-demo { flex: 999 1 560px; min-width: 0; margin: 0; }
+.agents-demo video { display: block; width: 100%; height: auto; border: 1px solid var(--border);
+                     border-radius: var(--radius-card); background: var(--field); }
+.agent-steps { flex: 1 1 300px; min-width: 0; margin: 0; padding: 0; list-style: none; display: grid; gap: 22px; }
+.agents-with { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 24px; padding-top: 18px;
+               border-top: 1px solid var(--rule); color: var(--muted);
+               font: 400 13px/16px var(--display); letter-spacing: .14em; text-transform: uppercase; }
+.agent-logos { display: flex; flex-wrap: wrap; gap: 8px; }
+.agent-link { display: block; width: 40px; height: 40px; border-radius: 10px; transition: transform .15s; }
+.agent-link:hover { transform: translateY(-2px); }
+.agent-link .agent-tile { position: static; width: 100%; height: 100%; border-radius: 10px; border: 1px solid var(--rule);
+                          opacity: 1; transform: none; }
+.agent-tile { display: grid; place-items: center; overflow: hidden; }
 .agent-tile img { display: block; }
 .fit-cover { width: 100%; height: 100%; object-fit: cover; }
 .fit-mark { width: 76%; height: auto; }
-/* app.js gives it the height of the longest name; this keeps a shorter one
-   centred in that height. */
-.agent-say { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.agent-say::before { inset: -12px -18px; box-shadow: 0 0 32px 18px var(--field); }
-/* The logo and the tabs sit over the veil, so its feathered edge never dims them. */
-.agents-stage .agent-stack, .agent-tabs { position: relative; z-index: 2; }
-.agent-call { margin: 0; font: 200 40px/1.08 var(--display); color: var(--field-bright); }
-.agent-by { margin: 6px 0 0; color: var(--field-muted); }
-.agent-get { display: inline-flex; align-items: center; gap: 6px; height: 40px; margin-top: 16px; padding: 0 16px;
-  border-radius: var(--radius-control); background: var(--field-ink); color: var(--field); text-decoration: none;
-  font: 500 14px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; }
-.agent-get:hover { background: var(--field-bright); }
-.agent-get .out { width: 12px; height: 12px; flex: none; }
-/* Six 40px tabs fit one row of the 292px a narrow stage leaves. */
-.agent-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.agent-tab { width: 40px; height: 40px; padding: 0; border: 0; border-radius: 10px; background: none;
-             cursor: pointer; outline: 2px solid transparent; outline-offset: 3px;
-             transition: transform .2s ease, outline-color .2s ease; }
-.agent-tab[aria-pressed=true] { outline-color: var(--field-ink); }
-.agent-tab:hover { transform: translateY(-2px); }
-.agent-tab .agent-tile { position: static; width: 100%; height: 100%; border-radius: 10px; opacity: 1; transform: none; }
-.agents-how { flex: 999 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
-.agent-steps { list-style: none; margin: 0; padding: 4px 0 0; display: grid; gap: 26px; }
+.agents-best { margin-left: auto; font: 400 14px/18px "Barlow", system-ui, sans-serif; letter-spacing: 0; text-transform: none; }
 .agent-steps > li { display: flex; gap: 16px; }
 .agent-steps > li > div { flex: 1; min-width: 0; }
 .step-n { flex: none; display: grid; place-items: center; width: 32px; height: 32px;
           border: 1px solid var(--border); border-radius: 50%; font: 400 16px/1 var(--display); }
 .agent-steps h3 { margin: 4px 0 0; font: 400 20px/24px var(--display); letter-spacing: .04em; text-transform: uppercase; }
 .agent-steps p { margin: 4px 0 10px; color: var(--muted); }
-.agent-steps .agent-name { font-weight: 600; color: var(--text); }
 .copy-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
 .copy-row code, .copy-row blockquote { flex: 1 1 240px; min-width: 0; margin: 0; padding: 12px 14px;
   background: var(--tint); border: 1px solid var(--control); border-radius: var(--radius-control); color: var(--text); }
@@ -661,15 +639,7 @@ footer .foot-links::before { inset: -20px -28px; }
             border-radius: var(--radius-control); background: var(--surface); color: var(--text); cursor: pointer;
             font: 500 14px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; }
 .copy-btn:hover { background: var(--text); color: var(--surface); }
-.agent-needs, .agent-examples { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.agent-needs li { padding: 7px 12px; background: var(--tint); border: 1px solid var(--control); border-radius: var(--radius-control); }
-.agent-steps .agent-ex-t { margin: 12px 0 6px; }
-.agent-examples li { padding: 7px 12px; border: 1px dashed var(--control); border-radius: var(--radius-control); }
-.agents-note { margin: 0; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted);
-               font-size: 13px; line-height: 18px; }
-@media (prefers-reduced-motion: reduce) {
-  .agent-tile, .agent-tab { transition: none; }
-}
+@media (prefers-reduced-motion: reduce) { .agent-link { transition: none; } }
 
 #tip { position: fixed; z-index: 30; pointer-events: none; font-size: 12px; line-height: 18px;
        padding: 8px 10px; border-radius: var(--radius-control); max-width: 260px;
@@ -759,9 +729,6 @@ footer .foot-links::before { inset: -20px -28px; }
   .summary { grid-template-columns: 1fr 1fr; }
   .filter-row { flex-wrap: wrap; }
   .star-pop { width: auto; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
-  .agents-stage { min-height: 0; padding: calc(28px + var(--frieze-end)) 16px 28px; gap: 18px; }
-  .agent-say::before { inset: -12px -14px; box-shadow: 0 0 28px 18px var(--field); }
-  .agent-call { font-size: 32px; }
   .agent-steps > li { gap: 12px; }
   .matrix { min-width: 560px; }
   .matrix thead th:first-child { width: 112px; }

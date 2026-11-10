@@ -839,50 +839,21 @@ function companies() {
 // The section shows one agent at a time and turns to the next every few
 // seconds; picking one stops the turn. Nothing turns for readers
 // who ask for less motion.
-const AGENT_TURN_MS = 3000;
 const STILL = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// The copy buttons (the header's /mcp link, the request to paste) and which
+// agent a reader goes to get.
 function agents() {
-  const tabs = [...document.querySelectorAll(".agent-tab")];
-  const names = [...document.querySelectorAll(".agent-name")];
-  let at = 0, picked = false;
-  const name = (k) => names.forEach((n) => { n.textContent = tabs[k].dataset.name; });
-  const show = (k) => {
-    at = k;
-    document.querySelectorAll(".agent-stack .agent-tile").forEach((el, j) => el.classList.toggle("on", j === k));
-    tabs.forEach((t, j) => t.setAttribute("aria-pressed", String(j === k)));
-    name(k);
-    $("agent-by").textContent = tabs[k].dataset.by;
-    $("agent-get").href = tabs[k].dataset.url;
-  };
-  // Names differ in length: "Claude Code" wrapped a line the others did not,
-  // so the page grew at every turn and the browser scrolled to make up for
-  // it. Every box that holds a name keeps the height of its longest one.
-  const steady = () => {
-    const boxes = [...document.querySelectorAll(".agent-say, .agent-steps p")]
-      .filter((b) => b.querySelector(".agent-name"));
-    boxes.forEach((b) => { b.style.minHeight = ""; });
-    const tall = boxes.map(() => 0);
-    tabs.forEach((_, k) => {
-      name(k);
-      boxes.forEach((b, i) => { tall[i] = Math.max(tall[i], b.getBoundingClientRect().height); });
-    });
-    name(at);
-    boxes.forEach((b, i) => { b.style.minHeight = `${tall[i]}px`; });
-  };
-  steady();
-  document.fonts.ready.then(steady);
-  let width = innerWidth;
-  addEventListener("resize", () => { if (innerWidth !== width) { width = innerWidth; steady(); } });
-  tabs.forEach((t, k) => { t.onclick = () => { picked = true; show(k); track("agent_pick", { agent: t.dataset.name }); }; });
-  if (!STILL) setInterval(() => { if (!picked && !document.hidden) show((at + 1) % tabs.length); }, AGENT_TURN_MS);
   document.querySelectorAll(".copy-btn").forEach((b) => {
     b.onclick = async () => {
       try { await navigator.clipboard.writeText($(b.dataset.copy).textContent.trim()); } catch { return; }
-      track("copy", { what: b.dataset.copy, agent: tabs[at].dataset.name });
+      track("copy", { what: b.dataset.copy });
       b.textContent = S.copied;
       setTimeout(() => { b.textContent = S.copy; }, 2000);
     };
+  });
+  document.querySelectorAll(".agent-link").forEach((a) => {
+    a.addEventListener("click", () => track("agent_get", { agent: a.title }));
   });
 }
 

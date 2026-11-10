@@ -258,11 +258,10 @@ STRINGS = {
     "en": {
         "title": "Spanish Top Tech Companies", "theme": "Light or dark mode",
         "page_title": "Software Engineer Salary in Spain ({year}): Best-Paying Tech Companies",
-        "h1": "Today's tech openings in Spain, in your agent",
+        "h1": "Every day, the top tech openings in Spain, in your agent",
         "source": "Data: Levels.fyi",
-        "hero_lede": "**Over 1,000 openings a day** at the tech companies in Spain, read every morning from "
-                     "over 400 job boards. Your agent searches them, writes the application from your CV "
-                     "and **sends it once you say yes**.",
+        "hero_lede": "With **what each company really pays**, so you only apply where it is worth it. "
+                     "Your agent does the rest.",
         "hero_mcp": "Add this link to your agent", "hero_start": "How to start",
         "today_title": "Open positions today", "today_read": "Read on {date}",
         "today_remote": "Remote", "today_software": "in software engineering",
@@ -355,35 +354,17 @@ STRINGS = {
         "role_label": "Role", "mode_label": "Work", "loc_label": "Location", "all_spain": "All of Spain",
         "mode_remote": "Remote", "mode_hybrid": "Hybrid", "mode_office": "Office",
         "any": "Any", "loading": "Loading…", "load_failed": "The table could not load.", "retry": "Retry", "from": "From", "to": "To",
-        "agents_title": "Let your agent apply for you",
-        "agents_lede": "Connect it and apply to the companies on this page without filling in a form: "
-                       "it searches their open positions, writes the application from your CV and "
-                       "sends it once you say yes. Nothing to install. It saves you hours. It works "
-                       "best with Instinct, or else Claude Code; the others work too.",
-        "agents_call": "Let {name} apply for you",
-        "agents_pick": "Pick your agent",
-        "agents_get": "Get {name}",
-        "agents_s1_t": "Connect salaries and openings",
-        "agents_s1": "Paste this address into the chat and ask {name} to connect to it: it adds "
-                     "the server itself. Then it knows which companies pay most and which "
-                     "positions they have open today.",
-        "agents_s2_t": "Give it your CV and what you want",
-        "agents_s2": "Only once, in the chat. {name} writes the cover letter and the answers "
-                     "from your CV and sends each application with its own browser. Your profile "
-                     "stays with {name}: the site stores nothing about you. If a board emails a "
-                     "code, it reads it from your mail if you connect it, or asks you.",
-        "agents_needs": "Your CV|Where and how you want to work|The salary you ask for",
-        "agents_s3_t": "Tell it to apply",
-        "agents_s3": "Paste this or ask in your own words. It shows you each application in full "
-                     "and sends it when you say yes.",
+        "agents_title": "How it works",
+        "how1_t": "Connect your agent",
+        "how1": "With the link above: paste it into the chat or add it as an MCP server.",
+        "how2_t": "Give it your CV, once",
+        "how2": "And where you want to work and the salary you ask for. It stays with your agent: "
+                "the site keeps nothing of yours.",
+        "how3_t": "Tell it what you want",
+        "how3": "It shows you each application in full and sends it when you say yes.",
         "agents_prompt": "Apply for me to openings at the companies on spanishtoptechcompanies.com "
                          "that pay 60,000 € or more to someone with my experience in Madrid.",
-        "agents_examples_t": "For example:",
-        "agents_examples": "Apply to 5 backend openings in Barcelona|Which companies on the list "
-                           "haven't I applied to?|Find remote openings I can take from Spain",
-        "agents_note": "Sensitive questions, like salary or work permit, it asks you once, all in "
-                       "one message. If a form asks for a CAPTCHA, it hands you the page: you "
-                       "solve it and it sends the application.",
+        "agents_with": "Works with", "agents_best": "Best with Instinct, or else Claude Code",
         "copy": "Copy", "copied": "Copied",
         "description": "What software engineers earn in Spain and which tech companies pay most: "
                        "median base salary by company, role, experience and city, from real salaries.",
@@ -396,11 +377,10 @@ STRINGS = {
     "es": {
         "title": "Spanish Top Tech Companies", "theme": "Modo claro u oscuro",
         "page_title": "Salario programador en España ({year}): las empresas tech que más pagan",
-        "h1": "Las ofertas tech de hoy en España, en tu agente",
+        "h1": "Cada día, las ofertas top de tech en España, en tu agente",
         "source": "Datos: Levels.fyi",
-        "hero_lede": "**Más de 1.000 ofertas al día** en las empresas tech de España, leídas cada mañana "
-                     "de más de 400 portales. Tu agente las busca, prepara la solicitud con tu CV y "
-                     "**la envía cuando le dices que sí**.",
+        "hero_lede": "Con **el sueldo real de cada empresa**, para que solo apliques donde te interesa. "
+                     "Tu agente hace el resto.",
         "hero_mcp": "Añade este enlace a tu agente", "hero_start": "Cómo empezar",
         "today_title": "Ofertas abiertas hoy", "today_read": "Leídas el {date}",
         "today_remote": "En remoto", "today_software": "de ingeniería de software",
@@ -493,35 +473,17 @@ STRINGS = {
         "role_label": "Rol", "mode_label": "Modalidad", "loc_label": "Ubicación", "all_spain": "Toda España",
         "mode_remote": "Remoto", "mode_hybrid": "Híbrido", "mode_office": "Presencial",
         "any": "Cualquiera", "loading": "Cargando…", "load_failed": "No se pudo cargar la tabla.", "retry": "Reintentar", "from": "Desde", "to": "Hasta",
-        "agents_title": "Deja que tu agente aplique por ti",
-        "agents_lede": "Conéctalo y aplica a las empresas de esta página sin tocar un formulario: "
-                       "busca sus ofertas abiertas, prepara la solicitud con tu CV y la envía cuando "
-                       "le dices que sí. Sin instalar nada. Te ahorras horas. Funciona mejor con "
-                       "Instinct y, si no, con Claude Code; los demás también sirven.",
-        "agents_call": "Que {name} aplique por ti",
-        "agents_pick": "Elige tu agente",
-        "agents_get": "Consigue {name}",
-        "agents_s1_t": "Conecta sueldos y ofertas",
-        "agents_s1": "Pégale esta dirección en el chat y pídele a {name} que se conecte: él mismo "
-                     "añade el servidor. Así sabe qué empresas pagan más y qué ofertas tienen "
-                     "abiertas hoy.",
-        "agents_s2_t": "Dale tu CV y lo que buscas",
-        "agents_s2": "Una sola vez, en el chat. {name} escribe la carta y las respuestas a partir "
-                     "de tu CV y envía cada solicitud con su propio navegador. Tu perfil se queda "
-                     "en {name}: la web no guarda nada tuyo. Si una empresa manda un código por "
-                     "correo, lo lee de tu correo si se lo conectas, o te lo pide.",
-        "agents_needs": "Tu CV|Dónde y cómo quieres trabajar|El sueldo que pides",
-        "agents_s3_t": "Dile que aplique",
-        "agents_s3": "Pégale esto o pídeselo con tus palabras. Te enseña cada solicitud completa "
-                     "y la envía cuando le dices que sí.",
+        "agents_title": "Así funciona",
+        "how1_t": "Conecta tu agente",
+        "how1": "Con el enlace de arriba: pégaselo en el chat o añádelo como servidor MCP.",
+        "how2_t": "Dale tu CV, una vez",
+        "how2": "Y dónde quieres trabajar y el sueldo que pides. Se queda en tu agente: la web no "
+                "guarda nada tuyo.",
+        "how3_t": "Dile qué buscas",
+        "how3": "Te enseña cada solicitud completa y la envía cuando le dices que sí.",
         "agents_prompt": "Aplica por mí a las ofertas de las empresas de spanishtoptechcompanies.com "
                          "que pagan 60.000 € o más a alguien con mi experiencia en Madrid.",
-        "agents_examples_t": "Por ejemplo:",
-        "agents_examples": "Aplica a 5 ofertas de backend en Barcelona|¿A qué empresas de la "
-                           "lista no he aplicado?|Busca ofertas en remoto que pueda hacer desde España",
-        "agents_note": "Las preguntas delicadas, como sueldo o permiso de trabajo, te las hace "
-                       "una vez, todas en un mensaje. Si un formulario pide un CAPTCHA, te pasa la "
-                       "página: lo resuelves y envía la solicitud.",
+        "agents_with": "Funciona con", "agents_best": "Mejor con Instinct y, si no, con Claude Code",
         "copy": "Copiar", "copied": "Copiado",
         "description": "Cuánto cobra un programador en España y qué empresas tecnológicas pagan más: "
                        "sueldo base mediano por empresa, rol, experiencia y comunidad, con salarios reales.",
@@ -1188,60 +1150,35 @@ def agent_tile(i: int, cls: str = "agent-tile") -> str:
             f'<img class="fit-{fit}" src="/agents/{logo}" alt="" decoding="async"></span>')
 
 
-def agent_stack() -> str:
-    """Every agent's logo stacked in one box; the script shows one at a time."""
-    tiles = "".join(agent_tile(i, "agent-tile on" if i == 0 else "agent-tile") for i in range(len(AGENTS)))
-    return f'<span class="agent-stack" aria-hidden="true">{tiles}</span>'
-
-
 def agents_section(e: dict, lang: str) -> str:
-    name = f'<span class="agent-name">{html.escape(AGENTS[0][0])}</span>'
-    with_name = lambda k: e[k].replace("{name}", name)
-    tabs = "".join(
-        f'<button class="agent-tab" type="button" data-name="{html.escape(n)}" data-by="{html.escape(by)}" '
-        f'data-url="{html.escape(url)}" aria-label="{html.escape(n)}" '
-        f'aria-pressed="{str(i == 0).lower()}">{agent_tile(i)}</button>'
-        for i, (n, by, *_, url) in enumerate(AGENTS))
-    items = lambda k: "".join(f"<li>{x}</li>" for x in e[k].split("|"))
+    """How it works: the recorded demo beside three short steps, then the
+    agents it works with. The /mcp link is the header's; the steps point to it."""
     copy = lambda target: (f'<button class="copy-btn" type="button" data-copy="{target}">'
                            f'{e["copy"]}</button>')
+    step = lambda n, body: (f'<li><span class="step-n" aria-hidden="true">{n}</span><div>'
+                            f'<h3>{e[f"how{n}_t"]}</h3><p>{e[f"how{n}"]}</p>{body}</div></li>')
+    logos = "".join(
+        f'<a class="agent-link" href="{html.escape(url)}" target="_blank" rel="noopener" '
+        f'aria-label="{html.escape(n)}" title="{html.escape(n)}">{agent_tile(i, "agent-tile on")}</a>'
+        for i, (n, *_, url) in enumerate(AGENTS))
     return f"""
   <section class="tile wide agents" id="agents" aria-labelledby="agents-title">
     <h2 id="agents-title" tabindex="-1">{e['agents_title']}</h2>
-    <p class="lede">{e['agents_lede']}</p>
-    <figure class="agents-demo">
-      <video id="demo" muted loop playsinline controls preload="none" width="1920" height="1200"
-             poster="/mcp-demo.{lang}.jpg" aria-label="{e['demo_alt']}">
-        <source src="/mcp-demo.{lang}.mp4" type="video/mp4">
-        <source src="/mcp-demo.{lang}.webm" type="video/webm"></video>
-    </figure>
     <div class="agents-grid">
-      <div class="agents-stage field tiled">{WALL}
-        {agent_stack()}
-        <div class="agent-say veil"><p class="agent-call">{with_name('agents_call')}</p><p class="agent-by" id="agent-by">{html.escape(AGENTS[0][1])}</p>
-          <a class="agent-get" id="agent-get" href="{html.escape(AGENTS[0][5])}" target="_blank" rel="noopener">{with_name('agents_get')} {OUT_ICON}</a></div>
-        <div class="agent-tabs" role="group" aria-label="{e['agents_pick']}">{tabs}</div>
-      </div>
-      <div class="agents-how">
-        <ol class="agent-steps">
-          <li><span class="step-n" aria-hidden="true">1</span><div>
-            <h3>{e['agents_s1_t']}</h3><p>{with_name('agents_s1')}</p>
-            <div class="copy-row"><code id="agent-mcp">{MCP_URL.replace('/mcp', '<wbr>/mcp')}</code>{copy('agent-mcp')}</div>
-          </div></li>
-          <li><span class="step-n" aria-hidden="true">2</span><div>
-            <h3>{e['agents_s2_t']}</h3><p>{with_name('agents_s2')}</p>
-            <ul class="agent-needs">{items('agents_needs')}</ul>
-          </div></li>
-          <li><span class="step-n" aria-hidden="true">3</span><div>
-            <h3>{e['agents_s3_t']}</h3><p>{e['agents_s3']}</p>
-            <div class="copy-row"><blockquote id="agent-prompt">{e['agents_prompt']}</blockquote>{copy('agent-prompt')}</div>
-            <p class="agent-ex-t">{e['agents_examples_t']}</p>
-            <ul class="agent-examples">{items('agents_examples')}</ul>
-          </div></li>
-        </ol>
-        <p class="agents-note">{e['agents_note']}</p>
-      </div>
+      <figure class="agents-demo">
+        <video id="demo" muted loop playsinline controls preload="none" width="1920" height="1200"
+               poster="/mcp-demo.{lang}.jpg" aria-label="{e['demo_alt']}">
+          <source src="/mcp-demo.{lang}.mp4" type="video/mp4">
+          <source src="/mcp-demo.{lang}.webm" type="video/webm"></video>
+      </figure>
+      <ol class="agent-steps">
+        {step(1, "")}
+        {step(2, "")}
+        {step(3, f'<div class="copy-row"><blockquote id="agent-prompt">{e["agents_prompt"]}</blockquote>{copy("agent-prompt")}</div>')}
+      </ol>
     </div>
+    <div class="agents-with"><span>{e['agents_with']}</span><span class="agent-logos">{logos}</span>
+      <span class="agents-best">{e['agents_best']}</span></div>
   </section>"""
 
 
