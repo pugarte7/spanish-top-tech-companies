@@ -243,6 +243,9 @@ THEME_ICON = ('<svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path fi
 DOWN_ICON = ('<svg class="down" viewBox="0 0 12 12" aria-hidden="true" fill="none" stroke="currentColor" '
              'stroke-width="1.5"><path d="M6 1v9M2 6.5 6 10.5l4-4"/></svg>')
 # The brand's mark: the eight-point star of the lacería behind the header, drawn in the bar's colour.
+LINK_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" '
+             'stroke-linecap="round"><path d="M6.8 9.2a3 3 0 0 0 4.2 0l2.2-2.2a3 3 0 0 0-4.2-4.2l-.9.9"/>'
+             '<path d="M9.2 6.8a3 3 0 0 0-4.2 0L2.8 9a3 3 0 0 0 4.2 4.2l.9-.9"/></svg>')
 # Two sheets, the one in front being the copy; a tick once copied.
 COPY_ICON = ('<svg class="copy" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" '
              'stroke-width="1.4" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/>'
@@ -1188,7 +1191,7 @@ def agents_section(e: dict, lang: str) -> str:
     </div>
     <div class="agents-with"><div class="agent-logos" role="group" aria-label="{e['agents_pick']}">{logos}</div>
       <div class="agent-bubble" id="agent-bubble" hidden><p><b id="ab-name"></b><span id="ab-by"></span></p>
-        <a id="ab-get" target="_blank" rel="noopener">{e['agents_get']} {OUT_ICON}</a></div></div>
+        <a id="ab-get" target="_blank" rel="noopener" aria-label="{e['agents_get']}" title="{e['agents_get']}">{LINK_ICON}</a></div></div>
   </section>"""
 
 
