@@ -364,11 +364,10 @@ STRINGS = {
         "agents_title": "How it works",
         "how1_t": "Connect your agent",
         "how1": "Paste this link into the chat or add it as an MCP server.",
-        "how2_t": "Give it your CV, once",
-        "how2": "And where you want to work and the salary you ask for. It stays with your agent: "
-                "the site keeps nothing of yours.",
-        "how3_t": "Tell it what you want",
-        "how3": "It shows you each application in full and sends it when you say yes.",
+        "how2_t": "Give it your profile",
+        "how2": "Your CV and whatever else you want to tell it. It asks for anything it needs to apply.",
+        "how3_t": "Start applying",
+        "how3": "Tell it what you are looking for and it offers you the openings that fit you best.",
         "agents_pick": "Agents it works with", "agents_get": "Download",
         "copy": "Copy", "copied": "Copied",
         "description": "What software engineers earn in Spain and which tech companies pay most: "
@@ -481,11 +480,10 @@ STRINGS = {
         "agents_title": "Así funciona",
         "how1_t": "Conecta tu agente",
         "how1": "Pégale este enlace en el chat o añádelo como servidor MCP.",
-        "how2_t": "Dale tu CV, una vez",
-        "how2": "Y dónde quieres trabajar y el sueldo que pides. Se queda en tu agente: la web no "
-                "guarda nada tuyo.",
-        "how3_t": "Dile qué buscas",
-        "how3": "Te enseña cada solicitud completa y la envía cuando le dices que sí.",
+        "how2_t": "Pásale tu perfil",
+        "how2": "Tu CV y lo que quieras contarle. Te preguntará los datos que necesite para aplicar.",
+        "how3_t": "Ponte a aplicar",
+        "how3": "Dile qué buscas y te ofrecerá las ofertas que mejor encajan contigo.",
         "agents_pick": "Agentes con los que funciona", "agents_get": "Descargar",
         "copy": "Copiar", "copied": "Copiado",
         "description": "Cuánto cobra un programador en España y qué empresas tecnológicas pagan más: "
