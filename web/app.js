@@ -983,6 +983,22 @@ function starPrompt() {
   };
 }
 
+// The topbar's star count is the one GitHub gave the build, once a day; this
+// brings it up to the minute (ten, the CDN's cache). On any failure the
+// built count stays.
+async function freshStars() {
+  const link = document.querySelector(".gh-stars"), span = link?.querySelector("span");
+  if (!span) return;
+  try {
+    const { stars } = await (await fetch("/api/stars")).json();
+    if (!Number.isInteger(stars)) return;
+    const old = span.textContent, now = String(stars).replace(/\B(?=(\d{3})+(?!\d))/g, LANG === "es" ? "." : ",");
+    if (old === now) return;
+    span.textContent = now;
+    for (const a of ["title", "aria-label"]) link.setAttribute(a, link.getAttribute(a).replace(old, now));
+  } catch { /* offline or refused: keep the built count */ }
+}
+
 // --- render -------------------------------------------------------------------
 async function main() {
   D = await (await fetch(`/api/v1/data.json?v=${window.DATA_V}`)).json();
@@ -1021,3 +1037,4 @@ async function main() {
   companies();
 }
 main();
+freshStars();
