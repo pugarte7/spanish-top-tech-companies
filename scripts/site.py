@@ -243,6 +243,13 @@ THEME_ICON = ('<svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path fi
 DOWN_ICON = ('<svg class="down" viewBox="0 0 12 12" aria-hidden="true" fill="none" stroke="currentColor" '
              'stroke-width="1.5"><path d="M6 1v9M2 6.5 6 10.5l4-4"/></svg>')
 # The brand's mark: the eight-point star of the lacería behind the header, drawn in the bar's colour.
+# Two sheets, the one in front being the copy; a tick once copied.
+COPY_ICON = ('<svg class="copy" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" '
+             'stroke-width="1.4" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/>'
+             '<path d="M10.5 3.5v-.5A1.5 1.5 0 0 0 9 1.5H4A1.5 1.5 0 0 0 2.5 3v5A1.5 1.5 0 0 0 4 9.5h.5"/></svg>'
+             '<svg class="ok" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" '
+             'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>')
+
 EMBLEM = ('<svg class="emblem" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" '
           'stroke-width="1" stroke-linejoin="round"><path d="M23,12L19.78,15.22L19.78,19.78L15.22,19.78L12,23'
           'L8.78,19.78L4.22,19.78L4.22,15.22L1,12L4.22,8.78L4.22,4.22L8.78,4.22L12,1L15.22,4.22L19.78,4.22'
@@ -356,15 +363,13 @@ STRINGS = {
         "any": "Any", "loading": "Loading…", "load_failed": "The table could not load.", "retry": "Retry", "from": "From", "to": "To",
         "agents_title": "How it works",
         "how1_t": "Connect your agent",
-        "how1": "With the link above: paste it into the chat or add it as an MCP server.",
+        "how1": "Paste this link into the chat or add it as an MCP server.",
         "how2_t": "Give it your CV, once",
         "how2": "And where you want to work and the salary you ask for. It stays with your agent: "
                 "the site keeps nothing of yours.",
         "how3_t": "Tell it what you want",
         "how3": "It shows you each application in full and sends it when you say yes.",
-        "agents_prompt": "Apply for me to openings at the companies on spanishtoptechcompanies.com "
-                         "that pay 60,000 € or more to someone with my experience in Madrid.",
-        "agents_with": "Works with", "agents_best": "Best with Instinct, or else Claude Code",
+        "agents_best": "Best with Instinct, or else Claude Code",
         "copy": "Copy", "copied": "Copied",
         "description": "What software engineers earn in Spain and which tech companies pay most: "
                        "median base salary by company, role, experience and city, from real salaries.",
@@ -475,15 +480,13 @@ STRINGS = {
         "any": "Cualquiera", "loading": "Cargando…", "load_failed": "No se pudo cargar la tabla.", "retry": "Reintentar", "from": "Desde", "to": "Hasta",
         "agents_title": "Así funciona",
         "how1_t": "Conecta tu agente",
-        "how1": "Con el enlace de arriba: pégaselo en el chat o añádelo como servidor MCP.",
+        "how1": "Pégale este enlace en el chat o añádelo como servidor MCP.",
         "how2_t": "Dale tu CV, una vez",
         "how2": "Y dónde quieres trabajar y el sueldo que pides. Se queda en tu agente: la web no "
                 "guarda nada tuyo.",
         "how3_t": "Dile qué buscas",
         "how3": "Te enseña cada solicitud completa y la envía cuando le dices que sí.",
-        "agents_prompt": "Aplica por mí a las ofertas de las empresas de spanishtoptechcompanies.com "
-                         "que pagan 60.000 € o más a alguien con mi experiencia en Madrid.",
-        "agents_with": "Funciona con", "agents_best": "Mejor con Instinct y, si no, con Claude Code",
+        "agents_best": "Mejor con Instinct y, si no, con Claude Code",
         "copy": "Copiar", "copied": "Copiado",
         "description": "Cuánto cobra un programador en España y qué empresas tecnológicas pagan más: "
                        "sueldo base mediano por empresa, rol, experiencia y comunidad, con salarios reales.",
@@ -1144,6 +1147,15 @@ def strings(lang: str, data: dict) -> dict:
     return out
 
 
+def copy_box(e: dict, target: str) -> str:
+    """The /mcp link in a box with its copy button inside. The scheme is
+    copied but not shown, so the address fits one line."""
+    url = MCP_URL.replace("https://", '<span class="scheme">https://</span>').replace("/mcp", "<wbr>/mcp")
+    return (f'<div class="copy-box"><code id="{target}">{url}</code>'
+            f'<button class="copy-btn" type="button" data-copy="{target}" aria-label="{e["copy"]}" '
+            f'title="{e["copy"]}">{COPY_ICON}</button></div>')
+
+
 def agent_tile(i: int, cls: str = "agent-tile") -> str:
     logo, fit, bg = AGENTS[i][2:5]
     return (f'<span class="{cls}" style="background:{bg}">'
@@ -1152,9 +1164,7 @@ def agent_tile(i: int, cls: str = "agent-tile") -> str:
 
 def agents_section(e: dict, lang: str) -> str:
     """How it works: the recorded demo beside three short steps, then the
-    agents it works with. The /mcp link is the header's; the steps point to it."""
-    copy = lambda target: (f'<button class="copy-btn" type="button" data-copy="{target}">'
-                           f'{e["copy"]}</button>')
+    agents it works with."""
     step = lambda n, body: (f'<li><span class="step-n" aria-hidden="true">{n}</span><div>'
                             f'<h3>{e[f"how{n}_t"]}</h3><p>{e[f"how{n}"]}</p>{body}</div></li>')
     logos = "".join(
@@ -1172,12 +1182,12 @@ def agents_section(e: dict, lang: str) -> str:
           <source src="/mcp-demo.{lang}.webm" type="video/webm"></video>
       </figure>
       <ol class="agent-steps">
-        {step(1, "")}
+        {step(1, copy_box(e, "agent-mcp"))}
         {step(2, "")}
-        {step(3, f'<div class="copy-row"><blockquote id="agent-prompt">{e["agents_prompt"]}</blockquote>{copy("agent-prompt")}</div>')}
+        {step(3, "")}
       </ol>
     </div>
-    <div class="agents-with"><span>{e['agents_with']}</span><span class="agent-logos">{logos}</span>
+    <div class="agents-with"><span class="agent-logos">{logos}</span>
       <span class="agents-best">{e['agents_best']}</span></div>
   </section>"""
 
@@ -1355,8 +1365,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     <nav class="cta" aria-label="{e['hero_start']}">
       <div class="hero-mcp wide">
         <p>{e['hero_mcp']}</p>
-        <div class="hero-mcp-row"><code id="hero-mcp">{MCP_URL.replace('https://', '<span class="scheme">https://</span>').replace('/mcp', '<wbr>/mcp')}</code>
-          <button class="copy-btn" type="button" data-copy="hero-mcp">{e['copy']}</button></div>
+        {copy_box(e, "hero-mcp")}
       </div>
       <a class="btn main" href="#agents">{e['hero_start']} {DOWN_ICON}</a>
       <a class="btn alt" href="#companies-card">{e['hero_see']}</a>

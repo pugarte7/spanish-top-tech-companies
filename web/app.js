@@ -841,15 +841,16 @@ function companies() {
 // who ask for less motion.
 const STILL = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// The copy buttons (the header's /mcp link, the request to paste) and which
-// agent a reader goes to get.
+// The copy buttons of the /mcp link (header and step 1), a tick for two seconds
+// once copied, and which agent a reader goes to get.
 function agents() {
   document.querySelectorAll(".copy-btn").forEach((b) => {
     b.onclick = async () => {
       try { await navigator.clipboard.writeText($(b.dataset.copy).textContent.trim()); } catch { return; }
       track("copy", { what: b.dataset.copy });
-      b.textContent = S.copied;
-      setTimeout(() => { b.textContent = S.copy; }, 2000);
+      const say = (on) => { b.classList.toggle("done", on); b.title = on ? S.copied : S.copy; b.setAttribute("aria-label", b.title); };
+      say(true);
+      setTimeout(() => say(false), 2000);
     };
   });
   document.querySelectorAll(".agent-link").forEach((a) => {
