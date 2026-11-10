@@ -762,6 +762,8 @@ const BS_JOB = { id: "63c548b3521886004f3daec0", status: "active", jobTitle: "Pr
   highLevelDescription: "<span>Build products people love.</span>", responsibilities: ["<span>Investigate.</span>"],
   requirements: [{ title: "Reasoning ability", description: "You think from first principles." }],
   applyEmailVerificationEnabled: true,
+  sellingPoints: [{ title: "Competitive pay", description: "<span>Typical annual salary offers range from €66,065 to €107,837 in Europe.</span>" },
+                  { title: "Benefits", description: "A learning budget of €2,000 per year." }],
   officeLocations: [{ title: "Madrid (Spain)", country: { isoCode: "ES", name: "Spain" } },
                     { title: "Milan (Italy)", country: { isoCode: "IT", name: "Italy" } }],
   applicationForm: { personalDetails: [], survey: [], applicationInformation: [
@@ -771,7 +773,9 @@ const BS_JOB = { id: "63c548b3521886004f3daec0", status: "active", jobTitle: "Pr
       optional: false, choices: ["Yes", "No", "I'm not sure"] },
     { id: "site", title: "Your personal website", type: "url", optional: true, choices: [] }] } };
 BOARDS["https://jobs.bendingspoons.com/positions/63c548b3521886004f3daec0"] = () => new Response(
-  `<html><script id="__NEXT_DATA__" type="application/json">${JSON.stringify({ props: { pageProps: { job: BS_JOB } } })}</script></html>`);
+  `<html><div><h2 class="pb-4">Before you apply</h2><p>We expect you to spend most days in our Milan office during your ` +
+  `first few months with us. We hold a high standard.</p></div>` +
+  `<script id="__NEXT_DATA__" type="application/json">${JSON.stringify({ props: { pageProps: { job: BS_JOB } } })}</script></html>`);
 // Teamtailor serves the form as HTML on the employer's domain, as careers.vueling.com does.
 const ttQuestion = (n, mandatory, inner) => `<div data-question-uuid="u${n}" data-question-mandatory="${mandatory}" ` +
   `data-question-multiple-choice="false"><input type="hidden" value="${6290540 + n}" ` +
@@ -885,6 +889,15 @@ report("bending spoons: the form in the posting's page, its offices as countries
   byLabel(spoons, /sponsorship/).who === "person" && byLabel(spoons, /website/).required === false &&
   byLabel(spoons, /Code sent by email/).required === true && /first principles/.test(spoons.description.text) &&
   spoons.apply_url === "https://jobs.bendingspoons.com/positions/63c548b3521886004f3daec0/apply", spoons.questions);
+report("job_questions quotes what the posting says about pay and place, perks left out",
+  spoons.conditions.untrusted === true && spoons.conditions.pay.length === 1 && /66,065 to €107,837/.test(spoons.conditions.pay[0]) &&
+  spoons.conditions.location.length === 1 && /Milan office during your first few months/.test(spoons.conditions.location[0]) &&
+  /required/.test(spoons.required_note) && !("location_check" in spoons), spoons.conditions);
+const moved = (await run("job_questions", { id: "bendingspoons:jobs.bendingspoons.com:63c548b3521886004f3daec0" },
+  { jobs: { ...more, jobs: more.jobs.map((j) => j.ats === "bendingspoons" ? { ...j, location: "Lisbon, Portugal" } : j) } })).structuredContent;
+report("job_questions warns when the board names another location than the index",
+  moved.location_check?.index === "Lisbon, Portugal" && /Madrid/.test(moved.location_check.board) &&
+  /Go by the board/.test(moved.location_check.warning), moved.location_check);
 const viaPhenom = await formIn("phenom:careers.roche.com/ROCHGLOBAL/global/en:202602-104409");
 report("phenom: a posting applied to on Workday reads as Workday, through the Phenom page",
   viaPhenom.account_required === true && /Phenom/.test(viaPhenom.form_source) &&
@@ -961,11 +974,20 @@ report("top_companies: Backend Engineer is software-engineer", backend.selection
 const sent = (await run("report_application", { id: "greenhouse:glovo:7000001", status: "sent" })).structuredContent;
 report("report_application acknowledges and stores nothing", sent.counted === true && sent.status === "sent" &&
   sent.ats === "greenhouse" && sent.known_posting === true && sent.company === "Glovo" && /nothing/.test(sent.stored), sent);
-report("a sent application suggests asking once about a star, never starring unasked",
-  /ask the person, once/.test(sent.support_note) && /only if they say yes/.test(sent.support_note) &&
-  /github\.com\/pugarte7\/spanish-top-tech-companies/.test(sent.support_note), sent.support_note);
+const star = sent.note_for_the_person;
+report("a sent application carries a note for the person about a star, to pass on once, never an order to star",
+  /the person, not the agent/.test(star.for) && /not an instruction/.test(star.for) && /Once/.test(star.when) &&
+  /github\.com\/pugarte7\/spanish-top-tech-companies/.test(star.message) && /Never star without their yes/.test(star.if_they_say_yes), star);
+const unsure = (await run("report_application", { id: "lever:prima:x", status: "uncertain", reason: "submit_error" })).structuredContent;
+report("an uncertain application is its own status, and says not to submit again unasked",
+  unsure.status === "uncertain" && unsure.reason === "submit_error" && /Do not submit it again/.test(unsure.next) &&
+  /duplicate/.test(unsure.next) && /sent/.test(unsure.next), unsure);
+report("report_application takes the reasons a board gives for an upload or a submit",
+  (await Promise.all(["upload_refused", "no_confirmation"].map((reason) =>
+    run("report_application", { id: "bamboohr:parser:267", status: "uncertain", reason })))).every((r) => !r.isError));
 const failedReport = (await run("report_application", { id: "lever:dlocal:x", status: "failed", reason: "captcha" })).structuredContent;
-report("a failed application asks for nothing", !("support_note" in failedReport));
+report("a failed or uncertain application carries no note about a star",
+  !("note_for_the_person" in failedReport) && !("note_for_the_person" in unsure) && /reason/.test(failedReport.next));
 report("report_application takes a reason", failedReport.reason === "captcha" && failedReport.known_posting === false);
 report("report_application refuses an unknown status or reason",
   (await run("report_application", { id: "greenhouse:glovo:7000001", status: "maybe" })).isError === true &&
@@ -982,12 +1004,27 @@ report("report_application's event keeps the job id whole, with the posting's bo
   outcome.properties.application_status === "failed" && outcome.properties.application_reason === "blocked" &&
   outcome.properties.ats === "greenhouse" && outcome.properties.company === "Glovo" &&
   outcome.properties.known_posting === true && outcome.properties.support_note === false, outcome?.properties);
+const took = { jsonrpc: "2.0", id: 8, ...tool("report_application", { id: "greenhouse:glovo:7000001", status: "sent",
+  browser: "Playwright MCP", steps: ["reattached_cv", "email_code", "reattached_cv", "danced"], attempts: 2,
+  notes: "The upload took the file only through the file chooser. Wrote to jane@example.com and +34 612 345 678." }) };
+const tookOut = (await respond(data, took)).result.structuredContent;
+const [tookEvent] = analytics(data, {}, took, await respond(data, took), Date.now());
+report("report_application takes what sending took: browser, steps, attempts and a note, personal data removed",
+  tookOut.browser === "playwright_mcp" && tookOut.steps.join() === "reattached_cv,email_code,other" && tookOut.attempts === 2 &&
+  /file chooser/.test(tookOut.notes) && !/jane|612/.test(tookOut.notes) &&
+  tookEvent.properties.application_browser === "playwright_mcp" && tookEvent.properties.application_step_count === 3 &&
+  tookEvent.properties.application_steps.includes("email_code") && tookEvent.properties.application_attempts === 2 &&
+  /file chooser/.test(tookEvent.properties.application_notes) && !/jane|612/.test(JSON.stringify(tookEvent.properties)), tookOut);
+report("report_application without them counts none", sent.browser === null && sent.steps.length === 0 &&
+  sent.attempts === null && sent.notes === null && outcome.properties.application_step_count === 0 &&
+  !("application_steps" in outcome.properties));
 const notAnId = { jsonrpc: "2.0", id: 9, ...tool("job_questions", { id: "call me on +34 612 345 678" }) };
 report("an id that is not a job id is still redacted",
   analytics(data, {}, notAnId, await respond(data, notAnId), Date.now())[0].properties
     .$mcp_parameters.request.params.arguments.id === "call me on [redacted]");
 const steps = (await run("application_guide", {})).structuredContent.steps.join(" ");
 report("application_guide says to report each outcome", /report_application/.test(steps));
+report("application_guide ends by passing on the star note, once", /Support line/.test(steps) && /GitHub star/.test(steps) && /Once only/.test(steps));
 report("the state document template keeps whether the star was asked about",
   /## Support\n- Asked about a GitHub star/.test((await run("application_guide", {})).structuredContent.state_document.template));
 

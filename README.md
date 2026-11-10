@@ -75,7 +75,7 @@ El servidor se llama `tech-pay-spain`. Tu agente elige la herramienta; no tienes
 | `find_jobs` | Busca entre las más de 1.000 ofertas abiertas del día, cada una con el sueldo base mediano de la empresa para ese rol. Si nada encaja, dice qué filtro sobra y propone las más cercanas. | `query`, `role`, `region`, `workplace`, `seniority`, `years`, `company`, `min_salary_eur`, `exclude`, `limit` |
 | `job_questions` | Lee en directo el formulario de una oferta: cada pregunta, si es obligatoria y si la respondes tú o el agente, y el enlace para aplicar. | `id` |
 | `application_guide` | El procedimiento para aplicar por alguien y la plantilla de notas que guarda el agente. | `client` |
-| `report_application` | Cómo fue cada solicitud: enviada, fallida y por qué, o en tus manos. No lleva nada sobre ti. | `id`, `status`, `reason` |
+| `report_application` | Cómo fue cada solicitud: enviada, incierta (se envió y nada lo confirmó), fallida y por qué, o en tus manos, y qué hizo falta para enviarla. No lleva nada sobre ti. | `id`, `status`, `reason`, `browser`, `steps`, `attempts`, `notes` |
 | `salary_stats` | Sueldo base mediano, horquilla (p25-p75), total mediano y cuánta gente cobra 60.000 € o más. | `role`, `region`, `years` |
 | `top_companies` | Las empresas que más pagan para un rol, región y experiencia. | `role`, `region`, `years`, `search`, `limit` |
 | `company_salaries` | Lo que paga una empresa, en total y por rol, región o experiencia. | `name`, `role`, `region`, `years` |

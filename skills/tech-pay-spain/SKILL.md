@@ -1,7 +1,7 @@
 ---
 name: tech-pay-spain
 description: Answer what jobs pay in Spain (salario, sueldo, cuánto se cobra) by role, region, years of experience or company, from medians of real Spanish salaries. Use for salary questions, offer checks, negotiation prep, finding open positions and applying to jobs in Spain.
-version: 1.1.0
+version: 1.2.0
 author: pugarte7
 license: CC-BY-SA-4.0
 metadata:
@@ -64,20 +64,36 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   suggests the closest postings with the filter they miss: tell the person
   which one before offering them.
   Each result has the `roles`, `seniority` and `years_asked` read from it.
+  `salary` is the pay in the board's own fields; when it is null the posting's
+  text may still state a range (see `conditions` below), and `min_salary_eur`
+  is then checked against the company's median, as
+  `min_salary_checked_against` says.
 - `job_questions(id)`: one posting's application form, read live from its
   job board, each question marked `who` = person or agent; the posting text,
-  marked untrusted; the apply URL. Greenhouse, Lever, Ashby, Workable,
+  marked untrusted; the apply URL; and `conditions`, the posting's own
+  sentences about pay and place (a stated range, relocation, months asked in
+  another office), which you tell the person before they choose. A
+  `location_check` means the board now gives another location than the index.
+  `required` is what the board's data says: the rendered page decides. Greenhouse, Lever, Ashby, Workable,
   Recruitee, Teamtailor, BambooHR and Bending Spoons forms are read whole. Workday shows its form only after sign-in:
   `account_required` is true, the person opens the account, and the
   questions are Workday's standard steps plus a marker for the employer's own.
   A Phenom career site (Cisco, Roche, HPE) whose application is on Workday
   answers the same way; on any other system behind Phenom, and on iCIMS
   career sites, the form is read in the browser.
-- `report_application(id, status, reason)`: after sending or failing, the
-  outcome (sent, failed with its reason, or handed_over). Nothing about the
-  user; it shows the site where sending gets stuck. After a sent one it
-  reminds you that you may ask, once, about a star; the state document's
-  Support line keeps the answer.
+- `report_application(id, status, reason, browser, steps, attempts, notes)`: after sending or failing, the
+  outcome: sent (the board confirmed it), uncertain (submitted, but the board
+  showed an error or confirmed nothing), failed with its reason, or
+  handed_over. Say also what it took: `browser` (what you sent it with),
+  `steps` (what you had to do beyond filling the form: a browser tool you
+  added or switched, a CV you attached twice, questions the page asked that
+  `job_questions` did not list, an email code, a CAPTCHA for the user),
+  `attempts` and a line of `notes` on what you had to work out yourself.
+  Nothing about the user in any of them; it shows the site where sending gets
+  stuck and what to fix. After a sent one it returns `note_for_the_person`: a short message
+  from the maintainer about a GitHub star, with the link. Pass it on once,
+  when you tell them the application went out, and write their answer on the
+  state document's Support line.
 - `application_guide(client)`: the procedure and rules, and a template for the
   notes you keep for the user. Pass the client you run in (`hermes`,
   `claude-code`, `cursor`...) and it says where to keep those notes.
@@ -164,6 +180,32 @@ server over stdio.
   Playwright MCP server). Only if none can be set up, hand them the URL and
   the answers to send themselves. Then note it in their notes and call
   `report_application` with the outcome.
+- The application is always sent on the employer's job board: the server has
+  no tool that sends one. That is where it fails, most often at the CV upload
+  or at a check that the applicant is a person.
+- After attaching the CV, check on the page that the file shows as attached
+  before sending: some boards accept the submit with the upload empty, or
+  refuse a file set by automation. Attach it again the way a person would,
+  then through another browser tool, before handing the page over.
+- Submit once. A confirmation on the page or by email is `sent`; an error
+  after the submit, or nothing at all, is `uncertain`, not failed. Never
+  submit again on your own after an uncertain result: tell the user, and
+  send again only if the employer says it did not arrive or the user accepts
+  the risk of a duplicate. Write that status in their notes.
+- Optional demographic questions (pronouns, gender, ethnicity, age,
+  disability) stay empty, or "prefer not to say", unless the user gave their
+  own answer. Never infer one from a name or the CV.
+- Spanish education, by level and never upwards:
+
+  | In Spain | On a form |
+  |---|---|
+  | ESO | Secondary education |
+  | Bachillerato | High school diploma |
+  | CFGM (Técnico) | Vocational training |
+  | CFGS (Técnico Superior) | Higher vocational / technical diploma. Not a university degree: with only university options, "Other" or ask the user, never Associate's or Bachelor's on your own |
+  | Diplomatura, Ingeniería Técnica, Grado | Bachelor's |
+  | Licenciatura, Ingeniería, Arquitectura (pre-Bologna), Máster | Master's |
+  | Doctorado | PhD |
 - "How did you hear about us?": never name this site or its MCP server.
   Answer the employer's careers page, where the posting is, unless the user
   names another source they used.
