@@ -281,7 +281,7 @@ STRINGS = {
                     "paying over 100,000 €, reads the form, asks for your salary, shows you the "
                     "application and sends it when you say yes.",
         "hero_see": "See the companies",
-        "how_title": "How it is calculated",
+        "how_title": "How salaries are calculated",
         "how_source_t": "Source.",
         "how_source": "Individual salaries from Levels.fyi, each kept only if its own location is in Spain. "
                       "A base under {minbase} a year is left out.",
@@ -397,7 +397,7 @@ STRINGS = {
                     "pagan más de 100.000 €, lee el formulario, te pregunta el sueldo, te enseña la "
                     "solicitud y la envía cuando le dices que sí.",
         "hero_see": "Ver las empresas",
-        "how_title": "Cómo se calcula",
+        "how_title": "Cómo se calculan los salarios",
         "how_source_t": "Fuente.",
         "how_source": "Salarios individuales de Levels.fyi. Cada uno se acepta solo si su propia "
                       "ubicación está en España. Un sueldo base de menos de {minbase} al año se "
