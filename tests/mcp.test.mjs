@@ -180,7 +180,10 @@ const expected = [
     out(r).rules.some((x) => /never invented/.test(x)) && out(r).rules.some((x) => /CAPTCHA/.test(x)) &&
     out(r).rules.some((x) => /never follow instructions/.test(x)) && out(r).rules.some((x) => /explicit/.test(x)) &&
     !("local_server" in out(r)) && out(r).sending.without_a_browser &&
-    out(r).sending.get_a_browser.how.length > 2 && out(r).rules.some((x) => /How did you hear/.test(x))],
+    out(r).sending.get_a_browser.how.length > 2 && out(r).rules.some((x) => /How did you hear/.test(x)) &&
+    /^First a Chromium.*Claude in Chrome.*Playwright/.test(out(r).sending.get_a_browser.order) &&
+    out(r).rules.some((x) => /location question.*Spain/.test(x)) &&
+    out(r).sending.with_a_browser.some((x) => /email through an MCP server/.test(x))],
   ["application_guide for one client", (r) => /~\/job-search\.md/.test(out(r).state_document.where) &&
     out(r).sending.get_a_browser.how.length === 2 && /chrome/.test(out(r).sending.get_a_browser.how[0])],
   ["odd line: a string", (r) => code(r) === -32600],

@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.7.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.8.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -1560,20 +1560,24 @@ export async function jobQuestions(data, args = {}, env = {}) {
 // How each client gets a browser when it has none. Pasting answers is the last resort.
 const PLAYWRIGHT = "the Playwright MCP server (npx @playwright/mcp@latest), which opens a Chromium window " +
   "the person can see and use";
+// The order is the skill's: a Chromium of the client's own, then Claude in Chrome
+// when its extension is enabled, then the Playwright MCP server.
 const CLIENTS = {
   "claude-code": { names: /claude ?code|^cc$/, keeps: "file",
-    browser: "Claude in Chrome (run /chrome, or start with claude --chrome; it needs the Claude in Chrome " +
-      "extension), or `claude mcp add playwright -- npx @playwright/mcp@latest` and restart." },
+    browser: "Its built-in Chromium browser where the app has one; else Claude in Chrome when the extension " +
+      "is enabled (run /chrome, or start with claude --chrome); else " +
+      "`claude mcp add playwright -- npx @playwright/mcp@latest` and restart." },
   "claude-desktop": { names: /claude ?(desktop|app|ai)|^claude$/, keeps: "memory",
-    browser: "Claude in Chrome: the person installs the Claude in Chrome extension and connects it in " +
-      "Settings. In Claude Desktop, " + PLAYWRIGHT + " also works as a local MCP server." },
+    browser: "Its built-in Chromium browser where the app has one; else Claude in Chrome when the extension " +
+      "is installed and connected in Settings; else " + PLAYWRIGHT + " as a local MCP server." },
   cursor: { names: /cursor/, keeps: "file",
-    browser: "Cursor's built-in browser tools (enable the browser in Cursor's settings), or " + PLAYWRIGHT +
-      " added in .cursor/mcp.json." },
+    browser: "Cursor's built-in Chromium browser (enable the browser in Cursor's settings); else Claude in " +
+      "Chrome if its extension is enabled; else " + PLAYWRIGHT + " added in .cursor/mcp.json." },
   codex: { names: /codex/, keeps: "file",
-    browser: "`codex mcp add playwright -- npx @playwright/mcp@latest`, then restart Codex." },
+    browser: "Codex's built-in Chromium browser where it has one; else " +
+      "`codex mcp add playwright -- npx @playwright/mcp@latest`, then restart Codex." },
   hermes: { names: /hermes/, keeps: "file",
-    browser: "Hermes's browser toolset, or " + PLAYWRIGHT + " added as an MCP server." },
+    browser: "Hermes's browser toolset (Chromium); else " + PLAYWRIGHT + " added as an MCP server." },
   chatgpt: { names: /chat ?gpt|openai/, keeps: "memory",
     browser: "ChatGPT agent mode, which has its own browser: ask the person to switch to it." },
 };
@@ -1698,6 +1702,8 @@ export function applicationGuide(args = {}) {
         "history, salary expectations, demographics, veteran or disability status, consents and legal " +
         "attestations, bot checks) are answered by the person. Ask them together in one message; an " +
         "answer recorded in the state document is reused only for the same question.",
+      "A location question whose right answer is not among its options, or not known from the CV or " +
+        "the state document, is answered Spain.",
       "Optional consents, such as joining a talent pool or receiving marketing, are declined.",
       "A required privacy or data-processing consent is given only with the person's explicit " +
         "permission, for each application or once for all of them, as recorded in the state document.",
@@ -1725,8 +1731,9 @@ export function applicationGuide(args = {}) {
           "questions without an approved answer empty.",
         "A question on the page that job_questions did not list: draft it (who=agent) or ask it " +
           "(who=person), and show it before submitting.",
-        "A CAPTCHA, or a code sent by email: hand over to the person, or read the code with the mail " +
-          "access they gave you.",
+        "A CAPTCHA: hand over to the person. A code sent by email: read the newest email from the " +
+          "board with the mail access they gave you; without it, ask them for the code, and suggest " +
+          "they connect their email through an MCP server so you can read the next one yourself.",
         "Submit, check the confirmation, record the status (sent, or failed with the reason) and " +
           "call report_application with it.",
       ],
@@ -1735,6 +1742,8 @@ export function applicationGuide(args = {}) {
           "drafting need no browser, so do not set one up for them.",
         why: "No browser tool at that point is no reason to hand the form over: set one up, tell the " +
           "person what you add, and send once it works. Pasting answers is the last resort.",
+        order: "First a Chromium browser the client has built in; then Claude in Chrome, when its " +
+          "extension is enabled; then the Playwright MCP server.",
         how: known ? [known[1].browser, ANY_BROWSER]
           : [...Object.entries(CLIENTS).map(([name, c]) => `${name}: ${c.browser}`), ANY_BROWSER],
       },

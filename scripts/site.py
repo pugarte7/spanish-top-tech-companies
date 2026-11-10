@@ -1903,7 +1903,8 @@ def agents_note() -> str:
             "page, unless they name another source. It needs their CV, where and how they want to work, the salary "
             "they ask for and their work authorization; ask for what is missing in one "
             "message. If a board emails a code, read it with the mail access the user gave "
-            "you or ask them. "
+            "you; without it, ask them for it and suggest they connect their email through an "
+            "MCP server so you can read the next one. "
             f"Who runs the site and what data it handles: {PUBLIC}/en/legal/.")
 
 
