@@ -983,6 +983,41 @@ function starPrompt() {
   };
 }
 
+// --- the header's card and the demo ----------------------------------------------
+// Today's postings: jobs-summary.json is written by scripts/jobs.mjs after the
+// build, so the card is filled here; without it the dashes stay.
+async function today() {
+  let t;
+  try { t = await (await fetch("/api/v1/jobs-summary.json", { cache: "no-cache" })).json(); } catch { return; }
+  if (!t?.postings) return;
+  const n = (v) => grouped(v);
+  $("t-postings").textContent = n(t.postings);
+  $("t-software").textContent = n(t.software);
+  $("t-companies").textContent = n(t.companies);
+  $("t-boards").textContent = n(t.boards);
+  const date = $("t-date");
+  date.textContent = date.dataset.tpl.replace("{date}", new Date(t.generated_at).toLocaleDateString(LOCALE,
+    { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Madrid" }));
+  const bars = $("t-bars");
+  const rows = Object.entries(t.regions).sort((a, b) => b[1] - a[1]).slice(0, 4)
+    .map(([code, v]) => [regionName(code), v]);
+  rows.push([bars.dataset.remote, t.remote]);
+  rows.sort((a, b) => b[1] - a[1]);
+  const top = rows[0][1];
+  bars.innerHTML = rows.map(([name, v]) =>
+    `<li><span>${esc(name)}</span><i><b style="width:${(100 * v / top).toFixed(1)}%"></b></i><strong>${n(v)}</strong></li>`).join("");
+}
+
+// The recorded demo plays, muted, while it is on screen, unless the reader
+// asked for less motion; its controls stay for pausing it.
+function demo() {
+  const v = $("demo");
+  if (!v || STILL) return;
+  new IntersectionObserver(([e]) => {
+    if (e.isIntersecting) v.play().catch(() => {}); else v.pause();
+  }, { threshold: 0.4 }).observe(v);
+}
+
 // --- render -------------------------------------------------------------------
 async function main() {
   D = await (await fetch(`/api/v1/data.json?v=${window.DATA_V}`)).json();
@@ -995,6 +1030,7 @@ async function main() {
   agents();
   starPrompt();
   kpis(); map();
+  today(); demo();
   // Again whenever the column changes width or the method opens, and once the fonts are in.
   // After the observer's turn: hugVeil resizes what it observes.
   new ResizeObserver(() => requestAnimationFrame(hugVeil)).observe(document.querySelector(".pitch"));

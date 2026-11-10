@@ -48,6 +48,8 @@ Más de 400 portales de empleo, más de 1.000 ofertas al día, todas con el suel
 
 Tu agente busca entre esas ofertas, lee el formulario, escribe la carta y las respuestas a partir de tu CV, te enseña la solicitud completa y la envía cuando le dices que sí.
 
+<img alt="Tu agente, conectado al MCP, busca ofertas senior en Barcelona de empresas que pagan más de 100.000 €, encuentra tres de Workato, lee su formulario, te pregunta el sueldo (110.000 €), te enseña la solicitud y la envía cuando le dices que sí" src="docs/img/mcp-demo.es.gif" width="100%">
+
 1. **Dale tu CV y lo que buscas.** Una sola vez, en el chat: tu CV, dónde y cómo quieres trabajar, el sueldo que pides y tu permiso de trabajo.
 2. **Dile que aplique.** Por ejemplo:
 

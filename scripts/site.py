@@ -258,11 +258,23 @@ STRINGS = {
     "en": {
         "title": "Spanish Top Tech Companies", "theme": "Light or dark mode",
         "page_title": "Software Engineer Salary in Spain ({year}): Best-Paying Tech Companies",
-        "h1": "The tech companies in Spain that pay the most",
+        "h1": "Today's tech openings in Spain, in your agent",
+        "pay_title": "The tech companies in Spain that pay the most",
         "source": "Data: Levels.fyi",
-        "hero_lede": "**{people} real salaries** from {levels}, at **{companies} companies** in Spain. "
-                     "See what each one pays by role, years of experience and region.",
-        "hero_see": "See the companies", "hero_by_role": "By role", "hero_by_region": "By region",
+        "hero_lede": "**Over 1,000 openings a day** at the tech companies in Spain, read every morning from "
+                     "over 400 job boards. Your agent searches them, writes the application from your CV "
+                     "and **sends it once you say yes**.",
+        "hero_mcp": "Add this link to your agent", "hero_start": "How to start",
+        "pay_lede": "**{people} real salaries** from {levels}, at **{companies} companies** in Spain. "
+                    "See what each one pays by role, years of experience and region.",
+        "today_title": "Open positions today", "today_read": "Read on {date}",
+        "today_remote": "Remote", "today_software": "in software engineering",
+        "today_companies": "companies hiring", "today_boards": "job boards read today",
+        "today_note": "A position open in several regions counts in each.",
+        "demo_alt": "Your agent, connected to the MCP, finds senior openings in Barcelona at companies "
+                    "paying over 100,000 €, reads the form, asks for your salary, shows you the "
+                    "application and sends it when you say yes.",
+        "hero_see": "See the companies",
         "hero_cut": "{bar} or more",
         "how_title": "How it is calculated",
         "how_source_t": "Source.",
@@ -392,11 +404,23 @@ STRINGS = {
     "es": {
         "title": "Spanish Top Tech Companies", "theme": "Modo claro u oscuro",
         "page_title": "Salario programador en España ({year}): las empresas tech que más pagan",
-        "h1": "Las empresas tech que más pagan en España",
+        "h1": "Las ofertas tech de hoy en España, en tu agente",
+        "pay_title": "Las empresas tech que más pagan en España",
         "source": "Datos: Levels.fyi",
-        "hero_lede": "**{people} salarios** reales de {levels}, de **{companies} empresas** en España. "
-                     "Mira cuánto paga cada una según el rol, los años de experiencia y la comunidad.",
-        "hero_see": "Ver las empresas", "hero_by_role": "Por rol", "hero_by_region": "Por comunidad",
+        "hero_lede": "**Más de 1.000 ofertas al día** en las empresas tech de España, leídas cada mañana "
+                     "de más de 400 portales. Tu agente las busca, prepara la solicitud con tu CV y "
+                     "**la envía cuando le dices que sí**.",
+        "hero_mcp": "Añade este enlace a tu agente", "hero_start": "Cómo empezar",
+        "pay_lede": "**{people} salarios** reales de {levels}, de **{companies} empresas** en España. "
+                    "Mira cuánto paga cada una según el rol, los años de experiencia y la comunidad.",
+        "today_title": "Ofertas abiertas hoy", "today_read": "Leídas el {date}",
+        "today_remote": "En remoto", "today_software": "de ingeniería de software",
+        "today_companies": "empresas contratando", "today_boards": "portales leídos hoy",
+        "today_note": "Una oferta abierta en varias comunidades cuenta en cada una.",
+        "demo_alt": "Tu agente, conectado al MCP, busca ofertas senior en Barcelona de empresas que "
+                    "pagan más de 100.000 €, lee el formulario, te pregunta el sueldo, te enseña la "
+                    "solicitud y la envía cuando le dices que sí.",
+        "hero_see": "Ver las empresas",
         "hero_cut": "{bar} o más",
         "how_title": "Cómo se calcula",
         "how_source_t": "Fuente.",
@@ -1186,7 +1210,7 @@ def agent_stack() -> str:
     return f'<span class="agent-stack" aria-hidden="true">{tiles}</span>'
 
 
-def agents_section(e: dict) -> str:
+def agents_section(e: dict, lang: str) -> str:
     name = f'<span class="agent-name">{html.escape(AGENTS[0][0])}</span>'
     with_name = lambda k: e[k].replace("{name}", name)
     tabs = "".join(
@@ -1201,6 +1225,12 @@ def agents_section(e: dict) -> str:
   <section class="tile wide agents" id="agents" aria-labelledby="agents-title">
     <h2 id="agents-title" tabindex="-1">{e['agents_title']}</h2>
     <p class="lede">{e['agents_lede']}</p>
+    <figure class="agents-demo">
+      <video id="demo" muted loop playsinline controls preload="none" width="1440" height="900"
+             poster="/mcp-demo.{lang}.jpg" aria-label="{e['demo_alt']}">
+        <source src="/mcp-demo.{lang}.mp4" type="video/mp4">
+        <source src="/mcp-demo.{lang}.webm" type="video/webm"></video>
+    </figure>
     <div class="agents-grid">
       <div class="agents-stage field tiled">{WALL}
         {agent_stack()}
@@ -1229,6 +1259,20 @@ def agents_section(e: dict) -> str:
       </div>
     </div>
   </section>"""
+
+
+def today_card(e: dict) -> str:
+    """The header's card: today's open postings, from /api/v1/jobs-summary.json,
+    which scripts/jobs.mjs writes after this build; app.js fills it in."""
+    stat = lambda k, n: f'<div><dt>{e[k]}</dt><dd id="{n}">—</dd></div>'
+    return f"""<article class="hero-card today-card" aria-labelledby="today-title">
+    <div class="hero-card-head"><span id="today-title">{e['today_title']}</span>
+      <span id="t-date" data-tpl="{e['today_read']}"></span></div>
+    <p class="hero-median" id="t-postings">—</p>
+    <ol class="t-bars" id="t-bars" data-remote="{e['today_remote']}"></ol>
+    <dl class="hero-stats">{stat('today_software', 't-software')}{stat('today_companies', 't-companies')}{stat('today_boards', 't-boards')}</dl>
+    <p class="t-note">{e['today_note']}</p>
+  </article>"""
 
 
 def noscript_companies(e: dict, data: dict) -> str:
@@ -1351,8 +1395,9 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     steps = "".join(f"\n          <li><b>{e[f'how_{k}_t']}</b> {e[f'how_{k}']}</li>"
                     for k in ("source", "when", "floor", "groups", "figures"))
     # **bold** in the copy; the salary count is filled in by app.js.
-    lede = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", e["hero_lede"]).replace(
+    bold = lambda k: re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", e[k]).replace(
         "{people}", '<span id="k-people"></span>').replace("{levels}", levels)
+    lede, pay_lede = bold("hero_lede"), bold("pay_lede")
     foot = seo.footer_links(data, lang)
     return f"""<!doctype html>
 <html lang="{lang}">
@@ -1388,10 +1433,14 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
   <div class="pitch veil">
     <h1>{e['h1']}</h1>
     <p class="hero-lede">{lede}</p>
-    <nav class="cta" aria-label="{e['hero_see']}">
-      <a class="btn main wide" href="#companies-card">{e['hero_see']} {DOWN_ICON}</a>
-      <a class="btn alt" href="#matrix-card">{e['hero_by_role']}</a>
-      <a class="btn alt" href="#map-card">{e['hero_by_region']}</a>
+    <nav class="cta" aria-label="{e['hero_start']}">
+      <div class="hero-mcp wide">
+        <p>{e['hero_mcp']}</p>
+        <div class="hero-mcp-row"><code id="hero-mcp">{MCP_URL.replace('https://', '<span class="scheme">https://</span>').replace('/mcp', '<wbr>/mcp')}</code>
+          <button class="copy-btn" type="button" data-copy="hero-mcp">{e['copy']}</button></div>
+      </div>
+      <a class="btn main" href="#agents">{e['hero_start']} {DOWN_ICON}</a>
+      <a class="btn alt" href="#companies-card">{e['hero_see']}</a>
       <details class="how wide">
         <summary class="btn main">{e['how_title']}</summary>
         <ol class="steps">{steps}
@@ -1399,19 +1448,26 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
       </details>
     </nav>
   </div>
-  <article class="hero-card" aria-label="{e['hero_label']}">
-    <div class="hero-card-head"><span>{e['hero_label']}</span><span id="updated"></span></div>
-    <p class="hero-median" id="k-median"></p>
-    <div class="hero-dist" id="k-dist"></div>
+  {today_card(e)}
+</div></header>
+
+<main class="bento">
+{agents_section(e, lang)}
+  <section class="tile wide pay-tile" id="pay-card" aria-labelledby="pay-title">
+    <div class="hero-card-head"><h2 id="pay-title">{e['pay_title']}</h2><span id="updated"></span></div>
+    <p class="lede pay-lede">{pay_lede}</p>
+    <div class="pay-main">
+      <p class="pay-label">{e['hero_label']}</p>
+      <p class="hero-median" id="k-median"></p>
+      <div class="hero-dist" id="k-dist"></div>
+    </div>
     <dl class="hero-stats">
       <div><dt><i aria-hidden="true"></i>{e['kpi_share']}</dt><dd id="k-share"></dd></div>
       <div><dt>{e['kpi_total']}</dt><dd id="k-total"></dd></div>
       <div><dt>{e['kpi_companies']}</dt><dd id="k-companies"></dd></div>
     </dl>
-  </article>
-</div></header>
+  </section>
 
-<main class="bento">
   <section class="tile wide map-tile" id="map-card">
     <div class="tile-head">
       <div><h2>{e['map_title']}</h2><p class="lede" id="map-sub"></p></div>
@@ -1445,7 +1501,6 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     <button class="more" id="more" hidden></button>
     {noscript_companies(e, data)}
   </section>
-{agents_section(e)}
 </main>
 
 <footer class="field tiled">{WALL}<div class="foot">
@@ -1771,8 +1826,10 @@ def main(argv: list[str]) -> int:
     # The favicon is a tile of the lacería with an S: favicon.svg for browsers that
     # take SVG, the .ico for the rest, and a square PNG for a phone's home screen.
     # og-*.png is the link preview, drawn by tests/site/og-image.mjs.
+    # mcp-demo.* is the recorded demo of an agent applying, drawn by scripts/mcp_demo.mjs.
     for name in ("app.js", "style.css", "cenefa.svg",
-                 "favicon.svg", "favicon.ico", "apple-touch-icon.png", "og-es.png", "og-en.png"):
+                 "favicon.svg", "favicon.ico", "apple-touch-icon.png", "og-es.png", "og-en.png",
+                 *(f"mcp-demo.{lang}.{ext}" for lang in ("es", "en") for ext in ("mp4", "webm", "jpg"))):
         shutil.copy(WEB / name, OUT / name)
     shutil.copytree(WEB / "fonts", OUT / "fonts")
     shutil.copytree(WEB / "agents", OUT / "agents")

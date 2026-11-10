@@ -8,7 +8,7 @@ import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { carryOver, crawl, fresh, isIndex, loadAts, throttled } from "../scripts/jobs.mjs";
+import { carryOver, crawl, fresh, isIndex, loadAts, summary, summaryPath, throttled } from "../scripts/jobs.mjs";
 
 process.env.ATS_MIN_INTERVAL_MS = "0";
 process.env.ATS_LOG_LEVEL = "error";
@@ -352,6 +352,14 @@ const run = (...args) => execFileSync(process.execPath, ["scripts/jobs.mjs", ...
                                       { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
 run("--fixture", "tests/fixtures/jobs.json", "--out", join(tmp, "copy.json"));
 assert.deepEqual(JSON.parse(readFileSync(join(tmp, "copy.json"), "utf8")), fixture);
+// The home page's card reads the summary written beside the index, never the index.
+assert.equal(summaryPath("_site/api/v1/jobs.json"), "_site/api/v1/jobs-summary.json");
+const brief = JSON.parse(readFileSync(join(tmp, "copy-summary.json"), "utf8"));
+assert.deepEqual(brief, summary(fixture));
+assert.deepEqual(Object.keys(brief), ["version", "generated_at", "postings", "companies", "boards", "regions", "remote", "software"]);
+assert.equal(brief.postings, fixture.jobs.length);
+assert.equal(brief.generated_at, fixture.generated_at);
+assert.ok(Object.values(brief.regions).every((n) => n > 0 && n <= brief.postings));
 
 let answer = { status: 200, body: JSON.stringify(fixture) };
 const server = createServer((req, res) => { res.writeHead(answer.status); res.end(answer.body); });

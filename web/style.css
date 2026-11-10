@@ -244,8 +244,53 @@ h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-s
 /* As wide as the narrowest column's, so every label breaks into the same two lines at any width. */
 .hero-stats dt { order: 2; max-width: 9.5em; font-size: 13px; line-height: 17px; color: var(--muted); text-wrap: balance; }
 .hero-stats dt i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; background: var(--hue); }
+/* The MCP link in the header, on the field: what a visitor copies first. */
+.hero-mcp { display: grid; gap: 8px; margin-bottom: 4px; }
+.hero-mcp p { margin: 0; text-align: center; font: 400 13px/16px var(--display); letter-spacing: .14em;
+              text-transform: uppercase; color: var(--field-soft); }
+.hero-mcp-row { display: flex; gap: 8px; }
+.hero-mcp code { flex: 1; min-width: 0; display: flex; align-items: center; min-height: 44px; padding: 10px 12px;
+                 background: var(--field-deep); border: 1px solid var(--field-line); border-radius: var(--radius-control);
+                 color: var(--field-bright); font: 500 14px/20px ui-monospace, SFMono-Regular, Menlo, monospace;
+                 overflow-wrap: anywhere; }
+/* The scheme is copied but not shown: the address then fits one line. */
+.hero-mcp .scheme { display: none; }
+.hero-mcp .copy-btn { min-width: 0; background: var(--field-ink); color: var(--field); border-color: var(--field-ink); font-weight: 600; }
+.hero-mcp .copy-btn:hover { background: var(--field-bright); color: var(--field); }
+
+/* The header's card: today's open positions, filled by app.js from jobs-summary.json.
+   One bar per region with the most, and remote, in the pay blue. */
+.t-bars { margin: -6px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.t-bars li { display: grid; grid-template-columns: 152px minmax(0, 1fr) 52px; gap: 12px; align-items: center; font-size: 14px; white-space: nowrap; }
+.t-bars i { display: block; height: 10px; background: var(--empty); }
+.t-bars i b { display: block; height: 100%; background: var(--hue); }
+.t-bars strong { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.t-note { margin: -8px 0 0; font-size: 12px; line-height: 16px; color: var(--muted); }
+
+/* The demo: the whole flow, recorded, at the top of the agent's section. */
+.agents-demo { margin: 0 0 24px; }
+.agents-demo video { display: block; width: 100%; height: auto; border: 1px solid var(--border);
+                     border-radius: var(--radius-card); background: var(--field); }
+
+/* The salary card, now the first tile under the agent: the figures for
+   everyone, the histogram beside the three numbers. */
+.pay-tile { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 240px); column-gap: 48px; row-gap: 12px; }
+.pay-tile .hero-card-head { grid-column: 1 / -1; align-items: baseline; margin-bottom: 8px; }
+.pay-tile .hero-card-head h2 { font: 300 30px/34px var(--display); letter-spacing: 0; text-transform: none; color: var(--text); }
+.pay-tile .pay-lede { grid-column: 1 / -1; margin: -14px 0 8px; }
+.pay-lede b { font-weight: 600; color: var(--text); }
+.pay-main { display: grid; gap: 18px; min-width: 0; }
+.pay-label { margin: 0; font: 400 13px/16px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.pay-main .hero-median { margin: -10px 0 0; }
+.pay-tile .hero-stats { grid-template-columns: minmax(0, 1fr); align-content: start; gap: 18px; padding-top: 0; border-top: 0; }
+.pay-tile .hero-stats div { padding: 0 0 18px; border-left: 0; border-bottom: 1px solid var(--rule); }
+.pay-tile .hero-stats div + div { border-left: 0; }
+.pay-tile .hero-stats div:last-child { padding-bottom: 0; border-bottom: 0; }
+.pay-tile .hero-stats dd { font-size: 36px; line-height: 38px; }
+.pay-tile .hero-stats dt { max-width: none; }
+
 /* The buttons jump past the sticky bar. */
-#map-card, #matrix-card, #companies-card { scroll-margin-top: 72px; }
+#map-card, #matrix-card, #companies-card, #pay-card { scroll-margin-top: 72px; }
 
 /* Cards */
 .bento { display: grid; gap: var(--gap); padding-top: 36px; }
@@ -679,6 +724,15 @@ footer .foot-links::before { inset: -20px -28px; }
   .dist { grid-column: 1 / -1; }
   .map-grid { grid-template-columns: 1fr; gap: 24px; }
 }
+@media (max-width: 800px) {
+  .pay-tile { grid-template-columns: minmax(0, 1fr); }
+  .pay-tile .hero-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; padding-top: 14px;
+                          border-top: 1px solid var(--rule); }
+  .pay-tile .hero-stats div { padding: 0 12px; border-bottom: 0; }
+  .pay-tile .hero-stats div:first-child { padding-left: 0; }
+  .pay-tile .hero-stats div + div { border-left: 1px solid var(--rule); }
+  .pay-tile .hero-stats dd { font-size: 24px; line-height: 28px; }
+}
 @media (max-width: 640px) {
   :root { --pad: 12px; }
   /* One row of 48px, and it scrolls away with the page: a phone's screen is
@@ -693,6 +747,9 @@ footer .foot-links::before { inset: -20px -28px; }
   .pitch h1 { max-width: none; }
   .hero-lede { max-width: none; font-size: 16px; line-height: 24px; }
   .cta { width: 100%; }
+  .hero-mcp-row { flex-wrap: wrap; }
+  .hero-mcp code { flex-basis: 100%; justify-content: center; }
+  .hero-mcp .copy-btn { flex: 1; }
   .btn { padding: 0 12px; }
   .hero-card { padding: 18px 16px 16px; }
   .hero-median { font-size: 40px; line-height: 44px; }
