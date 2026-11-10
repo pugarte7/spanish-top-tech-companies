@@ -976,20 +976,23 @@ async function today() {
   if (!t?.postings) return;
   const n = (v) => grouped(v);
   $("t-postings").textContent = n(t.postings);
-  $("t-roles").textContent = n(t.roles);
   $("t-companies").textContent = n(t.companies);
+  $("t-remote").textContent = n(t.remote);
   $("t-boards").textContent = n(t.boards);
   const date = $("t-date");
   date.textContent = date.dataset.tpl.replace("{date}", new Date(t.generated_at).toLocaleDateString(LOCALE,
     { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Madrid" }));
-  const bars = $("t-bars");
-  const rows = Object.entries(t.regions).sort((a, b) => b[1] - a[1]).slice(0, 4)
-    .map(([code, v]) => [regionName(code), v]);
-  rows.push([bars.dataset.remote, t.remote]);
-  rows.sort((a, b) => b[1] - a[1]);
-  const top = rows[0][1];
-  bars.innerHTML = rows.map(([name, v]) =>
-    `<li><span>${esc(name)}</span><i><b style="width:${(100 * v / top).toFixed(1)}%"></b></i><strong>${n(v)}</strong></li>`).join("");
+  // The roles with the most postings as bars, the next three named under them.
+  const bars = $("t-bars"), names = JSON.parse(bars.dataset.names);
+  const roles = Object.entries(t.roles).sort((a, b) => b[1] - a[1]).map(([slug, v]) => [names[slug] || slug, v]);
+  const tpl = (id, fill) => { const el = $(id); el.textContent = Object.entries(fill).reduce((s, [k, v]) => s.replace(`{${k}}`, v), el.dataset.tpl); };
+  tpl("t-roles", { n: n(roles.length) });
+  const shown = roles.slice(0, 6), top = shown[0]?.[1] || 1;
+  bars.innerHTML = shown.map(([name, v]) =>
+    `<li><span title="${esc(name)}">${esc(name)}</span><i><b style="width:${(100 * v / top).toFixed(1)}%"></b></i><strong>${n(v)}</strong></li>`).join("");
+  const rest = roles.slice(6);
+  if (rest.length) tpl("t-more", { n: n(rest.length), list: rest.slice(0, 3).map(([name]) => name.toLowerCase()).join(", ") });
+  else $("t-more").hidden = true;
 }
 
 // The recorded demo plays, muted, while it is on screen, unless the reader

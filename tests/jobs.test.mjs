@@ -356,10 +356,11 @@ assert.deepEqual(JSON.parse(readFileSync(join(tmp, "copy.json"), "utf8")), fixtu
 assert.equal(summaryPath("_site/api/v1/jobs.json"), "_site/api/v1/jobs-summary.json");
 const brief = JSON.parse(readFileSync(join(tmp, "copy-summary.json"), "utf8"));
 assert.deepEqual(brief, summary(fixture));
-assert.deepEqual(Object.keys(brief), ["version", "generated_at", "postings", "companies", "boards", "regions", "remote", "roles"]);
+assert.deepEqual(Object.keys(brief), ["version", "generated_at", "postings", "companies", "boards", "remote", "roles"]);
 assert.equal(brief.postings, fixture.jobs.length);
 assert.equal(brief.generated_at, fixture.generated_at);
-assert.ok(Object.values(brief.regions).every((n) => n > 0 && n <= brief.postings));
+const perRole = Object.values(brief.roles);
+assert.ok(perRole.length && perRole.every((n, i) => n > 0 && n <= brief.postings && (!i || n <= perRole[i - 1])));
 
 let answer = { status: 200, body: JSON.stringify(fixture) };
 const server = createServer((req, res) => { res.writeHead(answer.status); res.end(answer.body); });

@@ -274,7 +274,7 @@ STRINGS = {
                      "Your agent does the rest.",
         "hero_mcp": "Add this link to your agent", "hero_start": "How to start",
         "today_title": "Open positions today", "today_read": "Read on {date}",
-        "today_remote": "Remote", "today_roles": "different roles",
+        "today_remote": "remote", "today_in_roles": "in {n} roles", "today_more": "and {n} more: {list}…",
         "today_companies": "companies hiring", "today_boards": "job boards read today",
         "demo_alt": "Your agent, connected to the MCP, finds senior openings in Barcelona at companies "
                     "paying over 100,000 €, reads the form, asks for your salary, shows you the "
@@ -389,7 +389,7 @@ STRINGS = {
                      "Tu agente hace el resto.",
         "hero_mcp": "Añade este enlace a tu agente", "hero_start": "Cómo empezar",
         "today_title": "Ofertas abiertas hoy", "today_read": "Leídas el {date}",
-        "today_remote": "En remoto", "today_roles": "roles diferentes",
+        "today_remote": "en remoto", "today_in_roles": "en {n} roles", "today_more": "y {n} más: {list}…",
         "today_companies": "empresas contratando", "today_boards": "portales leídos hoy",
         "demo_alt": "Tu agente, conectado al MCP, busca ofertas senior en Barcelona de empresas que "
                     "pagan más de 100.000 €, lee el formulario, te pregunta el sueldo, te enseña la "
@@ -1146,6 +1146,45 @@ def strings(lang: str, data: dict) -> dict:
     return out
 
 
+# The header card's names for the roles postings are read as (scripts/jobs.mjs),
+# as areas of work: (English, Spanish). A role missing here shows its slug.
+JOB_ROLES = {
+    "software-engineer": ("Software engineering", "Ingeniería de software"),
+    "software-engineering-manager": ("Engineering management", "Mánager de ingeniería"),
+    "sales": ("Sales", "Ventas"),
+    "sales-engineer": ("Sales engineering", "Preventa"),
+    "business-development": ("Business development", "Desarrollo de negocio"),
+    "customer-success": ("Customer success", "Customer success"),
+    "customer-service": ("Customer service", "Atención al cliente"),
+    "product-manager": ("Product", "Producto"),
+    "product-designer": ("Product design", "Diseño de producto"),
+    "ux-researcher": ("UX research", "UX research"),
+    "marketing": ("Marketing", "Marketing"),
+    "marketing-operations": ("Marketing operations", "Marketing operations"),
+    "management-consultant": ("Consulting", "Consultoría"),
+    "project-manager": ("Project management", "Gestión de proyectos"),
+    "program-manager": ("Program management", "Program management"),
+    "technical-program-manager": ("Technical program management", "Technical program management"),
+    "solution-architect": ("Solution architecture", "Arquitectura de soluciones"),
+    "data-scientist": ("Data science", "Ciencia de datos"),
+    "data-science-manager": ("Data science management", "Mánager de datos"),
+    "data-analyst": ("Data analysis", "Análisis de datos"),
+    "business-analyst": ("Business analysis", "Análisis de negocio"),
+    "financial-analyst": ("Finance", "Finanzas"),
+    "accountant": ("Accounting", "Contabilidad"),
+    "bizops-manager": ("Business operations", "Operaciones de negocio"),
+    "security-analyst": ("Security", "Ciberseguridad"),
+    "information-technologist": ("IT", "Sistemas"),
+    "hardware-engineer": ("Hardware", "Hardware"),
+    "electrical-engineer": ("Electrical engineering", "Ingeniería eléctrica"),
+    "mechanical-engineer": ("Mechanical engineering", "Ingeniería mecánica"),
+    "aerospace-engineer": ("Aerospace engineering", "Ingeniería aeroespacial"),
+    "legal": ("Legal", "Legal"),
+    "recruiter": ("Recruiting", "Selección"),
+    "human-resources": ("People", "Recursos humanos"),
+}
+
+
 def copy_box(e: dict, target: str) -> str:
     """The /mcp link in a box with its copy button inside. The scheme is
     copied but not shown, so the address fits one line."""
@@ -1193,16 +1232,18 @@ def agents_section(e: dict, lang: str) -> str:
   </section>"""
 
 
-def today_card(e: dict) -> str:
+def today_card(e: dict, lang: str) -> str:
     """The header's card: today's open postings, from /api/v1/jobs-summary.json,
     which scripts/jobs.mjs writes after this build; app.js fills it in."""
     stat = lambda k, n: f'<div><dt>{e[k]}</dt><dd id="{n}">—</dd></div>'
+    names = html.escape(json.dumps({k: v[lang == "es"] for k, v in JOB_ROLES.items()}, ensure_ascii=False))
     return f"""<article class="hero-card today-card" aria-labelledby="today-title">
     <div class="hero-card-head"><span id="today-title">{e['today_title']}</span>
       <span id="t-date" data-tpl="{e['today_read']}"></span></div>
-    <p class="hero-median" id="t-postings">—</p>
-    <ol class="t-bars" id="t-bars" data-remote="{e['today_remote']}"></ol>
-    <dl class="hero-stats">{stat('today_roles', 't-roles')}{stat('today_companies', 't-companies')}{stat('today_boards', 't-boards')}</dl>
+    <div class="t-top"><p class="hero-median" id="t-postings">—</p><span id="t-roles" data-tpl="{e['today_in_roles']}"></span></div>
+    <ol class="t-bars" id="t-bars" data-names="{names}"></ol>
+    <p class="t-more" id="t-more" data-tpl="{e['today_more']}"></p>
+    <dl class="hero-stats">{stat('today_companies', 't-companies')}{stat('today_remote', 't-remote')}{stat('today_boards', 't-boards')}</dl>
   </article>"""
 
 
@@ -1376,7 +1417,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
       </details>
     </nav>
   </div>
-  {today_card(e)}
+  {today_card(e, lang)}
 </div></header>
 
 <main class="bento">

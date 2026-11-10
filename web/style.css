@@ -216,7 +216,7 @@ h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-s
 #t-date { margin-left: auto; }
 /* Beside the text, as tall as its veil and level with it (app.js's hugVeil measures it);
    the extra height spaces out the bars. */
-.today-card { margin-top: var(--veil-top, 0px); min-height: var(--veil-h, 0px); grid-template-rows: auto auto 1fr auto; }
+.today-card { margin-top: var(--veil-top, 0px); min-height: var(--veil-h, 0px); grid-template-rows: auto auto 1fr auto auto; }
 .today-card .t-bars { align-content: space-evenly; }
 .hero-median { margin: -8px 0 0; font: 300 44px/48px var(--display); letter-spacing: -0.01em;
                font-variant-numeric: tabular-nums; }
@@ -235,12 +235,17 @@ h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-s
 .hero-mcp .copy-box { background: var(--field-deep); border-color: var(--field-line); color: var(--field-bright); }
 
 /* The header's card: today's open positions, filled by app.js from jobs-summary.json.
-   One bar per region with the most, and remote, in the pay blue. */
+   One bar per role with the most, in the pay blue. */
+.t-top { display: flex; align-items: baseline; gap: 12px; margin-top: -8px; }
+.t-top .hero-median { margin: 0; }
+#t-roles { font-size: 14px; color: var(--muted); }
+.t-more { margin: -6px 0 0; font-size: 13px; line-height: 18px; color: var(--muted); }
 .t-bars { margin: -6px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
-.t-bars li { display: grid; grid-template-columns: 152px minmax(0, 1fr) 52px; gap: 12px; align-items: center; font-size: 14px; white-space: nowrap; }
+.t-bars li { display: grid; grid-template-columns: 176px minmax(0, 1fr) 44px; gap: 12px; align-items: center; font-size: 14px; white-space: nowrap; }
 .t-bars i { display: block; height: 10px; background: var(--empty); }
 .t-bars i b { display: block; height: 100%; background: var(--hue); }
 .t-bars strong { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.t-bars span { overflow: hidden; text-overflow: ellipsis; }
 
 
 /* The buttons jump past the sticky bar. */
@@ -695,6 +700,7 @@ footer .foot-links::before { inset: -20px -28px; }
   .cta { width: 100%; }
   .btn { padding: 0 12px; }
   .hero-card { padding: 18px 16px 16px; }
+  .t-bars li { grid-template-columns: 148px minmax(0, 1fr) 40px; gap: 10px; font-size: 13px; }
   .hero-median { font-size: 40px; line-height: 44px; }
   .hero-stats div { padding: 0 8px; }
   .hero-stats dd { font-size: 24px; line-height: 28px; }
