@@ -349,6 +349,13 @@ function hugVeil() {
   const ink = (parseFloat(cs.lineHeight) - m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2
     + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent;
   v.style.setProperty("--hug-top", `${Math.max(0, ink) || 0}px`);
+  // The card beside it takes the veil's box, 20px past the letters above and the
+  // buttons below, measured with the method closed so opening it never moves the card.
+  if (!v.querySelector("details.how")?.open) {
+    const head = v.closest(".head"), top = Math.max(0, ink) || 0;
+    head.style.setProperty("--veil-top", `${top - 20}px`);
+    head.style.setProperty("--veil-h", `${box.height - top + 40}px`);
+  }
 }
 
 // --- pay shades -----------------------------------------------------------------
@@ -957,7 +964,7 @@ async function today() {
   if (!t?.postings) return;
   const n = (v) => grouped(v);
   $("t-postings").textContent = n(t.postings);
-  $("t-software").textContent = n(t.software);
+  $("t-roles").textContent = n(t.roles);
   $("t-companies").textContent = n(t.companies);
   $("t-boards").textContent = n(t.boards);
   const date = $("t-date");

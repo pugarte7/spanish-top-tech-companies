@@ -356,19 +356,20 @@ export function isIndex(value) {
 
 /** The figures the home page's card shows, so it never downloads the whole index:
  * postings, companies, boards read, postings per region (one posting open in
- * several regions counts in each), remote ones and software-engineering ones. */
+ * several regions counts in each), remote ones and how many roles they are for. */
 export function summary(index) {
   const regions = {};
   const companies = new Set();
-  let remote = 0, software = 0;
+  const roles = new Set();
+  let remote = 0;
   for (const job of index.jobs) {
     companies.add(job.slug ?? job.company);
     for (const code of new Set(job.regions ?? [])) regions[code] = (regions[code] ?? 0) + 1;
     if (job.workplace === "remote" || (job.location_classes ?? []).some((c) => /remote/i.test(String(c)))) remote += 1;
-    if ((job.roles ?? []).includes("software-engineer")) software += 1;
+    for (const role of job.roles ?? []) roles.add(role);
   }
   return { version: VERSION, generated_at: index.generated_at, postings: index.jobs.length,
-           companies: companies.size, boards: index.boards.queried, regions, remote, software };
+           companies: companies.size, boards: index.boards.queried, regions, remote, roles: roles.size };
 }
 
 function put(path, body) {

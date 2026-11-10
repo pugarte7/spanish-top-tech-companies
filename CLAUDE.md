@@ -51,8 +51,9 @@ after `site.py` builds). The salary card with the histogram was removed the
 same day at the maintainer's request. The header reads "Cada día, las ofertas
 top de tech en España, en tu agente" with the salaries as the filter ("para que
 solo apliques donde te interesa"), and the agent's section under it is "Así
-funciona": the video beside three short steps and the agents' logos, without
-the rotating agent stage or a second copy of the /mcp link. Both READMEs and that section show the same
+funciona": the video beside three short steps (the first with the /mcp link)
+and the agents' logos, which open each agent's name and link on a click,
+without the rotating agent stage. Both READMEs and that section show the same
 recorded demo (an agent finding Workato postings for someone asking 110,000 €
 and applying), drawn by `scripts/mcp_demo.mjs` from `scripts/mcp_demo/demo.html`:
 its find_jobs and job_questions answers are real, the sending is acted out.

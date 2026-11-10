@@ -274,9 +274,8 @@ STRINGS = {
                      "Your agent does the rest.",
         "hero_mcp": "Add this link to your agent", "hero_start": "How to start",
         "today_title": "Open positions today", "today_read": "Read on {date}",
-        "today_remote": "Remote", "today_software": "in software engineering",
+        "today_remote": "Remote", "today_roles": "different roles",
         "today_companies": "companies hiring", "today_boards": "job boards read today",
-        "today_note": "A position open in several regions counts in each.",
         "demo_alt": "Your agent, connected to the MCP, finds senior openings in Barcelona at companies "
                     "paying over 100,000 €, reads the form, asks for your salary, shows you the "
                     "application and sends it when you say yes.",
@@ -390,9 +389,8 @@ STRINGS = {
                      "Tu agente hace el resto.",
         "hero_mcp": "Añade este enlace a tu agente", "hero_start": "Cómo empezar",
         "today_title": "Ofertas abiertas hoy", "today_read": "Leídas el {date}",
-        "today_remote": "En remoto", "today_software": "de ingeniería de software",
+        "today_remote": "En remoto", "today_roles": "roles diferentes",
         "today_companies": "empresas contratando", "today_boards": "portales leídos hoy",
-        "today_note": "Una oferta abierta en varias comunidades cuenta en cada una.",
         "demo_alt": "Tu agente, conectado al MCP, busca ofertas senior en Barcelona de empresas que "
                     "pagan más de 100.000 €, lee el formulario, te pregunta el sueldo, te enseña la "
                     "solicitud y la envía cuando le dices que sí.",
@@ -1204,8 +1202,7 @@ def today_card(e: dict) -> str:
       <span id="t-date" data-tpl="{e['today_read']}"></span></div>
     <p class="hero-median" id="t-postings">—</p>
     <ol class="t-bars" id="t-bars" data-remote="{e['today_remote']}"></ol>
-    <dl class="hero-stats">{stat('today_software', 't-software')}{stat('today_companies', 't-companies')}{stat('today_boards', 't-boards')}</dl>
-    <p class="t-note">{e['today_note']}</p>
+    <dl class="hero-stats">{stat('today_roles', 't-roles')}{stat('today_companies', 't-companies')}{stat('today_boards', 't-boards')}</dl>
   </article>"""
 
 

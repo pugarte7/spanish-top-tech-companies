@@ -214,6 +214,10 @@ h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-s
                   font: 400 13px/16px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 /* The date keeps the top right corner, on its own line too if the label leaves it no room. */
 #t-date { margin-left: auto; }
+/* Beside the text, as tall as its veil and level with it (app.js's hugVeil measures it);
+   the extra height spaces out the bars. */
+.today-card { margin-top: var(--veil-top, 0px); min-height: var(--veil-h, 0px); grid-template-rows: auto auto 1fr auto; }
+.today-card .t-bars { align-content: space-evenly; }
 .hero-median { margin: -8px 0 0; font: 300 44px/48px var(--display); letter-spacing: -0.01em;
                font-variant-numeric: tabular-nums; }
 .hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding-top: 14px;
@@ -237,7 +241,6 @@ h1 { margin: 0; font: 200 clamp(40px, 4.4vw, 58px)/1.04 var(--display); letter-s
 .t-bars i { display: block; height: 10px; background: var(--empty); }
 .t-bars i b { display: block; height: 100%; background: var(--hue); }
 .t-bars strong { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
-.t-note { margin: -8px 0 0; font-size: 12px; line-height: 16px; color: var(--muted); }
 
 
 /* The buttons jump past the sticky bar. */
@@ -669,6 +672,7 @@ footer .foot-links::before { inset: -20px -28px; }
           padding-top: calc(40px + var(--frieze-end)); padding-bottom: 40px; }
   .pitch.veil::before { inset: calc(var(--hug-top, 0px) - 14px) calc(var(--hug-right, 0px) - 10px) -14px -10px;
                        box-shadow: 0 0 28px 18px var(--field); }
+  .today-card { margin-top: 0; min-height: 0; }
   .summary { grid-template-columns: repeat(4, 1fr); }
   .dist { grid-column: 1 / -1; }
   .map-grid { grid-template-columns: 1fr; gap: 24px; }

@@ -356,7 +356,7 @@ assert.deepEqual(JSON.parse(readFileSync(join(tmp, "copy.json"), "utf8")), fixtu
 assert.equal(summaryPath("_site/api/v1/jobs.json"), "_site/api/v1/jobs-summary.json");
 const brief = JSON.parse(readFileSync(join(tmp, "copy-summary.json"), "utf8"));
 assert.deepEqual(brief, summary(fixture));
-assert.deepEqual(Object.keys(brief), ["version", "generated_at", "postings", "companies", "boards", "regions", "remote", "software"]);
+assert.deepEqual(Object.keys(brief), ["version", "generated_at", "postings", "companies", "boards", "regions", "remote", "roles"]);
 assert.equal(brief.postings, fixture.jobs.length);
 assert.equal(brief.generated_at, fixture.generated_at);
 assert.ok(Object.values(brief.regions).every((n) => n > 0 && n <= brief.postings));
