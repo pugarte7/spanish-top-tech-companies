@@ -81,11 +81,16 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   A Phenom career site (Cisco, Roche, HPE) whose application is on Workday
   answers the same way; on any other system behind Phenom, and on iCIMS
   career sites, the form is read in the browser.
-- `report_application(id, status, reason)`: after sending or failing, the
+- `report_application(id, status, reason, browser, steps, attempts, notes)`: after sending or failing, the
   outcome: sent (the board confirmed it), uncertain (submitted, but the board
   showed an error or confirmed nothing), failed with its reason, or
-  handed_over. Nothing about the user; it shows the site where sending gets
-  stuck. After a sent one it returns `note_for_the_person`: a short message
+  handed_over. Say also what it took: `browser` (what you sent it with),
+  `steps` (what you had to do beyond filling the form: a browser tool you
+  added or switched, a CV you attached twice, questions the page asked that
+  `job_questions` did not list, an email code, a CAPTCHA for the user),
+  `attempts` and a line of `notes` on what you had to work out yourself.
+  Nothing about the user in any of them; it shows the site where sending gets
+  stuck and what to fix. After a sent one it returns `note_for_the_person`: a short message
   from the maintainer about a GitHub star, with the link. Pass it on once,
   when you tell them the application went out, and write their answer on the
   state document's Support line.

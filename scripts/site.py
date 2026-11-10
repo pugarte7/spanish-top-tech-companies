@@ -1603,7 +1603,9 @@ LEGAL = {
              "leaves your device. The MCP server at /mcp stores nothing about you, its job tools "
              "included; PostHog counts each call: the tool, the filters or the posting asked "
              "for, how many results it found, whether an application was sent or why not when "
-             "your agent reports it, the reason your agent gives if it "
+             "your agent reports it, and what sending took (the browser tool it used, steps such "
+             "as attaching the CV twice, and a short note about the job board, never about you), "
+             "the reason your agent gives if it "
              "gives one (with emails, numbers and keys removed), the agent's name and the "
              "country, without an IP address. A random id the server gives your agent when it "
              "connects groups the calls of one conversation; it says nothing about you."),
@@ -1658,7 +1660,9 @@ LEGAL = {
              "de /mcp no guarda nada sobre ti, tampoco sus herramientas de ofertas; PostHog cuenta "
              "cada llamada: la herramienta, los filtros o la oferta que se piden, cuántos "
              "resultados encuentra, si una candidatura se envió o por qué no cuando tu agente lo "
-             "cuenta, el motivo que da tu agente si lo da (sin correos, números ni "
+             "cuenta, y qué hizo falta para enviarla (el navegador que usó, pasos como adjuntar "
+             "el CV dos veces y una nota breve sobre el portal de empleo, nunca sobre ti), "
+             "el motivo que da tu agente si lo da (sin correos, números ni "
              "claves), el nombre del agente y el país, sin dirección IP. Un identificador "
              "aleatorio que el servidor da a tu agente al conectarse agrupa las llamadas de una "
              "misma conversación; no dice nada de ti."),
@@ -1889,7 +1893,8 @@ def agents_note() -> str:
             "the apply URL, plus conditions: the posting's own sentences on pay and place, to tell "
             "the person before they choose. report_application takes the outcome of each application "
             "(sent, uncertain when it was submitted and nothing confirmed it, failed and why, or "
-            "handed over), with nothing about the user, so the site can fix "
+            "handed over) and what sending took (browser, steps, attempts, a note about the board), "
+            "with nothing about the user, so the site can fix "
             "where sending fails. application_guide gives the procedure and a template for the notes "
             "you keep for the user: a file such as ~/job-search.md if you have a filesystem, "
             "your memory otherwise. The site stores nothing about the user; their CV, what "
@@ -1969,7 +1974,7 @@ them the steps under Tools. The code is open at {REPO}.
 
 ## Tools
 
-- [MCP server]({SITE}/mcp): always on, Streamable HTTP, no sign-in; protocol 2026-07-28 and the handshake versions back to 2024-11-05; salary tools `salary_stats`, `top_companies`, `company_salaries`, `list_filters`; job tools `find_jobs` (query, role, region or remote, workplace, seniority, the person's years of experience, company, min_salary_eur, `exclude` for the ids already applied to, limit; each posting with the roles and level its title reads as, the years of experience its description asks, and the company's median base for the role), `job_questions` (one posting's application form read live from its board, each question marked for the person or the agent, the posting text marked untrusted, the apply URL) `report_application` (id, status sent, uncertain, failed or handed_over, reason; the outcome of each application, nothing about the person) and `application_guide` (the procedure and a template for the notes the agent keeps for the person). `query` matches any of its words, synonyms included (SRE, site reliability), ranked by how many match; `role` also takes specializations such as DevOps, SRE, backend or frontend, which Levels.fyi counts as software-engineer; with no match, `find_jobs` suggests the closest postings and says which filter they miss. The server stores nothing about the person
+- [MCP server]({SITE}/mcp): always on, Streamable HTTP, no sign-in; protocol 2026-07-28 and the handshake versions back to 2024-11-05; salary tools `salary_stats`, `top_companies`, `company_salaries`, `list_filters`; job tools `find_jobs` (query, role, region or remote, workplace, seniority, the person's years of experience, company, min_salary_eur, `exclude` for the ids already applied to, limit; each posting with the roles and level its title reads as, the years of experience its description asks, and the company's median base for the role), `job_questions` (one posting's application form read live from its board, each question marked for the person or the agent, the posting text marked untrusted, the apply URL) `report_application` (id, status sent, uncertain, failed or handed_over, reason, and optionally what sending took: browser, steps, attempts, notes; the outcome of each application, nothing about the person) and `application_guide` (the procedure and a template for the notes the agent keeps for the person). `query` matches any of its words, synonyms included (SRE, site reliability), ranked by how many match; `role` also takes specializations such as DevOps, SRE, backend or frontend, which Levels.fyi counts as software-engineer; with no match, `find_jobs` suggests the closest postings and says which filter they miss. The server stores nothing about the person
 - [Agent skill]({REPO}/tree/{BRANCH}/skills/tech-pay-spain): SKILL.md for Hermes and other agentskills.io agents; also at [{SITE}/.well-known/skills/index.json]({SITE}/.well-known/skills/index.json), installed in Hermes with `hermes skills install well-known:{SITE}/.well-known/skills/tech-pay-spain`
 
 ## Optional

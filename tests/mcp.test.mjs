@@ -1004,6 +1004,20 @@ report("report_application's event keeps the job id whole, with the posting's bo
   outcome.properties.application_status === "failed" && outcome.properties.application_reason === "blocked" &&
   outcome.properties.ats === "greenhouse" && outcome.properties.company === "Glovo" &&
   outcome.properties.known_posting === true && outcome.properties.support_note === false, outcome?.properties);
+const took = { jsonrpc: "2.0", id: 8, ...tool("report_application", { id: "greenhouse:glovo:7000001", status: "sent",
+  browser: "Playwright MCP", steps: ["reattached_cv", "email_code", "reattached_cv", "danced"], attempts: 2,
+  notes: "The upload took the file only through the file chooser. Wrote to jane@example.com and +34 612 345 678." }) };
+const tookOut = (await respond(data, took)).result.structuredContent;
+const [tookEvent] = analytics(data, {}, took, await respond(data, took), Date.now());
+report("report_application takes what sending took: browser, steps, attempts and a note, personal data removed",
+  tookOut.browser === "playwright_mcp" && tookOut.steps.join() === "reattached_cv,email_code,other" && tookOut.attempts === 2 &&
+  /file chooser/.test(tookOut.notes) && !/jane|612/.test(tookOut.notes) &&
+  tookEvent.properties.application_browser === "playwright_mcp" && tookEvent.properties.application_step_count === 3 &&
+  tookEvent.properties.application_steps.includes("email_code") && tookEvent.properties.application_attempts === 2 &&
+  /file chooser/.test(tookEvent.properties.application_notes) && !/jane|612/.test(JSON.stringify(tookEvent.properties)), tookOut);
+report("report_application without them counts none", sent.browser === null && sent.steps.length === 0 &&
+  sent.attempts === null && sent.notes === null && outcome.properties.application_step_count === 0 &&
+  !("application_steps" in outcome.properties));
 const notAnId = { jsonrpc: "2.0", id: 9, ...tool("job_questions", { id: "call me on +34 612 345 678" }) };
 report("an id that is not a job id is still redacted",
   analytics(data, {}, notAnId, await respond(data, notAnId), Date.now())[0].properties

@@ -169,9 +169,30 @@ const TOOLS = {
                   "captcha, login_required, form_error (a field was refused), upload_refused (the " +
                   "board would not take the CV file), submit_error (the board answered the submit " +
                   "with an error), no_confirmation (submitted, nothing confirmed it), posting_closed, " +
-                  "blocked (the board refused the browser), no_browser, person_declined, other." } } } }),
+                  "blocked (the board refused the browser), no_browser, person_declined, other." },
+        browser: { type: "string", enum: REPORT_BROWSERS, description: "What you sent it with: built_in " +
+                   "(your client's own browser), claude_in_chrome, playwright_mcp, other, or none." },
+        steps: { type: "array", items: { type: "string", enum: REPORT_STEPS }, description: "What it took " +
+                 "beyond filling the form, every one that applies: set_up_browser (you had to add a browser " +
+                 "tool), switched_browser (the first tool failed and another worked), read_form_in_browser " +
+                 "(job_questions gave no questions), extra_questions (the page asked ones job_questions did " +
+                 "not list), required_differed (the page required a field given as optional, or the reverse), " +
+                 "location_differed (the page named another location), reattached_cv (the upload had to be " +
+                 "repeated), converted_cv (the board wanted another file format or size), email_code, " +
+                 "captcha_to_person, person_signed_in (an account or login), person_filled_field (they " +
+                 "typed something you could not), retried_submit, other." },
+        attempts: { type: "integer", minimum: 1, maximum: 20, description: "How many times you submitted." },
+        notes: { type: "string", maxLength: REPORT_NOTES, description: "In a sentence or two, what you had " +
+                 "to work out that these tools did not tell you: the tool or trick that worked, what the " +
+                 "board did. About the board and the tools only: nothing about the person, no names, " +
+                 "emails, answers or CV text." } } } }),
     run: (data, args, env) => reportApplication(data, args, env),
     measure: (out) => ({ application_status: out.status, application_reason: out.reason ?? undefined,
+                         application_browser: out.browser ?? undefined,
+                         application_steps: out.steps.length ? out.steps : undefined,
+                         application_step_count: out.steps.length,
+                         application_attempts: out.attempts ?? undefined,
+                         application_notes: out.notes ?? undefined,
                          ats: out.ats, company: out.company ?? undefined, known_posting: out.known_posting,
                          support_note: "note_for_the_person" in out }),
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -1697,6 +1718,20 @@ const REPORT_STATUS = ["sent", "uncertain", "failed", "handed_over"];
 const REPORT_REASONS = ["captcha", "login_required", "form_error", "upload_refused", "submit_error",
   "no_confirmation", "posting_closed", "blocked", "no_browser", "person_declined", "other"];
 
+// What sending took, since 2026-11-10: the maintainer asked to learn what an
+// agent had to do to apply (a tool it added, a field it had to redo) to know
+// what to fix next. All optional, and about the board and the tools, never the
+// person. A value outside the lists counts as other rather than losing the report.
+const REPORT_BROWSERS = ["built_in", "claude_in_chrome", "playwright_mcp", "other", "none"];
+const REPORT_STEPS = ["set_up_browser", "switched_browser", "read_form_in_browser", "extra_questions",
+  "required_differed", "location_differed", "reattached_cv", "converted_cv", "email_code",
+  "captcha_to_person", "person_signed_in", "person_filled_field", "retried_submit", "other"];
+const REPORT_NOTES = 500;
+const listed = (value, list) => {
+  const v = String(value ?? "").trim().toLowerCase().replace(/[\s-]+/g, "_");
+  return list.includes(v) ? v : "other";
+};
+
 // Only an acknowledgement: the call itself is what PostHog counts (analytics()).
 // A job id from find_jobs: the board, the company's slug on it and the posting's own id.
 const JOB_ID = /^[a-z]+:[^\s]{1,200}$/;
@@ -1739,9 +1774,16 @@ export async function reportApplication(data, args = {}, env = {}) {
   const reason = blank(args.reason) ? null : String(args.reason).trim().toLowerCase();
   if (reason !== null && !REPORT_REASONS.includes(reason))
     throw new QueryError(`reason must be one of ${REPORT_REASONS.join(", ")}`);
+  const browser = blank(args.browser) ? null : listed(args.browser, REPORT_BROWSERS);
+  const given = blank(args.steps) ? [] : typeof args.steps === "string" ? args.steps.split(/[\s,]+/) : args.steps;
+  if (!Array.isArray(given)) throw new QueryError(`steps is a list of ${REPORT_STEPS.join(", ")}`);
+  const steps = [...new Set(given.filter((x) => !blank(x)).map((x) => listed(x, REPORT_STEPS)))];
+  const tries = blank(args.attempts) ? null : whole(args.attempts);
+  const attempts = tries === null ? null : Math.max(1, Math.min(tries, 20));
+  const notes = blank(args.notes) ? null : redact(String(args.notes).replace(/\s+/g, " ").trim(), REPORT_NOTES);
   let job = null;
   try { job = (await jobIndex(env)).jobs.find((j) => j?.id === id) ?? null; } catch { /* still counted */ }
-  return { counted: true, id, status, reason, ats: id.split(":")[0],
+  return { counted: true, id, status, reason, browser, steps, attempts, notes, ats: id.split(":")[0],
            company: job?.company ?? null, known_posting: job !== null,
            stored: "nothing: the site keeps no record of the person or the application",
            next: AFTER[status],
@@ -1777,7 +1819,9 @@ export function applicationGuide(args = {}) {
         "approved together.",
       "Send as in sending, and record the date, job id, company, title and status in the state document.",
       "Call report_application with the job id and the outcome (sent, uncertain or failed with its " +
-        "reason, or handed_over). It asks nothing about the person and helps the site fix where sending fails.",
+        "reason, or handed_over), and what it took: the browser you used, the steps beyond filling the " +
+        "form (steps), how many times you submitted, and a line in notes on anything you had to work " +
+        "out yourself. It asks nothing about the person, and it is how the site learns what to fix.",
       "When the day's applications are done, if the Support line of the state document says not yet: " +
         "pass on the maintainer's note that report_application returns after a sent application (the " +
         "project is free and open source, and a GitHub star keeps it visible), with its link, and write " +
