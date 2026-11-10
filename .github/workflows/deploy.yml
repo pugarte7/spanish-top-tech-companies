@@ -79,9 +79,19 @@ jobs:
       - name: /mcp answers
         run: node tests/mcp.test.mjs
 
+      # A deploy takes 10-20 seconds. On 2026-11-10 Vercel's side hung for an
+      # hour on "Downloading deployment files" and then failed; a rerun went
+      # through at once. So each try gets five minutes, and there are three.
       - name: Deploy to Vercel
         if: env.VERCEL_TOKEN != ''
-        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+        timeout-minutes: 20
+        run: |
+          for try in 1 2 3; do
+            timeout 300 vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN" && exit 0
+            echo "::warning::Vercel deploy try $try failed or hung, retrying"
+            sleep 30
+          done
+          exit 1
 
       # The pay employers state in their postings, kept day by day:
       # scripts/offers.py merges today's jobs.json into offers.csv on the
