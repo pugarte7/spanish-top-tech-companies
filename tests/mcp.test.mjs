@@ -5,7 +5,7 @@
 // stub: no test reaches the network.
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import mcp, { analytics, queryTerms, respond as answer, sessionOf } from "../api/mcp.js";
+import mcp, { analytics, openingTitle, queryTerms, respond as answer, sessionOf } from "../api/mcp.js";
 import { redact } from "../api/_track.js";
 import { keywordsOf, seniorityOf, titleRoles, yearsAsked } from "../api/_classify.js";
 
@@ -597,6 +597,21 @@ report("go finds Golang through the keyword", goKw.jobs.some((j) => j.title === 
 const rare = await byKeywords({ query: "engineer angular" });
 report("a rare word outranks a common one", rare.jobs[0].matched_terms.includes("angular") &&
   rare.jobs.slice(0, 2).every((j) => j.matched_terms.includes("angular")), rare.jobs.map((j) => [j.title, j.matched_terms]));
+const moreWords = (await run("find_jobs", { query: "python django fastapi integrations" }, { jobs: { ...withKeywords,
+  jobs: [kw(5, "Software Engineer, Integrations", ["python"]), ...withKeywords.jobs] } })).structuredContent;
+report("matching more of the query's words outranks one rare title word",
+  moreWords.jobs[0].title === "Backend Engineer" && moreWords.jobs[1].title === "Software Engineer, Integrations",
+  moreWords.jobs.map((j) => [j.title, j.matched_terms]));
+const opening = (title, location) => openingTitle({ title, location });
+report("a title leaves out the parts that only name its place",
+  opening("Staff Backend Engineer - Alerting | UK | Remote", "United Kingdom (Remote); EMEA") ===
+    opening("Staff Backend Engineer - Alerting | Spain | Remote", "Spain (Remote); EMEA") &&
+  opening("Engineer | US | Remote", "USA (Remote)") === "engineer" &&
+  opening("Asesor/a Comercial (Bilbao)", "Bilbao") === opening("Asesor/a Comercial (Málaga)", "Malaga, South Building") &&
+  opening("Spanish (LATAM) Evaluator", "Barcelona, Spain") !== opening("Spanish (Spain) Evaluator", "Barcelona, Spain") &&
+  opening("Remote", "Remote") === "remote",
+  [opening("Staff Backend Engineer - Alerting | UK | Remote", "United Kingdom (Remote); EMEA"),
+   opening("Spanish (LATAM) Evaluator", "Barcelona, Spain")]);
 const legacy = (await run("find_jobs", { query: "golang" }, { jobs: offices })).structuredContent;
 report("a posting stored without keywords takes them from its title",
   legacy.jobs.some((j) => /Golang/i.test(j.title) && j.keywords.includes("golang")), legacy.jobs.map((j) => [j.title, j.keywords]));
@@ -797,6 +812,7 @@ BOARDS["https://apply.workable.com/api/v1/jobs/3C35D18DA3/form"] = json([
       options: [{ name: "1", value: "Available immediately" }, { name: "2", value: "1 month" }] },
     { id: "CA_2", label: "Right to work", required: true, type: "boolean" },
     { id: "CA_3", label: "Salary Expectations", required: true, type: "number" },
+    { id: "QA_5", label: "Tell about your experience with REST APIs", required: true, type: "text", maxLength: 127 },
     { id: "QA_4", label: "Which tools have you used?", required: false, type: "multiple",
       options: [{ name: "5", value: "NetSuite" }, { name: "6", value: "SAP" }] }] },
   { fields: [{ id: "gdpr", onlyTrueAllowed: true, required: true, type: "boolean", url: "https://apply.workable.com/exoticca/gdpr_policy" }] }]);
@@ -894,6 +910,7 @@ report("workable: fields with labels as options, right to work, pay and GDPR to 
   byLabel(workable, /Notice/).options.join() === "Available immediately,1 month" &&
   byLabel(workable, /Right to work/).who === "person" && byLabel(workable, /Right to work/).options.join() === "Yes,No" &&
   byLabel(workable, /Salary/).who === "person" && byLabel(workable, /tools/).type === "multiselect" &&
+  byLabel(workable, /REST APIs/).max_length === 127 && !("max_length" in byLabel(workable, /tools/)) &&
   byLabel(workable, /GDPR/).who === "person" && byLabel(workable, /GDPR/).policy_url.endsWith("gdpr_policy") &&
   /We sell trips/.test(workable.description.text) && /NetSuite/.test(workable.description.text) &&
   workable.apply_url === "https://apply.workable.com/exoticca/j/3C35D18DA3/apply/", workable.questions);
