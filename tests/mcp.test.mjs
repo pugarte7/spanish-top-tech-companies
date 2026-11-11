@@ -5,9 +5,9 @@
 // stub: no test reaches the network.
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import mcp, { analytics, respond as answer, sessionOf } from "../api/mcp.js";
+import mcp, { analytics, queryTerms, respond as answer, sessionOf } from "../api/mcp.js";
 import { redact } from "../api/_track.js";
-import { seniorityOf, titleRoles, yearsAsked } from "../api/_classify.js";
+import { keywordsOf, seniorityOf, titleRoles, yearsAsked } from "../api/_classify.js";
 
 const DATA = "_site/api/v1/data.json";
 const JOBS = "tests/fixtures/jobs.sample.json";
@@ -550,6 +550,59 @@ const yearsWrong = Object.entries({
 }).filter(([text, want]) => String(yearsAsked(text)?.join() ?? null) !== want);
 report("descriptions read as the years of experience they ask", yearsWrong.length === 0,
   yearsWrong.map(([t]) => `${t}: ${JSON.stringify(yearsAsked(t))}`));
+
+// Keywords: a fixed vocabulary read from the title and the description
+// (2026-11-11: angular, kotlin, "java spring" and "Django FastAPI" found
+// nothing, since a stack is rarely in a title).
+const keywordsWrong = Object.entries({
+  "Strong Python, Django and PostgreSQL; AWS (EKS) with Terraform": "python,django,aws,kubernetes,terraform,postgresql",
+  "You will write code in Go or Python": "python,golang",
+  "Work with Sales and Go-to-market teams. Go/No-Go decisions.": "",
+  "Angular 17, RxJS and TypeScript": "typescript,angular",
+  "React and React Native apps, Node.js APIs": "react,react-native,nodejs",
+  "We react fast and node graphs grow": "",
+  "Spring Boot microservices in Java": "java,spring,microservices",
+  "Join us this spring": "",
+  "Experience with .NET Core and C#": "csharp,dotnet",
+  "Private health insurance, travel allowance and a privacy notice": "",
+  "We build insurance products for the insurance industry": "insurtech",
+  "ISO 27001, ENS and GRC experience; Spanish and English": "grc,iso-27001,english,spanish",
+  "Machine learning with PyTorch, LLMs and RAG": "machine-learning,pytorch,llm",
+  "Ingeniero/a de datos: Spark, Airflow, dbt y Snowflake": "snowflake,spark,airflow,dbt",
+}).filter(([text, want]) => keywordsOf("", text).join() !== want);
+report("descriptions read as the keywords of the vocabulary they name", keywordsWrong.length === 0,
+  keywordsWrong.map(([t]) => `${t}: ${keywordsOf("", t).join()}`));
+const phrased = queryTerms("Spring Boot machine learning power bi golang security");
+report("a query keeps keyword phrases together and names their keyword",
+  phrased.map((t) => `${t.term}=${t.keyword}`).join() ===
+    "spring boot=spring,machine learning=machine-learning,power bi=bi,golang=golang,security=cybersecurity" &&
+  phrased.find((t) => t.term === "golang").alternatives.includes("go"), phrased);
+
+const kw = (id, title, keywords) => ({ ...index.jobs[0], id: `greenhouse:kw:${id}`, company: "Keyword Co", slug: "kw",
+  title, url: `https://job-boards.greenhouse.io/kw/jobs/${id}`, keywords });
+const withKeywords = { ...index, jobs: [kw(1, "Software Engineer", ["typescript", "angular"]),
+  kw(2, "Backend Engineer", ["python", "django", "fastapi", "fintech"]), kw(3, "Platform Engineer", ["golang", "kubernetes"]),
+  kw(4, "Angular Developer", ["angular"]), ...index.jobs] };
+const byKeywords = async (args) => (await run("find_jobs", args, { jobs: withKeywords })).structuredContent;
+const angular = await byKeywords({ query: "angular" });
+report("find_jobs finds a skill among the description's keywords, title matches first",
+  angular.jobs.map((j) => j.title).join() === "Angular Developer,Software Engineer" &&
+  !angular.jobs[0].matched_in_keywords && angular.jobs[1].matched_in_keywords.join() === "angular" &&
+  angular.jobs[1].keywords.join() === "typescript,angular", angular.jobs.map((j) => [j.title, j.matched_in_keywords]));
+const djangoKw = await byKeywords({ query: "Django FastAPI" });
+report("Django FastAPI finds the posting whose description names them", djangoKw.matches === 1 &&
+  djangoKw.jobs[0].title === "Backend Engineer" && djangoKw.jobs[0].matched_terms.join() === "django,fastapi" && !djangoKw.no_match);
+const goKw = await byKeywords({ query: "go" });
+report("go finds Golang through the keyword", goKw.jobs.some((j) => j.title === "Platform Engineer"), goKw.jobs.map((j) => j.title));
+const rare = await byKeywords({ query: "engineer angular" });
+report("a rare word outranks a common one", rare.jobs[0].matched_terms.includes("angular") &&
+  rare.jobs.slice(0, 2).every((j) => j.matched_terms.includes("angular")), rare.jobs.map((j) => [j.title, j.matched_terms]));
+const legacy = (await run("find_jobs", { query: "golang" }, { jobs: offices })).structuredContent;
+report("a posting stored without keywords takes them from its title",
+  legacy.jobs.some((j) => /Golang/i.test(j.title) && j.keywords.includes("golang")), legacy.jobs.map((j) => [j.title, j.keywords]));
+const kwSearch = { jsonrpc: "2.0", id: 5, ...tool("find_jobs", { query: "angular" }) };
+const [kwEvent] = analytics(data, {}, kwSearch, await respond(data, kwSearch, { jobs: withKeywords }), Date.now());
+report("find_jobs counts the results found only through keywords", kwEvent.properties.keyword_matched === 1, kwEvent.properties);
 
 // The index jobs.mjs writes carries them; find_jobs reads what is stored, and works
 // out roles, level and regions for postings stored without them.
@@ -1167,8 +1220,8 @@ report("a salary floor nobody reaches is the filter to drop",
   rich.no_match.without_each_filter[0].drop === "min_salary_eur" && rich.no_match.suggestions.length > 0 &&
   /^without min_salary_eur/.test(rich.no_match.suggestions_are), rich.no_match);
 const django = await jobsOut({ query: "Django FastAPI", workplace: "remote" });
-report("words no posting names say query reads titles, not descriptions, and suggest nothing",
-  /not its description/.test(django.no_match.query_note ?? "") && !django.no_match.suggestions, django.no_match);
+report("words no posting names say what query reads, keywords included, and suggest nothing",
+  /keywords read from its description/.test(django.no_match.query_note ?? "") && !django.no_match.suggestions, django.no_match);
 report("a search that matches has no no_match", !(await jobsOut({ company: "glovo" })).no_match);
 const remoteStats = (await toolCall("salary_stats", { region: "remote", role: "software-engineer" })).structuredContent;
 const spainStats = (await toolCall("salary_stats", { role: "software-engineer" })).structuredContent;

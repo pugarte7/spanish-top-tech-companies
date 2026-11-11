@@ -9,13 +9,15 @@ import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { carryOver, crawl, fresh, isIndex, loadAts, summary, summaryPath, throttled } from "../scripts/jobs.mjs";
+import { KEYWORDS } from "../api/_classify.js";
 
 process.env.ATS_MIN_INTERVAL_MS = "0";
 process.env.ATS_LOG_LEVEL = "error";
 
 const KEYS = ["id", "company", "slug", "tier", "title", "url", "ats", "location", "location_classes",
-              "workplace", "department", "posted_at", "salary", "roles", "seniority", "years", "regions"];
+              "workplace", "department", "posted_at", "salary", "roles", "seniority", "years", "regions", "keywords"];
 const SENIORITIES = ["intern", "junior", "mid", "senior", "staff", "lead", "head"];
+const KEYWORD_IDS = new Set(KEYWORDS.map(([id]) => id));
 const CLASSES = new Set(["bay-area", "us-other", "canada", "remote-us", "remote-canada", "remote-global",
                          "spain", "remote-spain", "europe", "remote-europe", "other", "unknown"]);
 const OPEN = ["spain", "remote-spain", "remote-europe", "remote-global"];
@@ -56,6 +58,7 @@ function checkIndex(index, name) {
     assert.ok(job.years === null || (job.years.length === 2 && Number.isInteger(job.years[0]) &&
               (job.years[1] === null || job.years[1] > job.years[0])), `${at} years`);
     assert.ok(Array.isArray(job.regions) && job.regions.every((r) => /^[A-Z]{2}$/.test(r)), at);
+    assert.ok(Array.isArray(job.keywords) && job.keywords.every((k) => KEYWORD_IDS.has(k)), `${at} keywords`);
     if (job.salary !== null) {
       assert.deepEqual(Object.keys(job.salary), ["min", "max", "currency", "period"], at);
       assert.match(job.salary.currency, /^[A-Z]{3}$/, at);
@@ -135,7 +138,7 @@ assert.deepEqual(byId["greenhouse:cabify:1"], {
   location: "Madrid", location_classes: ["spain"], workplace: null, department: null,
   posted_at: "2026-10-20T10:00:00-04:00",
   salary: { min: 60000, max: 80000, currency: "EUR", period: "year" },
-  roles: ["software-engineer"], seniority: null, years: [3, 5], regions: ["MD"],
+  roles: ["software-engineer"], seniority: null, years: [3, 5], regions: ["MD"], keywords: ["golang"],
 });
 assert.deepEqual([byId["greenhouse:cabify:8"].roles, byId["greenhouse:cabify:8"].years], [["product-designer"], null],
                  "a description naming no years of experience");
