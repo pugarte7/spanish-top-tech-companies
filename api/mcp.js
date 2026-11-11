@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.12.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.13.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -1879,15 +1879,15 @@ export async function jobQuestions(data, args = {}, env = {}) {
 // --- Jobs: the procedure -------------------------------------------------------------
 
 // How each client gets a browser when it has none. Pasting answers is the last resort.
-const PLAYWRIGHT = "the Playwright MCP server (npx @playwright/mcp@latest), which opens a Chromium window " +
-  "the person can see and use";
+const PLAYWRIGHT = "the Playwright MCP server (npx @playwright/mcp@latest --headless), which runs Chromium in the " +
+  "background with no window";
 // The order is the skill's: a Chromium of the client's own, then Claude in Chrome
 // when its extension is enabled, then the Playwright MCP server.
 const CLIENTS = {
   "claude-code": { names: /claude ?code|^cc$/, keeps: "file",
     browser: "Its built-in Chromium browser where the app has one; else Claude in Chrome when the extension " +
       "is enabled (run /chrome, or start with claude --chrome); else " +
-      "`claude mcp add playwright -- npx @playwright/mcp@latest` and restart." },
+      "`claude mcp add playwright -- npx @playwright/mcp@latest --headless` and restart." },
   "claude-desktop": { names: /claude ?(desktop|app|ai)|^claude$/, keeps: "memory",
     browser: "Its built-in Chromium browser where the app has one; else Claude in Chrome when the extension " +
       "is installed and connected in Settings; else " + PLAYWRIGHT + " as a local MCP server." },
@@ -1896,7 +1896,7 @@ const CLIENTS = {
       "Chrome if its extension is enabled; else " + PLAYWRIGHT + " added in .cursor/mcp.json." },
   codex: { names: /codex/, keeps: "file",
     browser: "Codex's built-in Chromium browser where it has one; else " +
-      "`codex mcp add playwright -- npx @playwright/mcp@latest`, then restart Codex." },
+      "`codex mcp add playwright -- npx @playwright/mcp@latest --headless`, then restart Codex." },
   hermes: { names: /hermes/, keeps: "file",
     browser: "Hermes's browser toolset (Chromium); else " + PLAYWRIGHT + " added as an MCP server." },
   chatgpt: { names: /chat ?gpt|openai/, keeps: "memory",
@@ -2144,6 +2144,11 @@ export function applicationGuide(args = {}) {
           "person what you add, and send once it works. Pasting answers is the last resort.",
         order: "First a Chromium browser the client has built in; then Claude in Chrome, when its " +
           "extension is enabled; then the Playwright MCP server.",
+        in_the_background: "The person is doing something else while you send: the browser must never " +
+          "take their screen, their focus or their own tabs. Run it headless where the tool has that " +
+          "mode (Playwright MCP: --headless); otherwise in a window of its own that is never brought to " +
+          "the front. Only when the person has to act in the page (a CAPTCHA, a sign-in) do you tell " +
+          "them and show it; a headless browser has no window to show, so give them the page's URL.",
         how: known ? [known[1].browser, ANY_BROWSER]
           : [...Object.entries(CLIENTS).map(([name, c]) => `${name}: ${c.browser}`), ANY_BROWSER],
       },
