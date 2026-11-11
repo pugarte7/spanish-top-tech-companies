@@ -182,6 +182,8 @@ const expected = [
     !("local_server" in out(r)) && out(r).sending.without_a_browser &&
     out(r).sending.get_a_browser.how.length > 2 && out(r).rules.some((x) => /How did you hear/.test(x)) &&
     /^First a Chromium.*Claude in Chrome.*Playwright/.test(out(r).sending.get_a_browser.order) &&
+    /headless/.test(out(r).sending.get_a_browser.in_the_background) &&
+    out(r).sending.get_a_browser.how.some((x) => /@playwright\/mcp@latest --headless/.test(x)) &&
     out(r).rules.some((x) => /location question.*Spain/.test(x)) &&
     out(r).sending.with_a_browser.some((x) => /email through an MCP server/.test(x))],
   ["application_guide for one client", (r) => /~\/job-search\.md/.test(out(r).state_document.where) &&

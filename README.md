@@ -64,7 +64,7 @@ Tu agente busca entre esas ofertas, lee el formulario, escribe la carta y las re
 > Nada se envía sin tu sí. Las preguntas delicadas, como sueldo o permiso de trabajo, te las hace una vez, todas en un mensaje, y los consentimientos de privacidad los aceptas tú.
 
 > [!NOTE]
-> La web no guarda nada tuyo. Tu perfil y tus solicitudes se quedan en tu agente, en su memoria o en un archivo como `~/job-search.md`. Si al ir a enviarla no tiene navegador, instala uno (primero un Chromium integrado, luego Claude in Chrome, luego el servidor MCP de Playwright); solo si no puede, te da el enlace y las respuestas para que la envíes tú. Si un formulario pide un CAPTCHA, te pasa la página. Si una empresa manda un código por correo, lo lee de tu correo si se lo conectas, o te lo pide.
+> La web no guarda nada tuyo. Tu perfil y tus solicitudes se quedan en tu agente, en su memoria o en un archivo como `~/job-search.md`. Si al ir a enviarla no tiene navegador, instala uno (primero un Chromium integrado, luego Claude in Chrome, luego el servidor MCP de Playwright) y lo usa en segundo plano, sin ventana, para no molestarte; solo si no puede, te da el enlace y las respuestas para que la envíes tú. Si un formulario pide un CAPTCHA, te pasa la página. Si una empresa manda un código por correo, lo lee de tu correo si se lo conectas, o te lo pide.
 
 ## Herramientas del MCP
 
