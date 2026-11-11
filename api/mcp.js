@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.11.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.12.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -149,7 +149,8 @@ const TOOLS = {
                    "board (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling and Bending Spoons; for Workday, whose form " +
                    "needs the person's account, the posting and Workday's standard steps, also when a " +
                    "Phenom career site leads to it; for SmartRecruiters, the posting only; other boards are read in the browser): " +
-                   "each question with its type, options, whether it is required and who answers " +
+                   "each question with its type, options, whether it is required, the most characters " +
+                   "the board takes (max_length) when it says, and who answers " +
                    "it (person or agent), the posting text marked as untrusted, and the URL to " +
                    "apply at.",
       inputSchema: { type: "object", required: ["id"], properties: {
@@ -778,9 +779,10 @@ async function jobIndex(env) {
   return index;
 }
 
-const ORDER = "With a query, the postings that match it best first: a rarer word counts for more than a " +
-  "common one (angular more than engineer), and a word in the title for more than one among the " +
-  "keywords. Then highest salary " +
+const ORDER = "With a query, the postings that match it best first: those matching more of its words " +
+  "(a word in more than one posting in five, such as engineer or senior, does not count), " +
+  "then a rarer word counts for more than a common one (angular more than engineer), and a word in " +
+  "the title for more than one among the keywords. Then highest salary " +
   "figure first: the posting's own salary when it states one in EUR a " +
   "year (the middle of its range), else the company's median base for the posting's role. " +
   "Postings with neither come after, and ties go newest first.";
@@ -794,6 +796,12 @@ const PREPARED = new WeakMap();
 // matches (inverse document frequency), so a framework outweighs "engineer".
 // Counted once per index and term, over the whole index.
 const WEIGHTS = new WeakMap();
+// A word in more than one posting in five (engineer, senior, ai) says little
+// about the posting: it adds to the score but not to how many of the query's
+// words a posting matches, which orders first. Otherwise "engineer angular"
+// put every engineer whose description names Angular above "Frontend
+// developer (Angular)".
+const DISTINCT_WEIGHT = Math.log(1 + 5);
 function termWeight(list, term, pattern) {
   if (!WEIGHTS.has(list)) WEIGHTS.set(list, new Map());
   const cache = WEIGHTS.get(list);
@@ -804,6 +812,24 @@ function termWeight(list, term, pattern) {
     cache.set(key, Math.log(1 + list.length / (1 + n)));
   }
   return cache.get(key);
+}
+// A title without the parts that only say where the opening is: Grafana posts
+// "Staff Backend Engineer | Spain | Remote" once per country, Accenture
+// "Asesor/a Comercial (Bilbao)" once per office. A part goes when every word
+// of it is in the posting's own location or names the workplace, so
+// "Spanish (LATAM)" and "Spanish (Spain)" in Barcelona stay two openings.
+const WORKPLACE_WORDS = new Set(["remote", "remoto", "hybrid", "hibrido", "onsite"]);
+// Short names a title uses for a country its location spells out (Grafana's "| US |" for USA).
+const COUNTRY_SHORT = [[/\b(usa|united states)\b/, "us"], [/\b(united kingdom|england|gb)\b/, "uk"]];
+export function openingTitle(job) {
+  const location = words(job.location);
+  const where = new Set(location.split(" "));
+  for (const [long, short] of COUNTRY_SHORT) if (long.test(location)) where.add(short);
+  const kept = String(job.title ?? "").split(/\s*(?:[|(),\u2013\u2014/]|\s-\s)\s*/).filter((part) => {
+    const w = words(part).split(" ").filter(Boolean);
+    return w.length && !w.every((x) => WORKPLACE_WORDS.has(x) || where.has(x));
+  });
+  return words(kept.join(" ")) || words(job.title);
 }
 function prepared(data, index) {
   if (PREPARED.has(index)) return PREPARED.get(index);
@@ -823,8 +849,9 @@ function prepared(data, index) {
       years: Array.isArray(job.years) && Number.isFinite(job.years[0]) ? job.years : null,
       regions: Array.isArray(job.regions) ? job.regions : regionsOf(job.location),
       workplace: workplaceOf(job), remote: isRemote(job), eur: postingEur(job),
-      // One opening posted once per office is one result: same company, same title.
-      group: `${words(job.slug || job.company)}|${title}`,
+      // One opening posted once per office or country is one result: same company, same
+      // title once the places it names are left out.
+      group: `${words(job.slug || job.company)}|${openingTitle(job)}`,
     });
   }
   PREPARED.set(index, list);
@@ -937,7 +964,8 @@ export async function findJobs(data, args = {}, env = {}) {
     companyTable(env).catch((e) => { if (e instanceof Unavailable) return null; throw e; })]);
   const terms = queryTerms(args.query).map((t) => {
     const pattern = termPattern(t.alternatives);
-    return { ...t, pattern, weight: termWeight(prepared(data, index), t, pattern) };
+    const weight = termWeight(prepared(data, index), t, pattern);
+    return { ...t, pattern, weight, distinct: weight >= DISTINCT_WEIGHT };
   });
 
   // One pass over the index with a set of filters; the no-match advice runs
@@ -952,11 +980,13 @@ export async function findJobs(data, args = {}, env = {}) {
       if (exclude.has(job.id)) { excluded++; continue; }
       if (g.company && p.slug !== g.company && !p.company.includes(g.company)) continue;
       const matched = [], viaKeywords = [];
-      let score = 0;
+      let score = 0, distinct = 0;
       if (g.terms.length) {
         for (const t of g.terms) {
           if (t.pattern.test(p.text)) { matched.push(t.term); score += 2 * t.weight; }
           else if (t.keyword && p.keywords.has(t.keyword)) { matched.push(t.term); viaKeywords.push(t.term); score += t.weight; }
+          else continue;
+          if (t.distinct) distinct++;
         }
         if (!matched.length) continue;
       }
@@ -976,12 +1006,12 @@ export async function findJobs(data, args = {}, env = {}) {
       }
       if (g.years && !p.years) yearsUnstated++;
       const figure = own ? (own[0] + own[1]) / 2 : context?.company_median_base_eur ?? null;
-      found.push({ figure, posted: job.posted_at ?? "", p, role: jobRole, context, basis, matched, viaKeywords, score });
+      found.push({ figure, posted: job.posted_at ?? "", p, role: jobRole, context, basis, matched, viaKeywords, score, distinct });
     }
     // A city keeps the postings that name it; when none does, the whole region stays.
     const named = g.inCity ? found.filter((f) => g.inCity.test(f.p)) : [];
     if (named.length) found.splice(0, found.length, ...named);
-    found.sort((a, b) => b.score - a.score || (b.figure ?? -1) - (a.figure ?? -1) ||
+    found.sort((a, b) => b.distinct - a.distinct || b.score - a.score || (b.figure ?? -1) - (a.figure ?? -1) ||
       String(b.posted).localeCompare(String(a.posted)) || a.p.job.id.localeCompare(b.p.job.id));
     // The first in order speaks for its group; the others stay reachable by id.
     const groups = new Map();
@@ -999,7 +1029,7 @@ export async function findJobs(data, args = {}, env = {}) {
                ...(terms.length ? { query_rule: "a posting matches any of the words (whole words, synonyms " +
                  "included) in its title, company or location, or among the keywords read from its description; " +
                  "matched_terms says which, matched_in_keywords which only through the keywords (check those " +
-                 "with job_questions). Rarer words and title matches rank higher" } : {}),
+                 "with job_questions). More words matched rank higher, then rarer words and title matches" } : {}),
                role: role ? (special ? special.label : roleSlug ?? role) : null,
                role_matched_by: !role ? null
                  : special ? `title words (${special.names.join(", ")}); salaries as ${special.slug}`
@@ -1018,7 +1048,8 @@ export async function findJobs(data, args = {}, env = {}) {
     postings_in_index: index.jobs.length, postings_matched: found.length,
     matches: results.length, returned: jobs.length,
     grouped: `${found.length} postings merged into ${results.length} results: one company's postings ` +
-      "with the same title are one result, the others listed in also_posted_as (each id works in " +
+      "with the same title, leaving out the places it names (| Spain | Remote, (Bilbao)), are one " +
+      "result, the others listed in also_posted_as (each id works in " +
       "job_questions and exclude)",
     ...(minSalary !== null ? { left_out_without_salary_figure: unknownPay } : {}),
     ...(years ? { kept_without_years_figure: yearsUnstated } : {}),
@@ -1329,8 +1360,11 @@ async function workableForm(env, account, shortcode) {
     const kind = String(f.type ?? "");
     const options = labels(f.options, "value");
     const type = kind === "multiple" && f.singleOption !== true ? "multiselect" : WORKABLE_TYPES[kind] ?? "text";
+    // Workable cuts nothing and refuses a longer answer at submit (a 127-character
+    // "Tell about your experience" field, 2026-11-11).
+    const max = Number.isInteger(f.maxLength) && f.maxLength > 0 ? { max_length: f.maxLength } : {};
     return [question(id, `${prefix}${f.label ?? id}`, f.required, type,
-                     kind === "boolean" && !options.length ? ["Yes", "No"] : options)];
+                     kind === "boolean" && !options.length ? ["Yes", "No"] : options, "application", max)];
   };
   const questions = records(sections).flatMap((s) => records(s.fields)).flatMap((f) => read(f));
   if (!questions.length) throw new BoardError("the board no longer has this posting; it may have closed");
