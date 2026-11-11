@@ -53,9 +53,13 @@ daily from their public job boards (only postings in Spain, or remote open to
 Spain or Europe), and helps apply to them. See "Applying" below.
 
 - `find_jobs(query, role, region, workplace, seniority, years, company, min_salary_eur, exclude, limit)`:
-  open postings, each with the company's median base for the role. `query`
-  matches any of its words (synonyms such as SRE and site reliability
-  included), the postings matching more first; `role` also takes
+  open postings, each with the company's median base for the role and its
+  `keywords` (skills, tools, industries and spoken languages read from the
+  description). `query` matches any of its words in the title or among those
+  keywords, so a stack works ("angular typescript", "python django",
+  "kubernetes terraform"), synonyms such as SRE and site reliability
+  included; rarer words and title matches rank first, and
+  `matched_in_keywords` marks a match found only in the description. `role` also takes
   specializations such as DevOps, SRE, backend or frontend. `region` takes a
   city or remote too; `seniority` (intern, junior, mid, senior, staff, lead,
   head) is the level the title names; `years` is the person's experience and

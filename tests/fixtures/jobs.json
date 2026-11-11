@@ -20,7 +20,8 @@
       "roles": ["software-engineer"],
       "seniority": "senior",
       "years": null,
-      "regions": ["MD"]
+      "regions": ["MD"],
+      "keywords": []
     },
     {
       "id": "greenhouse:canonical:3400000002",
@@ -39,7 +40,8 @@
       "roles": ["software-engineer"],
       "seniority": null,
       "years": null,
-      "regions": []
+      "regions": [],
+      "keywords": ["python"]
     },
     {
       "id": "greenhouse:elastic:8200000003",
@@ -58,7 +60,8 @@
       "roles": ["software-engineer"],
       "seniority": "senior",
       "years": null,
-      "regions": []
+      "regions": [],
+      "keywords": []
     },
     {
       "id": "greenhouse:feverup:4900000004",
@@ -77,7 +80,8 @@
       "roles": ["software-engineer"],
       "seniority": null,
       "years": null,
-      "regions": ["MD"]
+      "regions": ["MD"],
+      "keywords": []
     },
     {
       "id": "lever:jobandtalent:00000000-aaaa-4bbb-8ccc-000000000005",
@@ -96,7 +100,8 @@
       "roles": ["software-engineer"],
       "seniority": null,
       "years": null,
-      "regions": ["MD"]
+      "regions": ["MD"],
+      "keywords": ["react"]
     },
     {
       "id": "ashby:kraken.com:00000000-dddd-4eee-8fff-000000000006",
@@ -115,7 +120,8 @@
       "roles": ["software-engineer"],
       "seniority": "staff",
       "years": null,
-      "regions": []
+      "regions": [],
+      "keywords": ["sre"]
     },
     {
       "id": "recruitee:sequra:2600000007",
@@ -134,7 +140,8 @@
       "roles": ["software-engineer"],
       "seniority": null,
       "years": null,
-      "regions": ["CT"]
+      "regions": ["CT"],
+      "keywords": []
     },
     {
       "id": "greenhouse:typeform:7900000008",
@@ -153,7 +160,8 @@
       "roles": ["software-engineer"],
       "seniority": null,
       "years": null,
-      "regions": []
+      "regions": [],
+      "keywords": []
     },
     {
       "id": "workday:zendesk/wd1/zendesk:0000000000000000000000000000ab09",
@@ -172,7 +180,8 @@
       "roles": ["software-engineer"],
       "seniority": "mid",
       "years": [2, null],
-      "regions": ["MD"]
+      "regions": ["MD"],
+      "keywords": []
     }
   ]
 }

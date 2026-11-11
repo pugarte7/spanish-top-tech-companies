@@ -16,8 +16,8 @@
 // reaches this server: the agent keeps that in a document of its own.
 
 import { after, capture, cut, event, origin, redact, uuidv7 } from "./_track.js";
-import { CLASSIFIED, PLACES, REMOTE, SENIORITIES, norm, placeNames, plainWords, regionsOf, seniorityOf,
-  titleRoles, words, workplaceOf } from "./_classify.js";
+import { CLASSIFIED, KEYWORD_FORMS, KEYWORD_WORDS, PLACES, QUERY_KEYWORD, REMOTE, SENIORITIES, keywordsOf, norm,
+  placeNames, plainWords, regionsOf, seniorityOf, titleRoles, words, workplaceOf } from "./_classify.js";
 
 const MODERN = "2026-07-28";
 const LEGACY = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.10.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.11.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -99,7 +99,8 @@ const TOOLS = {
                    "(Greenhouse, Lever, Ashby, Workday and others), refreshed daily. Filter by text, " +
                    "role, region or remote, workplace, level, the person's years of experience, company " +
                    "and minimum salary. Each result carries the roles, level and years of experience " +
-                   "read from the posting, and " +
+                   "read from the posting, its keywords (skills, tools, industries and spoken languages " +
+                   "read from the description), and " +
                    "the company's median base for the posting's role in Spain, as the " +
                    "site's companies table shows it, with how many people it comes from " +
                    `(few: true under ${data.min_group}). Pass the ids already applied to or turned ` +
@@ -108,10 +109,13 @@ const TOOLS = {
                    "The starting point when asked to find jobs or apply for " +
                    "someone; application_guide has the procedure.",
       inputSchema: { type: "object", properties: {
-        query: { type: "string", description: "Words to find in the title, company or location, " +
-                 "e.g. devops sre platform. A posting matching any word counts, whole words and " +
-                 "common synonyms (SRE, site reliability) included; those matching more come first. " +
-                 "Accents and case are ignored." },
+        query: { type: "string", description: "Words to find in the title, company or location, or " +
+                 "among the keywords read from the description: languages, frameworks, cloud, data " +
+                 "and AI tools, security and compliance, industries, spoken languages. E.g. " +
+                 "\"angular typescript\", \"python django fintech\", \"kubernetes terraform\", \"grc iso 27001\". " +
+                 "A posting matching any word counts, whole words and common synonyms (SRE, site " +
+                 "reliability; golang, go) included; the best matches come first. Accents and case are " +
+                 "ignored." },
         role: { type: "string", description: "A role from list_filters, e.g. software-engineer or " +
                 "Data Scientist, or a specialization such as DevOps, SRE, backend or frontend; " +
                 "postings are matched by title. Text that is neither filters titles as written." },
@@ -134,6 +138,9 @@ const TOOLS = {
         limit: { type: "integer", minimum: 1, maximum: JOB_MAX, default: JOB_DEFAULT } } } }),
     run: (data, args, env) => findJobs(data, args, env),
     measure: (out) => ({ result_count: out.matches,
+                         // Returned postings found only through the description's keywords.
+                         ...(out.filters?.query ? { keyword_matched: out.jobs.filter((j) =>
+                           j.matched_in_keywords && j.matched_in_keywords.length === j.matched_terms.length).length } : {}),
                          ...(out.no_match ? { suggested: out.no_match.suggestions?.length ?? 0 } : {}) }),
   },
   job_questions: {
@@ -603,18 +610,28 @@ const SYNONYMS = [
   ["security", "seguridad"], ["sales", "ventas"], ["designer", "disenador", "disenadora"],
 ];
 const SYNONYM_OF = new Map(SYNONYMS.flatMap((group) => group.map((w) => [w, group])));
-const PHRASES = new Set(SYNONYMS.flat().filter((w) => w.includes(" ")));
+const PHRASES = new Set([...SYNONYMS.flat(), ...QUERY_KEYWORD.keys()].filter((w) => w.includes(" ")));
+const PHRASE_WORDS = Math.max(2, KEYWORD_WORDS);
 
-// The terms of a query, each with the ways a title may say it: two-word phrases
-// kept together, filler words dropped.
+// The keyword id (api/_classify.js KEYWORDS) a query term names, through its synonyms too.
+const keywordOf = (term) => QUERY_KEYWORD.get(term) ??
+  (SYNONYM_OF.get(term) ?? []).map((w) => QUERY_KEYWORD.get(w)).find(Boolean) ?? null;
+
+// The terms of a query, each with the ways a title may say it and the keyword
+// it names: the longest known phrase kept together, filler words dropped.
 export function queryTerms(query) {
   const tokens = words(query).split(" ").filter(Boolean);
   const terms = [];
   for (let i = 0; i < tokens.length; i++) {
-    const pair = `${tokens[i]} ${tokens[i + 1] ?? ""}`;
-    const term = PHRASES.has(pair) ? (i++, pair) : tokens[i];
+    let term = tokens[i];
+    for (let n = Math.min(PHRASE_WORDS, tokens.length - i); n > 1; n--) {
+      const phrase = tokens.slice(i, i + n).join(" ");
+      if (PHRASES.has(phrase)) { term = phrase; i += n - 1; break; }
+    }
     if (STOPWORDS.has(term) || terms.some((t) => t.term === term)) continue;
-    terms.push({ term, alternatives: SYNONYM_OF.get(term) ?? [term] });
+    const keyword = keywordOf(term);
+    const alternatives = [...new Set([...(SYNONYM_OF.get(term) ?? [term]), ...(keyword ? KEYWORD_FORMS.get(keyword) : [])])];
+    terms.push({ term, alternatives, keyword });
   }
   return terms;
 }
@@ -761,7 +778,9 @@ async function jobIndex(env) {
   return index;
 }
 
-const ORDER = "With a query, the postings matching more of its words first. Then highest salary " +
+const ORDER = "With a query, the postings that match it best first: a rarer word counts for more than a " +
+  "common one (angular more than engineer), and a word in the title for more than one among the " +
+  "keywords. Then highest salary " +
   "figure first: the posting's own salary when it states one in EUR a " +
   "year (the middle of its range), else the company's median base for the posting's role. " +
   "Postings with neither come after, and ties go newest first.";
@@ -770,6 +789,22 @@ const ORDER = "With a query, the postings matching more of its words first. Then
 // fields jobs.mjs stores, or worked out here from the title and location for a
 // posting stored before them (years need the description, so stay null).
 const PREPARED = new WeakMap();
+
+// How much a query term counts: more the fewer postings in the index it
+// matches (inverse document frequency), so a framework outweighs "engineer".
+// Counted once per index and term, over the whole index.
+const WEIGHTS = new WeakMap();
+function termWeight(list, term, pattern) {
+  if (!WEIGHTS.has(list)) WEIGHTS.set(list, new Map());
+  const cache = WEIGHTS.get(list);
+  const key = `${term.term}|${term.keyword ?? ""}`;
+  if (!cache.has(key)) {
+    let n = 0;
+    for (const p of list) if (pattern.test(p.text) || (term.keyword && p.keywords.has(term.keyword))) n++;
+    cache.set(key, Math.log(1 + list.length / (1 + n)));
+  }
+  return cache.get(key);
+}
 function prepared(data, index) {
   if (PREPARED.has(index)) return PREPARED.get(index);
   const known = knownRoles(data);
@@ -780,6 +815,8 @@ function prepared(data, index) {
     list.push({
       job, title, where: words(job.location), slug: words(job.slug), company: words(job.company),
       text: words([job.title, job.company, job.department, job.location].filter(Boolean).join(" ")),
+      // Read from the description by jobs.mjs; from the title alone for a posting stored before them.
+      keywords: new Set(Array.isArray(job.keywords) ? job.keywords : keywordsOf(job.title)),
       roles: Array.isArray(job.roles) ? job.roles : titleRoles(job.title, known),
       seniority: "seniority" in job ? (SENIORITIES.includes(job.seniority) ? job.seniority : null)
         : seniorityOf(job.title),
@@ -795,16 +832,18 @@ function prepared(data, index) {
 }
 
 // One result as find_jobs returns it.
-function posting({ p, role, context, basis, matched }, also, withTerms) {
+function posting({ p, role, context, basis, matched, viaKeywords }, also, withTerms) {
   const job = p.job;
   return {
     id: job.id, title: job.title, company: job.company, slug: job.slug, tier: job.tier ?? null,
     location: job.location ?? null, location_classes: job.location_classes ?? [],
     workplace: job.workplace ?? null, department: job.department ?? null,
     posted_at: job.posted_at ?? null, url: job.url, ats: job.ats, salary: job.salary ?? null,
-    role, roles: p.roles, seniority: p.seniority, years_asked: p.years, salary_context: context,
+    role, roles: p.roles, seniority: p.seniority, years_asked: p.years, keywords: [...p.keywords],
+    salary_context: context,
     ...(basis ? { min_salary_checked_against: basis } : {}),
     ...(withTerms ? { matched_terms: matched } : {}),
+    ...(withTerms && viaKeywords.length ? { matched_in_keywords: viaKeywords } : {}),
     also_posted_as: also.map((j) => ({ id: j.id, location: j.location ?? null, url: j.url })),
   };
 }
@@ -865,8 +904,10 @@ function noMatch({ data, index, args, filtersSet, pass, withTerms, dropped }) {
   }
   if (dropped.query && !pass({ ...filtersSet, ...ALL_NEUTRAL, terms: filtersSet.terms }).results.length)
     advice.query_note = "No posting in today's index names these words. query matches a posting's " +
-      "title, company, department and location, not its description: a skill such as a framework " +
-      "rarely appears there, so search by role (role: frontend) and read the descriptions with job_questions.";
+      "title, company, department and location, and the keywords read from its description (skills, " +
+      "tools, industries and spoken languages from a fixed list; each result's keywords shows them). " +
+      "A word outside that list is looked for in the title only: try a broader word, or search by " +
+      "role (role: frontend) and read the descriptions with job_questions.";
   return { no_match: advice };
 }
 
@@ -890,11 +931,14 @@ export async function findJobs(data, args = {}, env = {}) {
   const minSalary = resolveMinSalary(args.min_salary_eur);
   const limit = resolveJobLimit(args.limit);
   const exclude = resolveExclude(args.exclude);
-  const terms = queryTerms(args.query).map((t) => ({ ...t, pattern: termPattern(t.alternatives) }));
   const company = words(args.company);
   // Without the companies table the postings still come, with no salary_context.
   const [index, table] = await Promise.all([jobIndex(env),
     companyTable(env).catch((e) => { if (e instanceof Unavailable) return null; throw e; })]);
+  const terms = queryTerms(args.query).map((t) => {
+    const pattern = termPattern(t.alternatives);
+    return { ...t, pattern, weight: termWeight(prepared(data, index), t, pattern) };
+  });
 
   // One pass over the index with a set of filters; the no-match advice runs
   // it again with one filter dropped at a time.
@@ -907,9 +951,13 @@ export async function findJobs(data, args = {}, env = {}) {
       const job = p.job;
       if (exclude.has(job.id)) { excluded++; continue; }
       if (g.company && p.slug !== g.company && !p.company.includes(g.company)) continue;
-      let matched = [];
+      const matched = [], viaKeywords = [];
+      let score = 0;
       if (g.terms.length) {
-        matched = g.terms.filter((t) => t.pattern.test(p.text)).map((t) => t.term);
+        for (const t of g.terms) {
+          if (t.pattern.test(p.text)) { matched.push(t.term); score += 2 * t.weight; }
+          else if (t.keyword && p.keywords.has(t.keyword)) { matched.push(t.term); viaKeywords.push(t.term); score += t.weight; }
+        }
         if (!matched.length) continue;
       }
       if (!g.roleTest(p) || !g.inRegion(p)) continue;
@@ -928,12 +976,12 @@ export async function findJobs(data, args = {}, env = {}) {
       }
       if (g.years && !p.years) yearsUnstated++;
       const figure = own ? (own[0] + own[1]) / 2 : context?.company_median_base_eur ?? null;
-      found.push({ figure, posted: job.posted_at ?? "", p, role: jobRole, context, basis, matched });
+      found.push({ figure, posted: job.posted_at ?? "", p, role: jobRole, context, basis, matched, viaKeywords, score });
     }
     // A city keeps the postings that name it; when none does, the whole region stays.
     const named = g.inCity ? found.filter((f) => g.inCity.test(f.p)) : [];
     if (named.length) found.splice(0, found.length, ...named);
-    found.sort((a, b) => b.matched.length - a.matched.length || (b.figure ?? -1) - (a.figure ?? -1) ||
+    found.sort((a, b) => b.score - a.score || (b.figure ?? -1) - (a.figure ?? -1) ||
       String(b.posted).localeCompare(String(a.posted)) || a.p.job.id.localeCompare(b.p.job.id));
     // The first in order speaks for its group; the others stay reachable by id.
     const groups = new Map();
@@ -948,8 +996,10 @@ export async function findJobs(data, args = {}, env = {}) {
   return {
     generated_at: index.generated_at ?? null, salary_data_as_of: data.data_as_of || data.generated,
     filters: { query: terms.map((t) => t.term).join(" ") || null,
-               ...(terms.length > 1 ? { query_rule: "a posting matches any of the words (whole words, " +
-                 "synonyms included) and the ones matching more come first; matched_terms says which" } : {}),
+               ...(terms.length ? { query_rule: "a posting matches any of the words (whole words, synonyms " +
+                 "included) in its title, company or location, or among the keywords read from its description; " +
+                 "matched_terms says which, matched_in_keywords which only through the keywords (check those " +
+                 "with job_questions). Rarer words and title matches rank higher" } : {}),
                role: role ? (special ? special.label : roleSlug ?? role) : null,
                role_matched_by: !role ? null
                  : special ? `title words (${special.names.join(", ")}); salaries as ${special.slug}`
@@ -979,10 +1029,12 @@ export async function findJobs(data, args = {}, env = {}) {
     ...(results.length > jobs.length ? { more: `${results.length - jobs.length} more match; narrow the ` +
         "filters, or call again with the ids shown so far (also_posted_as included) added to exclude." } : {}),
     order: ORDER,
-    classification_note: "roles, seniority and years_asked are read from each posting when the index " +
+    classification_note: "roles, seniority, years_asked and keywords are read from each posting when the index " +
       "is built: roles from the title, best first (the first is the one salary_context uses); seniority " +
       "from the title, null when it names no level; years_asked from the description as [min, max], max " +
-      "null when open-ended, null when it names no figure. They are guesses from text, not the employer's fields.",
+      "null when open-ended, null when it names no figure; keywords from the title and description, " +
+      "from a fixed list of skills, tools, industries and spoken languages (a skill named as nice to have " +
+      "counts too). They are guesses from text, not the employer's fields.",
     salary_note: "salary is what the posting states in its board's pay fields, as published; null " +
       "there does not mean the posting names no pay: its text may give a range, which job_questions " +
       "quotes in conditions.pay. min_salary_eur is checked against salary when it is in EUR a year, " +

@@ -3,8 +3,8 @@
 // The MCP server's job tools search it, so an agent can apply without
 // installing anything. Postings only: titles, links, locations, stated pay,
 // and what api/_classify.js reads of each (roles and level from the title,
-// years of experience from the description, regions from the location). No
-// descriptions (size), nothing about any person.
+// years of experience and keywords from the description, regions from the
+// location). No descriptions (size), nothing about any person.
 //
 //     node scripts/jobs.mjs                    # after site.py: crawl the boards
 //     node scripts/jobs.mjs --fixture tests/fixtures/jobs.json   # offline copy

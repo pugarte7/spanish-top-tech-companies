@@ -1,5 +1,6 @@
 // What a job posting is: its likely roles, the level its title names, the years
-// of experience its text asks for and the Spanish regions its location names.
+// of experience its text asks for, the Spanish regions its location names and
+// the skills, tools, industries and spoken languages its text names.
 //
 // Shared by scripts/jobs.mjs, which stores these in /api/v1/jobs.json when it
 // crawls (the description is read there and never stored), and api/mcp.js,
@@ -221,9 +222,266 @@ export function workplaceOf(job) {
   return REMOTE.test(where) ? "remote" : null;
 }
 
+// --- Skills and topics ---------------------------------------------------------------
+
+// What a posting asks for or is about, from a fixed vocabulary: languages,
+// frameworks, cloud, data and AI tools, security and compliance, industries,
+// spoken languages. find_jobs' query matched titles only, and a stack almost
+// never is in one: in November 2026 agents got 0 postings for angular, kotlin,
+// "java spring" and "Django FastAPI", and 10 for python at 60k. jobs.mjs stores
+// the ids it finds in the title and the description; the description itself
+// is not kept, and an id is never text of the posting's own.
+//
+// Each entry is [id, forms, extra]. Forms are words() phrases, matched whole,
+// a plural allowed, in the title and the description, and read in a query as
+// the id. extra.query: more ways a query names it, too loose for a
+// description ("go"). extra.cased: a pattern on the text with its case kept,
+// for names that are also everyday words ("React", "Spring", "Go").
+export const KEYWORDS = [
+  // Languages
+  ["python", ["python", "pyspark", "pandas", "numpy"]],
+  ["java", ["java", "jvm", "j2ee", "jakarta ee"]],
+  ["kotlin", ["kotlin"]],
+  ["scala", ["scala"]],
+  ["javascript", ["javascript", "ecmascript", "es6"], { query: ["js"] }],
+  ["typescript", ["typescript"], { query: ["ts"] }],
+  ["golang", ["golang"], { query: ["go"],
+    // "in Go or Python", "Python, Go, Java"; never "Go-to-market" or "Go/No-Go".
+    cased: /(?:[,(/]\s*|\b(?:in|and|or|using|with|like|as|of)\s+)Go\b(?![-/])(?!\s*(?:to|ahead|beyond|live|further|deeper|through|back|out|for|the)\b)|\bGo(?![-/]\s*(?:No|to)\b)\s*(?:[,)/]|\s+(?:and|or)\s+[A-Z]|\s+(?:developer|engineer|backend|services|microservices|code|codebase)\b)/ }],
+  ["rust", ["rust", "rustlang"]],
+  ["cpp", ["c++", "cpp"]],
+  ["csharp", ["c#", "csharp"]],
+  ["dotnet", ["dotnet", "asp net", "net core", "net framework", "blazor"], { query: ["net", "asp"], cased: /\.NET\b/ }],
+  ["php", ["php"]],
+  ["ruby", ["ruby"]],
+  ["rails", ["rails", "ruby on rails", "ror"]],
+  ["elixir", ["elixir", "phoenix framework"]],
+  ["erlang", ["erlang"]],
+  ["clojure", ["clojure"]],
+  ["haskell", ["haskell"]],
+  ["swift", ["swift", "swiftui"]],
+  ["objective-c", ["objective c", "objc"]],
+  ["dart", ["dart"]],
+  ["sql", ["sql", "t sql", "pl sql", "plsql", "tsql"]],
+  ["nosql", ["nosql"]],
+  ["bash", ["bash", "shell scripting"]],
+  ["solidity", ["solidity"]],
+  ["abap", ["abap"]],
+  ["cobol", ["cobol"]],
+  ["matlab", ["matlab", "simulink"]],
+  // Front end and mobile
+  ["react", ["reactjs", "react js", "react hooks", "react query"], { query: ["react"], cased: /\bReact(?:JS|\.js)?\b(?! Native)/ }],
+  ["react-native", ["react native"]],
+  ["angular", ["angular", "angularjs", "rxjs", "ngrx"]],
+  ["vue", ["vue", "vuejs", "vue js", "nuxt", "nuxtjs", "pinia"]],
+  ["svelte", ["svelte", "sveltekit"]],
+  ["nextjs", ["nextjs", "next js"]],
+  ["redux", ["redux"]],
+  ["html-css", ["html", "html5", "css", "css3", "sass", "scss"]],
+  ["tailwind", ["tailwind", "tailwindcss"]],
+  ["flutter", ["flutter"]],
+  ["ios", ["ios", "uikit", "xcode"]],
+  ["android", ["android", "jetpack compose"]],
+  ["webgl", ["webgl", "three js", "threejs"]],
+  ["figma", ["figma"]],
+  ["design-systems", ["design system", "design systems"]],
+  // Back end
+  ["django", ["django"]],
+  ["flask", ["flask"]],
+  ["fastapi", ["fastapi"]],
+  ["spring", ["spring boot", "springboot", "spring framework", "spring cloud"], { query: ["spring"], cased: /\bSpring\b/ }],
+  ["nodejs", ["nodejs", "node js"], { query: ["node"], cased: /\bNode(?:JS|\.js)?\b/ }],
+  ["nestjs", ["nestjs", "nest js"]],
+  ["laravel", ["laravel"]],
+  ["symfony", ["symfony"]],
+  ["graphql", ["graphql", "apollo"]],
+  ["grpc", ["grpc", "protobuf"]],
+  ["microservices", ["microservices", "microservice", "micro services", "service oriented"]],
+  ["kafka", ["kafka", "confluent"]],
+  ["rabbitmq", ["rabbitmq"]],
+  ["event-driven", ["event driven", "event sourcing", "cqrs"]],
+  ["distributed-systems", ["distributed systems", "distributed system", "sistemas distribuidos"]],
+  ["low-latency", ["low latency", "high frequency trading", "hft"]],
+  // Cloud and operations
+  ["aws", ["aws", "amazon web services", "ec2", "cloudformation"]],
+  ["gcp", ["gcp", "google cloud", "google cloud platform", "bigquery"]],
+  ["azure", ["azure"]],
+  ["kubernetes", ["kubernetes", "k8s", "eks", "gke", "aks", "openshift", "helm charts"], { cased: /\bHelm\b/ }],
+  ["docker", ["docker", "containers", "containerization", "containerisation"]],
+  ["terraform", ["terraform", "terragrunt", "pulumi", "infrastructure as code", "iac"]],
+  ["ansible", ["ansible", "puppet", "chef"]],
+  ["linux", ["linux", "unix"]],
+  ["ci-cd", ["ci cd", "cicd", "continuous integration", "continuous delivery", "continuous deployment", "github actions", "jenkins", "gitlab ci", "argocd", "argo cd"]],
+  ["observability", ["observability", "prometheus", "grafana", "datadog", "opentelemetry", "new relic", "splunk", "elk"]],
+  ["devops", ["devops"]],
+  ["sre", ["sre", "site reliability"]],
+  ["serverless", ["serverless", "aws lambda", "cloud functions"]],
+  ["networking", ["tcp ip", "bgp", "network engineering", "networking protocols", "sdn"]],
+  ["embedded", ["embedded", "firmware", "rtos", "microcontrollers", "embebido"]],
+  ["fpga", ["fpga", "vhdl", "verilog", "asic"]],
+  ["kernel", ["linux kernel", "kernel", "ebpf"]],
+  ["compilers", ["compiler", "compilers", "llvm", "mlir"]],
+  ["gpu", ["gpu", "gpus", "cuda", "triton"]],
+  ["hpc", ["hpc", "high performance computing", "supercomputing"]],
+  ["test-automation", ["test automation", "automated testing", "cypress", "playwright", "selenium", "appium", "qa automation", "pruebas automatizadas"]],
+  // Data
+  ["postgresql", ["postgresql", "postgres"]],
+  ["mysql", ["mysql", "mariadb"]],
+  ["mongodb", ["mongodb", "mongo"]],
+  ["redis", ["redis"]],
+  ["elasticsearch", ["elasticsearch", "opensearch", "elastic search", "solr"]],
+  ["snowflake", ["snowflake"]],
+  ["databricks", ["databricks", "delta lake"]],
+  ["spark", ["apache spark", "pyspark", "spark sql", "spark streaming"], { query: ["spark"], cased: /\bSpark\b/ }],
+  ["hadoop", ["hadoop", "hive"]],
+  ["airflow", ["airflow", "dagster", "prefect"]],
+  ["dbt", ["dbt"]],
+  ["flink", ["flink"]],
+  ["etl", ["etl", "elt", "data pipelines", "data pipeline"]],
+  ["data-warehouse", ["data warehouse", "data warehousing", "data lake", "lakehouse", "redshift"]],
+  ["bi", ["business intelligence", "power bi", "powerbi", "tableau", "looker", "qlik", "metabase"]],
+  ["excel", ["vba", "google sheets"], { cased: /\bExcel\b/ }],
+  ["sap", ["sap", "s 4hana", "s4hana", "hana", "fiori"]],
+  ["sap-analytics", ["datasphere", "sap analytics cloud", "sap bw", "bw 4hana", "sap bi", "sac planning"], { query: ["sac"] }],
+  ["salesforce", ["salesforce", "apex", "sfdc"]],
+  ["dynamics", ["dynamics 365", "microsoft dynamics", "dynamics crm"]],
+  ["servicenow", ["servicenow"]],
+  ["odoo", ["odoo"]],
+  // Machine learning and AI
+  ["ai", ["ai", "artificial intelligence", "ia", "inteligencia artificial"]],
+  ["machine-learning", ["machine learning", "ml", "aprendizaje automatico", "scikit learn", "xgboost"]],
+  ["deep-learning", ["deep learning", "neural networks", "neural network", "transformers"]],
+  ["pytorch", ["pytorch"]],
+  ["tensorflow", ["tensorflow", "keras"]],
+  ["llm", ["llm", "llms", "large language model", "large language models", "genai", "gen ai", "generative ai",
+           "ia generativa", "rag", "retrieval augmented generation", "prompt engineering", "fine tuning", "langchain",
+           "llamaindex", "openai", "gpt"]],
+  ["ai-agents", ["ai agents", "ai agent", "agentic", "llm agents", "multi agent", "autonomous agents", "mcp"]],
+  // Not bare "inference": statistics has its own.
+  ["inference", ["model inference", "llm inference", "inference optimization", "inference serving", "inference engine",
+                 "inference infrastructure", "vllm", "model serving", "tensorrt"], { query: ["inference"] }],
+  ["mlops", ["mlops", "ml ops", "ml platform", "mlflow", "kubeflow", "sagemaker", "vertex ai"]],
+  ["computer-vision", ["computer vision", "image recognition", "opencv", "vision artificial"]],
+  ["nlp", ["nlp", "natural language processing", "procesamiento de lenguaje natural"]],
+  ["recommender-systems", ["recommender systems", "recommendation systems", "recommender system", "recommendation engine", "personalization"]],
+  ["statistics", ["statistics", "statistical", "estadistica", "a b testing", "experimentation", "causal inference", "econometrics"]],
+  ["robotics", ["robotics", "robotica", "ros", "autonomous driving", "slam"]],
+  // Security and compliance
+  ["cybersecurity", ["cybersecurity", "cyber security", "ciberseguridad", "information security", "infosec",
+                     "seguridad de la informacion", "security engineering", "application security", "appsec",
+                     "cloud security", "devsecops", "threat detection", "vulnerability management"],
+   { query: ["security", "seguridad", "cyber"] }],
+  ["pentesting", ["penetration testing", "pentesting", "pentest", "red team", "ethical hacking", "bug bounty"]],
+  ["soc", ["siem", "soar", "incident response", "security operations center", "soc analyst", "threat hunting"]],
+  ["iam", ["identity and access management", "iam", "okta", "sso", "zero trust"]],
+  ["grc", ["grc", "governance risk and compliance", "governance risk compliance", "risk management", "gestion de riesgos",
+           "internal audit", "auditoria interna", "it audit"]],
+  ["compliance", ["regulatory compliance", "compliance officer", "compliance analyst", "compliance manager",
+                  "compliance program", "compliance framework", "compliance frameworks", "cumplimiento normativo",
+                  "aml", "kyc", "anti money laundering", "regulatory reporting"], { query: ["compliance", "regulatory"] }],
+  ["iso-27001", ["iso 27001", "iso27001", "27001", "ens", "esquema nacional de seguridad", "nist", "nis2", "dora"]],
+  ["soc2", ["soc 2", "soc2", "pci dss", "pci"]],
+  // Not bare "privacy" or "data protection": nearly every posting ends with a privacy notice.
+  ["privacy", ["privacy engineering", "privacy program", "privacy counsel", "privacy compliance", "privacy by design",
+               "data protection officer", "dpo", "lopd", "lopdgdd", "privacy regulations", "privacy laws"],
+   { query: ["privacy", "data protection", "proteccion de datos", "gdpr", "rgpd"] }],
+  // Industries
+  ["fintech", ["fintech", "financial services", "banking", "neobank", "lending", "wealth management", "banca", "capital markets"]],
+  ["payments", ["payments", "payment processing", "payment methods", "checkout", "acquiring", "card issuing", "psd2",
+                "medios de pago", "pasarela de pago"], { query: ["payment", "pagos"] }],
+  ["crypto", ["crypto", "cryptocurrency", "cryptocurrencies", "blockchain", "web3", "defi", "bitcoin", "ethereum"]],
+  // Health insurance is a benefit almost everywhere: only the industry counts.
+  ["insurtech", ["insurtech", "insurance company", "insurance industry", "insurance sector", "insurance products",
+                 "insurance carriers", "insurance platform", "reinsurance", "aseguradora", "sector asegurador",
+                 "underwriting", "claims management"], { query: ["insurance", "seguros"] }],
+  ["healthtech", ["healthtech", "health tech", "digital health", "medtech", "medical devices", "healthcare industry",
+                  "healthcare technology", "healthcare providers", "healthcare sector", "patients", "clinicians",
+                  "salud digital", "sector sanitario", "pacientes"], { query: ["healthcare", "health", "salud", "sanidad"] }],
+  ["biotech", ["biotech", "life sciences", "pharma", "pharmaceutical", "drug discovery", "bioinformatics", "genomics"]],
+  ["edtech", ["edtech", "education technology", "e learning", "elearning", "online learning"]],
+  ["ecommerce", ["ecommerce", "e commerce", "marketplace", "retail", "comercio electronico"]],
+  // "Willing to travel" and travel benefits are not the industry.
+  ["travel", ["travel industry", "travel tech", "traveltech", "travel technology", "online travel", "tourism", "turismo",
+              "hospitality industry", "airlines", "travellers", "travelers", "sector turistico"],
+   { query: ["travel", "viajes", "hospitality", "hotels"] }],
+  ["mobility", ["mobility services", "mobility platform", "urban mobility", "mobility solutions", "ride hailing",
+                "micromobility", "movilidad urbana", "electric vehicles", "ev charging", "car sharing", "carsharing"],
+   { query: ["mobility", "movilidad"] }],
+  ["logistics", ["logistics", "logistica", "supply chain", "shipping industry", "freight", "maritime", "warehouse management",
+                 "last mile", "fleet management", "transportation management", "cadena de suministro"],
+   { query: ["shipping", "transport", "transporte"] }],
+  ["gaming", ["gaming", "video games", "videogames", "videojuegos", "game development", "unity3d", "unity engine",
+              "unreal engine", "igaming", "betting"], { query: ["games", "unity"] }],
+  ["adtech", ["adtech", "programmatic", "advertising technology", "ad tech", "martech"]],
+  ["energy", ["renewable energy", "renewables", "energias renovables", "energy transition", "solar energy", "wind energy", "utilities", "smart grid", "energy sector"]],
+  // Not bare "sustainability": "technical sustainability", "long-term sustainability".
+  ["sustainability", ["environmental sustainability", "sustainability reporting", "sustainability strategy", "csrd",
+                      "sostenibilidad ambiental", "esg", "climate tech", "climate change", "decarbonization",
+                      "decarbonisation", "net zero", "carbon emissions", "carbon accounting", "carbon footprint",
+                      "circular economy"], { query: ["sustainability", "sostenibilidad", "climate", "carbon"] }],
+  ["proptech", ["proptech", "real estate", "inmobiliaria"]],
+  ["legaltech", ["legaltech", "legal tech"]],
+  ["telecom", ["telecom", "telecommunications", "telecomunicaciones", "telco", "5g"]],
+  ["automotive", ["automotive", "automocion", "vehicles", "autonomous vehicles"]],
+  ["aerospace", ["aerospace", "aeroespacial", "aviation", "space industry", "satellites", "satellite", "defence industry",
+                 "defense industry", "defence sector", "defense sector"], { query: ["defence", "defense", "defensa", "space"] }],
+  ["media", ["media company", "media industry", "streaming platform", "video streaming", "music industry",
+             "entertainment industry", "publishing", "newsroom", "broadcasting", "broadcast"],
+   { query: ["media", "streaming", "music", "entertainment"] }],
+  ["saas", ["saas", "b2b saas"]],
+  ["govtech", ["govtech", "public sector", "sector publico", "administracion publica"]],
+  // Business tools and practices
+  ["crm", ["crm", "hubspot", "pipedrive"]],
+  ["seo", ["seo", "sem", "google ads", "ppc", "paid media", "performance marketing", "paid social"]],
+  ["product-analytics", ["amplitude", "mixpanel", "google analytics", "ga4", "product analytics", "posthog"]],
+  ["fp-a", ["fp a", "financial planning", "ifrs", "us gaap", "consolidation", "treasury"]],
+  ["agile", ["scrum", "kanban", "agile"]],
+  ["ux-research", ["user research", "usability testing", "ux research", "investigacion de usuarios"]],
+  // Spoken languages asked for
+  ["english", ["english", "ingles"]],
+  ["spanish", ["spanish", "castellano", "espanol"]],
+  ["catalan", ["catalan", "catala"]],
+  ["french", ["french", "frances"]],
+  ["german", ["german", "aleman"]],
+  ["italian", ["italian", "italiano"]],
+  ["portuguese", ["portuguese", "portugues"]],
+  ["dutch", ["dutch", "neerlandes"]],
+];
+
+const formsOf = ([, forms, x]) => [...forms, ...(x?.query ?? [])];
+const MAX_FORM_WORDS = Math.max(...KEYWORDS.flatMap((k) => formsOf(k).map((f) => f.split(" ").length)));
+const ORDER_OF = new Map(KEYWORDS.map(([id], i) => [id, i]));
+// A description form, and its plural, to the id it names.
+const FORM_ID = new Map(KEYWORDS.flatMap(([id, forms]) => forms.flatMap((f) => [[f, id], [`${f}s`, id], [`${f}es`, id]])));
+// A query word or phrase to the id it names: the forms and the looser query forms.
+export const QUERY_KEYWORD = new Map(KEYWORDS.flatMap((k) => formsOf(k).flatMap((f) => [[f, k[0]], [`${f}s`, k[0]]])));
+// Every way a keyword is written: what a query term naming it may also match in a title.
+export const KEYWORD_FORMS = new Map(KEYWORDS.map((k) => [k[0], formsOf(k)]));
+export const KEYWORD_WORDS = MAX_FORM_WORDS;
+
+// The keyword ids a title and a description name, in KEYWORDS order.
+export function keywordsOf(title, description = "") {
+  const found = new Set();
+  for (const text of [title, description]) {
+    const tokens = words(text).split(" ").filter(Boolean);
+    for (let i = 0; i < tokens.length; i++) {
+      let phrase = "";
+      for (let n = 0; n < MAX_FORM_WORDS && i + n < tokens.length; n++) {
+        phrase = n ? `${phrase} ${tokens[i + n]}` : tokens[i];
+        const id = FORM_ID.get(phrase);
+        if (id) found.add(id);
+      }
+    }
+    const cased = String(text ?? "").normalize("NFKD").replace(/[^\x00-\x7f]/g, "");
+    for (const [id, , x] of KEYWORDS) if (x?.cased && !found.has(id) && x.cased.test(cased)) found.add(id);
+  }
+  return [...found].sort((a, b) => ORDER_OF.get(a) - ORDER_OF.get(b));
+}
+
 // Everything above for one posting, as jobs.mjs stores it. The description is
 // read and left behind.
 export function classify(job, description, known) {
   return { roles: titleRoles(job.title, known), seniority: seniorityOf(job.title),
-           years: yearsAsked(description), regions: regionsOf(job.location) };
+           years: yearsAsked(description), regions: regionsOf(job.location),
+           keywords: keywordsOf(job.title, description) };
 }

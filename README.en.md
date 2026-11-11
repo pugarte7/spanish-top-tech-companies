@@ -72,7 +72,7 @@ The server is called `tech-pay-spain`. Your agent picks the tool; you do not nee
 
 | Tool | What it does | Parameters |
 |---|---|---|
-| `find_jobs` | Searches the day's more than 1,000 open postings, each with the company's median base salary for that role. When nothing matches, it says which filter is in the way and suggests the closest ones. | `query`, `role`, `region`, `workplace`, `seniority`, `years`, `company`, `min_salary_eur`, `exclude`, `limit` |
+| `find_jobs` | Searches the day's more than 1,000 open postings by role, stack, industry or language, each with the company's median base salary for that role. When nothing matches, it says which filter is in the way and suggests the closest ones. | `query`, `role`, `region`, `workplace`, `seniority`, `years`, `company`, `min_salary_eur`, `exclude`, `limit` |
 | `job_questions` | Reads one posting's form live: every question, whether it is required and whether you or the agent answers it, and the link to apply. | `id` |
 | `application_guide` | The procedure for applying on someone's behalf and the notes template the agent keeps. | `client` |
 | `report_application` | How each application went: sent, uncertain (submitted, nothing confirmed it), failed and why, or handed to you, and what sending took. It carries nothing about you. | `id`, `status`, `reason`, `browser`, `steps`, `attempts`, `notes` |
