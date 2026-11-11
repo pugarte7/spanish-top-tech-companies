@@ -574,6 +574,10 @@ const keywordsWrong = Object.entries({
 }).filter(([text, want]) => keywordsOf("", text).join() !== want);
 report("descriptions read as the keywords of the vocabulary they name", keywordsWrong.length === 0,
   keywordsWrong.map(([t]) => `${t}: ${keywordsOf("", t).join()}`));
+const aliases = queryTerms("robot sdet").map((t) => `${t.term}=${t.keyword}`).join();
+report("robot and sdet reach the robotics and test automation keywords", aliases === "robot=robotics,sdet=test-automation" &&
+  keywordsOf("", "Experience as an SDET with Playwright").includes("test-automation") &&
+  !keywordsOf("", "Prove you are not a robot").includes("robotics"), aliases);
 const phrased = queryTerms("Spring Boot machine learning power bi golang security");
 report("a query keeps keyword phrases together and names their keyword",
   phrased.map((t) => `${t.term}=${t.keyword}`).join() ===

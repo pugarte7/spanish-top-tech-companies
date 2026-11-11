@@ -323,7 +323,7 @@ export const KEYWORDS = [
   ["compilers", ["compiler", "compilers", "llvm", "mlir"]],
   ["gpu", ["gpu", "gpus", "cuda", "triton"]],
   ["hpc", ["hpc", "high performance computing", "supercomputing"]],
-  ["test-automation", ["test automation", "automated testing", "cypress", "playwright", "selenium", "appium", "qa automation", "pruebas automatizadas"]],
+  ["test-automation", ["test automation", "automated testing", "cypress", "playwright", "selenium", "appium", "qa automation", "pruebas automatizadas", "sdet"]],
   // Data
   ["postgresql", ["postgresql", "postgres"]],
   ["mysql", ["mysql", "mariadb"]],
@@ -365,7 +365,8 @@ export const KEYWORDS = [
   ["nlp", ["nlp", "natural language processing", "procesamiento de lenguaje natural"]],
   ["recommender-systems", ["recommender systems", "recommendation systems", "recommender system", "recommendation engine", "personalization"]],
   ["statistics", ["statistics", "statistical", "estadistica", "a b testing", "experimentation", "causal inference", "econometrics"]],
-  ["robotics", ["robotics", "robotica", "ros", "autonomous driving", "slam"]],
+  // "robot" only as a query word: descriptions say "not a robot" in their captcha notes.
+  ["robotics", ["robotics", "robotica", "ros", "autonomous driving", "slam"], { query: ["robot"] }],
   // Security and compliance
   ["cybersecurity", ["cybersecurity", "cyber security", "ciberseguridad", "information security", "infosec",
                      "seguridad de la informacion", "security engineering", "application security", "appsec",
