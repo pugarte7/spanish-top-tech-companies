@@ -1010,7 +1010,14 @@ const boards3 = { ...more, jobs: [...more.jobs,
       ["1402220799", "https://careers.ey.com/ey/job/Valencia-Closed/1402220799/"],
       ["1402220700", "https://evil.example.com/ey/job/Valencia-Elsewhere/1402220700/"]]
     .map(([id, url]) => ({ id: `successfactors:careers.ey.com:${id}`, company: "Ernst and Young", slug: "ernst-and-young",
-      title: "Abogado/a", ats: "successfactors", url, location: "Valencia, ES" }))] };
+      title: "Abogado/a", ats: "successfactors", url, location: "Valencia, ES" })),
+  ...["10567769", "10567700"].map((id) => ({ id: `amazon:ESP:${id}`, company: "Amazon", slug: "amazon", title: "Security Intern",
+    ats: "amazon", url: `https://www.amazon.jobs/en/jobs/${id}/security-intern`, location: "Zaragoza, Spain" })),
+  { id: "jsonapi:capgemini-es:540953-es_ES_SAPBTP", company: "Capgemini", slug: "capgemini", title: "AI Solutions Engineer",
+    ats: "jsonapi", url: "https://careers.capgemini.com/job/Madrid-AI-Solutions-Engineer/1437052733/?feedId=388633",
+    location: "Madrid, Spain" },
+  { id: "jsonapi:sage:VN42758", company: "Sage", slug: "sage", title: "Engineer", ats: "jsonapi",
+    url: "https://sagehr.my.salesforce-sites.com/careers/x", location: "Barcelona, Spain" }] };
 const formOf = async (id) => (await run("job_questions", { id }, { jobs: boards3 })).structuredContent;
 const ppScript = (name, props) => `<div id="${name}-react-component-x"></div><script type="application/json"  ` +
   `data-component-name="${name}" data-dom-id="x">${JSON.stringify(props)}</script>`;
@@ -1221,9 +1228,35 @@ report("successfactors: a posting that sends to an error page is a tool error", 
 const eyElsewhere = await run("job_questions", { id: "successfactors:careers.ey.com:1402220700" }, { jobs: boards3 });
 report("successfactors: a posting URL off the board's host is not read", eyElsewhere.isError === true &&
   !requests.some((r) => r.url.includes("evil.example.com")), eyElsewhere);
+// Amazon: its search finds the posting by id; Capgemini's postings are its SuccessFactors site's.
+const AMZ = (id) => `https://www.amazon.jobs/en/search.json?base_query=${id}&normalized_country_code%5B%5D=ESP&result_limit=10`;
+BOARDS[AMZ("10567769")] = json({ hits: 2, jobs: [{ id_icims: "10567790", title: "Other" },
+  { id_icims: "10567769", title: "Security Intern", description: "Keep data centers safe.<br/>Zaragoza.",
+    basic_qualifications: "- Bachelor's degree in 2027", preferred_qualifications: "- Spanish and English",
+    normalized_location: "Zaragoza, Aragon, ESP", location: "ES, Zaragoza",
+    url_next_step: "https://account.amazon.jobs/jobs/10567769/apply" }] });
+BOARDS[AMZ("10567700")] = json({ hits: 0, jobs: [] });
+const amazon = await formOf("amazon:ESP:10567769");
+report("amazon: the posting's text and qualifications, and an account to apply",
+  amazon.form_source.startsWith("Amazon") && amazon.account_required === true &&
+  amazon.apply_url === "https://account.amazon.jobs/jobs/10567769/apply" && amazon.questions[0].key === "application_form" &&
+  /Keep data centers safe[\s\S]*Basic qualifications\n- Bachelor's degree[\s\S]*Preferred qualifications/.test(amazon.description.text) &&
+  !amazon.location_check, amazon);
+const amazonGone = await run("job_questions", { id: "amazon:ESP:10567700" }, { jobs: boards3 });
+report("amazon: a posting the search no longer finds is a tool error", amazonGone.isError === true &&
+  /may have closed/.test(amazonGone.content[0].text), amazonGone);
+BOARDS["https://careers.capgemini.com/job/Madrid-AI-Solutions-Engineer/1437052733/?feedId=388633"] = () => new Response(
+  `<html><meta itemprop="streetAddress" content="Madrid, ES"><span class="jobdescription"><p>Build AI at Capgemini.</p></span></html>`);
+const capgemini = await formOf("jsonapi:capgemini-es:540953-es_ES_SAPBTP");
+report("jsonapi: Capgemini's postings are read from its SuccessFactors site",
+  capgemini.form_source.startsWith("SuccessFactors") && capgemini.account_required === true &&
+  /Build AI at Capgemini/.test(capgemini.description.text), capgemini);
+const sage = await formOf("jsonapi:sage:VN42758");
+report("jsonapi: an employer's own API with no form reader sends the agent to the URL",
+  sage.form_source === null && sage.questions === null && /employer's own careers site/.test(sage.note), sage);
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai|careers\.ey\.com)\//.test(r.url) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai|careers\.ey\.com|www\.amazon\.jobs|careers\.capgemini\.com)\//.test(r.url) &&
     // The exceptions: asking a Pinpoint, Eightfold or SuccessFactors board where it sends a page, without following it.
     (r.init.redirect === "error" || (r.init.redirect === "manual" && /\.pinpointhq\.com\/|\.eightfold\.ai\/|careers\.ey\.com\//.test(r.url))) &&
     r.init.signal instanceof AbortSignal));

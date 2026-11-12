@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.15.1" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.16.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -148,8 +148,9 @@ const TOOLS = {
       description: "The application form of one posting from find_jobs, read live from its " +
                    "board (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, Bending Spoons and Eightfold; for Workday, whose form " +
                    "needs the person's account, the posting and Workday's standard steps, also when a " +
-                   "Phenom career site leads to it; for SmartRecruiters, the posting only; for SuccessFactors, the posting and " +
-                   "account_required, since its form is shown after sign-in; other boards are read in the browser): " +
+                   "Phenom career site leads to it; for SmartRecruiters, the posting only; for SuccessFactors (Capgemini too) " +
+                   "and Amazon, the posting and account_required, since their form is shown after sign-in; other boards " +
+                   "are read in the browser): " +
                    "each question with its type, options, whether it is required, the most characters " +
                    "the board takes (max_length) when it says, and who answers " +
                    "it (person or agent), the posting text marked as untrusted, and the URL to " +
@@ -1112,7 +1113,7 @@ export async function findJobs(data, args = {}, env = {}) {
 // The only hosts job_questions calls, over HTTPS, without following redirects.
 const ATS_HOSTS = new Set(["boards-api.greenhouse.io", "boards-api.eu.greenhouse.io",
   "api.lever.co", "api.eu.lever.co", "jobs.lever.co", "jobs.eu.lever.co", "jobs.ashbyhq.com",
-  "apply.workable.com", "jobs.bendingspoons.com", "api.rippling.com", "api.smartrecruiters.com"]);
+  "apply.workable.com", "jobs.bendingspoons.com", "api.rippling.com", "api.smartrecruiters.com", "www.amazon.jobs"]);
 // Workday and Recruitee give each employer its own subdomain.
 const ATS_HOST_PATTERNS = [/^[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com$/, /^[a-z0-9-]+\.recruitee\.com$/,
   /^[a-z0-9-]+\.bamboohr\.com$/];
@@ -1941,11 +1942,42 @@ async function successfactorsForm(env, board, external, job) {
            source: "SuccessFactors career site's posting page, read now; the form is shown only after sign-in" };
 }
 
+// Amazon: its public search finds one posting by its id with the whole text
+// (description and qualifications). Applying takes an Amazon jobs account
+// (account.amazon.jobs), where an earlier application's profile is reused.
+async function amazonForm(env, board, external, job) {
+  if (!/^[A-Z]{3}$/.test(board) || !/^\d{1,12}$/.test(external)) throw new BoardError("the posting's board is not Amazon's");
+  const found = await fetchBoard(env, `https://www.amazon.jobs/en/search.json?base_query=${external}` +
+                                      `&normalized_country_code%5B%5D=${board}&result_limit=10`);
+  const post = records(found?.jobs).find((j) => String(j.id_icims) === external);
+  if (!post) throw new BoardError("the board no longer has this posting; it may have closed");
+  const section = (title, html) => html ? `${title}\n${htmlText(String(html))}` : "";
+  const next = typeof post.url_next_step === "string" && hostOf(post.url_next_step) === "account.amazon.jobs"
+    ? post.url_next_step : job.url;
+  return { apply_url: next, captcha: null, account_required: true, employer_questions: "after sign-in",
+           description: [htmlText(String(post.description ?? "")), section("Basic qualifications", post.basic_qualifications),
+                         section("Preferred qualifications", post.preferred_qualifications)].filter(Boolean).join("\n\n"),
+           location: [post.normalized_location, post.location].filter((x) => typeof x === "string"),
+           questions: [unread("application_form", "The application on account.amazon.jobs: the person signs in or " +
+             "creates an Amazon jobs account, then confirms the profile and answers the eligibility questions. " +
+             "Read it in the browser and classify each question with the same rule")],
+           source: "Amazon Jobs public search, read now; the form is shown only after sign-in" };
+}
+
+// Employers with a JSON API of their own (lib/ats/sources/jsonapi.js). Capgemini's
+// postings live on its SuccessFactors career site, read as one; the others
+// (Sage, Schwarz Digits) are read in the browser.
+async function jsonapiForm(env, board, external, job) {
+  const sf = board === "capgemini-es" && hostOf(job.url) === "careers.capgemini.com"
+    ? /\/(\d{5,20})\/?$/.exec(new URL(job.url).pathname)?.[1] : null;
+  return sf ? successfactorsForm(env, "careers.capgemini.com", sf, job) : null;
+}
+
 const FORMS = { greenhouse: greenhouseForm, ashby: ashbyForm, lever: leverForm, workable: workableForm,
                 recruitee: recruiteeForm, teamtailor: teamtailorForm, workday: workdayForm, phenom: phenomForm,
                 bamboohr: bamboohrForm, bendingspoons: bendingspoonsForm, pinpoint: pinpointForm,
                 rippling: ripplingForm, smartrecruiters: smartrecruitersForm, eightfold: eightfoldForm,
-                successfactors: successfactorsForm };
+                successfactors: successfactorsForm, amazon: amazonForm, jsonapi: jsonapiForm };
 
 // "ats:board:id"; the board may hold slashes (Workday), never a colon.
 function splitId(id) {
@@ -2007,12 +2039,14 @@ export async function jobQuestions(data, args = {}, env = {}) {
                     workplace: job.workplace ?? null, url: job.url, ats: job.ats };
   const parts = splitId(job.id);
   const read = parts && job.ats === parts[0] && Object.hasOwn(FORMS, job.ats) ? FORMS[job.ats] : null;
-  if (!read)
-    return { job: posting, apply_url: job.url, form_source: null, questions: null, description: null, captcha: null,
-             note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, ` +
-                   `Bending Spoons and Eightfold forms, and Workday's, Phenom's, SmartRecruiters' and SuccessFactors' postings; this posting is on ${job.ats === "jsonld" ? "the employer's own careers site" : job.ats}. ` +
-                   "Open url in your browser and read the form there; classify its questions with the " +
-                   "same rule (see application_guide)." };
+  const unreadAnswer = () => ({ job: posting, apply_url: job.url, form_source: null, questions: null, description: null,
+    captcha: null,
+    note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, ` +
+          `Bending Spoons and Eightfold forms, and Workday's, Phenom's, SmartRecruiters', SuccessFactors' and Amazon's ` +
+          `postings; this posting is on ${["jsonld", "jsonapi"].includes(job.ats) ? "the employer's own careers site" : job.ats}. ` +
+          "Open url in your browser and read the form there; classify its questions with the " +
+          "same rule (see application_guide)." });
+  if (!read) return unreadAnswer();
   if (env.live) {
     if (env.live.left <= 0) throw new QueryError(`at most ${LIVE_PER_REQUEST} job_questions calls per request`, "rate_limited");
     env.live.left--;
@@ -2020,6 +2054,8 @@ export async function jobQuestions(data, args = {}, env = {}) {
   let form;
   try {
     form = await read(env, parts[1], parts[2], job);
+    // A reader may decline a posting it has no way into (jsonapi beyond Capgemini).
+    if (form === null) return unreadAnswer();
   } catch (e) {
     if (!(e instanceof BoardError)) throw e;
     throw new QueryError(`could not read the form of ${job.id}: ${e.message}. Open ${job.url} in your ` +
