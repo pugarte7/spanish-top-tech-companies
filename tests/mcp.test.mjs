@@ -987,7 +987,12 @@ const boards3 = { ...more, jobs: [...more.jobs,
   { id: `rippling:chess:${RP_UUID}`, company: "Chess.com", slug: "chess", title: "Site Reliability Engineer", ats: "rippling",
     url: `https://ats.rippling.com/chess/jobs/${RP_UUID}`, location: "Remote" },
   { id: "smartrecruiters:Mirantis:744000159424229", company: "Mirantis", slug: "mirantis", title: "Platform Engineer",
-    ats: "smartrecruiters", url: "https://jobs.smartrecruiters.com/Mirantis/744000159424229", location: "Spain" }] };
+    ats: "smartrecruiters", url: "https://jobs.smartrecruiters.com/Mirantis/744000159424229", location: "Spain" },
+  ...[["careerhub.qlik.com/qlik.com", "1133915118023", "Qlik"], ["astrazeneca.eightfold.ai/astrazeneca.com", "563877691575545", "AstraZeneca"],
+      ["jobs.nvidia.com/nvidia.com", "893396856190", "Nvidia"], ["telekom.eightfold.ai/telekom.com", "563465354069089", "Deutsche Telekom"],
+      ["bcg.eightfold.ai/bcg.com", "790316315539", "BCG"], ["careerhub.qlik.com/qlik.com", "1", "Qlik"]]
+    .map(([board, pid, company]) => ({ id: `eightfold:${board}:${pid}`, company, slug: company.toLowerCase().replace(/\s+/g, "-"), title: "Engineer",
+      ats: "eightfold", url: `https://${board.split("/")[0]}/careers/job/${pid}`, location: "Barcelona, Spain" }))] };
 const formOf = async (id) => (await run("job_questions", { id }, { jobs: boards3 })).structuredContent;
 const ppScript = (name, props) => `<div id="${name}-react-component-x"></div><script type="application/json"  ` +
   `data-component-name="${name}" data-dom-id="x">${JSON.stringify(props)}</script>`;
@@ -1109,11 +1114,80 @@ report("a posting the board no longer has is a tool error with the URL", closed.
   /may have closed/.test(closed.content[0].text) && closed.content[0].text.includes("https://job-boards.greenhouse.io/cabify/jobs/7000003"));
 const down = await run("job_questions", { id: "greenhouse:wallapop:7000009" });
 report("a board that cannot be reached is a tool error", down.isError === true && /could not be reached/.test(down.content[0].text));
+// Eightfold: the apply page's pcsx-data block, as Qlik, AstraZeneca and Nvidia serve it.
+const EF_DETAIL = (host, domain, pid) => `https://${host}/api/pcsx/position_details?position_id=${pid}&domain=${domain}&hl=en`;
+const EF_APPLY = (host, domain, pid) => `https://${host}/careers/apply?pid=${pid}&domain=${domain}`;
+const efPage = (form) => () => new Response(`<html><code id="pcsx-data" style="display:none;">` +
+  JSON.stringify({ domain: "x", configs: { pcsxConfig: { applyFormConfig: form } } }).replace(/"/g, "&#34;") + "</code></html>");
+const efForm = (extra = {}) => ({ resume: { enabled: true, required: true }, recaptchaEnabled: true,
+  disableLoggedOutApply: false, linkOffApplyConfig: { enabled: false }, ...extra,
+  questionsApplyV2: { contactInformationSection: { questions: [
+      { label: "Email", questionId: "email", type: "text", required: true },
+      { label: "Legal First Name", questionId: "firstname", type: "text", required: true },
+      { label: "<p>By providing your phone number you agree to SMS</p>", questionId: "phone_inst", type: "instruction" },
+      { label: "Phone", questionId: "phone", type: "phone", required: true }] },
+    fields: [{ questions: [
+      { questionId: "work_eligibility", type: "radio", required: true, label: "Do you now or will you in the future require sponsorship?",
+        choices: [{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }] },
+      { questionId: "source_opportunity", type: "dropdown", required: true, label: "How did you hear about this opportunity?",
+        choices: [{ value: "LinkedIn", label: "LinkedIn" }, { value: "Other", label: "Other" }] },
+      { questionId: "q_gender_us", type: "dropdown", required: true, label: "Legal Gender", templateApplyType: ["US"],
+        choices: [{ value: "m", label: "Male" }, { value: "f", label: "Female" }] },
+      { questionId: "a_privacy", type: "choice", required: true, label: "Privacy notice", templateApplyType: ["all"],
+        choices: [{ value: "1", label: "I acknowledge the privacy notice" }] }] },
+      { title: "Voluntary Self Identification", countries: ["US"], questions: [
+        { questionId: "race", type: "radio", required: true, label: "Race", choices: [{ value: "a", label: "A" }] }] }],
+    ...(extra.questionsApplyV2 ?? {}) } });
+const EF_DESC = { status: 200, data: { jobDescription: "<p>Build the Qlik engine in Barcelona.</p>", locations: ["Barcelona, Spain"] } };
+BOARDS[EF_DETAIL("careerhub.qlik.com", "qlik.com", "1133915118023")] = json(EF_DESC);
+BOARDS[EF_APPLY("careerhub.qlik.com", "qlik.com", "1133915118023")] = efPage(efForm());
+const qlik = await formOf("eightfold:careerhub.qlik.com/qlik.com:1133915118023");
+report("eightfold: contact fields, CV and the employer's questions for Spain, from the apply page",
+  qlik.form_source.startsWith("Eightfold") && qlik.captcha === true && !qlik.account_required &&
+  qlik.apply_url === EF_APPLY("careerhub.qlik.com", "qlik.com", "1133915118023") &&
+  byLabel(qlik, /^Email$/).type === "email" && byLabel(qlik, /^Phone$/).required === true &&
+  byLabel(qlik, /Resume/).type === "file" && byLabel(qlik, /sponsorship/).who === "person" &&
+  byLabel(qlik, /hear about/).options.length === 2 && byLabel(qlik, /hear about/).who === "agent" &&
+  byLabel(qlik, /Privacy notice/).type === "checkbox" && byLabel(qlik, /Privacy notice/).who === "person" &&
+  !qlik.questions.some((q) => /Gender|Race|SMS/.test(q.label)) && /Qlik engine/.test(qlik.description.text), qlik.questions);
+BOARDS[EF_DETAIL("astrazeneca.eightfold.ai", "astrazeneca.com", "563877691575545")] = json(EF_DESC);
+BOARDS[EF_APPLY("astrazeneca.eightfold.ai", "astrazeneca.com", "563877691575545")] = efPage(efForm({
+  disableLoggedOutApply: true, questionsApplyV2S3Path: "questions.json", questionsApplyV2: { fields: [] } }));
+const az = await formOf("eightfold:astrazeneca.eightfold.ai/astrazeneca.com:563877691575545");
+report("eightfold: a site that takes applications after sign-in says so, with a marker for the employer's questions",
+  az.account_required === true && az.employer_questions === "after sign-in" &&
+  az.questions.some((q) => q.key === "employer_questions" && q.type === "unread") && byLabel(az, /^Email$/), az);
+BOARDS[EF_DETAIL("jobs.nvidia.com", "nvidia.com", "893396856190")] = json(EF_DESC);
+BOARDS[EF_APPLY("jobs.nvidia.com", "nvidia.com", "893396856190")] = efPage(efForm({
+  linkOffApplyConfig: { enabled: true, applyRedirectUrl: "{{JOB_EXTERNAL_URL}}/apply" } }));
+const nvidia = await formOf("eightfold:jobs.nvidia.com/nvidia.com:893396856190");
+report("eightfold: a site that sends applications to its own system gives one unread form",
+  nvidia.questions.length === 1 && nvidia.questions[0].key === "application_form" &&
+  nvidia.apply_url === "https://jobs.nvidia.com/careers/job/893396856190", nvidia.questions);
+// Telekom's tenant answers its API but sends every page to a general careers site; BCG's apply page to sign-in.
+const efRedirect = (to) => (init) => init.redirect === "manual"
+  ? new Response(null, { status: 307, headers: { location: to } }) : Promise.reject(new TypeError("redirect"));
+BOARDS[EF_DETAIL("telekom.eightfold.ai", "telekom.com", "563465354069089")] = json(EF_DESC);
+BOARDS[EF_APPLY("telekom.eightfold.ai", "telekom.com", "563465354069089")] = efRedirect("https://growthhub.telekom.com/careers");
+const telekom = await formOf("eightfold:telekom.eightfold.ai/telekom.com:563465354069089");
+report("eightfold: a page sent to a general careers site keeps the posting, its text and where it leads",
+  telekom.questions.length === 1 && telekom.questions[0].key === "find_posting" &&
+  /growthhub\.telekom\.com\/careers/.test(telekom.questions[0].label) && /Qlik engine/.test(telekom.description.text) &&
+  telekom.apply_url === "https://telekom.eightfold.ai/careers/job/563465354069089", telekom);
+BOARDS[EF_DETAIL("bcg.eightfold.ai", "bcg.com", "790316315539")] = json(EF_DESC);
+BOARDS[EF_APPLY("bcg.eightfold.ai", "bcg.com", "790316315539")] = efRedirect("https://bcg.eightfold.ai/candidate/login");
+const bcg = await formOf("eightfold:bcg.eightfold.ai/bcg.com:790316315539");
+report("eightfold: an apply page that sends to sign-in is account_required",
+  bcg.account_required === true && bcg.questions[0].key === "application_form", bcg);
+BOARDS[EF_DETAIL("careerhub.qlik.com", "qlik.com", "1")] = json({ status: 404, data: {} }, 404);
+const efClosed = await run("job_questions", { id: "eightfold:careerhub.qlik.com/qlik.com:1" }, { jobs: boards3 });
+report("eightfold: a posting the position API no longer has is a tool error", efClosed.isError === true &&
+  /may have closed/.test(efClosed.content[0].text));
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com)\//.test(r.url) &&
-    // The one exception: asking a Pinpoint board where it sends a page, without following it.
-    (r.init.redirect === "error" || (r.init.redirect === "manual" && /\.pinpointhq\.com\//.test(r.url))) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai)\//.test(r.url) &&
+    // The exceptions: asking a Pinpoint or Eightfold board where it sends a page, without following it.
+    (r.init.redirect === "error" || (r.init.redirect === "manual" && /\.pinpointhq\.com\/|\.eightfold\.ai\//.test(r.url))) &&
     r.init.signal instanceof AbortSignal));
 const burst = Array.from({ length: 6 }, (_, k) => ({ jsonrpc: "2.0", id: k + 1, ...tool("job_questions", { id: "greenhouse:glovo:7000001" }) }));
 const burstReplies = await respond(data, burst);

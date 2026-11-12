@@ -80,7 +80,8 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   another office), which you tell the person before they choose. A
   `location_check` means the board now gives another location than the index.
   `required` is what the board's data says: the rendered page decides. Greenhouse, Lever, Ashby, Workable,
-  Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling and Bending Spoons forms are read whole. Workday shows its form only after sign-in:
+  Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, Bending Spoons and Eightfold forms are read whole
+  (an Eightfold site that asks for sign-in returns `account_required` too). Workday shows its form only after sign-in:
   `account_required` is true, the person opens the account, and the
   questions are Workday's standard steps plus a marker for the employer's own.
   A Phenom career site (Cisco, Roche, HPE) whose application is on Workday

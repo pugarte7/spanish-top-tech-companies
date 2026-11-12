@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.13.1" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.14.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -146,7 +146,7 @@ const TOOLS = {
   job_questions: {
     define: () => ({ title: "One posting's application form",
       description: "The application form of one posting from find_jobs, read live from its " +
-                   "board (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling and Bending Spoons; for Workday, whose form " +
+                   "board (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, Bending Spoons and Eightfold; for Workday, whose form " +
                    "needs the person's account, the posting and Workday's standard steps, also when a " +
                    "Phenom career site leads to it; for SmartRecruiters, the posting only; other boards are read in the browser): " +
                    "each question with its type, options, whether it is required, the most characters " +
@@ -157,7 +157,7 @@ const TOOLS = {
         id: { type: "string", description: "A job id from find_jobs, e.g. greenhouse:cabify:1234567." } } } }),
     run: (data, args, env) => jobQuestions(data, args, env),
     measure: (out) => ({ result_count: out.questions?.length ?? 0,
-                         form_read: out.form_source !== null && !out.questions?.some((q) => q.key === "application_form"),
+                         form_read: out.form_source !== null && !out.questions?.some((q) => ["application_form", "find_posting"].includes(q.key)),
                          ats: out.job?.ats ?? undefined }),
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
@@ -1128,15 +1128,16 @@ async function fetchBoard(env, url, { body, text = false, site = null } = {}) {
   try { return JSON.parse(content); } catch { throw new BoardError("the board's answer was not JSON"); }
 }
 
-// The host an allowed board's page redirects to, without following it; null when it does not.
-async function redirectHost(env, url) {
+// Where an allowed board's page redirects to, without following it; null when it does not.
+async function redirectTo(env, url) {
   try {
     const answer = await (env.fetch ?? globalThis.fetch)(url, { redirect: "manual", signal: AbortSignal.timeout(LIVE_TIMEOUT_MS),
       headers: { Accept: "text/html", "User-Agent": `${SERVER.name}/${SERVER.version} (+https://spanishtoptechcompanies.com/mcp)` } });
     const to = answer.headers.get("location");
-    return answer.status >= 300 && answer.status < 400 && to ? hostOf(new URL(to, url).href) : null;
+    return answer.status >= 300 && answer.status < 400 && to ? new URL(to, url).href : null;
   } catch { return null; }
 }
+const redirectHost = async (env, url) => hostOf(await redirectTo(env, url) ?? "") || null;
 
 const ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", rsquo: "’",
   lsquo: "‘", rdquo: "”", ldquo: "“", ndash: "–", mdash: "—", hellip: "…",
@@ -1773,10 +1774,95 @@ async function smartrecruitersForm(env, board, external, job) {
            source: "SmartRecruiters public posting API; the application form itself is not public" };
 }
 
+// Eightfold: the career site's apply page carries the whole form as JSON in its
+// pcsx-data block: the contact fields, the employer's questions by section, and
+// which countries each section or question is for. A tenant may take
+// applications only after sign-in (AstraZeneca, BCG), send the person on to its
+// own ATS (Nvidia), or keep its questions in a file that is not public (PayPal).
+// Deutsche Telekom's tenant sends every page to a general careers site where
+// the posting is not listed (2026-11-12): the posting stays in find_jobs, which
+// the maintainer wants ("le puede interesar al usuario"), and the answer says so.
+const EIGHTFOLD_TYPES = { text: "text", textarea: "textarea", dropdown: "select", "dropdown-textbox": "select",
+  radio: "select", "section-radio": "select", checkbox: "multiselect", "file-input": "file", phone: "phone",
+  date: "date", number: "number" };
+// Postings here are in Spain: neither the US nor Canada, so "other" and "all" apply.
+const EIGHTFOLD_HERE = new Set(["all", "other", "es", "spain", "emea", "europe", "eu"]);
+const forHere = (list) => !Array.isArray(list) || !list.length || list.some((c) => EIGHTFOLD_HERE.has(String(c).toLowerCase()));
+const unread = (key, label) => question(key, label, true, "unread", [], "application", { who: "agent", category: "unread" });
+
+export function eightfoldQuestions(form) {
+  const v2 = isObject(form?.questionsApplyV2) ? form.questionsApplyV2 : {};
+  const one = (q, i) => {
+    const type = String(q.type ?? "");
+    if (type === "instruction") return null;
+    const options = labels(q.choices);
+    const key = String(q.questionId ?? "") || `question_${i}`;
+    const kind = key === "email" ? "email" : type === "choice" ? (options.length > 1 ? "select" : "checkbox")
+      : EIGHTFOLD_TYPES[type] ?? (options.length ? "select" : "text");
+    return question(key, labelText(q.label ?? ""), q.required, kind, options);
+  };
+  const contact = records(v2.contactInformationSection?.questions).map(one);
+  const resume = isObject(form?.resume) && form.resume.enabled !== false
+    ? [question("resume", form.resume.resumeQuestionLabel || "Resume/CV", form.resume.required !== false, "file")] : [];
+  const own = records(v2.fields).filter((s) => forHere(s.countries))
+    .flatMap((s) => records(s.questions).filter((q) => forHere(q.templateApplyType))).map(one);
+  return [...contact, ...resume, ...own].filter(Boolean);
+}
+
+async function eightfoldForm(env, board, external, job) {
+  const [host, domain, ...rest] = String(board).split("/");
+  if (rest.length || !SITE_HOST.test(host ?? "") || !SITE_HOST.test(domain ?? "") || !/^\d{1,20}$/.test(external))
+    throw new BoardError("the posting's board is not an Eightfold site");
+  const site = `domain=${encodeURIComponent(domain)}`;
+  // A posting that closed answers 404 here, which ends the read.
+  const detail = (await fetchBoard(env, `https://${host}/api/pcsx/position_details?position_id=${external}&${site}&hl=en`,
+                                   { site: host }))?.data;
+  const base = { description: htmlText(detail?.jobDescription ?? ""), captcha: null,
+                 location: isObject(detail) && Array.isArray(detail.locations) ? detail.locations : [] };
+  const apply = `https://${host}/careers/apply?pid=${external}&${site}`;
+  let page;
+  try {
+    page = await fetchBoard(env, apply, { text: true, site: host });
+  } catch (e) {
+    const away = e instanceof BoardError ? await redirectTo(env, apply) : null;
+    if (!away) throw e;
+    if (hostOf(away) === host && /\/login\b/.test(new URL(away).pathname))
+      return { ...base, apply_url: job.url, account_required: true, employer_questions: "after sign-in",
+               questions: [unread("application_form", `The application form on ${host}, shown once the person signs ` +
+                 "in or creates an account: read it in the browser and classify each question with the same rule")],
+               source: "Eightfold position API; the career site takes applications only after sign-in" };
+    return { ...base, apply_url: job.url,
+             questions: [unread("find_posting", `This posting's page on ${host} now sends visitors to ${away}, a general ` +
+               "careers page. Look for the posting's title there; if it is not listed, tell the person the company " +
+               "and title so they can apply through the employer, and read the form wherever it turns up")],
+             source: `Eightfold position API; the career site sends the posting's page to ${hostOf(away)}` };
+  }
+  let config = null;
+  try {
+    config = JSON.parse(decode(/<code\b[^>]*id="pcsx-data"[^>]*>([\s\S]*?)<\/code>/.exec(page)?.[1] ?? "null"));
+  } catch { /* read as no form below */ }
+  const form = config?.configs?.pcsxConfig?.applyFormConfig;
+  if (!isObject(form)) throw new BoardError("the career site shows no application form for this posting");
+  if (form.linkOffApplyConfig?.enabled === true)
+    return { ...base, apply_url: job.url,
+             questions: [unread("application_form", "The application continues on the employer's own system, reached " +
+               "from the posting's Apply button: read the form there and classify each question with the same rule")],
+             source: "Eightfold position API; the career site sends applications to another system" };
+  const questions = eightfoldQuestions(form);
+  const signIn = form.disableLoggedOutApply === true;
+  const hidden = !records(form.questionsApplyV2?.fields).length && Boolean(form.questionsApplyV2S3Path);
+  if (signIn || hidden)
+    questions.push(unread("employer_questions", `The employer's own questions on ${host}, ` +
+      `${signIn ? "shown after sign-in" : "not public"}: read them in the browser and classify each with the same rule`));
+  return { ...base, apply_url: apply, questions, captcha: form.recaptchaEnabled === true,
+           ...(signIn ? { account_required: true, employer_questions: "after sign-in" } : {}),
+           source: "Eightfold career site's apply page, read now" };
+}
+
 const FORMS = { greenhouse: greenhouseForm, ashby: ashbyForm, lever: leverForm, workable: workableForm,
                 recruitee: recruiteeForm, teamtailor: teamtailorForm, workday: workdayForm, phenom: phenomForm,
                 bamboohr: bamboohrForm, bendingspoons: bendingspoonsForm, pinpoint: pinpointForm,
-                rippling: ripplingForm, smartrecruiters: smartrecruitersForm };
+                rippling: ripplingForm, smartrecruiters: smartrecruitersForm, eightfold: eightfoldForm };
 
 // "ats:board:id"; the board may hold slashes (Workday), never a colon.
 function splitId(id) {
@@ -1840,8 +1926,8 @@ export async function jobQuestions(data, args = {}, env = {}) {
   const read = parts && job.ats === parts[0] && Object.hasOwn(FORMS, job.ats) ? FORMS[job.ats] : null;
   if (!read)
     return { job: posting, apply_url: job.url, form_source: null, questions: null, description: null, captcha: null,
-             note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling and ` +
-                   `Bending Spoons forms, and Workday's, Phenom's and SmartRecruiters' postings; this posting is on ${job.ats === "jsonld" ? "the employer's own careers site" : job.ats}. ` +
+             note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, ` +
+                   `Bending Spoons and Eightfold forms, and Workday's, Phenom's and SmartRecruiters' postings; this posting is on ${job.ats === "jsonld" ? "the employer's own careers site" : job.ats}. ` +
                    "Open url in your browser and read the form there; classify its questions with the " +
                    "same rule (see application_guide)." };
   if (env.live) {

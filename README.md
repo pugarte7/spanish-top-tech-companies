@@ -42,7 +42,7 @@ Más de 400 portales de empleo, más de 1.000 ofertas al día, todas con el suel
 - **Filtros que entienden lo que pides.** Texto con sinónimos (SRE es site reliability), rol o especialidad (backend, frontend, DevOps), región o remoto, modalidad, nivel, tus años de experiencia, empresa y sueldo mínimo. El sueldo mínimo se compara con el que publica la oferta, si lo publica, y si no con la mediana de la empresa.
 - **Nunca te deja con las manos vacías.** Si nada encaja, dice cuántas ofertas quita cada filtro y propone las más cercanas.
 - **Sin repetir.** Las ofertas que ya has visto o a las que ya has aplicado no vuelven a salir.
-- **Aplicas desde el mismo MCP.** `job_questions` lee en directo el formulario de la oferta (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling y Workday con tu cuenta) y marca qué preguntas respondes tú y cuáles el agente.
+- **Aplicas desde el mismo MCP.** `job_questions` lee en directo el formulario de la oferta (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, Eightfold y Workday con tu cuenta) y marca qué preguntas respondes tú y cuáles el agente.
 
 ## Aplica con tu agente
 
