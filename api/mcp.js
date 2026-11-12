@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.14.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.15.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -148,7 +148,8 @@ const TOOLS = {
       description: "The application form of one posting from find_jobs, read live from its " +
                    "board (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, Bending Spoons and Eightfold; for Workday, whose form " +
                    "needs the person's account, the posting and Workday's standard steps, also when a " +
-                   "Phenom career site leads to it; for SmartRecruiters, the posting only; other boards are read in the browser): " +
+                   "Phenom career site leads to it; for SmartRecruiters, the posting only; for SuccessFactors, the posting and " +
+                   "account_required, since its form is shown after sign-in; other boards are read in the browser): " +
                    "each question with its type, options, whether it is required, the most characters " +
                    "the board takes (max_length) when it says, and who answers " +
                    "it (person or agent), the posting text marked as untrusted, and the URL to " +
@@ -1859,10 +1860,66 @@ async function eightfoldForm(env, board, external, job) {
            source: "Eightfold career site's apply page, read now" };
 }
 
+// SuccessFactors career sites (Indra, Deloitte, EY, Telefónica, GFT: the most
+// postings of any board in November 2026) show each posting on a public page
+// with schema.org microdata. Its Apply button asks the person to sign in or
+// create an account on the site before SAP's candidate profile and the
+// employer's questions appear, so the page gives the description and the place.
+function elementAt(html, start) {
+  const tag = /^<(\w+)/.exec(html.slice(html.lastIndexOf("<", start)))?.[1] ?? "span";
+  const open = html.indexOf(">", start) + 1;
+  const tags = new RegExp(`<(\\/?)${tag}\\b[^>]*>`, "gi");
+  tags.lastIndex = open;
+  for (let depth = 1, found = tags.exec(html); found; found = tags.exec(html)) {
+    depth += found[1] ? -1 : 1;
+    if (depth === 0) return html.slice(open, found.index);
+  }
+  return html.slice(open, open + 20_000);
+}
+
+export function successfactorsPosting(html) {
+  const prop = (name) => [...html.matchAll(new RegExp(`itemprop="${name}"[^>]*content="([^"]*)"`, "g"))]
+    .map((m) => decode(m[1]).trim());
+  // Newer sites mark an empty description first: the longest one is the posting's.
+  let description = "";
+  for (const m of html.matchAll(/class="jobdescription"|itemprop="description"/g)) {
+    const body = htmlText(elementAt(html, m.index)).replace(/\r/g, "");
+    if (body.length > description.length) description = body;
+  }
+  const cities = prop("addressLocality"), regions = prop("addressRegion"), countries = prop("addressCountry");
+  const location = countries.length
+    ? countries.map((country, i) => [cities[i], regions[i], country].filter(Boolean).join(", "))
+    : prop("streetAddress").filter(Boolean);
+  return { description, location };
+}
+
+async function successfactorsForm(env, board, external, job) {
+  if (!SITE_HOST.test(board) || !/^\d{1,20}$/.test(external) || hostOf(job.url) !== board)
+    throw new BoardError("the posting's board is not a SuccessFactors career site");
+  const closed = () => new BoardError("the board no longer shows this posting; it may have closed");
+  let page;
+  try {
+    page = await fetchBoard(env, job.url, { text: true, site: board });
+  } catch (e) {
+    // A closed posting sends visitors to an error page or the home page.
+    if (e instanceof BoardError && await redirectTo(env, job.url)) throw closed();
+    throw e;
+  }
+  // Sites of the newer generation (Fluidra) fill the description by script: the page still shows the posting.
+  const post = successfactorsPosting(page);
+  return { apply_url: job.url, captcha: null, description: post.description, location: post.location,
+           account_required: true, employer_questions: "after sign-in",
+           questions: [unread("application_form", `The application form on ${board}: the posting's Apply button asks ` +
+             "the person to sign in or create an account on the site, then shows SAP SuccessFactors' candidate " +
+             "profile and the employer's questions. Read it in the browser and classify each question with the same rule")],
+           source: "SuccessFactors career site's posting page, read now; the form is shown only after sign-in" };
+}
+
 const FORMS = { greenhouse: greenhouseForm, ashby: ashbyForm, lever: leverForm, workable: workableForm,
                 recruitee: recruiteeForm, teamtailor: teamtailorForm, workday: workdayForm, phenom: phenomForm,
                 bamboohr: bamboohrForm, bendingspoons: bendingspoonsForm, pinpoint: pinpointForm,
-                rippling: ripplingForm, smartrecruiters: smartrecruitersForm, eightfold: eightfoldForm };
+                rippling: ripplingForm, smartrecruiters: smartrecruitersForm, eightfold: eightfoldForm,
+                successfactors: successfactorsForm };
 
 // "ats:board:id"; the board may hold slashes (Workday), never a colon.
 function splitId(id) {
@@ -1927,7 +1984,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
   if (!read)
     return { job: posting, apply_url: job.url, form_source: null, questions: null, description: null, captcha: null,
              note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, ` +
-                   `Bending Spoons and Eightfold forms, and Workday's, Phenom's and SmartRecruiters' postings; this posting is on ${job.ats === "jsonld" ? "the employer's own careers site" : job.ats}. ` +
+                   `Bending Spoons and Eightfold forms, and Workday's, Phenom's, SmartRecruiters' and SuccessFactors' postings; this posting is on ${job.ats === "jsonld" ? "the employer's own careers site" : job.ats}. ` +
                    "Open url in your browser and read the form there; classify its questions with the " +
                    "same rule (see application_guide)." };
   if (env.live) {

@@ -21,7 +21,8 @@ export const words = (text) => norm(text)
 
 // --- Places --------------------------------------------------------------------------
 
-// Other names of a region, and its main cities; "/" joins names of one city,
+// Other names of a region (and the Basque provinces, the only ones named
+// unlike their capital or their region), and its main cities; "/" joins names of one city,
 // and the first is the one reported back.
 export const REGION_NAMES = {
   AN: "Andalucía, Andalusia", AR: "Aragón, Aragon", AS: "Asturias", CB: "Cantabria",
@@ -30,7 +31,7 @@ export const REGION_NAMES = {
   GA: "Galicia", IB: "Balearic Islands, Illes Balears, Islas Baleares, Baleares",
   MD: "Madrid, Comunidad de Madrid, Community of Madrid", ML: "Melilla",
   MU: "Murcia, Región de Murcia, Region of Murcia", NC: "Navarra, Navarre",
-  PV: "Euskadi, Basque Country, País Vasco", RI: "La Rioja",
+  PV: "Euskadi, Basque Country, País Vasco, Gipuzkoa, Guipúzcoa, Bizkaia, Vizcaya, Biscay, Álava, Araba", RI: "La Rioja",
   VC: "Comunidad Valenciana, Comunitat Valenciana, Valencian Community, C. Valenciana",
 };
 export const CITIES = {
