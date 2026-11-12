@@ -77,7 +77,7 @@ const calls = [
   tool("find_jobs", { exclude: [1, 2] }),
   tool("job_questions", { id: "greenhouse:nobody:1" }),
   tool("job_questions", {}),
-  tool("job_questions", { id: "successfactors:ecovadis:744000000000001" }),
+  tool("job_questions", { id: "icims:ecovadis:744000000000001" }),
   tool("application_guide", {}),
   tool("application_guide", { client: "Claude Code" }),
 ].map((c, i) => ({ jsonrpc: "2.0", id: i + 1, ...c }));
@@ -173,7 +173,7 @@ const expected = [
   ["an id not in the index is a tool error", (r) => toolError(r) && /no job 'greenhouse:nobody:1'/.test(r.result.content[0].text)],
   ["job_questions needs an id", toolError],
   ["a board without a form API sends the agent to the URL", (r) => out(r).questions === null &&
-    /successfactors/.test(out(r).note) && out(r).apply_url === index.jobs.at(-1).url],
+    /icims/.test(out(r).note) && out(r).apply_url === index.jobs.at(-1).url],
   ["application_guide holds the template and rules, and no other server", (r) =>
     /## Profile/.test(out(r).state_document.template) && /## Answers to recurring questions/.test(out(r).state_document.template) &&
     /## Search preferences/.test(out(r).state_document.template) && /\| Job id \|/.test(out(r).state_document.template) &&
@@ -669,6 +669,8 @@ const statsCt = await salaryIn("salary_stats", { role: "software-engineer", regi
 report("salary_stats: a city is its region, with a note", statsBcn.selection.region === "CT" &&
   /Barcelona is in CT .*per region/.test(statsBcn.note) && !("note" in statsCt) &&
   JSON.stringify(statsBcn.result) === JSON.stringify(statsCt.result), statsBcn);
+const statsGipuzkoa = await salaryIn("salary_stats", { role: "software-engineer", region: "Gipuzkoa" });
+report("salary_stats: a Basque province is its region", statsGipuzkoa.selection.region === "PV", statsGipuzkoa);
 const topBilbao = await salaryIn("top_companies", { region: "bilbao" });
 report("top_companies: a city is its region, with a note", topBilbao.selection.region === "PV" && /Bilbao is in PV/.test(topBilbao.note));
 const glovoBcn = await salaryIn("company_salaries", { name: "glovo", region: "barcelona" });
@@ -992,7 +994,12 @@ const boards3 = { ...more, jobs: [...more.jobs,
       ["jobs.nvidia.com/nvidia.com", "893396856190", "Nvidia"], ["telekom.eightfold.ai/telekom.com", "563465354069089", "Deutsche Telekom"],
       ["bcg.eightfold.ai/bcg.com", "790316315539", "BCG"], ["careerhub.qlik.com/qlik.com", "1", "Qlik"]]
     .map(([board, pid, company]) => ({ id: `eightfold:${board}:${pid}`, company, slug: company.toLowerCase().replace(/\s+/g, "-"), title: "Engineer",
-      ats: "eightfold", url: `https://${board.split("/")[0]}/careers/job/${pid}`, location: "Barcelona, Spain" }))] };
+      ats: "eightfold", url: `https://${board.split("/")[0]}/careers/job/${pid}`, location: "Barcelona, Spain" })),
+  ...[["1402220733", "https://careers.ey.com/ey/job/Valencia-Abogadoa-Corporate/1402220733/"],
+      ["1402220799", "https://careers.ey.com/ey/job/Valencia-Closed/1402220799/"],
+      ["1402220700", "https://evil.example.com/ey/job/Valencia-Elsewhere/1402220700/"]]
+    .map(([id, url]) => ({ id: `successfactors:careers.ey.com:${id}`, company: "Ernst and Young", slug: "ernst-and-young",
+      title: "Abogado/a", ats: "successfactors", url, location: "Valencia, ES" }))] };
 const formOf = async (id) => (await run("job_questions", { id }, { jobs: boards3 })).structuredContent;
 const ppScript = (name, props) => `<div id="${name}-react-component-x"></div><script type="application/json"  ` +
   `data-component-name="${name}" data-dom-id="x">${JSON.stringify(props)}</script>`;
@@ -1183,11 +1190,31 @@ BOARDS[EF_DETAIL("careerhub.qlik.com", "qlik.com", "1")] = json({ status: 404, d
 const efClosed = await run("job_questions", { id: "eightfold:careerhub.qlik.com/qlik.com:1" }, { jobs: boards3 });
 report("eightfold: a posting the position API no longer has is a tool error", efClosed.isError === true &&
   /may have closed/.test(efClosed.content[0].text));
+// SuccessFactors: the posting page's microdata, as EY's career site serves it; a closed one goes to an error page.
+BOARDS["https://careers.ey.com/ey/job/Valencia-Abogadoa-Corporate/1402220733/"] = () => new Response(
+  `<html><span itemprop="description"></span><meta itemprop="streetAddress" content="Valencia, ES, 46023">` +
+  `<a class="btn apply dialogApplyBtn" href="/talentcommunity/apply/1402220733/?locale=en_GB">Apply now</a>` +
+  `<span class="jobdescription"><p>Join EY in Valencia.</p><span><p>Hybrid, two days a week in the office.</p></span></span></html>`);
+BOARDS["https://careers.ey.com/ey/job/Valencia-Closed/1402220799/"] = (init) => init.redirect === "manual"
+  ? new Response(null, { status: 302, headers: { location: "https://careers.ey.com/errorpage/?errortype=Exception" } })
+  : Promise.reject(new TypeError("redirect"));
+const ey = await formOf("successfactors:careers.ey.com:1402220733");
+report("successfactors: the posting page gives the description and place, and the form needs an account",
+  ey.form_source.startsWith("SuccessFactors") && ey.account_required === true && ey.employer_questions === "after sign-in" &&
+  ey.questions.length === 1 && ey.questions[0].key === "application_form" && ey.questions[0].type === "unread" &&
+  /Join EY in Valencia\.\n+Hybrid, two days/.test(ey.description.text) && !ey.location_check &&
+  ey.apply_url === "https://careers.ey.com/ey/job/Valencia-Abogadoa-Corporate/1402220733/", ey);
+const eyClosed = await run("job_questions", { id: "successfactors:careers.ey.com:1402220799" }, { jobs: boards3 });
+report("successfactors: a posting that sends to an error page is a tool error", eyClosed.isError === true &&
+  /may have closed/.test(eyClosed.content[0].text), eyClosed);
+const eyElsewhere = await run("job_questions", { id: "successfactors:careers.ey.com:1402220700" }, { jobs: boards3 });
+report("successfactors: a posting URL off the board's host is not read", eyElsewhere.isError === true &&
+  !requests.some((r) => r.url.includes("evil.example.com")), eyElsewhere);
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai)\//.test(r.url) &&
-    // The exceptions: asking a Pinpoint or Eightfold board where it sends a page, without following it.
-    (r.init.redirect === "error" || (r.init.redirect === "manual" && /\.pinpointhq\.com\/|\.eightfold\.ai\//.test(r.url))) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai|careers\.ey\.com)\//.test(r.url) &&
+    // The exceptions: asking a Pinpoint, Eightfold or SuccessFactors board where it sends a page, without following it.
+    (r.init.redirect === "error" || (r.init.redirect === "manual" && /\.pinpointhq\.com\/|\.eightfold\.ai\/|careers\.ey\.com\//.test(r.url))) &&
     r.init.signal instanceof AbortSignal));
 const burst = Array.from({ length: 6 }, (_, k) => ({ jsonrpc: "2.0", id: k + 1, ...tool("job_questions", { id: "greenhouse:glovo:7000001" }) }));
 const burstReplies = await respond(data, burst);
