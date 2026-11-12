@@ -8,7 +8,7 @@ import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { carryOver, crawl, fresh, isIndex, loadAts, summary, summaryPath, throttled } from "../scripts/jobs.mjs";
+import { carryOver, crawl, fresh, isIndex, loadAts, ownerOf, slugFinder, summary, summaryPath, throttled } from "../scripts/jobs.mjs";
 import { KEYWORDS } from "../api/_classify.js";
 
 process.env.ATS_MIN_INTERVAL_MS = "0";
@@ -69,6 +69,17 @@ function checkIndex(index, name) {
   const sorted = [...order].sort((a, b) => a[0].localeCompare(b[0], "en", { sensitivity: "base" })
     || a[1].localeCompare(b[1], "en", { sensitivity: "base" }));
   assert.deepEqual(order, sorted, `${name}: not sorted by company then title`);
+}
+
+// A group's account posts its companies' openings: a brand the site lists owns
+// the posting, one it does not list leaves it with the board.
+{
+  const slugOf = slugFinder({ companies: [{ name: "Glovo", levels: "glovo" }, { name: "Delivery Hero", levels: "delivery-hero" }] });
+  const dh = { name: "Delivery Hero", ats: "smartrecruiters", board: "DeliveryHero", tier: "B" };
+  assert.deepEqual(ownerOf({ brand: "Glovo" }, dh, slugOf), { ...dh, name: "Glovo" });
+  assert.equal(ownerOf({ brand: "Talabat" }, dh, slugOf), dh);
+  assert.equal(ownerOf({ brand: "Delivery Hero" }, dh, slugOf), dh);
+  assert.equal(ownerOf({}, dh, slugOf), dh);
 }
 
 // --- The crawl over a stubbed fetch ------------------------------------------

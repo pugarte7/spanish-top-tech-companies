@@ -90,6 +90,15 @@ export function slugFinder(data) {
   return (board) => byName.get(norm(board.name)) ?? null;
 }
 
+/** The board a posting belongs to: its own brand when that is another company
+ * the site lists (Glovo's openings are on Delivery Hero's SmartRecruiters
+ * account, each naming its brand), else the board it was read from. */
+export function ownerOf(job, board, slugOf) {
+  const brand = typeof job.brand === "string" ? job.brand.trim() : "";
+  if (!brand || norm(brand) === norm(board.name)) return board;
+  return slugOf({ name: brand }) ? { ...board, name: brand } : board;
+}
+
 /** One string per office, split as lib/ats's classifier splits them. */
 const officesOf = (job) => job.locationsRaw.flatMap((v) => v.split(/\s*[;|]\s*/)).map((v) => v.trim()).filter(Boolean);
 
@@ -253,9 +262,9 @@ export async function crawl(boardsList, data, ats, opts = {}) {
         for (const each of result.issues) fail(item.board, each.code, each.message);
       } else {
         done.add(item.board);
-        const slug = slugOf(item.board);
         for (const job of result.jobs) {
-          const row = entry(job, item.board, slug, location, known);
+          const owner = ownerOf(job, item.board, slugOf);
+          const row = entry(job, owner, slugOf(owner), location, known);
           if (row) jobs.set(row.id, row);
         }
       }
