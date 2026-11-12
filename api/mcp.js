@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.15.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.15.1" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -781,7 +781,8 @@ async function jobIndex(env) {
 }
 
 const ORDER = "With a query, the postings that match it best first: those matching more of its words " +
-  "(a word in more than one posting in five, such as engineer or senior, does not count), " +
+  "(a word in more than one posting in five, such as engineer or ai, does not count, and a posting " +
+  "matching only such words or a level such as senior is left out when the query has another), " +
   "then a rarer word counts for more than a common one (angular more than engineer), and a word in " +
   "the title for more than one among the keywords. Then highest salary " +
   "figure first: the posting's own salary when it states one in EUR a " +
@@ -813,6 +814,21 @@ function termWeight(list, term, pattern) {
     cache.set(key, Math.log(1 + list.length / (1 + n)));
   }
   return cache.get(key);
+}
+// The share of postings whose title, company, department or location holds a
+// term: "ai" is in 43% of postings with their descriptions but in 6% of titles,
+// so an AI in a title says something even where the word is common.
+const TITLE_SHARES = new WeakMap();
+const TITLE_TELLING = 0.1;
+function titleShare(list, term, pattern) {
+  if (!TITLE_SHARES.has(list)) TITLE_SHARES.set(list, new Map());
+  const cache = TITLE_SHARES.get(list);
+  if (!cache.has(term.term)) {
+    let n = 0;
+    for (const p of list) if (pattern.test(p.text)) n++;
+    cache.set(term.term, list.length ? n / list.length : 0);
+  }
+  return cache.get(term.term);
 }
 // A title without the parts that only say where the opening is: Grafana posts
 // "Staff Backend Engineer | Spain | Remote" once per country, Accenture
@@ -884,7 +900,7 @@ const NEUTRAL = {
   min_salary_eur: { minSalary: null }, years: { years: null }, seniority: { seniority: null },
   workplace: { workplace: null }, region: { inRegion: () => true, inCity: null },
   company: { company: "" }, role: { roleTest: () => true, special: null, classified: false },
-  query: { terms: [] },
+  query: { terms: [], tellingTerms: false },
 };
 // What the person is looking for; a suggestion must keep at least one, or it
 // is any posting at all (a Django search suggested a sales job without it).
@@ -930,7 +946,7 @@ function noMatch({ data, index, args, filtersSet, pass, withTerms, dropped }) {
         "ones open to someone in Spain." + (close.length ? ` Close names in the index: ${close.join(", ")}.` : "");
     }
   }
-  if (dropped.query && !pass({ ...filtersSet, ...ALL_NEUTRAL, terms: filtersSet.terms }).results.length)
+  if (dropped.query && !pass({ ...filtersSet, ...ALL_NEUTRAL, terms: filtersSet.terms, tellingTerms: filtersSet.tellingTerms }).results.length)
     advice.query_note = "No posting in today's index names these words. query matches a posting's " +
       "title, company, department and location, and the keywords read from its description (skills, " +
       "tools, industries and spoken languages from a fixed list; each result's keywords shows them). " +
@@ -966,12 +982,18 @@ export async function findJobs(data, args = {}, env = {}) {
   const terms = queryTerms(args.query).map((t) => {
     const pattern = termPattern(t.alternatives);
     const weight = termWeight(prepared(data, index), t, pattern);
-    return { ...t, pattern, weight, distinct: weight >= DISTINCT_WEIGHT };
+    // A posting has to match a telling term when the query has one: a distinct term, or
+    // one in under a tenth of titles found in the title. "senior" is in one posting in six,
+    // just under the line, and the seniority filter is for it, so it is never telling;
+    // junior words are ("graduate program").
+    const distinct = weight >= DISTINCT_WEIGHT, level = seniorityOf(t.term) === "senior";
+    const inTitle = !level && titleShare(prepared(data, index), t, pattern) < TITLE_TELLING;
+    return { ...t, pattern, weight, distinct, telling: distinct && !level, tellingInTitle: inTitle };
   });
 
   // One pass over the index with a set of filters; the no-match advice runs
   // it again with one filter dropped at a time.
-  const filtersSet = { company, terms, roleTest, inRegion, inCity, workplace, seniority, years, minSalary,
+  const filtersSet = { company, terms, tellingTerms: terms.some((t) => t.telling || t.tellingInTitle), roleTest, inRegion, inCity, workplace, seniority, years, minSalary,
                        special, classified, roleSlug };
   const pass = (g) => {
     let excluded = 0, unknownPay = 0, yearsUnstated = 0;
@@ -981,15 +1003,19 @@ export async function findJobs(data, args = {}, env = {}) {
       if (exclude.has(job.id)) { excluded++; continue; }
       if (g.company && p.slug !== g.company && !p.company.includes(g.company)) continue;
       const matched = [], viaKeywords = [];
-      let score = 0, distinct = 0;
+      let score = 0, distinct = 0, telling = 0;
       if (g.terms.length) {
         for (const t of g.terms) {
-          if (t.pattern.test(p.text)) { matched.push(t.term); score += 2 * t.weight; }
+          const inText = t.pattern.test(p.text);
+          if (inText) { matched.push(t.term); score += 2 * t.weight; }
           else if (t.keyword && p.keywords.has(t.keyword)) { matched.push(t.term); viaKeywords.push(t.term); score += t.weight; }
           else continue;
           if (t.distinct) distinct++;
+          if (t.telling || (inText && t.tellingInTitle)) telling++;
         }
-        if (!matched.length) continue;
+        // With a telling word in the query, a posting has to match one: "platform engineer"
+        // matched 1,256 postings through engineer alone (2026-11-12).
+        if (!matched.length || (g.tellingTerms && !telling)) continue;
       }
       if (!g.roleTest(p) || !g.inRegion(p)) continue;
       if (g.workplace && p.workplace !== g.workplace) continue;

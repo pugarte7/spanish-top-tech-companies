@@ -603,6 +603,17 @@ report("go finds Golang through the keyword", goKw.jobs.some((j) => j.title === 
 const rare = await byKeywords({ query: "engineer angular" });
 report("a rare word outranks a common one", rare.jobs[0].matched_terms.includes("angular") &&
   rare.jobs.slice(0, 2).every((j) => j.matched_terms.includes("angular")), rare.jobs.map((j) => [j.title, j.matched_terms]));
+const platform = await byKeywords({ query: "platform engineer" });
+report("a posting matching only the query's common words is left out", platform.matches === 1 &&
+  platform.jobs[0].title === "Platform Engineer", platform.jobs.map((j) => [j.title, j.matched_terms]));
+const commonOnly = await byKeywords({ query: "senior engineer" });
+report("a query of common words and senior still matches any of them", commonOnly.matches > 5, commonOnly.matches);
+// "ai" read in most descriptions, but in one title: the title still tells.
+const aiIndex = { ...withKeywords, jobs: [kw(6, "AI Systems Architect", ["ai"]),
+  ...withKeywords.jobs.map((j) => ({ ...j, keywords: [...(j.keywords ?? []), "ai"] }))] };
+const aiArch = (await run("find_jobs", { query: "ai automation" }, { jobs: aiIndex })).structuredContent;
+report("a word common in descriptions but rare in titles matches in a title", aiArch.matches === 1 &&
+  aiArch.jobs[0].title === "AI Systems Architect", aiArch.jobs.map((j) => [j.title, j.matched_terms]));
 const moreWords = (await run("find_jobs", { query: "python django fastapi integrations" }, { jobs: { ...withKeywords,
   jobs: [kw(5, "Software Engineer, Integrations", ["python"]), ...withKeywords.jobs] } })).structuredContent;
 report("matching more of the query's words outranks one rare title word",
