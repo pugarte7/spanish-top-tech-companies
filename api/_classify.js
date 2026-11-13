@@ -358,6 +358,13 @@ export const KEYWORDS = [
            "ia generativa", "rag", "retrieval augmented generation", "prompt engineering", "fine tuning", "langchain",
            "llamaindex", "openai", "gpt"]],
   ["ai-agents", ["ai agents", "ai agent", "agentic", "llm agents", "multi agent", "autonomous agents", "mcp"]],
+  // "chatbot" and "n8n" found nothing on 2026-11-12, in junior AI searches. Not "voice agent":
+  // one company's every posting, sales included, says it sells them.
+  ["conversational-ai", ["chatbot", "chat bot", "conversational ai", "conversational agent", "conversational design",
+                         "conversational interface", "dialogflow"]],
+  ["workflow-automation", ["n8n", "zapier", "workflow automation", "power automate", "uipath", "rpa",
+                           "robotic process automation"]],
+  ["low-code", ["low code", "no code", "lowcode", "nocode"]],
   // Not bare "inference": statistics has its own.
   ["inference", ["model inference", "llm inference", "inference optimization", "inference serving", "inference engine",
                  "inference infrastructure", "vllm", "model serving", "tensorrt"], { query: ["inference"] }],
