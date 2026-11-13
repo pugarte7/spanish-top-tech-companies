@@ -684,6 +684,9 @@ const statsGipuzkoa = await salaryIn("salary_stats", { role: "software-engineer"
 report("salary_stats: a Basque province is its region", statsGipuzkoa.selection.region === "PV", statsGipuzkoa);
 const topBilbao = await salaryIn("top_companies", { region: "bilbao" });
 report("top_companies: a city is its region, with a note", topBilbao.selection.region === "PV" && /Bilbao is in PV/.test(topBilbao.note));
+const seat = await run("company_salaries", { name: "SEAT" });
+report("company_salaries: one company naming the word wins over a prefix (SEAT CODE, not SeatGeek)",
+  !seat.isError && seat.structuredContent.company === "SEAT CODE", seat.structuredContent ?? seat.content);
 const glovoBcn = await salaryIn("company_salaries", { name: "glovo", region: "barcelona" });
 report("company_salaries: a city is its region, with a note", /Barcelona is in CT/.test(glovoBcn.note) &&
   glovoBcn.groups.every((g) => g.region === "CT"));
@@ -1017,7 +1020,13 @@ const boards3 = { ...more, jobs: [...more.jobs,
     ats: "jsonapi", url: "https://careers.capgemini.com/job/Madrid-AI-Solutions-Engineer/1437052733/?feedId=388633",
     location: "Madrid, Spain" },
   { id: "jsonapi:sage:VN42758", company: "Sage", slug: "sage", title: "Engineer", ats: "jsonapi",
-    url: "https://sagehr.my.salesforce-sites.com/careers/x", location: "Barcelona, Spain" }] };
+    url: "https://sagehr.my.salesforce-sites.com/careers/x", location: "Barcelona, Spain" },
+  ...[["adevinta.com/careers/jobs/", "35ddce57", "https://adevinta.com/jobs/security-engineer/"],
+      ["www.porsche.digital/sitemap.xml", "67262985", "https://www.porsche.digital/career/67262985"],
+      ["careers.factorial.com/", "328088", "https://careers.factorial.com/job_posting/account-executive-328088"],
+      ["careers.factorial.com/", "1", "https://careers.factorial.com/job_posting/expired-1"]]
+    .map(([board, id, url]) => ({ id: `jsonld:${board}:${id}`, company: "Site", slug: "site", title: "Engineer", ats: "jsonld",
+      url, location: "Barcelona, Spain" }))] };
 const formOf = async (id) => (await run("job_questions", { id }, { jobs: boards3 })).structuredContent;
 const ppScript = (name, props) => `<div id="${name}-react-component-x"></div><script type="application/json"  ` +
   `data-component-name="${name}" data-dom-id="x">${JSON.stringify(props)}</script>`;
@@ -1254,11 +1263,38 @@ report("jsonapi: Capgemini's postings are read from its SuccessFactors site",
 const sage = await formOf("jsonapi:sage:VN42758");
 report("jsonapi: an employer's own API with no form reader sends the agent to the URL",
   sage.form_source === null && sage.questions === null && /employer's own careers site/.test(sage.note), sage);
+// JSON-LD careers sites: the posting page's JobPosting; Porsche Digital's page moves under /en/.
+const ldPage = (posting, extra = "") => () => new Response(`<html><script type="application/ld+json">` +
+  JSON.stringify({ "@context": "https://schema.org", "@graph": [{ "@type": "WebPage" }, { "@type": "JobPosting", title: "Engineer",
+    jobLocation: { "@type": "Place", address: { addressLocality: "Barcelona", addressCountry: "Spain" } }, ...posting }] }) +
+  `</script>${extra}</html>`);
+BOARDS["https://adevinta.com/jobs/security-engineer/"] = ldPage({ description: "<p>Defend Adevinta &amp;#8211; in Barcelona.</p>" },
+  `<a href="https://adevinta.careers.hibob.com/jobs/35ddce57/apply">Apply</a>`);
+BOARDS["https://www.porsche.digital/career/67262985"] = (init) => init.redirect === "manual"
+  ? new Response(null, { status: 301, headers: { location: "https://www.porsche.digital/en/career/67262985" } })
+  : Promise.reject(new TypeError("redirect"));
+BOARDS["https://www.porsche.digital/en/career/67262985"] = ldPage({ description: "Build Porsche software." });
+BOARDS["https://careers.factorial.com/job_posting/account-executive-328088"] = ldPage({ description: "Sell Factorial." });
+BOARDS["https://careers.factorial.com/job_posting/expired-1"] = ldPage({ description: "Gone.", validThrough: "2020-01-01" });
+const adevinta = await formOf("jsonld:adevinta.com/careers/jobs/:35ddce57");
+report("jsonld: the posting's JobPosting text and place, and the form its Apply link opens",
+  adevinta.form_source.startsWith("The careers site's posting page") && !adevinta.account_required &&
+  adevinta.apply_url === "https://adevinta.careers.hibob.com/jobs/35ddce57/apply" &&
+  /Defend Adevinta – in Barcelona/.test(adevinta.description.text) && !adevinta.location_check &&
+  /adevinta\.careers\.hibob\.com/.test(adevinta.questions[0].label), adevinta);
+const porsche = await formOf("jsonld:www.porsche.digital/sitemap.xml:67262985");
+report("jsonld: a page moved on its own host is followed once",
+  /Build Porsche software/.test(porsche.description.text) && porsche.apply_url === "https://www.porsche.digital/en/career/67262985", porsche);
+const factorial = await formOf("jsonld:careers.factorial.com/:328088");
+report("jsonld: with no Apply link the form is the posting's page",
+  factorial.apply_url === "https://careers.factorial.com/job_posting/account-executive-328088" && /Sell Factorial/.test(factorial.description.text), factorial);
+const expired = await run("job_questions", { id: "jsonld:careers.factorial.com/:1" }, { jobs: boards3 });
+report("jsonld: a posting past its validThrough is a tool error", expired.isError === true && /may have closed/.test(expired.content[0].text), expired);
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai|careers\.ey\.com|www\.amazon\.jobs|careers\.capgemini\.com)\//.test(r.url) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai|careers\.ey\.com|www\.amazon\.jobs|careers\.capgemini\.com|adevinta\.com|www\.porsche\.digital|careers\.factorial\.com)\//.test(r.url) &&
     // The exceptions: asking a Pinpoint, Eightfold or SuccessFactors board where it sends a page, without following it.
-    (r.init.redirect === "error" || (r.init.redirect === "manual" && /\.pinpointhq\.com\/|\.eightfold\.ai\/|careers\.ey\.com\//.test(r.url))) &&
+    (r.init.redirect === "error" || (r.init.redirect === "manual" && /\.pinpointhq\.com\/|\.eightfold\.ai\/|careers\.ey\.com\/|www\.porsche\.digital\//.test(r.url))) &&
     r.init.signal instanceof AbortSignal));
 const burst = Array.from({ length: 6 }, (_, k) => ({ jsonrpc: "2.0", id: k + 1, ...tool("job_questions", { id: "greenhouse:glovo:7000001" }) }));
 const burstReplies = await respond(data, burst);

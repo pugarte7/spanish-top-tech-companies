@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.16.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.17.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -149,8 +149,8 @@ const TOOLS = {
                    "board (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, Bending Spoons and Eightfold; for Workday, whose form " +
                    "needs the person's account, the posting and Workday's standard steps, also when a " +
                    "Phenom career site leads to it; for SmartRecruiters, the posting only; for SuccessFactors (Capgemini too) " +
-                   "and Amazon, the posting and account_required, since their form is shown after sign-in; other boards " +
-                   "are read in the browser): " +
+                   "and Amazon, the posting and account_required, since their form is shown after sign-in; for careers " +
+                   "sites with schema.org JobPosting, the posting; other boards are read in the browser): " +
                    "each question with its type, options, whether it is required, the most characters " +
                    "the board takes (max_length) when it says, and who answers " +
                    "it (person or agent), the posting text marked as untrusted, and the URL to " +
@@ -537,6 +537,11 @@ export async function company(data, name, args = {}, env = {}) {
         `today: find_jobs with company '${name}'. ` : "") +
       "salary_stats gives the market figure for the role in Spain, which is the fair comparison " +
       "when a company has no salaries here.", "not_found");
+  }
+  // "SEAT" names SEAT CODE as a word and is only a prefix of SeatGeek: the one whole-word match wins.
+  if (matches.length > 1 && words(name).length >= 3) {
+    const asWord = matches.filter(([c]) => ` ${words(c.name)} `.includes(` ${words(name)} `));
+    if (asWord.length === 1) matches = asWord;
   }
   if (matches.length > 1)
     throw new QueryError("several companies match: " +
@@ -1973,11 +1978,69 @@ async function jsonapiForm(env, board, external, job) {
   return sf ? successfactorsForm(env, "careers.capgemini.com", sf, job) : null;
 }
 
+// Employers' own careers sites read by JSON-LD (Factorial, eDreams, Dynatrace,
+// Adevinta, Porsche Digital): the posting page's schema.org JobPosting gives
+// the description and place; the form is the site's own, or another system's
+// that its Apply link names (Adevinta's HiBob, Porsche Digital's softgarden).
+export function jsonldPosting(html) {
+  const found = [];
+  const visit = (node) => {
+    if (Array.isArray(node)) return node.forEach(visit);
+    if (!isObject(node)) return;
+    const type = node["@type"];
+    if (type === "JobPosting" || (Array.isArray(type) && type.includes("JobPosting"))) found.push(node);
+    if (Array.isArray(node["@graph"])) node["@graph"].forEach(visit);
+  };
+  for (const block of html.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
+    for (const text of [block[1].trim(), block[1].trim().replace(/[\u0000-\u001f]+/g, " ")]) {
+      try { visit(JSON.parse(text)); break; } catch { /* try without raw line breaks, then skip */ }
+    }
+  }
+  const post = found[0];
+  if (!post) return null;
+  const name = (v) => typeof v === "string" ? v : typeof v?.name === "string" ? v.name : "";
+  const location = (Array.isArray(post.jobLocation) ? post.jobLocation : [post.jobLocation]).map((place) => {
+    const a = place?.address ?? place;
+    return typeof a === "string" ? a : [a?.addressLocality, a?.addressRegion, a?.addressCountry].map(name).filter(Boolean).join(", ");
+  }).map((x) => htmlText(x)).filter(Boolean);
+  return { description: htmlText(typeof post.description === "string" ? post.description : ""), location,
+           closes: typeof post.validThrough === "string" ? Date.parse(post.validThrough) : NaN };
+}
+
+async function jsonldForm(env, board, external, job) {
+  const host = String(board).split("/")[0];
+  if (!SITE_HOST.test(host) || hostOf(job.url) !== host) throw new BoardError("the posting's board is not its careers site");
+  const closed = () => new BoardError("the board no longer shows this posting; it may have closed");
+  let url = job.url, page;
+  try {
+    page = await fetchBoard(env, url, { text: true, site: host });
+  } catch (e) {
+    // Porsche Digital moves its pages under /en/: one redirect on the same host is followed.
+    const away = e instanceof BoardError ? await redirectTo(env, url) : null;
+    if (!away) throw e;
+    if (hostOf(away) !== host) throw closed();
+    url = away;
+    page = await fetchBoard(env, url, { text: true, site: host });
+  }
+  const post = jsonldPosting(page);
+  if (!post || post.closes < Date.now()) throw closed();
+  const link = [...page.matchAll(/href="(https:\/\/[^"]+)"/g)].map((m) => decode(m[1]))
+    .find((href) => /\/apply\b|applyonline/i.test(href));
+  return { apply_url: link ?? url, captcha: null, description: post.description, location: post.location,
+           questions: [unread("application_form", link
+             ? `The application form at ${hostOf(link)}, which the posting's Apply link opens: read it in the browser ` +
+               "and classify each question with the same rule"
+             : `The application form on ${host}, from the posting's page: read it in the browser and classify ` +
+               "each question with the same rule")],
+           source: "The careers site's posting page (schema.org JobPosting), read now; the form is read in the browser" };
+}
+
 const FORMS = { greenhouse: greenhouseForm, ashby: ashbyForm, lever: leverForm, workable: workableForm,
                 recruitee: recruiteeForm, teamtailor: teamtailorForm, workday: workdayForm, phenom: phenomForm,
                 bamboohr: bamboohrForm, bendingspoons: bendingspoonsForm, pinpoint: pinpointForm,
                 rippling: ripplingForm, smartrecruiters: smartrecruitersForm, eightfold: eightfoldForm,
-                successfactors: successfactorsForm, amazon: amazonForm, jsonapi: jsonapiForm };
+                successfactors: successfactorsForm, amazon: amazonForm, jsonapi: jsonapiForm,
+                jsonld: jsonldForm };
 
 // "ats:board:id"; the board may hold slashes (Workday), never a colon.
 function splitId(id) {
@@ -2042,8 +2105,8 @@ export async function jobQuestions(data, args = {}, env = {}) {
   const unreadAnswer = () => ({ job: posting, apply_url: job.url, form_source: null, questions: null, description: null,
     captcha: null,
     note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, ` +
-          `Bending Spoons and Eightfold forms, and Workday's, Phenom's, SmartRecruiters', SuccessFactors' and Amazon's ` +
-          `postings; this posting is on ${["jsonld", "jsonapi"].includes(job.ats) ? "the employer's own careers site" : job.ats}. ` +
+          `Bending Spoons and Eightfold forms, and Workday's, Phenom's, SmartRecruiters', SuccessFactors', Amazon's and ` +
+          `JSON-LD careers sites' postings; this posting is on ${["jsonld", "jsonapi"].includes(job.ats) ? "the employer's own careers site" : job.ats}. ` +
           "Open url in your browser and read the form there; classify its questions with the " +
           "same rule (see application_guide)." });
   if (!read) return unreadAnswer();
