@@ -60,7 +60,9 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   "kubernetes terraform"), synonyms such as SRE and site reliability
   included; postings matching more of the words rank first, then rarer words
   and title matches, and
-  `matched_in_keywords` marks a match found only in the description. `role` also takes
+  `matched_in_keywords` marks a match found only in the description;
+  `unmatched_terms` lists the query's words no result matches under the
+  filters (an architect under role software-engineer). `role` also takes
   specializations such as DevOps, SRE, backend or frontend. `region` takes a
   city or remote too; `seniority` (intern, junior, mid, senior, staff, lead,
   head) is the level the title names; `years` is the person's experience and

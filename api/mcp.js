@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.17.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.18.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -1056,6 +1056,9 @@ export async function findJobs(data, args = {}, env = {}) {
   };
   const { found, named, results, excluded, unknownPay, yearsUnstated } = pass(filtersSet);
   const jobs = results.slice(0, limit).map(({ f, also }) => posting(f, also, terms.length > 0));
+  // A query word no result matches: "software architect" under role software-engineer gave 344
+  // Software Engineers through "software" alone, architects being solution architects (2026-11-13).
+  const unmatched = results.length ? terms.filter((t) => !found.some((f) => f.matched.includes(t.term))).map((t) => t.term) : [];
   return {
     generated_at: index.generated_at ?? null, salary_data_as_of: data.data_as_of || data.generated,
     filters: { query: terms.map((t) => t.term).join(" ") || null,
@@ -1080,6 +1083,10 @@ export async function findJobs(data, args = {}, env = {}) {
                company: company || null, min_salary_eur: minSalary, excluded },
     postings_in_index: index.jobs.length, postings_matched: found.length,
     matches: results.length, returned: jobs.length,
+    ...(unmatched.length ? { unmatched_terms: unmatched, unmatched_note: "No posting under these filters " +
+      `matches ${unmatched.map((t) => `'${t}'`).join(", ")}; the results match the query's other words. When ` +
+      "one of them is what the person asked for, say so, and try without the filter that rules it out (a role, " +
+      "a region) or another word." } : {}),
     grouped: `${found.length} postings merged into ${results.length} results: one company's postings ` +
       "with the same title, leaving out the places it names (| Spain | Remote, (Bilbao)), are one " +
       "result, the others listed in also_posted_as (each id works in " +

@@ -571,6 +571,7 @@ const keywordsWrong = Object.entries({
   "ISO 27001, ENS and GRC experience; Spanish and English": "grc,iso-27001,english,spanish",
   "Machine learning with PyTorch, LLMs and RAG": "machine-learning,pytorch,llm",
   "Ingeniero/a de datos: Spark, Airflow, dbt y Snowflake": "snowflake,spark,airflow,dbt",
+  "Build chatbots and n8n workflows on low-code tools": "conversational-ai,workflow-automation,low-code",
 }).filter(([text, want]) => keywordsOf("", text).join() !== want);
 report("descriptions read as the keywords of the vocabulary they name", keywordsWrong.length === 0,
   keywordsWrong.map(([t]) => `${t}: ${keywordsOf("", t).join()}`));
@@ -606,6 +607,9 @@ report("a rare word outranks a common one", rare.jobs[0].matched_terms.includes(
 const platform = await byKeywords({ query: "platform engineer" });
 report("a posting matching only the query's common words is left out", platform.matches === 1 &&
   platform.jobs[0].title === "Platform Engineer", platform.jobs.map((j) => [j.title, j.matched_terms]));
+const archNone = await byKeywords({ query: "angular architect" });
+report("find_jobs names the query words no result matches", archNone.unmatched_terms?.join() === "architect" &&
+  archNone.unmatched_note.includes("'architect'") && !angular.unmatched_terms, archNone.unmatched_terms);
 const commonOnly = await byKeywords({ query: "senior engineer" });
 report("a query of common words and senior still matches any of them", commonOnly.matches > 5, commonOnly.matches);
 // "ai" read in most descriptions, but in one title: the title still tells.
