@@ -31,6 +31,12 @@ https://spanishtoptechcompanies.com/mcp
 
 No sign-in, no keys, nothing to install. It works with any agent that supports MCP: people use it mostly from Codex and Cursor, and Claude, Claude Code, Instinct and Hermes work too.
 
+On Hermes you can also install the skill, which teaches it to use the MCP and to apply for you:
+
+```text
+hermes skills install pugarte7/spanish-top-tech-companies/skills/tech-pay-spain
+```
+
 It is free and one person maintains it. If it is useful to you, leave a star ⭐ at the top right: it is what gets it found by more people looking for work in Spain.
 
 ## How it finds postings
