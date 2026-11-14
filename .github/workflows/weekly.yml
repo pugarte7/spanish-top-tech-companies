@@ -32,6 +32,12 @@ jobs:
         run: |
           git log -1 --format=%b > digest.md
           cat digest.md >> "$GITHUB_STEP_SUMMARY"
+          # Earlier digests and "no refresh" notices are done with once a new
+          # refresh lands: left open, six of the repo's seven issues were these,
+          # and directories read that as a maintainer who never answers.
+          gh issue list --state open --limit 100 --json number,title,author \
+            --jq '.[] | select(.author.is_bot) | select((.title | startswith("Week of ")) or .title == "No salary refresh this week") | .number' |
+            while read -r number; do gh issue close "$number" --reason completed; done
           gh issue create --title "Week of $(date -u +%F)" --body-file digest.md
 
   missed:

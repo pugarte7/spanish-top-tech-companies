@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.20.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.20.1" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -52,9 +52,17 @@ const READ_ONLY = { readOnlyHint: true, openWorldHint: false };
 // answer itself: counts and public facts about a posting, never a person.
 const TOOLS = {
   salary_stats: {
-    define: () => ({ title: "Salary statistics",
-      description: "Median base, middle half (p25-p75), median total comp and share at " +
-                   "60k+ base for a role, region and experience in Spain.",
+    define: (data) => ({ title: "Salary statistics",
+      description: "What a job pays in Spain across companies: median base, the middle half " +
+                   "(p25-p75), median total compensation (base plus bonus and stock) and the share " +
+                   "of people at 60,000 EUR base or more, in euros per year, with how many people " +
+                   "the figures come from. Every argument is optional and narrows the selection " +
+                   "(role, region, years of experience); none gives all of Spain. A figure comes " +
+                   `only from ${data.min_group} or more people: a selection with fewer returns no ` +
+                   "result and wider_selections, the same selection without years and then " +
+                   "without region, to quote instead. For one company use company_salaries, and " +
+                   "to rank companies use top_companies. Call list_filters when unsure how a role " +
+                   "or region is named.",
       inputSchema: { type: "object", properties: SELECTION } }),
     run: (data, args) => stats(data, args),
     measure: (out) => ({ result_count: out.result ? 1 : 0,
@@ -89,8 +97,14 @@ const TOOLS = {
   },
   list_filters: {
     define: () => ({ title: "Roles, regions and experience buckets",
-      description: "The role slugs, region codes and experience buckets that have data, " +
-                   "and the date of the data.",
+      description: "The values the other tools take, read from the data: every role slug with its " +
+                   "name, every Spanish region code with its name and the experience buckets " +
+                   "(0-1, 2-4, 5-7...) that have salaries, with the date the salaries were last " +
+                   "refreshed and the minimum number of people a figure needs. It takes no " +
+                   "arguments and returns no salaries. Call it once, before salary_stats, " +
+                   "top_companies, company_salaries or find_jobs, when unsure how a role or region " +
+                   "is named or which exist; skip it when you already have a slug or code, since " +
+                   "those tools also take common names such as Madrid or Data Scientist.",
       inputSchema: { type: "object", properties: {} } }),
     run: (data) => filters(data),
   },
