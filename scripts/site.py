@@ -296,6 +296,7 @@ STRINGS = {
                        "and the share with a base of {bar} or more.",
         "all_roles": "All roles", "all_years": "Any",
         "years_label": "Experience", "years_unit": "yrs", "years_axis": "Years of experience",
+        "salaries_title": "Tech salaries in Spain",
         "map_title": "By region",
         "map_pay": "Median base", "map_count": "No. of salaries",
         "map_pay_sub": "Median gross yearly base salary of everyone reported in each region.",
@@ -407,6 +408,7 @@ STRINGS = {
                        "+ acciones) y el porcentaje con una base de {bar} o más.",
         "all_roles": "Todos los roles", "all_years": "Todas",
         "years_label": "Experiencia", "years_unit": "años", "years_axis": "Años de experiencia",
+        "salaries_title": "Salarios tech en España",
         "map_title": "Por comunidad",
         "map_pay": "Base mediana", "map_count": "N. Salarios",
         "map_pay_sub": "Salario base bruto anual mediano de todos los salarios de cada comunidad.",
@@ -1034,9 +1036,8 @@ def spain_svg() -> str:
         paths.append(f'<path class="region" data-code="{code}" d="{d}"/>')
     gap, line = MAP_HATCH
     hatches = "".join(
-        f'<pattern id="{pid}{n}" patternUnits="userSpaceOnUse" width="8" height="{gap}" patternTransform="rotate(-35)">'
-        f'<rect width="8" height="{gap}" style="fill:var(--{ground}{n})"/><rect width="8" height="{line}" style="fill:var(--surface)"/></pattern>'
-        for pid, ground in (("hp", "s"), ("hc", "c"))
+        f'<pattern id="hc{n}" patternUnits="userSpaceOnUse" width="8" height="{gap}" patternTransform="rotate(-35)">'
+        f'<rect width="8" height="{gap}" style="fill:var(--c{n})"/><rect width="8" height="{line}" style="fill:var(--surface)"/></pattern>'
         for n in range(1, 6))
     return (f'<svg id="map" viewBox="0 0 {MAP_W} {MAP_H}" role="img"><defs>{hatches}</defs>'
             f'{"".join(paths)}</svg>')
@@ -1404,7 +1405,7 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
       <a class="btn main" href="#agents">{e['hero_start']} {DOWN_ICON}</a>
       <a class="btn alt" href="#companies-card">{e['hero_see']}</a>
       <details class="how wide">
-        <summary class="btn main">{e['how_title']}</summary>
+        <summary>{e['how_title']}</summary>
         <ol class="steps">{steps}
         </ol>
       </details>
@@ -1415,11 +1416,12 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 
 <main class="bento">
 {agents_section(e, lang)}
+  <h2 class="bento-title">{e['salaries_title']}</h2>
   <section class="tile wide map-tile" id="map-card">
     <div class="tile-head">
       <div><h2>{e['map_title']}</h2><p class="lede" id="map-sub"></p></div>
       <div class="seg" id="map-metric" role="group" aria-label="{e['map_title']}">
-        <button data-m="count">{e['map_count']}</button><button data-m="pay">{e['map_pay']}</button>
+        <button data-m="pay">{e['map_pay']}</button><button data-m="count">{e['map_count']}</button>
       </div>
     </div>
     <div class="map-grid">
