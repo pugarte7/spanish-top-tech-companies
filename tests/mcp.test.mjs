@@ -5,7 +5,7 @@
 // stub: no test reaches the network.
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import mcp, { analytics, openingTitle, queryTerms, respond as answer, sessionOf } from "../api/mcp.js";
+import mcp, { analytics, formAccess, openingTitle, queryTerms, respond as answer, sessionOf } from "../api/mcp.js";
 import { redact } from "../api/_track.js";
 import { keywordsOf, seniorityOf, titleRoles, yearsAsked } from "../api/_classify.js";
 
@@ -1527,6 +1527,16 @@ if (pairs.length) {
       r.company.toLowerCase().startsWith(`${short.name.toLowerCase()} `)) && /never add/.test(asked.related_note),
     asked.related_companies);
 }
+
+const q = (key) => ({ key });
+report("form_access tells a form behind a sign-in or off the API from one read",
+  formAccess({ form_source: "x", questions: [q("first_name")] }).form_access === "read" &&
+  formAccess({ form_source: "x", account_required: true, questions: [q("resume")] }).form_access === "read" &&
+  formAccess({ form_source: "x", account_required: true, questions: [q("application_form")] }).form_access === "sign_in" &&
+  formAccess({ form_source: "x", questions: [q("application_form")] }).form_access === "not_public" &&
+  formAccess({ form_source: "x", questions: [q("find_posting")] }).form_access === "posting_moved" &&
+  formAccess({ form_source: null, questions: null }).form_access === "no_reader" &&
+  formAccess({ form_source: null, questions: null }).form_read === false);
 
 console.log(failed ? `${failed} failed` : "api/mcp.js answers as expected");
 process.exit(failed ? 1 : 0);
