@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Ask a question
+    url: https://github.com/pugarte7/spanish-top-tech-companies/discussions/new?category=q-a
+    about: About the salaries, the site or the MCP server. Questions go in Discussions, not issues.
   - name: How this list is built
     url: https://github.com/pugarte7/spanish-top-tech-companies/blob/main/METHODOLOGY.md
     about: Where the salaries come from, which companies are listed, and what we won't publish.
