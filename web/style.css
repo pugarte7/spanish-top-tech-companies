@@ -560,16 +560,16 @@ footer .foot-links::before { inset: -20px -28px; }
 .demo-zoom svg { width: 14px; height: 14px; }
 .agent-steps { flex: 1 1 400px; min-width: 0; margin: 0; padding: 0; list-style: none; display: grid; gap: 22px;
                align-content: space-between; }
-.agents-with { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px;
+.agents-with { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px;
                margin-top: 24px; padding-top: 20px;
                border-top: 1px solid var(--rule); }
 .agents-any { margin: 0; text-align: center; color: var(--muted); }
-.agent-logos { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.agent-link { display: block; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 10px; background: none;
+.agent-logos { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.agent-link { display: block; width: 56px; height: 56px; padding: 0; border: 0; border-radius: 12px; background: none;
               cursor: pointer; transition: transform .15s; }
 .agent-link[aria-expanded="true"] { outline: 2px solid var(--hue); outline-offset: 2px; }
 .agent-link:hover { transform: translateY(-2px); }
-.agent-link .agent-tile { position: static; width: 100%; height: 100%; border-radius: 10px; border: 1px solid var(--rule);
+.agent-link .agent-tile { position: static; width: 100%; height: 100%; border-radius: 12px; border: 1px solid var(--rule);
                           opacity: 1; transform: none; }
 .agent-tile { display: grid; place-items: center; overflow: hidden; }
 .agent-tile img { display: block; }
@@ -702,6 +702,9 @@ footer .foot-links::before { inset: -20px -28px; }
   .summary { grid-template-columns: 1fr 1fr; }
   .filter-row { flex-wrap: wrap; }
   .agent-steps > li { gap: 12px; }
+  /* Six in a row on a phone. */
+  .agent-logos { gap: 8px; }
+  .agent-link { width: 46px; height: 46px; }
   /* Narrow enough that the domain keeps one line and /mcp takes the next. */
   .agent-steps .copy-box { padding-left: 14px; }
   .agent-steps .copy-box code { font-size: 12px; }
