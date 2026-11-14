@@ -205,14 +205,9 @@ YEAR_BUCKETS = [(0, 2), (2, 5), (5, 8), (8, 12), (12, 20), (20, None)]
 # Histogram bins of 10k; the ends are open so a lone outlier joins a crowd.
 HIST_LOW, HIST_HIGH, HIST_STEP = 20_000, 150_000, 10_000
 
-# GitHub's filled star (octicon star-fill-16), the button once starred.
-STAR_FILL = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .25a.75.75 0 0 1 '
-             '.673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791'
-             'L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611'
-             'L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>')
-# The pointer in the star prompt's demo.
-POINTER = ('<svg viewBox="0 0 16 20" aria-hidden="true"><path d="M1 1v15l4-4 3 7 3-1.3-3-6.7h5.5z" '
-           'fill="#fff" stroke="#1f2328" stroke-width="1.2" stroke-linejoin="round"/></svg>')
+# Four corners pointing out: the demo's full-screen button.
+EXPAND_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" '
+               'stroke-linecap="round" stroke-linejoin="round"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>')
 # GitHub's outline star (octicon star-16), the one on its Star button.
 STAR_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .25a.75.75 0 0 1 '
              '.673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791'
@@ -227,10 +222,6 @@ GITHUB_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentC
                ' 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16'
                ' 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01'
                ' 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>')
-# The share card's button on phones: a box with an arrow out of it.
-SHARE_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" '
-              'stroke-linecap="round" stroke-linejoin="round"><path d="M8 10V1.5M5 4.5l3-3 3 3"/>'
-              '<path d="M5.5 7H3.5v7.5h9V7h-2"/></svg>')
 # Both glyphs ship; the stylesheet shows the moon in light mode and the sun in dark.
 # Drawn, not the ↗ character: iOS paints that as a blue emoji tile.
 OUT_ICON = ('<svg class="out" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.5 8.5l5-5M4.5 3.5h4v4" '
@@ -353,12 +344,6 @@ STRINGS = {
         "people": "salaries", "median": "Median", "range": "p25–p75",
         "data": "JSON", "repo": "GitHub", "web": "Website", "legal": "Legal and privacy",
         "stars_label": "GitHub, {n} stars",
-        "star_title": "Finding it useful?",
-        "star_text": "Every star on GitHub moves it up, so more people looking for a tech job find it.",
-        "star_how": "It is the Star button at the top right of the repo, with your GitHub account.",
-        "star_button": "Give it a star", "star_close": "Close",
-        "share_text": "Know someone looking for a tech job in Spain? Send them the site.",
-        "share_button": "Share", "share_copied": "Link copied",
         "under": "Under", "over": "Over",
         "role_label": "Role", "mode_label": "Work", "loc_label": "Location", "all_spain": "All of Spain",
         "mode_remote": "Remote", "mode_hybrid": "Hybrid", "mode_office": "Office",
@@ -371,6 +356,8 @@ STRINGS = {
         "how3_t": "Start applying",
         "how3": "Tell it what you are looking for and it offers you the openings that fit you best.",
         "agents_pick": "Agents it works with", "agents_get": "Download",
+        "agents_any": "Any agent that supports MCP will do. A few of them:",
+        "demo_zoom": "Watch the demo full screen",
         "copy": "Copy", "copied": "Copied",
         "description": "What software engineers earn in Spain and which tech companies pay most: "
                        "median base salary by company, role, experience and city, from real salaries.",
@@ -467,13 +454,6 @@ STRINGS = {
         "people": "salarios", "median": "Mediana", "range": "p25–p75",
         "data": "JSON", "repo": "GitHub", "web": "Web", "legal": "Aviso legal y privacidad",
         "stars_label": "GitHub, {n} estrellas",
-        "star_title": "¿Te está sirviendo?",
-        "star_text": "Cada estrella en GitHub la hace subir y que la encuentre más gente que busca "
-                     "trabajo en tech.",
-        "star_how": "Es el botón Star, arriba a la derecha del repo, con tu cuenta de GitHub.",
-        "star_button": "Darle una estrella", "star_close": "Cerrar",
-        "share_text": "¿Conoces a alguien que busca trabajo en tech en España? Pásale la web.",
-        "share_button": "Compartir", "share_copied": "Enlace copiado",
         "under": "Menos de", "over": "Más de",
         "role_label": "Rol", "mode_label": "Modalidad", "loc_label": "Ubicación", "all_spain": "Toda España",
         "mode_remote": "Remoto", "mode_hybrid": "Híbrido", "mode_office": "Presencial",
@@ -486,6 +466,8 @@ STRINGS = {
         "how3_t": "Ponte a aplicar",
         "how3": "Dile qué buscas y te ofrecerá las ofertas que mejor encajan contigo.",
         "agents_pick": "Agentes con los que funciona", "agents_get": "Descargar",
+        "agents_any": "Vale cualquier agente que admita MCP. Algunos de ellos:",
+        "demo_zoom": "Ver la demo a pantalla completa",
         "copy": "Copiar", "copied": "Copiado",
         "description": "Cuánto cobra un programador en España y qué empresas tecnológicas pagan más: "
                        "sueldo base mediano por empresa, rol, experiencia y comunidad, con salarios reales.",
@@ -1202,7 +1184,9 @@ def agent_tile(i: int, cls: str = "agent-tile") -> str:
 
 def agents_section(e: dict, lang: str) -> str:
     """How it works: the recorded demo beside three short steps, then the
-    agents it works with: a click on one shows its name and where to get it."""
+    agents it works with: a click on one shows its name and where to get it.
+    The line over them says any MCP agent will do: with the logos alone,
+    readers took them for a choice to make before starting."""
     step = lambda n, body: (f'<li><span class="step-n" aria-hidden="true">{n}</span><div>'
                             f'<h3>{e[f"how{n}_t"]}</h3><p>{e[f"how{n}"]}</p>{body}</div></li>')
     logos = "".join(
@@ -1215,10 +1199,12 @@ def agents_section(e: dict, lang: str) -> str:
     <h2 id="agents-title" tabindex="-1">{e['agents_title']}</h2>
     <div class="agents-grid">
       <figure class="agents-demo">
-        <video id="demo" muted loop playsinline controls preload="none" width="1920" height="1200"
+        <video id="demo" muted loop playsinline preload="none" width="1920" height="1200"
                poster="/mcp-demo.{lang}.jpg" aria-label="{e['demo_alt']}">
           <source src="/mcp-demo.{lang}.mp4" type="video/mp4">
           <source src="/mcp-demo.{lang}.webm" type="video/webm"></video>
+        <button class="demo-zoom" id="demo-zoom" type="button" aria-label="{e['demo_zoom']}"
+                title="{e['demo_zoom']}">{EXPAND_ICON}</button>
       </figure>
       <ol class="agent-steps">
         {step(1, copy_box(e, "agent-mcp"))}
@@ -1226,7 +1212,8 @@ def agents_section(e: dict, lang: str) -> str:
         {step(3, "")}
       </ol>
     </div>
-    <div class="agents-with"><div class="agent-logos" role="group" aria-label="{e['agents_pick']}">{logos}</div>
+    <div class="agents-with"><p class="agents-any">{e['agents_any']}</p>
+      <div class="agent-logos" role="group" aria-label="{e['agents_pick']}">{logos}</div>
       <div class="agent-bubble" id="agent-bubble" hidden><p><b id="ab-name"></b><span id="ab-by"></span></p>
         <a id="ab-get" target="_blank" rel="noopener" aria-label="{e['agents_get']}" title="{e['agents_get']}">{LINK_ICON}</a></div></div>
   </section>"""
@@ -1466,20 +1453,6 @@ def page(lang: str, svg: str, data_version: str, data: dict) -> str:
 </div></footer>
 <div id="tip" role="tooltip" hidden></div>
 <div id="asterisk-tip" class="asterisk-tip" hidden></div>
-<aside class="star-pop field" id="star" role="dialog" aria-labelledby="star-title" hidden>{WALL}
-  <button class="star-x" id="star-close" type="button" aria-label="{e['star_close']}">×</button>
-  <p class="star-title" id="star-title">{e['star_title']}</p>
-  <p class="star-text">{e['star_text']}</p>
-  <p class="share-text">{e['share_text']}</p>
-  <div class="star-demo" aria-hidden="true">
-    <span class="gh-repo">pugarte7 / <b>spanish-top-tech-companies</b></span>
-    <span class="gh-btn"><span class="gh-off">{STAR_ICON}Star</span><span class="gh-on">{STAR_FILL}Starred</span></span>
-    <span class="gh-pointer">{POINTER}</span>
-  </div>
-  <p class="star-how">{e['star_how']}</p>
-  <a class="star-btn" id="star-go" href="{REPO}" target="_blank" rel="noopener">{STAR_ICON}<span>{e['star_button']}</span></a>
-  <button class="star-btn" id="share-go" type="button">{SHARE_ICON}<span>{e['share_button']}</span></button>
-</aside>
 <script>window.S={json.dumps(s, ensure_ascii=False)};window.DATA_V="{data_version}";</script>
 <script src="/app.js?v={asset_version("app.js")}"></script>
 </body>
@@ -1599,7 +1572,7 @@ LEGAL = {
              "fast it loads. It sets no cookie, "
              "stores nothing in your browser, keeps no IP address and records no sessions. "
              "Your browser keeps, in its own "
-             "storage, only the theme you chose and whether you closed a notice; that never "
+             "storage, only the theme you chose; that never "
              "leaves your device. The MCP server at /mcp stores nothing about you, its job tools "
              "included; PostHog counts each call: the tool, the filters or the posting asked "
              "for, how many results it found, whether an application was sent or why not when "
@@ -1656,7 +1629,7 @@ LEGAL = {
              "que carga. No pone cookies ni guarda nada en tu "
              "navegador, no conserva tu dirección IP y no graba sesiones. Tu navegador guarda, "
              "en su propio almacenamiento, solo el tema que "
-             "elegiste y si cerraste un aviso; eso no sale de tu dispositivo. El servidor MCP "
+             "elegiste; eso no sale de tu dispositivo. El servidor MCP "
              "de /mcp no guarda nada sobre ti, tampoco sus herramientas de ofertas; PostHog cuenta "
              "cada llamada: la herramienta, los filtros o la oferta que se piden, cuántos "
              "resultados encuentra, si una candidatura se envió o por qué no cuando tu agente lo "

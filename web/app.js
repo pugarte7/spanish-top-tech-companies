@@ -818,7 +818,6 @@ function companies() {
       det.firstChild.innerHTML = open ? detail(shown[i]) : "";
       if (open) {
         track("company_open", { company: D.companies[id].name, role: state.role || null });
-        starOpen();
       }
     };
   });
@@ -908,65 +907,6 @@ function agents() {
   });
 }
 
-// --- star prompt ----------------------------------------------------------------
-// Once a reader has opened a third company, a small card asks for a GitHub
-// star; on a phone, where few are signed in to GitHub (the Reddit app's
-// browser above all), it asks them to share the site instead. A star or a
-// share is never asked again; closing waits a month. Until 2026-11-09 it came
-// after 40 seconds for everyone: 3,621 sessions closed it in a month, 78
-// clicked, 65 of them on phones.
-const STAR_AFTER_OPENS = 3;
-// A beat after that click, so the card does not land on the row opening.
-const STAR_SHOW_MS = 1200;
-const STAR_SNOOZE_DAYS = 30;
-// A new key with each new card, so a reader who closed the old one sees the
-// new one once. Whoever clicked through from an older card is never asked.
-const STAR_KEY = "star-prompt-3";
-const STAR_OLD_KEYS = ["star-prompt-2", "star-prompt"];
-const PHONE = matchMedia("(hover: none), (max-width: 800px)").matches;
-
-function store(value) {
-  try {
-    if (value !== undefined) return localStorage.setItem(STAR_KEY, value);
-    return localStorage.getItem(STAR_KEY) ??
-      (STAR_OLD_KEYS.some((k) => localStorage.getItem(k) === "starred") ? "starred" : null);
-  } catch { return null; }
-}
-
-// Called with each company opened; shows the card after the third.
-let starOpen = () => {};
-function starPrompt() {
-  const seen = store();
-  if (seen === "starred" || seen === "shared" || (seen && Date.now() < +seen)) return;
-  const pop = $("star"), mode = PHONE ? "share" : "star";
-  pop.classList.toggle("share", PHONE);
-  // Shown, clicked and closed go to PostHog, with the mode.
-  const close = (value, action) => { pop.hidden = true; store(value); track("star_prompt", { action, mode }); };
-  $("star-go").onclick = () => close("starred", "click");
-  $("share-go").onclick = async () => {
-    const url = location.origin + location.pathname;
-    try {
-      if (navigator.share) await navigator.share({ title: document.title, url });
-      else {
-        await navigator.clipboard.writeText(url);
-        $("share-go").querySelector("span").textContent = S.share_copied;
-        await new Promise((r) => setTimeout(r, 1200));
-      }
-    } catch { return; } // the share sheet closed without sharing: the card stays
-    close("shared", "click");
-  };
-  $("star-close").onclick = () => close(String(Date.now() + STAR_SNOOZE_DAYS * 864e5), "close");
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !pop.hidden) $("star-close").click(); });
-  let opens = 0;
-  starOpen = () => {
-    if (++opens !== STAR_AFTER_OPENS) return;
-    setTimeout(() => {
-      pop.hidden = false;
-      track("star_prompt", { action: "shown", mode });
-    }, STAR_SHOW_MS);
-  };
-}
-
 // --- the header's card and the demo ----------------------------------------------
 // Today's postings: jobs-summary.json is written by scripts/jobs.mjs after the
 // build, so the card is filled here; without it the dashes stay.
@@ -996,10 +936,29 @@ async function today() {
 }
 
 // The recorded demo plays, muted, while it is on screen, unless the reader
-// asked for less motion; its controls stay for pausing it.
+// asked for less motion. It is small beside the steps, so a click on it, or on
+// its corner button, opens it full screen with the player's controls. With
+// controls inline a click only paused it, and PostHog counted those clicks
+// as dead: readers wanted it bigger.
 function demo() {
   const v = $("demo");
-  if (!v || STILL) return;
+  if (!v) return;
+  const full = () => document.fullscreenElement || document.webkitFullscreenElement;
+  const open = () => {
+    if (full()) return;
+    v.controls = true;
+    v.play().catch(() => {});
+    if (v.requestFullscreen) v.requestFullscreen().catch(() => { v.controls = false; });
+    else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+    track("demo_open");
+  };
+  v.addEventListener("click", open);
+  $("demo-zoom").addEventListener("click", open);
+  const back = () => { if (!full()) v.controls = false; };
+  document.addEventListener("fullscreenchange", back);
+  document.addEventListener("webkitfullscreenchange", back);
+  v.addEventListener("webkitendfullscreen", () => { v.controls = false; });
+  if (STILL) return;
   new IntersectionObserver(([e]) => {
     if (e.isIntersecting) v.play().catch(() => {}); else v.pause();
   }, { threshold: 0.4 }).observe(v);
@@ -1027,7 +986,6 @@ async function main() {
   log("info", "salary site data loaded", { language: LANG });
   wire();
   agents();
-  starPrompt();
   map();
   today(); demo();
   // Again whenever the column changes width or the method opens, and once the fonts are in.
