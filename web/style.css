@@ -612,6 +612,12 @@ footer .foot-links::before { inset: -20px -28px; }
 .agents-demo { flex: 999 1 560px; min-width: 0; margin: 0; display: flex; }
 .agents-demo video { display: block; width: 100%; height: 100%; object-fit: contain; border: 1px solid var(--border);
                      border-radius: var(--radius-card); background: var(--field); }
+/* A phone gets the demo's 4:5 cut, drawn with larger type. */
+.agents-demo .demo-tall { display: none; }
+@media (max-width: 640px) {
+  .agents-demo .demo-wide { display: none; }
+  .agents-demo .demo-tall { display: block; }
+}
 .agent-steps { flex: 1 1 400px; min-width: 0; margin: 0; padding: 0; list-style: none; display: grid; gap: 22px;
                align-content: space-between; }
 .agents-with { position: relative; display: flex; justify-content: center; margin-top: 24px; padding-top: 20px;

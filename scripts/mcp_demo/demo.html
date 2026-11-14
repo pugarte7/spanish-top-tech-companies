@@ -10,13 +10,16 @@
 @font-face { font-family: "Barlow"; font-weight: 600; src: url("../../web/fonts/Barlow-SemiBold.woff2") format("woff2"); }
 * { box-sizing: border-box; }
 html, body { margin: 0; width: 960px; height: 600px; overflow: hidden; }
+html.tall, html.tall body { width: 600px; height: 750px; }
 body { position: relative; background: #0000f2; color: #0000f2; font: 14px/20px "Barlow", sans-serif; -webkit-font-smoothing: antialiased; }
 .wall { position: absolute; left: 0; top: 38px; width: 100%; height: 100%; }
 .frz { position: absolute; left: 0; top: 6px; width: 100%; height: 22px; }
 .stage { position: absolute; inset: 44px 28px 22px; display: grid; grid-template-columns: 300px 1fr; gap: 28px; }
+.tall .stage { inset: 40px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
 
+/* Wide: the three steps beside the panel. Tall: the step in one line over it. */
 .side { position: relative; z-index: 1; color: #f2f2f2; display: flex; flex-direction: column; gap: 12px; padding: 4px 0; }
-.side::before { content: ""; position: absolute; z-index: -1; inset: -8px -12px; border-radius: 22px; background: #0000f2; box-shadow: 0 0 34px 20px #0000f2; }
+.side::before, .topbar::before { content: ""; position: absolute; z-index: -1; inset: -8px -12px; border-radius: 22px; background: #0000f2; box-shadow: 0 0 34px 20px #0000f2; }
 .brand { font: 500 13px/16px "Antonio", sans-serif; letter-spacing: .16em; color: #dcdcfa; }
 .title { margin: 0 0 4px; font: 200 31px/34px "Antonio", sans-serif; color: #fff; }
 .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; position: relative; }
@@ -30,46 +33,80 @@ body { position: relative; background: #0000f2; color: #0000f2; font: 14px/20px 
 .step.on { color: #0000f2; }
 .step.on .n { background: #0000f2; color: #fff; border-color: #0000f2; }
 .url { margin-top: auto; font: 500 13px/18px ui-monospace, Menlo, monospace; color: #fff; padding: 9px 12px; background: #0000d0; border: 1px solid rgba(242,242,242,.35); border-radius: 3px; }
+.topbar { display: none; position: relative; z-index: 1; align-items: center; gap: 12px; color: #fff; padding: 2px 4px; }
+.topbar .n { width: 32px; height: 32px; border-radius: 50%; background: #f2f2f2; color: #0000f2; display: grid; place-items: center; font: 500 17px/1 "Antonio", sans-serif; flex: none; }
+.topbar b { flex: 1; font: 400 21px/28px "Antonio", sans-serif; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+.topbar .bars { display: flex; gap: 5px; }
+.topbar .bars i { width: 26px; height: 5px; border-radius: 3px; background: rgba(242,242,242,.3); }
+.topbar .bars i.on { background: #f2f2f2; }
+.tall .side { display: none; }
+.tall .topbar { display: flex; }
 
-.chat { position: relative; z-index: 1; display: flex; flex-direction: column; background: #fafafa; border: 1px solid #0000f2; border-radius: 4px; overflow: hidden; }
-.chead { display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #dadaf0; font: 400 12px/16px "Antonio", sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #4f4fcc; }
-.chead i { font-style: normal; color: #0000f2; }
-.log { flex: 1; overflow: hidden; padding: 14px 16px 6px; display: flex; flex-direction: column; gap: 9px; }
-.log > * { flex: none; }
-.me { align-self: flex-end; max-width: 80%; background: #0000f2; color: #fff; padding: 9px 13px; border-radius: 12px 12px 2px 12px; }
-.ag { align-self: flex-start; max-width: 90%; background: #efeffe; padding: 9px 13px; border-radius: 12px 12px 12px 2px; white-space: pre-line; }
-.ag b, .me b { font-weight: 600; }
-.tool { display: flex; gap: 8px; align-items: center; font-size: 13px; color: #4f4fcc; }
-.tool code { background: #e3e3ff; color: #0000f2; padding: 2px 8px; border-radius: 3px; font: 600 12.5px/18px ui-monospace, Menlo, monospace; }
-.tool.web code { background: #fff; border: 1px solid #a8a8e0; }
-.tool .ok { color: #0000f2; font-weight: 600; }
-.dots { display: inline-block; width: 1.2em; text-align: left; }
-.job { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 9px 12px; background: #fff; border: 1px solid #dadaf0; border-radius: 4px; }
-.job.pick { border: 2px solid #0000f2; }
-.job p { margin: 0; }
-.job .t { font-weight: 600; }
-.job .s { font-size: 12.5px; color: #4f4fcc; }
-.job .fig { font: 300 22px/24px "Antonio", sans-serif; text-align: right; }
-.job .src { font-size: 11.5px; color: #4f4fcc; text-align: right; }
-.app { align-self: stretch; background: #fff; border: 1px solid #0000f2; border-radius: 4px; overflow: hidden; }
-.app h4 { margin: 0; padding: 8px 12px; background: #0000f2; color: #fff; font: 400 13px/18px "Antonio", sans-serif; letter-spacing: .12em; text-transform: uppercase; }
-.row { display: grid; grid-template-columns: 170px 1fr; gap: 10px; padding: 5px 12px; border-top: 1px solid #ececf2; font-size: 13px; line-height: 18px; }
-.row:first-of-type { border-top: 0; }
-.row span:first-child { color: #4f4fcc; }
-.row.hi { background: #e3e3ff; font-weight: 600; }
-.btns { display: flex; gap: 8px; }
-.btns span { height: 36px; padding: 0 16px; display: flex; align-items: center; border-radius: 3px; font: 600 13px/1 "Antonio", sans-serif; letter-spacing: .14em; text-transform: uppercase; }
-.btns .yes { background: #0000f2; color: #fff; }
-.btns .no { border: 1px solid #0000f2; }
-.input { display: flex; gap: 8px; align-items: center; margin: 6px 12px 12px; padding: 0 6px 0 12px; min-height: 44px; border: 1px solid #a8a8e0; border-radius: 6px; background: #fff; color: #0000f2; }
+.panel { position: relative; z-index: 1; flex: 1; min-height: 0; background: #fafafa; border: 1px solid #0000f2; border-radius: 4px; overflow: hidden; }
+.act { position: absolute; inset: 0; display: flex; flex-direction: column; background: #fafafa; }
+.tall .act { zoom: 1.25; }
+.head { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #dadaf0; font: 400 12px/16px "Antonio", sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #4f4fcc; white-space: nowrap; }
+.head i { font-style: normal; color: #0000f2; }
+.input { display: flex; gap: 8px; align-items: center; margin: 14px 16px 0; padding: 0 6px 0 12px; min-height: 44px; border: 1px solid #a8a8e0; border-radius: 6px; background: #fff; }
 .input .txt { flex: 1; min-width: 0; padding: 10px 0; }
 .input .ph { color: #8a8aa4; }
 .caret { display: inline-block; width: 1.5px; height: 16px; background: #0000f2; vertical-align: -3px; margin-left: 1px; }
 .send { width: 32px; height: 32px; border-radius: 50%; background: #0000f2; display: grid; place-items: center; flex: none; }
+
+/* Act 1: the day's postings, then the ones that fit. */
+.count { display: flex; align-items: baseline; gap: 10px 12px; padding: 10px 18px 10px; flex-wrap: wrap; }
+.count b { font: 300 56px/58px "Antonio", sans-serif; }
+.count > span { font: 400 14px/18px "Antonio", sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #4f4fcc; }
+.chips { margin-left: auto; display: flex; gap: 6px; }
+.chips span { padding: 4px 10px; border-radius: 3px; background: #e3e3ff; font: 600 12.5px/18px ui-monospace, Menlo, monospace; }
+.tiles { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 8px; padding: 0 16px 16px; }
+.tl { position: relative; padding: 8px 10px; background: #fff; border: 1px solid #dadaf0; border-radius: 4px; overflow: hidden; }
+.tl u { display: block; text-decoration: none; font: 400 12px/16px "Antonio", sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #4f4fcc; }
+.tl p { margin: 2px 0 0; font-weight: 600; font-size: 12.5px; line-height: 16px; }
+.tl em { position: absolute; right: 10px; top: 5px; font: 300 19px/20px "Antonio", sans-serif; }
+.tl.pick { background: #0000f2; border-color: #0000f2; color: #fff; }
+.tl.pick u { color: #dcdcfa; }
+.tall .tiles { grid-template-columns: repeat(2, 1fr); }
+.tall .tl:nth-child(n+9) { display: none; }
+.tall .count { padding-bottom: 12px; }
+.tall .chips { margin-left: 0; }
+
+/* Act 2: the form. What the CV holds is filled in; what it lacks is asked. */
+.frow { display: grid; grid-template-columns: 220px 1fr auto; gap: 12px; align-items: center; padding: 10px 16px; border-top: 1px solid #ececf2; font-size: 15px; line-height: 20px; }
+.frow:first-child { border-top: 0; }
+.frow > span:first-child { color: #4f4fcc; }
+.frow .v { font-weight: 500; min-height: 20px; }
+.frow.ask { background: #e3e3ff; }
+.frow.ask .v { font-weight: 600; }
+.tag { min-width: 58px; text-align: center; padding: 2px 8px; border-radius: 3px; border: 1px solid transparent; font: 400 11px/16px "Antonio", sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+.tag.a { background: #e3e3ff; }
+.tag.p { border-color: #0000f2; }
+.tag.miss { background: #0000f2; color: #fff; }
+.tall .frow { grid-template-columns: 172px 1fr auto; gap: 10px; padding: 7px 14px; font-size: 14px; line-height: 18px; }
+.tall .note { margin-top: 8px; }
+.foot { margin-top: auto; }
+.note { margin: 0 16px; padding: 9px 13px; background: #0000f2; color: #fff; border-radius: 12px 12px 12px 2px; font-size: 14px; line-height: 19px; }
+.note b { font-weight: 600; }
+.foot .input { margin: 10px 16px 14px; }
+.confirm { display: flex; align-items: center; gap: 14px; margin: 0 16px 14px; min-height: 44px; }
+.confirm p { margin: 0; flex: 1; font-weight: 500; font-size: 15px; line-height: 20px; }
+.btns { display: flex; gap: 8px; }
+.btns span { height: 36px; padding: 0 16px; display: flex; align-items: center; border-radius: 3px; font: 600 13px/1 "Antonio", sans-serif; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
+.btns .yes { background: #0000f2; color: #fff; }
+.btns .no { border: 1px solid #0000f2; }
+.tall .confirm { flex-direction: column; align-items: flex-start; gap: 10px; }
+.stamp { position: absolute; inset: 41px 0 0; display: grid; place-items: center; background: rgba(250,250,250,.88); text-align: center; }
+.stamp h3 { margin: 0; display: inline-block; padding: 6px 26px 10px; border: 4px solid #0000f2; border-radius: 6px; font: 400 64px/70px "Antonio", sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.stamp p { margin: 22px 0 0; font-size: 14px; color: #4f4fcc; }
+.tall .stamp h3 { font-size: 52px; line-height: 58px; }
+
 .end { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; background: #0000f2; color: #fff; text-align: center; }
 .end h2 { margin: 0 0 14px; font: 200 46px/48px "Antonio", sans-serif; }
 .end code { display: inline-block; padding: 12px 18px; background: #fafafa; color: #0000f2; border-radius: 3px; font: 600 20px/24px ui-monospace, Menlo, monospace; }
 .end p { margin: 14px 0 0; font: 400 14px/18px "Antonio", sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #dcdcfa; }
+.tall .end h2 { font-size: 40px; }
+.tall .end code { font-size: 17px; }
+.tall .end p { font-size: 12px; }
 </style>
 </head>
 <body>
@@ -83,163 +120,180 @@ body { position: relative; background: #0000f2; color: #0000f2; font: 14px/20px 
     <ol class="steps" id="steps"><li class="hl" id="hl"></li></ol>
     <div class="url">spanishtoptechcompanies.com/mcp</div>
   </aside>
-  <section class="chat">
-    <div class="chead"><span id="who"></span><span>MCP <i id="conn"></i></span></div>
-    <div class="log" id="log"></div>
-    <div class="input"><div class="txt" id="typing"></div><span class="send"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></span></div>
+  <div class="topbar"><span class="n" id="tn"></span><b id="tb"></b><span class="bars" id="bars"></span></div>
+  <section class="panel">
+    <div class="act" id="a1">
+      <div class="head"><span id="h1l"></span><span><i id="h1r"></i></span></div>
+      <div class="input"><div class="txt" id="ask"></div><span class="send"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></span></div>
+      <div class="count"><b id="num"></b><span id="numl"></span><div class="chips" id="chips"></div></div>
+      <div class="tiles" id="tiles"></div>
+    </div>
+    <div class="act" id="a2">
+      <div class="head"><span id="h2l"></span><span><i id="h2r"></i></span></div>
+      <div id="form"></div>
+      <div class="foot">
+        <p class="note" id="note"></p>
+        <div class="input" id="reply"><div class="txt" id="ans"></div><span class="send"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></span></div>
+        <div class="confirm" id="confirm"><p id="sure"></p><div class="btns"><span class="yes" id="yes"></span><span class="no" id="no"></span></div></div>
+      </div>
+      <div class="stamp" id="stamp"><div><h3 id="seal"></h3><p id="sealp"></p></div></div>
+    </div>
     <div class="end" id="end" style="opacity:0"><div><h2 id="endh"></h2><code>spanishtoptechcompanies.com/mcp</code><p id="endp"></p></div></div>
   </section>
 </div>
 
 <script>
-// A real session, replayed: find_jobs and job_questions answered as below on 2026-11-10
-// (Workato, 4th in the software-engineer ranking; its live Greenhouse form).
+// A real search, replayed without the chat: find_jobs answered with these
+// postings and medians on 2026-11-14 (backend, remote, 80,000 €+: 16 of 7,523),
+// and job_questions with Pleo's form (15 questions, eight of them shown). The
+// answers and the sending are acted out. The agent only fills in facts the CV
+// holds; a question of opinion ("Why Pleo?") is asked, never written for you.
+//   ?lang=es|en  &layout=wide|tall (960x600, or 600x750 for phones)  &play (in a browser)
+const q = new URLSearchParams(location.search);
+const tall = q.get("layout") === "tall";
+document.documentElement.className = tall ? "tall" : "wide";
 const L = {
   es: {
-    title: "Así aplica tu agente por ti", who: "Tu agente", conn: "● conectado", ph: "Escribe a tu agente…",
-    steps: [["Pides lo que buscas", "Con tus palabras, en el chat de tu agente."],
-            ["Busca entre +1.000 ofertas", "find_jobs filtra por nivel, comunidad y sueldo mínimo."],
-            ["Lee el formulario", "job_questions separa lo que responde él de lo que es tuyo."],
-            ["Te pregunta lo tuyo", "Sueldo, visado y consentimientos: una vez, en un mensaje."],
-            ["Tú das el sí", "Ves la solicitud completa antes de que salga."],
-            ["Enviada", "La anota para no repetirla nunca."]],
-    ask1: "Busca ofertas senior en Barcelona de empresas que paguen más de 100.000 € y aplica a la que mejor encaje con mi CV.",
-    fj: "senior · Cataluña · 100.000 €+", fjok: "3 de 2.370 ofertas",
-    found: "Las 3 son de <b>Workato</b>, una de las 10 empresas que más pagan a ingenieros en España:",
-    s1: "Workato · Barcelona · senior · pide 7+ años", s: "Workato · Barcelona · senior",
-    fig: "120.000 €", src: "mediana en Workato · 12 personas",
-    pick: "La primera es la que mejor encaja con tu CV. Leo su formulario.",
-    jq: "formulario de Workato, en directo", jqok: "15 preguntas: 8 suyas, 7 tuyas",
-    ask: "Tiene <b>15 preguntas</b>. 8 las respondo yo con tu CV (carta incluida). Para las tuyas:\n1. ¿Qué sueldo pides?\n2. ¿Necesitarás visado?\n3. ¿Aceptas SMS de Workato?\nY 4 demográficas, que puedes no responder.",
-    ask2: "Pido 110.000 €. No necesito visado. SMS no, y las demográficas prefiero no responderlas.", pay: "110.000 €",
-    app: "Solicitud · Workato · Senior Software Engineer (Go)",
-    rows: [["CV", "Adjunto ✓"], ["Carta", "Escrita con tu CV ✓"], ["¿Por qué tendrás éxito?", "Escrita con tu CV ✓"],
-           ["Sueldo que pides", "110.000 €", 1], ["Visado", "No lo necesito"], ["SMS de Workato", "No"], ["Demográficas (4)", "Prefiero no responder"]],
-    send: "Aquí tienes la solicitud completa. ¿La envío?", yes: "Sí, envíala", no: "Cambiar algo", yes2: "Sí, envíala.",
-    br: "navegador", brw: "enviando en job-boards.greenhouse.io", brok: "enviada ✓",
-    done: "<b>Enviada a Workato ✓</b> La anoto en tus notas para no repetirla. ¿Busco más?",
+    title: "Así aplica tu agente por ti",
+    steps: [["Busca entre +7.000 ofertas", "Dices qué buscas y find_jobs filtra por rol, lugar y sueldo mínimo."],
+            ["Rellena lo que sabe", "Con los datos de tu CV. Lo demás no lo da por hecho: te lo pregunta."],
+            ["Tú das el sí", "Ves la solicitud completa antes de que salga."]],
+    h1l: "Ofertas de hoy · +400 portales", h1r: "con la mediana que paga la empresa",
+    ask: "Backend en remoto, de más de 80.000 €", chips: ["backend", "remoto", "80.000 €+"],
+    open: "ofertas abiertas hoy", fit: "encajan, en 5 empresas", pick: "elige la de Pleo por tu CV",
+    h2l: "Formulario · Pleo · Senior Backend Engineer", h2r: "15 preguntas",
+    rows: [["Nombre, email y teléfono", "De tu CV ✓"], ["LinkedIn", "De tu CV ✓"], ["CV", "Adjunto ✓"],
+           ["Dónde vives", "De tu CV ✓"], ["Tu stack", "De tu CV ✓"],
+           ["¿Por qué Pleo?", "Con tus palabras ✓", 1], ["Permiso de trabajo", "Ciudadano de la UE", 1], ["Sueldo base que pides", "90.000 €", 1]],
+    cv: "tu CV", miss: "falta", you: "tú",
+    wait: "Tu agente rellena lo que está en tu CV…",
+    note: "<b>Esto no está en tu CV y no lo doy por hecho.</b> ¿Por qué quieres ir a Pleo, tienes permiso de trabajo en España y qué sueldo base pides?",
+    ans: "Me atrae su producto. Soy ciudadano de la UE. Pido 90.000 €.",
+    sure: "Todo sale de tu CV o de lo que me has dicho. ¿La envío?", yes: "Sí, envíala", no: "Cambiar algo",
+    seal: "Enviada ✓", sealp: "jobs.ashbyhq.com · anotada para no repetirla",
     endh: "Conecta tu agente", endp: "Gratis · sin registro · nada se envía sin tu sí",
+    n: (v) => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, "."), eur: (k) => `${k}.000 €`,
   },
   en: {
-    title: "Your agent applies for you", who: "Your agent", conn: "● connected", ph: "Message your agent…",
-    steps: [["You say what you want", "In your own words, in your agent's chat."],
-            ["It searches 1,000+ openings", "find_jobs filters by level, region and minimum pay."],
-            ["It reads the form", "job_questions splits what it answers from what is yours."],
-            ["It asks what is yours", "Salary, visa and consents: once, in one message."],
-            ["You say yes", "You see the full application before it goes."],
-            ["Sent", "It notes it so it never applies twice."]],
-    ask1: "Find senior openings in Barcelona at companies that pay over 100,000 € and apply to the one that best fits my CV.",
-    fj: "senior · Catalonia · 100,000 €+", fjok: "3 of 2,370 openings",
-    found: "All 3 are at <b>Workato</b>, one of the 10 companies in Spain that pay engineers the most:",
-    s1: "Workato · Barcelona · senior · asks 7+ years", s: "Workato · Barcelona · senior",
-    fig: "120,000 €", src: "Workato median · 12 people",
-    pick: "The first one fits your CV best. Reading its form.",
-    jq: "Workato's form, read live", jqok: "15 questions: 8 for me, 7 for you",
-    ask: "It has <b>15 questions</b>. I answer 8 from your CV (cover letter included). For yours:\n1. What salary do you ask for?\n2. Will you need a visa?\n3. Do you accept SMS from Workato?\nPlus 4 demographic ones you can skip.",
-    ask2: "I ask for 110,000 €. No visa needed. No SMS, and I'd rather not answer the demographic ones.", pay: "110,000 €",
-    app: "Application · Workato · Senior Software Engineer (Go)",
-    rows: [["CV", "Attached ✓"], ["Cover letter", "Written from your CV ✓"], ["Why will you succeed?", "Written from your CV ✓"],
-           ["Salary you ask for", "110,000 €", 1], ["Visa", "Not needed"], ["SMS from Workato", "No"], ["Demographics (4)", "Prefer not to answer"]],
-    send: "Here is the full application. Shall I send it?", yes: "Yes, send it", no: "Change something", yes2: "Yes, send it.",
-    br: "browser", brw: "sending on job-boards.greenhouse.io", brok: "sent ✓",
-    done: "<b>Sent to Workato ✓</b> I've noted it so I never apply twice. Shall I look for more?",
+    title: "Your agent applies for you",
+    steps: [["It searches 7,000+ openings", "You say what you want and find_jobs filters by role, place and minimum pay."],
+            ["It fills in what it knows", "With the facts in your CV. The rest it never assumes: it asks you."],
+            ["You say yes", "You see the full application before it goes."]],
+    h1l: "Today's openings · 400+ job boards", h1r: "with the company's median pay",
+    ask: "Remote backend, paying over 80,000 €", chips: ["backend", "remote", "80,000 €+"],
+    open: "openings today", fit: "match, at 5 companies", pick: "it picks Pleo's for your CV",
+    h2l: "Form · Pleo · Senior Backend Engineer", h2r: "15 questions",
+    rows: [["Name, email and phone", "From your CV ✓"], ["LinkedIn", "From your CV ✓"], ["CV", "Attached ✓"],
+           ["Where you live", "From your CV ✓"], ["Your stack", "From your CV ✓"],
+           ["Why Pleo?", "In your words ✓", 1], ["Work permit", "EU citizen", 1], ["Base salary you ask for", "90,000 €", 1]],
+    cv: "your CV", miss: "missing", you: "you",
+    wait: "Your agent fills in what your CV holds…",
+    note: "<b>This isn't in your CV and I won't assume it.</b> Why do you want to join Pleo, can you work in Spain, and what base salary do you ask for?",
+    ans: "I like its product. I'm an EU citizen. I ask for 90,000 €.",
+    sure: "It all comes from your CV or from what you told me. Shall I send it?", yes: "Yes, send it", no: "Change something",
+    seal: "Sent ✓", sealp: "jobs.ashbyhq.com · noted so it never applies twice",
     endh: "Connect your agent", endp: "Free · no sign-up · nothing is sent without your yes",
+    n: (v) => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, ","), eur: (k) => `${k},000 €`,
   },
 };
-const S = L[new URLSearchParams(location.search).get("lang") || "es"];
+const S = L[q.get("lang") === "en" ? "en" : "es"];
 document.documentElement.lang = S === L.en ? "en" : "es";
-for (const id of ["title", "who", "conn", "endh", "endp"]) document.getElementById(id).textContent = S[id];
-document.getElementById("steps").insertAdjacentHTML("beforeend", S.steps.map(([b, c], i) =>
+const $ = (id) => document.getElementById(id);
+for (const id of ["title", "h1l", "h1r", "h2l", "h2r", "sure", "yes", "no", "seal", "sealp", "endh", "endp"]) $(id).textContent = S[id];
+$("note").innerHTML = S.note;
+$("steps").insertAdjacentHTML("beforeend", S.steps.map(([b, c], i) =>
   `<li class="step"><span class="n">${i + 1}</span><div><b>${b}</b><span class="c"><span>${c}</span></span></div></li>`).join(""));
+$("bars").innerHTML = S.steps.map(() => "<i></i>").join("");
+// [company, title, the company's median base for the role in thousands when the posting matches].
+// The first eight are the ones the tall cut shows.
+const TILES = [["Pleo", "Senior Backend Engineer (Data serving)", 89], ["Workato", "Senior Software Engineer (Golang, Engine)"],
+  ["Affirm", "Staff Software Engineer, Backend", 87], ["Preply", "Senior Engineering Manager (Data Platform)"],
+  ["Cisco", "Technical Leader, Backend Services", 85], ["Affirm", "Senior Software Engineer, Backend", 87],
+  ["Printify", "Senior Product Manager, Sales Channels"], ["ElevenLabs", "Full-Stack Engineer (Backend Leaning)", 84],
+  ["Workato", "Senior Infrastructure Engineer (PostgreSQL)"], ["IQVIA", "Senior Consultant, Evidence Synthesis"],
+  ["Workato", "Senior Rust Developer"], ["Preply", "Senior Engineering Manager (GenAI)"]];
+$("tiles").innerHTML = TILES.map(([c, t, m]) => `<div class="tl"><u>${c}</u><p>${t}</p>${m ? `<em>${S.eur(m)}</em>` : ""}</div>`).join("");
+$("chips").innerHTML = S.chips.map((c) => `<span>${c}</span>`).join("");
+$("form").innerHTML = S.rows.map(([l, , p]) =>
+  `<div class="frow"><span>${l}</span><span class="v"></span><span class="tag ${p ? "p" : "a"}">${p ? S.you : S.cv}</span></div>`).join("");
 
-const job = (t, s, cls = "") =>
-  `<div class="job ${cls}"><div><p class="t">${t}</p><p class="s">${s}</p></div><div><p class="fig">${S.fig}</p><p class="src">${S.src}</p></div></div>`;
-const dots = '<span class="dots" data-dots></span>';
-// [time, step, html]
-const EV = [
-  [5.0, 0, `<div class="me">${S.ask1}</div>`],
-  [5.8, 1, `<div class="tool"><code>find_jobs</code><span id="fj">${S.fj} ${dots}</span></div>`],
-  [7.6, 1, `<div class="ag">${S.found}</div>`],
-  [8.2, 1, job("Senior Software Engineer (Golang, Engine)", S.s1, "pick")],
-  [8.6, 1, job("Senior Infrastructure Engineer (PostgreSQL)", S.s)],
-  [9.0, 1, job("Senior Rust Developer", S.s)],
-  [10.6, 1, `<div class="ag">${S.pick}</div>`],
-  [11.6, 2, `<div class="tool"><code>job_questions</code><span id="jq">${S.jq} ${dots}</span></div>`],
-  [13.8, 3, `<div class="ag">${S.ask}</div>`],
-  [21.0, 3, `<div class="me">${S.ask2.replace(S.pay, `<b>${S.pay}</b>`)}</div>`],
-  [22.0, 4, `<div class="app"><h4>${S.app}</h4>${S.rows.map(([a, b, hi]) => `<div class="row${hi ? " hi" : ""}"><span>${a}</span><span>${b}</span></div>`).join("")}</div>`],
-  [22.8, 4, `<div class="ag">${S.send}</div>`],
-  [23.2, 4, `<div class="btns"><span class="yes" id="yes">${S.yes}</span><span class="no">${S.no}</span></div>`],
-  [26.4, 4, `<div class="me">${S.yes2}</div>`],
-  [27.2, 5, `<div class="tool web"><code>${S.br}</code><span id="br">${S.brw} ${dots}</span></div>`],
-  [29.2, 5, `<div class="tool"><code>report_application</code><span>sent <span class="ok">✓</span></span></div>`],
-  [30.0, 5, `<div class="ag">${S.done}</div>`],
-];
-const CHANGES = [
-  [7.2, "fj", `${S.fj} → <span class="ok">${S.fjok}</span>`],
-  [13.2, "jq", `${S.jq} → <span class="ok">${S.jqok}</span>`],
-  [28.8, "br", `job-boards.greenhouse.io → <span class="ok">${S.brok}</span>`],
-];
-const TYPING = [[1.0, 4.6, S.ask1], [15.6, 20.6, S.ask2]];
-const PRESS = [25.5, 26.2];
-const END = [32.5, 33.4];
-const TOTAL = 37;
-// The step on show: the latest event's, and "asks what is yours" while you type the answer.
-const stepAt = (t) => { let s = 0; for (const [at, st] of EV) if (at <= t + 0.6) s = st; return (t >= 15.6 && t < 21.4) ? 3 : s; };
-const stepStart = (i) => i === 0 ? 0 : (EV.find(([, s]) => s === i)?.[0] ?? 0.6) - 0.6;
-
-const ease = (x) => 1 - Math.pow(1 - Math.max(0, Math.min(1, x)), 3);
-const log = document.getElementById("log"), typing = document.getElementById("typing");
-const stepsEl = [...document.querySelectorAll(".step")], hl = document.getElementById("hl");
-let shown = 0, changed = 0, scroll = 0, last = 0, hlY = null, hlH = null;
+const PICK = 5.9, A2 = 8.4, ASKS = A2 + 4.2, TYPE = [ASKS + 2.4, ASKS + 4.3], FILL = ASKS + 4.9, A3 = FILL + 1.8;
+const PRESS = [A3 + 1.8, A3 + 2.4], SENT = A3 + 2.7, END = [A3 + 5.4, A3 + 6.2];
+const TOTAL = Math.ceil(END[1] + 2.4);
+const clamp = (x) => Math.max(0, Math.min(1, x)), ease = (x) => 1 - Math.pow(1 - clamp(x), 3);
+const k = (t, a, d = 0.4) => ease((t - a) / d);
+const typed = (s, t, a, b) => s.slice(0, Math.round(s.length * clamp((t - a) / (b - a))));
+const caret = (t) => `<span class="caret" style="opacity:${Math.floor(t * 2) % 2 ? 0 : 1}"></span>`;
+const tiles = [...document.querySelectorAll(".tl")], chips = [...$("chips").children], rows = [...document.querySelectorAll(".frow")];
+const stepsEl = [...document.querySelectorAll(".step")], hl = $("hl"), bars = [...$("bars").children];
+let last = 0, hlY = null, hlH = null;
+// Everything but the steps' highlight is drawn from t alone; that one glides, so frames come in order.
 function render(t) {
   const dt = Math.max(0, t - last); last = t;
-  while (shown < EV.length && EV[shown][0] <= t) {
-    log.insertAdjacentHTML("beforeend", EV[shown][2]);
-    log.lastElementChild.dataset.at = EV[shown][0]; shown++;
-  }
-  while (changed < CHANGES.length && CHANGES[changed][0] <= t) { const [, id, html] = CHANGES[changed++]; document.getElementById(id).innerHTML = html; }
-  // New messages fade and slide in.
-  for (const el of log.children) {
-    const k = ease((t - Number(el.dataset.at)) / 0.4);
-    el.style.opacity = k; el.style.transform = `translateY(${(1 - k) * 10}px)`;
-  }
-  for (const d of document.querySelectorAll("[data-dots]")) d.textContent = ".".repeat(1 + Math.floor(t * 3) % 3);
-
-  // Steps: the current one's caption opens and the highlight glides to it.
-  const step = stepAt(t);
+  const cur = t < A2 - 0.3 ? 0 : t < A3 - 0.3 ? 1 : 2, since = [0, A2 - 0.3, A3 - 0.3][cur];
   stepsEl.forEach((el, i) => {
-    const c = el.querySelector(".c"), full = c.firstElementChild.offsetHeight + 2;
-    const open = i === step ? ease((t - Math.max(stepStart(i), i === 3 && t >= 15.6 && t < 21.4 ? 13.2 : 0)) / 0.35) : 0;
+    const c = el.querySelector(".c"), full = c.firstElementChild.offsetHeight + 2, open = i === cur ? k(t, since, 0.35) : 0;
     c.style.height = `${full * open}px`; c.style.marginTop = `${2 * open}px`;
-    el.classList.toggle("on", i === step); el.classList.toggle("done", i < step);
+    el.classList.toggle("on", i === cur); el.classList.toggle("done", i < cur);
   });
-  const cur = stepsEl[step], y = cur.offsetTop, h = cur.offsetHeight;
-  const a = 1 - Math.exp(-dt * 14);
-  hlY = hlY === null ? y : hlY + (y - hlY) * a; hlH = hlH === null ? h : hlH + (h - hlH) * a;
+  const on = stepsEl[cur], a = 1 - Math.exp(-dt * 14);
+  hlY = hlY === null ? on.offsetTop : hlY + (on.offsetTop - hlY) * a; hlH = hlH === null ? on.offsetHeight : hlH + (on.offsetHeight - hlH) * a;
   hl.style.transform = `translateY(${hlY}px)`; hl.style.height = `${hlH}px`;
+  $("tn").textContent = cur + 1; $("tb").textContent = S.steps[cur][0];
+  bars.forEach((b, i) => b.classList.toggle("on", i <= cur));
 
-  let txt = null;
-  for (const [a0, b, s] of TYPING) if (t >= a0 && t < b + 0.4) txt = s.slice(0, Math.round(s.length * Math.min(1, (t - a0) / (b - a0))));
-  const typingNow = txt !== null && txt.length > 0;
-  const caretOn = typingNow || Math.floor(t * 2) % 2 === 0;
-  typing.innerHTML = txt === null ? `<span class="ph">${S.ph}</span>` : `${txt}<span class="caret" style="opacity:${caretOn ? 1 : 0}"></span>`;
-  const yes = document.getElementById("yes");
-  if (yes) {
-    const p = t >= PRESS[0] && t < PRESS[1] ? Math.sin(Math.PI * (t - PRESS[0]) / (PRESS[1] - PRESS[0])) : 0;
-    yes.style.transform = `scale(${1 - 0.06 * p})`; yes.style.background = p > 0.3 ? "#0000a8" : "#0000f2";
-  }
-  // The log follows its newest message, eased.
-  const target = Math.max(0, log.scrollHeight - log.clientHeight);
-  scroll += (target - scroll) * (1 - Math.exp(-dt * 7));
-  if (Math.abs(target - scroll) < 0.5) scroll = target;
-  log.scrollTop = scroll;
+  // Act 1: every posting of the day, the ones that fit, the one it picks.
+  $("ask").innerHTML = typed(S.ask, t, 0.3, 2.2) + (t < 2.6 ? caret(t) : "");
+  const f = k(t, 3.9, 1.3);
+  $("num").textContent = S.n(7523 + (16 - 7523) * f);
+  $("numl").textContent = f < 1 ? S.open : t < PICK ? S.fit : S.pick;
+  chips.forEach((c, i) => { const p = k(t, 2.5 + i * 0.45, 0.3); c.style.opacity = p; c.style.transform = `scale(${0.8 + 0.2 * p})`; });
+  tiles.forEach((el, i) => {
+    const inn = k(t, 0.15 + i * 0.09), m = Boolean(TILES[i][2]);
+    el.style.opacity = inn * (m ? 1 : 1 - 0.82 * f);
+    el.style.transform = `translateY(${(1 - inn) * 8}px)`;
+    if (m) { el.style.borderColor = f > 0.6 ? "#0000f2" : ""; el.querySelector("em").style.opacity = k(t, 5.0); }
+    el.classList.toggle("pick", i === 0 && t >= PICK);
+  });
+
+  // Act 2: the form takes what the CV holds; the three it lacks wait for you.
+  const a2 = k(t, A2 - 0.5, 0.5);
+  $("a2").style.opacity = a2; $("a2").style.visibility = a2 ? "visible" : "hidden";
+  let ai = 0, pi = 0;
+  rows.forEach((el, i) => {
+    const [, val, mine] = S.rows[i], v = el.querySelector(".v"), tag = el.querySelector(".tag");
+    if (!mine) { const at = A2 + 0.7 + ai++ * 0.6; v.textContent = typed(val, t, at, at + 0.45); return; }
+    const at = FILL + pi++ * 0.3, asked = t >= ASKS && t < at;
+    v.textContent = t >= at ? val : asked ? "?" : "";
+    el.classList.toggle("ask", asked);
+    tag.classList.toggle("miss", asked); tag.textContent = asked ? S.miss : S.you;
+  });
+  const n = k(t, ASKS);
+  $("note").style.opacity = n; $("note").style.transform = `translateY(${(1 - n) * 10}px)`;
+  const typing = t >= TYPE[0] - 0.2 && t < FILL - 0.2;
+  $("ans").innerHTML = typing ? typed(S.ans, t, TYPE[0], TYPE[1]) + caret(t) : t < ASKS ? `<span class="ph">${S.wait}</span>` : t < FILL ? caret(t) : "";
+  // Act 3: nothing leaves without your yes.
+  $("note").style.display = $("reply").style.display = t < A3 ? "" : "none";
+  $("confirm").style.display = t < A3 ? "none" : "";
+  $("confirm").style.opacity = k(t, A3);
+  const p = t >= PRESS[0] && t < PRESS[1] ? Math.sin(Math.PI * (t - PRESS[0]) / (PRESS[1] - PRESS[0])) : 0;
+  $("yes").style.transform = `scale(${1 - 0.06 * p})`; $("yes").style.background = p > 0.3 ? "#0000a8" : "#0000f2";
+  const s = k(t, SENT, 0.35);
+  $("stamp").style.opacity = s; $("stamp").style.visibility = s ? "visible" : "hidden";
+  $("seal").style.transform = `rotate(-5deg) scale(${1.5 - 0.5 * s})`;
   const e = ease((t - END[0]) / (END[1] - END[0]));
-  const end = document.getElementById("end");
-  end.style.opacity = e; end.firstElementChild.style.transform = `translateY(${(1 - e) * 12}px)`;
+  $("end").style.opacity = e; $("end").firstElementChild.style.transform = `translateY(${(1 - e) * 12}px)`;
 }
 window.render = render;
 window.TOTAL = TOTAL;
+// ?t=12 draws that second and stops; ?play loops in a browser, for trying a change.
+Promise.all([...document.fonts].map((f) => f.load())).then(() => {
+  if (q.has("t")) for (let i = 0; i <= Number(q.get("t")) * 30; i++) render(i / 30);
+  if (!q.has("play")) return;
+  let t0 = performance.now();
+  const tick = (now) => { let t = (now - t0) / 1000; if (t >= TOTAL) { t0 = now; t = 0; } render(t); requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+});
 </script>
 </body>
 </html>

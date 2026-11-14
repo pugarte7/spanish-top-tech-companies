@@ -998,11 +998,12 @@ async function today() {
 // The recorded demo plays, muted, while it is on screen, unless the reader
 // asked for less motion; its controls stay for pausing it.
 function demo() {
-  const v = $("demo");
-  if (!v || STILL) return;
-  new IntersectionObserver(([e]) => {
-    if (e.isIntersecting) v.play().catch(() => {}); else v.pause();
-  }, { threshold: 0.4 }).observe(v);
+  if (STILL) return;
+  // Two cuts, one of them hidden by the page's width: a hidden one is never on screen.
+  const seen = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.isIntersecting) e.target.play().catch(() => {}); else e.target.pause();
+  }, { threshold: 0.4 });
+  for (const v of document.querySelectorAll("video.demo")) seen.observe(v);
 }
 
 // The topbar's star count is the one GitHub gave the build, once a day; this

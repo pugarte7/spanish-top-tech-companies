@@ -54,9 +54,14 @@ solo apliques donde te interesa"), and the agent's section under it is "Así
 funciona": the video beside three short steps (the first with the /mcp link)
 and the agents' logos, which open each agent's name and link on a click,
 without the rotating agent stage. Both READMEs and that section show the same
-recorded demo (an agent finding Workato postings for someone asking 110,000 €
-and applying), drawn by `scripts/mcp_demo.mjs` from `scripts/mcp_demo/demo.html`:
-its find_jobs and job_questions answers are real, the sending is acted out.
+recorded demo, drawn by `scripts/mcp_demo.mjs` from `scripts/mcp_demo/demo.html`:
+since 2026-11-14 three acts without a chat (the day's postings filtered to 16
+remote backend ones at five companies, Pleo's form filled in from the CV with
+what it does not hold asked for, the yes and the sending), because the
+maintainer wanted several companies on show and an agent that "no se inventa
+nada" and asks "antes de asumir nada": it fills in only facts from the CV and
+never writes an opinion answer for the person. Its find_jobs and job_questions answers are real, the sending is acted
+out. The site also has a 4:5 cut with larger type for phones (`mcp-demo-m.*`).
 It holds no salary data: on 2026-11-01
 the maintainer had the software-engineer tables and `scripts/build.py` that
 wrote them removed ("Elimina del readme todo lo que había antes"). Do not

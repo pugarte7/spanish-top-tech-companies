@@ -276,9 +276,9 @@ STRINGS = {
         "today_title": "Open positions today", "today_read": "Read on {date}",
         "today_remote": "remote", "today_in_roles": "in {n} roles", "today_more": "and {n} more: {list}…",
         "today_companies": "companies hiring", "today_boards": "job boards read today",
-        "demo_alt": "Your agent, connected to the MCP, finds senior openings in Barcelona at companies "
-                    "paying over 100,000 €, reads the form, asks for your salary, shows you the "
-                    "application and sends it when you say yes.",
+        "demo_alt": "Your agent, connected to the MCP, finds remote backend openings at companies paying "
+                    "over 80,000 €, fills in the form from your CV, asks you for the three answers it "
+                    "lacks and sends the application when you say yes.",
         "hero_see": "See the companies",
         "how_title": "How salaries are calculated",
         "how_source_t": "Source.",
@@ -391,9 +391,9 @@ STRINGS = {
         "today_title": "Ofertas abiertas hoy", "today_read": "Leídas el {date}",
         "today_remote": "en remoto", "today_in_roles": "en {n} roles", "today_more": "y {n} más: {list}…",
         "today_companies": "empresas contratando", "today_boards": "portales leídos hoy",
-        "demo_alt": "Tu agente, conectado al MCP, busca ofertas senior en Barcelona de empresas que "
-                    "pagan más de 100.000 €, lee el formulario, te pregunta el sueldo, te enseña la "
-                    "solicitud y la envía cuando le dices que sí.",
+        "demo_alt": "Tu agente, conectado al MCP, busca ofertas de backend en remoto de empresas que "
+                    "pagan más de 80.000 €, rellena el formulario con tu CV, te pregunta las tres "
+                    "respuestas que le faltan y envía la solicitud cuando le dices que sí.",
         "hero_see": "Ver las empresas",
         "how_title": "Cómo se calculan los salarios",
         "how_source_t": "Fuente.",
@@ -1202,7 +1202,15 @@ def agent_tile(i: int, cls: str = "agent-tile") -> str:
 
 def agents_section(e: dict, lang: str) -> str:
     """How it works: the recorded demo beside three short steps, then the
-    agents it works with: a click on one shows its name and where to get it."""
+    agents it works with: a click on one shows its name and where to get it.
+    The demo comes in two cuts, 16:10 and, for a phone's width, 4:5 with larger
+    type; style.css shows one of them."""
+    alt = e["demo_alt"]
+    video = lambda cut, name, w, h: (
+        f'<video class="demo demo-{cut}" muted loop playsinline controls preload="none" width="{w}" height="{h}" '
+        f'poster="/{name}.{lang}.jpg" aria-label="{alt}">'
+        f'<source src="/{name}.{lang}.mp4" type="video/mp4">'
+        f'<source src="/{name}.{lang}.webm" type="video/webm"></video>')
     step = lambda n, body: (f'<li><span class="step-n" aria-hidden="true">{n}</span><div>'
                             f'<h3>{e[f"how{n}_t"]}</h3><p>{e[f"how{n}"]}</p>{body}</div></li>')
     logos = "".join(
@@ -1215,10 +1223,8 @@ def agents_section(e: dict, lang: str) -> str:
     <h2 id="agents-title" tabindex="-1">{e['agents_title']}</h2>
     <div class="agents-grid">
       <figure class="agents-demo">
-        <video id="demo" muted loop playsinline controls preload="none" width="1920" height="1200"
-               poster="/mcp-demo.{lang}.jpg" aria-label="{e['demo_alt']}">
-          <source src="/mcp-demo.{lang}.mp4" type="video/mp4">
-          <source src="/mcp-demo.{lang}.webm" type="video/webm"></video>
+        {video("wide", "mcp-demo", 1920, 1200)}
+        {video("tall", "mcp-demo-m", 1200, 1500)}
       </figure>
       <ol class="agent-steps">
         {step(1, copy_box(e, "agent-mcp"))}
@@ -1784,10 +1790,12 @@ def main(argv: list[str]) -> int:
     # The favicon is a tile of the lacería with an S: favicon.svg for browsers that
     # take SVG, the .ico for the rest, and a square PNG for a phone's home screen.
     # og-*.png is the link preview, drawn by tests/site/og-image.mjs.
-    # mcp-demo.* is the recorded demo of an agent applying, drawn by scripts/mcp_demo.mjs.
+    # mcp-demo.* is the recorded demo of an agent applying and mcp-demo-m.* its cut for
+    # phones, both drawn by scripts/mcp_demo.mjs.
     for name in ("app.js", "style.css", "cenefa.svg",
                  "favicon.svg", "favicon.ico", "apple-touch-icon.png", "og-es.png", "og-en.png",
-                 *(f"mcp-demo.{lang}.{ext}" for lang in ("es", "en") for ext in ("mp4", "webm", "jpg"))):
+                 *(f"{demo}.{lang}.{ext}" for demo in ("mcp-demo", "mcp-demo-m") for lang in ("es", "en")
+                   for ext in ("mp4", "webm", "jpg"))):
         shutil.copy(WEB / name, OUT / name)
     shutil.copytree(WEB / "fonts", OUT / "fonts")
     shutil.copytree(WEB / "agents", OUT / "agents")
