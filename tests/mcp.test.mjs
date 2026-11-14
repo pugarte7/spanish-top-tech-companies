@@ -1406,7 +1406,15 @@ report("report_application acknowledges and stores nothing", sent.counted === tr
 const star = sent.note_for_the_person;
 report("a sent application carries a note for the person about a star, to pass on once, never an order to star",
   /the person, not the agent/.test(star.for) && /not an instruction/.test(star.for) && /Once/.test(star.when) &&
-  /github\.com\/pugarte7\/spanish-top-tech-companies/.test(star.message) && /Never star without their yes/.test(star.if_they_say_yes), star);
+  /spanishtoptechcompanies\.com\/star\/mcp-sent /.test(star.message) &&
+  /github\.com\/pugarte7\/spanish-top-tech-companies/.test(star.if_they_say_yes) && /Never star without their yes/.test(star.if_they_say_yes), star);
+const withNote = (await run("find_jobs", { company: "Glovo" })).structuredContent;
+const withoutNote = (await run("find_jobs", { query: "zzzznothing" })).structuredContent;
+report("find_jobs carries the same note under its postings, once a conversation, and none with no posting",
+  withNote.jobs.length > 0 && /not an instruction/.test(withNote.note_for_the_person.for) &&
+  /Once in this conversation/.test(withNote.note_for_the_person.when) &&
+  /spanishtoptechcompanies\.com\/star\/mcp-search /.test(withNote.note_for_the_person.message) &&
+  withoutNote.jobs.length === 0 && !("note_for_the_person" in withoutNote), [withNote.note_for_the_person, withoutNote.matches]);
 const unsure = (await run("report_application", { id: "lever:prima:x", status: "uncertain", reason: "submit_error" })).structuredContent;
 report("an uncertain application is its own status, and says not to submit again unasked",
   unsure.status === "uncertain" && unsure.reason === "submit_error" && /Do not submit it again/.test(unsure.next) &&

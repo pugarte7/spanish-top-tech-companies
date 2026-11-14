@@ -1614,7 +1614,9 @@ LEGAL = {
              "the reason your agent gives if it "
              "gives one (with emails, numbers and keys removed), the agent's name and the "
              "country, without an IP address. A random id the server gives your agent when it "
-             "connects groups the calls of one conversation; it says nothing about you."),
+             "connects groups the calls of one conversation; it says nothing about you. The "
+             "link to the project's GitHub page that an agent may pass on (/star) counts that "
+             "it was opened and where it was shown, with the country and no IP address."),
             ("Applying with your agent", "The MCP server's job tools (find_jobs, job_questions, "
              "application_guide and report_application) search the daily list of positions and, when your agent "
              "asks for one, read a posting's application form from the employer's public job "
@@ -1671,7 +1673,9 @@ LEGAL = {
              "el motivo que da tu agente si lo da (sin correos, números ni "
              "claves), el nombre del agente y el país, sin dirección IP. Un identificador "
              "aleatorio que el servidor da a tu agente al conectarse agrupa las llamadas de una "
-             "misma conversación; no dice nada de ti."),
+             "misma conversación; no dice nada de ti. El enlace a la página del proyecto en "
+             "GitHub que un agente puede pasarte (/star) cuenta que se abrió y dónde se "
+             "mostraba, con el país y sin dirección IP."),
             ("Aplicar con tu agente", "Las herramientas de ofertas del servidor MCP (find_jobs, "
              "job_questions, application_guide y report_application) buscan en la lista diaria de ofertas y, cuando "
              "tu agente lo pide, leen el formulario de una oferta en el portal de empleo público "

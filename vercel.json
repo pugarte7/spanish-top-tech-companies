@@ -15,6 +15,8 @@
     { "source": "/ingest/array/:path(.*)", "destination": "https://eu-assets.i.posthog.com/array/:path" },
     { "source": "/ingest/:path(.*)", "destination": "https://eu.i.posthog.com/:path" },
     { "source": "/api/v1/boards.json", "destination": "/api/v1/boards-list.json" },
+    { "source": "/star", "destination": "/api/star" },
+    { "source": "/star/:via", "destination": "/api/star?via=:via" },
     { "source": "/mcp", "destination": "/api/mcp" },
     { "source": "/mcp/", "destination": "/api/mcp" }
   ],
