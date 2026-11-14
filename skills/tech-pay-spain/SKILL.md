@@ -90,9 +90,11 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   answers the same way. A SuccessFactors career site (Indra, Deloitte, EY, Telefónica,
   Capgemini) and Amazon give the posting and `account_required`: the form appears once
   the person signs in or creates an account there. An employer's own careers site with
-  schema.org JobPosting (Factorial, eDreams, Dynatrace, Adevinta) gives the posting, and
-  the Apply link's form when the page names one. SmartRecruiters gives the posting but not its form; there,
-  on any other system behind Phenom, and on iCIMS career sites, the form is read in the browser.
+  schema.org JobPosting (Factorial, eDreams, Dynatrace, Adevinta), and Radancy and iCIMS
+  career sites (ING, Sanofi, AXA, Publicis), give the posting, and the Apply link's form
+  when the page names one. SmartRecruiters, Oracle (Marriott, JPMorgan) and Cornerstone
+  (GMV, Bankinter) give the posting but not its form; there, and on any other system
+  behind Phenom, the form is read in the browser.
 - `report_application(id, status, reason, browser, steps, attempts, notes)`: after sending or failing, the
   outcome: sent (the board confirmed it), uncertain (submitted, but the board
   showed an error or confirmed nothing), failed with its reason, or

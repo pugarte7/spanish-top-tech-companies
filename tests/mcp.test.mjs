@@ -77,7 +77,7 @@ const calls = [
   tool("find_jobs", { exclude: [1, 2] }),
   tool("job_questions", { id: "greenhouse:nobody:1" }),
   tool("job_questions", {}),
-  tool("job_questions", { id: "icims:ecovadis:744000000000001" }),
+  tool("job_questions", { id: "gem:ecovadis:744000000000001" }),
   tool("application_guide", {}),
   tool("application_guide", { client: "Claude Code" }),
 ].map((c, i) => ({ jsonrpc: "2.0", id: i + 1, ...c }));
@@ -173,7 +173,7 @@ const expected = [
   ["an id not in the index is a tool error", (r) => toolError(r) && /no job 'greenhouse:nobody:1'/.test(r.result.content[0].text)],
   ["job_questions needs an id", toolError],
   ["a board without a form API sends the agent to the URL", (r) => out(r).questions === null &&
-    /icims/.test(out(r).note) && out(r).apply_url === index.jobs.at(-1).url],
+    /on gem/.test(out(r).note) && out(r).apply_url === index.jobs.at(-1).url],
   ["application_guide holds the template and rules, and no other server", (r) =>
     /## Profile/.test(out(r).state_document.template) && /## Answers to recurring questions/.test(out(r).state_document.template) &&
     /## Search preferences/.test(out(r).state_document.template) && /\| Job id \|/.test(out(r).state_document.template) &&
@@ -610,6 +610,10 @@ report("a posting matching only the query's common words is left out", platform.
 const archNone = await byKeywords({ query: "angular architect" });
 report("find_jobs names the query words no result matches", archNone.unmatched_terms?.join() === "architect" &&
   archNone.unmatched_note.includes("'architect'") && !angular.unmatched_terms, archNone.unmatched_terms);
+const recien = (await run("find_jobs", { query: "recién titulado" }, { jobs: { ...withKeywords,
+  jobs: [kw(7, "Graduate Program 2027", []), ...withKeywords.jobs] } })).structuredContent;
+report("recién titulado finds graduate postings", recien.jobs.some((j) => j.title === "Graduate Program 2027"),
+  recien.jobs.map((j) => j.title));
 const commonOnly = await byKeywords({ query: "senior engineer" });
 report("a query of common words and senior still matches any of them", commonOnly.matches > 5, commonOnly.matches);
 // "ai" read in most descriptions, but in one title: the title still tells.
@@ -1030,7 +1034,14 @@ const boards3 = { ...more, jobs: [...more.jobs,
       ["careers.factorial.com/", "328088", "https://careers.factorial.com/job_posting/account-executive-328088"],
       ["careers.factorial.com/", "1", "https://careers.factorial.com/job_posting/expired-1"]]
     .map(([board, id, url]) => ({ id: `jsonld:${board}:${id}`, company: "Site", slug: "site", title: "Engineer", ats: "jsonld",
-      url, location: "Barcelona, Spain" }))] };
+      url, location: "Barcelona, Spain" })),
+  ...[["radancy", "careers.ing.com/en", "44240472640", "https://careers.ing.com/en/job/madrid/senior-java-engineer/3121/44240472640"],
+      ["icims", "careers.axa.com", "27549", "https://careers.axa.com/jobs/27549?lang=es-es"],
+      ["oracle", "jpmc.fa.oraclecloud.com/CX_1001", "210500", "https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/210500"],
+      ["oracle", "jpmc.fa.oraclecloud.com/CX_1001", "210501", "https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/210501"],
+      ["cornerstone", "gmv/4", "4933", "https://gmv.csod.com/ux/ats/careersite/4/home/requisition/4933?c=gmv"]]
+    .map(([ats, board, id, url]) => ({ id: `${ats}:${board}:${id}`, company: "Site", slug: "site", title: "Engineer", ats,
+      url, location: "Madrid, Spain" }))] };
 const formOf = async (id) => (await run("job_questions", { id }, { jobs: boards3 })).structuredContent;
 const ppScript = (name, props) => `<div id="${name}-react-component-x"></div><script type="application/json"  ` +
   `data-component-name="${name}" data-dom-id="x">${JSON.stringify(props)}</script>`;
@@ -1294,11 +1305,50 @@ report("jsonld: with no Apply link the form is the posting's page",
   factorial.apply_url === "https://careers.factorial.com/job_posting/account-executive-328088" && /Sell Factorial/.test(factorial.description.text), factorial);
 const expired = await run("job_questions", { id: "jsonld:careers.factorial.com/:1" }, { jobs: boards3 });
 report("jsonld: a posting past its validThrough is a tool error", expired.isError === true && /may have closed/.test(expired.content[0].text), expired);
+// Radancy and iCIMS sites carry the same JobPosting block; AXA's iCIMS page moves on its host.
+BOARDS["https://careers.ing.com/en/job/madrid/senior-java-engineer/3121/44240472640"] = ldPage({ description: "Write Java at ING." },
+  `<a href="https://ing.wd3.myworkdayjobs.com/ICSGBLCOR/job/Madrid/Java_REQ-1/apply">Apply</a>`);
+BOARDS["https://careers.axa.com/jobs/27549?lang=es-es"] = (init) => init.redirect === "manual"
+  ? new Response(null, { status: 302, headers: { location: "/careers-home/jobs/27549?lang=es-es" } })
+  : Promise.reject(new TypeError("redirect"));
+BOARDS["https://careers.axa.com/careers-home/jobs/27549?lang=es-es"] = ldPage({ description: "Protect AXA.",
+  jobLocation: { address: { addressLocality: "Madrid", addressRegion: "UNAVAILABLE", addressCountry: "Spain" } } });
+const ing = await formOf("radancy:careers.ing.com/en:44240472640");
+report("radancy: the posting page's JobPosting and the form its Apply link opens",
+  /Write Java at ING/.test(ing.description.text) && ing.apply_url.startsWith("https://ing.wd3.myworkdayjobs.com/"), ing);
+const axa = await formOf("icims:careers.axa.com:27549");
+report("icims: the page moved on its host is read, without iCIMS's UNAVAILABLE region",
+  /Protect AXA/.test(axa.description.text) && !/UNAVAILABLE/.test(JSON.stringify(axa)), axa);
+const oracleUrl = (id) => "https://jpmc.fa.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails" +
+  `?expand=all&onlyData=true&finder=${encodeURIComponent(`ById;Id="${id}",siteNumber=CX_1001`)}`;
+BOARDS[oracleUrl("210500")] = () => new Response(JSON.stringify({ items: [{ Id: "210500", PrimaryLocation: "Madrid, Spain",
+  ExternalDescriptionStr: "<p>Build payments at JPMorgan.</p>", ExternalQualificationsStr: "<ul><li>Java</li></ul>" }] }));
+BOARDS[oracleUrl("210501")] = () => new Response(JSON.stringify({ items: [] }));
+const jpmc = await formOf("oracle:jpmc.fa.oraclecloud.com/CX_1001:210500");
+report("oracle: the requisition's description from the public API, the form in the browser",
+  /Build payments at JPMorgan/.test(jpmc.description.text) && /Java/.test(jpmc.description.text) &&
+  jpmc.form_source.startsWith("Oracle") && jpmc.questions[0].type === "unread", jpmc);
+const jpmcClosed = await run("job_questions", { id: "oracle:jpmc.fa.oraclecloud.com/CX_1001:210501" }, { jobs: boards3 });
+report("oracle: a requisition the API no longer has may have closed", jpmcClosed.isError === true &&
+  /may have closed/.test(jpmcClosed.content[0].text), jpmcClosed);
+BOARDS["https://gmv.csod.com/ux/ats/careersite/4/home?c=gmv&lang=en-US"] = () =>
+  new Response(`<script>window.csod = {"token":"visitor-token","cloud":"https://eu-fra.api.csod.com/"};</script>`);
+BOARDS["https://eu-fra.api.csod.com/rec-job-search/external/jobs"] = (init) => {
+  const page = JSON.parse(init.body).pageNumber;
+  if (init.headers.Authorization !== "Bearer visitor-token") return new Response("{}", { status: 401 });
+  const rows = page === 1 ? Array.from({ length: 100 }, (_, k) => ({ requisitionId: 5000 + k, displayJobTitle: "Other" }))
+    : [{ requisitionId: 4933, displayJobTitle: "Engineer", externalDescription: "<p>Fly satellites at GMV.</p>",
+         locations: [{ city: "Tres Cantos", state: "Madrid", country: "ES" }] }];
+  return new Response(JSON.stringify({ data: { requisitions: rows, totalCount: 101 } }));
+};
+const gmv = await formOf("cornerstone:gmv/4:4933");
+report("cornerstone: the requisition found through the site's own search, with the visitor token",
+  /Fly satellites at GMV/.test(gmv.description.text) && gmv.form_source.startsWith("Cornerstone"), gmv);
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai|careers\.ey\.com|www\.amazon\.jobs|careers\.capgemini\.com|adevinta\.com|www\.porsche\.digital|careers\.factorial\.com)\//.test(r.url) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai|careers\.ey\.com|www\.amazon\.jobs|careers\.capgemini\.com|adevinta\.com|www\.porsche\.digital|careers\.factorial\.com|careers\.ing\.com|careers\.axa\.com|jpmc\.fa\.oraclecloud\.com|gmv\.csod\.com|eu-fra\.api\.csod\.com)\//.test(r.url) &&
     // The exceptions: asking a Pinpoint, Eightfold or SuccessFactors board where it sends a page, without following it.
-    (r.init.redirect === "error" || (r.init.redirect === "manual" && /\.pinpointhq\.com\/|\.eightfold\.ai\/|careers\.ey\.com\/|www\.porsche\.digital\//.test(r.url))) &&
+    (r.init.redirect === "error" || (r.init.redirect === "manual" && /\.pinpointhq\.com\/|\.eightfold\.ai\/|careers\.ey\.com\/|www\.porsche\.digital\/|careers\.axa\.com\//.test(r.url))) &&
     r.init.signal instanceof AbortSignal));
 const burst = Array.from({ length: 6 }, (_, k) => ({ jsonrpc: "2.0", id: k + 1, ...tool("job_questions", { id: "greenhouse:glovo:7000001" }) }));
 const burstReplies = await respond(data, burst);
