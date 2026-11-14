@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.18.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.19.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -641,6 +641,9 @@ const SYNONYMS = [
   ["developer", "desarrollador", "desarrolladora", "programmer", "programador"],
   ["data", "datos"], ["senior", "sr"], ["junior", "jr"], ["remote", "remoto", "teletrabajo"],
   ["security", "seguridad"], ["sales", "ventas"], ["designer", "disenador", "disenadora"],
+  // "recién titulado" found nothing on 2026-11-13 while "graduate" found 22 in Spain.
+  ["graduate", "new grad", "recien titulado", "recien titulada", "recien graduado", "recien graduada",
+   "recien licenciado", "recien licenciada"],
 ];
 const SYNONYM_OF = new Map(SYNONYMS.flatMap((group) => group.map((w) => [w, group])));
 const PHRASES = new Set([...SYNONYMS.flat(), ...QUERY_KEYWORD.keys()].filter((w) => w.includes(" ")));
@@ -1169,7 +1172,7 @@ const hostOf = (url) => { try { return new URL(url).hostname; } catch { return "
 
 // `site` is a career site's own host, read from the board of a posting in the index
 // (Phenom sites live on the employer's domain), never from user input.
-async function fetchBoard(env, url, { body, text = false, site = null } = {}) {
+async function fetchBoard(env, url, { body, text = false, site = null, headers = {} } = {}) {
   const u = new URL(url);
   if (u.protocol !== "https:" || !(allowedHost(u.hostname) || (site && u.hostname === site)))
     throw new BoardError(`host ${u.hostname} is not allowed`);
@@ -1179,7 +1182,7 @@ async function fetchBoard(env, url, { body, text = false, site = null } = {}) {
       method: body ? "POST" : "GET", redirect: "error", signal: AbortSignal.timeout(LIVE_TIMEOUT_MS),
       headers: { Accept: text ? "text/html" : "application/json",
                  "User-Agent": `${SERVER.name}/${SERVER.version} (+https://spanishtoptechcompanies.com/mcp)`,
-                 ...(body ? { "Content-Type": "application/json" } : {}) },
+                 ...(body ? { "Content-Type": "application/json" } : {}), ...headers },
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
   } catch (e) {
@@ -2011,7 +2014,9 @@ async function jsonapiForm(env, board, external, job) {
 }
 
 // Employers' own careers sites read by JSON-LD (Factorial, eDreams, Dynatrace,
-// Adevinta, Porsche Digital): the posting page's schema.org JobPosting gives
+// Adevinta, Porsche Digital), and Radancy's and iCIMS's career sites on the
+// employer's domain (ING, Sanofi, AXA, Publicis), whose posting pages carry
+// the same block: the posting page's schema.org JobPosting gives
 // the description and place; the form is the site's own, or another system's
 // that its Apply link names (Adevinta's HiBob, Porsche Digital's softgarden).
 export function jsonldPosting(html) {
@@ -2033,7 +2038,8 @@ export function jsonldPosting(html) {
   const name = (v) => typeof v === "string" ? v : typeof v?.name === "string" ? v.name : "";
   const location = (Array.isArray(post.jobLocation) ? post.jobLocation : [post.jobLocation]).map((place) => {
     const a = place?.address ?? place;
-    return typeof a === "string" ? a : [a?.addressLocality, a?.addressRegion, a?.addressCountry].map(name).filter(Boolean).join(", ");
+    return typeof a === "string" ? a : [a?.addressLocality, a?.addressRegion, a?.addressCountry].map(name)
+      .filter((x) => x && !/^unavailable$/i.test(x)).join(", ");  // iCIMS: "Madrid, UNAVAILABLE, Spain"
   }).map((x) => htmlText(x)).filter(Boolean);
   return { description: htmlText(typeof post.description === "string" ? post.description : ""), location,
            closes: typeof post.validThrough === "string" ? Date.parse(post.validThrough) : NaN };
@@ -2067,12 +2073,68 @@ async function jsonldForm(env, board, external, job) {
            source: "The careers site's posting page (schema.org JobPosting), read now; the form is read in the browser" };
 }
 
+// Oracle Recruiting Cloud (Marriott, JPMorgan, Uber): the public REST resource
+// gives one requisition by id; applying starts with an email and a code Oracle sends.
+const ORACLE_HOST = /^[a-z0-9-]+(?:\.[a-z0-9-]+)*\.oraclecloud\.com$/;
+async function oracleForm(env, board, external, job) {
+  const [host, site, ...rest] = String(board).split("/");
+  if (rest.length || !ORACLE_HOST.test(host ?? "") || !/^[A-Za-z0-9_-]{1,80}$/.test(site ?? "") ||
+      !/^\d{1,20}$/.test(external) || hostOf(job.url) !== host) throw new BoardError("the posting's board is not Oracle's");
+  const finder = encodeURIComponent(`ById;Id="${external}",siteNumber=${site}`);
+  const found = await fetchBoard(env, `https://${host}/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails` +
+                                      `?expand=all&onlyData=true&finder=${finder}`, { site: host });
+  const req = records(found?.items)[0];
+  if (!req) throw new BoardError("the board no longer has this posting; it may have closed");
+  const part = (v) => typeof v === "string" ? htmlText(v) : "";
+  return { apply_url: job.url, captcha: null,
+           description: [req.ExternalDescriptionStr, req.ExternalResponsibilitiesStr, req.ExternalQualificationsStr]
+             .map(part).filter(Boolean).join("\n\n"),
+           location: [req.PrimaryLocation].filter((x) => typeof x === "string" && x),
+           questions: [unread("application_form", `The application on ${host}: Apply asks for the person's email ` +
+             "and may send a code to it before the form; read it in the browser and classify each question with " +
+             "the same rule")],
+           source: "Oracle Recruiting Cloud's public requisition API, read now; the form is read in the browser" };
+}
+
+// Cornerstone career sites (GMV, Bankinter): the site's page holds the visitor token
+// its own search sends; the search has no lookup by id, so its pages are read until
+// the requisition turns up, each with its description.
+async function cornerstoneForm(env, board, external, job) {
+  const [, tenant, site] = /^([a-z0-9-]+)\/(\d{1,6})$/.exec(String(board)) ?? [];
+  const home = `${tenant}.csod.com`;
+  if (!tenant || !/^\d{1,12}$/.test(external) || hostOf(job.url) !== home) throw new BoardError("the posting's board is not Cornerstone's");
+  const page = await fetchBoard(env, `https://${home}/ux/ats/careersite/${site}/home?c=${tenant}&lang=en-US`, { text: true, site: home });
+  const token = /"token"\s*:\s*"([^"]+)"/.exec(page)?.[1];
+  const cloud = /"cloud"\s*:\s*"https:\/\/([a-z0-9-]+\.api\.csod\.com)\/?"/i.exec(page)?.[1] ?? "eu-fra.api.csod.com";
+  if (!token) throw new BoardError("the career site's page carries no search token");
+  let req = null;
+  for (let n = 1; n <= 5 && !req; n++) {
+    const found = await fetchBoard(env, `https://${cloud}/rec-job-search/external/jobs`, { site: cloud,
+      headers: { Authorization: `Bearer ${token}` },
+      body: { careerSiteId: Number(site), careerSitePageId: Number(site), pageNumber: n, pageSize: 100, cultureId: 1,
+              searchText: "", cultureName: "en-US", states: [], countryCodes: [], cities: [], placeID: "", radius: null,
+              postingsWithinDays: null, customFieldCheckboxKeys: [], customFieldDropdowns: [], customFieldRadios: [] } });
+    const rows = records(found?.data?.requisitions);
+    req = rows.find((r) => String(r.requisitionId) === external) ?? null;
+    if (rows.length < 100) break;
+  }
+  if (!req) throw new BoardError("the board no longer has this posting; it may have closed");
+  return { apply_url: job.url, captcha: null,
+           description: htmlText(typeof req.externalDescription === "string" ? req.externalDescription : ""),
+           location: records(req.locations).map((l) => [l.city, l.state, l.country].filter((x) => typeof x === "string" && x).join(", "))
+             .filter(Boolean),
+           questions: [unread("application_form", `The application on ${home}, from the posting's Apply button: ` +
+             "read it in the browser and classify each question with the same rule")],
+           source: "Cornerstone career site's public search, read now; the form is read in the browser" };
+}
+
 const FORMS = { greenhouse: greenhouseForm, ashby: ashbyForm, lever: leverForm, workable: workableForm,
                 recruitee: recruiteeForm, teamtailor: teamtailorForm, workday: workdayForm, phenom: phenomForm,
                 bamboohr: bamboohrForm, bendingspoons: bendingspoonsForm, pinpoint: pinpointForm,
                 rippling: ripplingForm, smartrecruiters: smartrecruitersForm, eightfold: eightfoldForm,
                 successfactors: successfactorsForm, amazon: amazonForm, jsonapi: jsonapiForm,
-                jsonld: jsonldForm };
+                jsonld: jsonldForm, radancy: jsonldForm, icims: jsonldForm, oracle: oracleForm,
+                cornerstone: cornerstoneForm };
 
 // "ats:board:id"; the board may hold slashes (Workday), never a colon.
 function splitId(id) {
@@ -2137,8 +2199,8 @@ export async function jobQuestions(data, args = {}, env = {}) {
   const unreadAnswer = () => ({ job: posting, apply_url: job.url, form_source: null, questions: null, description: null,
     captcha: null,
     note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, ` +
-          `Bending Spoons and Eightfold forms, and Workday's, Phenom's, SmartRecruiters', SuccessFactors', Amazon's and ` +
-          `JSON-LD careers sites' postings; this posting is on ${["jsonld", "jsonapi"].includes(job.ats) ? "the employer's own careers site" : job.ats}. ` +
+          `Bending Spoons and Eightfold forms, and Workday's, Phenom's, SmartRecruiters', SuccessFactors', Amazon's, Oracle's, ` +
+          `Cornerstone's, Radancy's, iCIMS's and JSON-LD careers sites' postings; this posting is on ${["jsonld", "jsonapi"].includes(job.ats) ? "the employer's own careers site" : job.ats}. ` +
           "Open url in your browser and read the form there; classify its questions with the " +
           "same rule (see application_guide)." });
   if (!read) return unreadAnswer();

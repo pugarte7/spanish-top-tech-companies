@@ -91,9 +91,9 @@
       "workplace": null, "department": null, "posted_at": "2026-10-05T09:00:00Z", "salary": null
     },
     {
-      "id": "icims:ecovadis:744000000000001", "company": "EcoVadis", "slug": "ecovadis", "tier": "B",
+      "id": "gem:ecovadis:744000000000001", "company": "EcoVadis", "slug": "ecovadis", "tier": "B",
       "title": "Account Executive", "url": "https://jobs.ecovadis.com/job/Zaragoza-Account-Executive/744000000000001/",
-      "ats": "icims", "location": "Zaragoza, Spain", "location_classes": ["spain"],
+      "ats": "gem", "location": "Zaragoza, Spain", "location_classes": ["spain"],
       "workplace": "onsite", "department": null, "posted_at": "2026-10-04T09:00:00Z", "salary": null
     }
   ]
