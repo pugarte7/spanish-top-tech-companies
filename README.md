@@ -31,6 +31,12 @@ https://spanishtoptechcompanies.com/mcp
 
 Sin registro, sin claves y sin instalar nada. Funciona con cualquier agente que admita MCP: quienes lo usan lo hacen sobre todo con Codex y Cursor, y también sirven Claude, Claude Code, Instinct o Hermes.
 
+En Hermes puedes instalar además la skill, que le enseña a usar el MCP y a aplicar por ti:
+
+```text
+hermes skills install pugarte7/spanish-top-tech-companies/skills/tech-pay-spain
+```
+
 Es gratis y lo mantiene una sola persona. Si te sirve, deja una estrella ⭐ arriba a la derecha: es lo que hace que lo encuentre más gente que busca trabajo en España.
 
 ## Cómo busca las ofertas
