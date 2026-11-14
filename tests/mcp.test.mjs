@@ -1504,5 +1504,16 @@ report("a company without salaries but with postings points to find_jobs", notOn
 const glvoTop = (await toolCall("top_companies", { search: "Glvo" })).structuredContent;
 report("top_companies' search with no hit offers close names", /Close names: Glovo/.test(glvoTop.search_note ?? ""), glvoTop);
 
+const pairs = data.companies.map((c, i) => [c, i]).filter(([c]) =>
+  data.companies.some((o) => o !== c && o.name.toLowerCase().startsWith(`${c.name.toLowerCase()} `)));
+if (pairs.length) {
+  const [short] = pairs[0];
+  const asked = (await toolCall("company_salaries", { name: short.name })).structuredContent;
+  report("company_salaries names a company listed under a longer form of the name, apart",
+    asked.company === short.name && (asked.related_companies ?? []).some((r) =>
+      r.company.toLowerCase().startsWith(`${short.name.toLowerCase()} `)) && /never add/.test(asked.related_note),
+    asked.related_companies);
+}
+
 console.log(failed ? `${failed} failed` : "api/mcp.js answers as expected");
 process.exit(failed ? 1 : 0);

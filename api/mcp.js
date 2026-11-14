@@ -80,7 +80,8 @@ const TOOLS = {
                    "by role, region or experience wherever it has salaries. Each figure says how " +
                    `many people it comes from, and few: true marks fewer than ${data.min_group}. Give ` +
                    "a role, region or years to see the groups within it, combinations included. " +
-                   "A name the site does not list gets close names to try.",
+                   "A name the site does not list gets close names to try. Companies listed apart under a " +
+                   "name that starts like it (BBVA and BBVA Technology) come back in related_companies.",
       inputSchema: { type: "object", required: ["name"], properties: {
         name: { type: "string", description: "Company name, e.g. Glovo." },
         ...SELECTION } } }),
@@ -513,9 +514,24 @@ function closeNames(listed, name) {
   return scored.slice(0, 5).map(([, , n]) => n);
 }
 
+// Listed companies whose name starts with the other's as whole words: BBVA and
+// BBVA Technology, CaixaBank and CaixaBank Tech, IBM and IBM Research. Levels.fyi
+// keeps a subsidiary or a local branch on a page of its own, and so does the
+// site; the maintainer chose on 2026-11-14 not to merge them but to answer for
+// both when either is asked.
+// Names that start alike and are not the same group (checked on 2026-11-14's 20 pairs).
+const UNRELATED = new Set(["amazon|amazon conservation team", "multiverse|multiverse computing",
+  "igt|igt solutions", "rti|rti international"]);
+function relatedCompanies(companies, c) {
+  const own = words(c.name);
+  const starts = (a, b) => a.length >= 2 && b.startsWith(`${a} `) && !UNRELATED.has(`${a}|${b}`);
+  return companies.filter(([o]) => o !== c && (starts(own, words(o.name)) || starts(words(o.name), own)))
+    .sort(([a], [b]) => (b.n ?? 0) - (a.n ?? 0)).slice(0, 5);
+}
+
 export async function company(data, name, args = {}, env = {}) {
   const table = await companyTable(env);
-  const [, selection, note] = select(data, args, table);
+  const [key, selection, note] = select(data, args, table);
   if (blank(name)) throw new QueryError("name is required: a company such as Glovo");
   const want = norm(name);
   // Every company the table lists; data.json names each, with its salaries in Spain.
@@ -565,9 +581,18 @@ export async function company(data, name, args = {}, env = {}) {
     for (let k = 0; k < a.length; k++) if (a[k] !== b[k]) return a[k] < b[k] ? -1 : 1;
     return 0;
   });
+  const related = relatedCompanies(companies, c).map(([o, j]) => {
+    const r = table.cells[key]?.find((x) => x[0] === j);
+    return { company: o.name, url: o.url, salaries_in_spain: o.n ?? null,
+             selection_figures: r ? companyFigures(data, rowOf(table, r)) : null };
+  });
   return { company: c.name, url: c.url, cities: c.cities, salaries_in_spain: c.n ?? null, selection,
            groups, ...(groups.length ? {} : { reason: "no salaries at this company for the selection; " +
              "drop role, region or years" }),
+           ...(related.length ? { related_companies: related, related_note: "Listed apart on the site under a " +
+             "name that starts like this one's (often a subsidiary or a local branch, on its own Levels.fyi " +
+             "page). Name them to the person with their own figures; never add their salaries to this " +
+             "company's. company_salaries with one's name gives its full breakdown." } : {}),
            ...(groups.some((g) => g.few) ? { few_note: fewNote(data) } : {}), ...note };
 }
 

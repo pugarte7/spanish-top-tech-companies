@@ -45,7 +45,9 @@ Then use its tools:
   it come after the rest.
 - `company_salaries(name, role, region, years)`: one company, overall and by
   role, region or years; give a role, region or years to see combinations. A
-  name the site does not list gets close names to try.
+  name the site does not list gets close names to try. A company listed apart
+  under a name that starts like it (BBVA and BBVA Technology) comes back in
+  `related_companies`: name it with its own figures, never added to these.
 - `list_filters()`: valid role slugs, region codes, experience buckets, data date.
 
 The same server searches the open postings at the companies it lists, refreshed
