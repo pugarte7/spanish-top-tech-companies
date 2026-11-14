@@ -420,10 +420,14 @@ td { padding: 12px; border-bottom: 1px solid var(--rule); vertical-align: middle
 tr:last-child td { border-bottom: 0; }
 .num, .pay { text-align: right; white-space: nowrap; }
 td.co .name { font-weight: 600; }
+td.co .co-in { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+td.co .co-in > div { min-width: 0; }
 .links { display: grid; grid-template-columns: repeat(3, 16px); gap: 12px; flex: none; }
 .links a { display: block; width: 16px; height: 16px; color: var(--muted); }
 .links a:hover { color: var(--text); }
 .links svg { display: block; width: 16px; height: 16px; }
+/* On a desktop the row carries the links; the open row repeats them for phones. */
+.detail .links { display: none; }
 th.sort { cursor: pointer; user-select: none; }
 th.sort:hover, th.sort.on { color: var(--text); }
 /* Every sortable heading carries both carets, drawn rather than typed so
@@ -663,9 +667,11 @@ footer .foot-links::before { inset: -20px -28px; }
   .hero-stats div { padding: 0 8px; }
   .hero-stats dd { font-size: 24px; line-height: 28px; }
   .hero-stats dt { font-size: 12px; line-height: 16px; }
-  /* The companies table fits a phone: app.js draws only the pay followed
-     (the open row gives the total), headings wrap and the cities keep one
-     line until the row opens, so the name has room. */
+  /* The companies table fits a phone: the links move into the open row,
+     app.js draws the total in place of the 60k+ share, headings wrap and the
+     cities keep one line until the row opens, so the name has room. */
+  td.co .co-in > .links { display: none; }
+  .detail .links { display: grid; }
   td.co .cities { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   tr.open td.co .cities { white-space: normal; }
   #companies th { white-space: normal; line-height: 16px; padding: 8px 6px; }
