@@ -304,6 +304,8 @@ const threeGot = (await toolCall("company_salaries", { name: alone(3).name })).s
 report("every company figure is the table's own row", [bigGot, threeGot].every((got) => got.groups.every((g) =>
   sameFigures(g, rowsAt(`${g.role ?? ""}|${g.region ?? ""}|${g.years ?? ""}`)
     .find((a) => data.companies[a.c].name === got.company)))));
+const aliased = (await toolCall("company_salaries", { company: bigCompany.name })).structuredContent;
+report("company works as name", aliased?.company === bigGot.company, aliased);
 const typo = await toolCall("company_salaries", { name: "Glvo" });
 report("a name the site does not list says so and offers close names", typo.isError === true &&
   /The site has no salaries for a company named 'Glvo'/.test(typo.content[0].text) &&
