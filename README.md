@@ -31,6 +31,8 @@ https://spanishtoptechcompanies.com/mcp
 
 Sin registro, sin claves y sin instalar nada. Funciona con cualquier agente que admita MCP: quienes lo usan lo hacen sobre todo con Codex y Cursor, y también sirven Claude, Claude Code, Instinct o Hermes.
 
+Es gratis y lo mantiene una sola persona. Si te sirve, deja una estrella ⭐ arriba a la derecha: es lo que hace que lo encuentre más gente que busca trabajo en España.
+
 ## Cómo busca las ofertas
 
 Más de 400 portales de empleo, más de 1.000 ofertas al día, todas con el sueldo de la empresa al lado.
