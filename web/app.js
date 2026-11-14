@@ -364,18 +364,20 @@ function hugVeil() {
 // the hue from it, so the colour itself says which side of the bar a figure is.
 const SHADE_EDGES = [50000, 60000, 70000, 85000];
 const shade = (v) => 1 + SHADE_EDGES.filter((t) => v >= t).length;
-// The map draws the same bands on its light-to-dark blues (`c`): since
-// 2026-11-14 a region under the bar has colour too.
-const payLegend = (ground = "s") => [0, ...SHADE_EDGES].map((v, i, edges) => {
+const payLegend = () => [0, ...SHADE_EDGES].map((v, i, edges) => {
   const to = edges[i + 1];
   const label = !v ? `< ${short(to)}` : to ? `${short(v)}–${short(to)}` : `${short(v)}+`;
-  return `<span><i style="background:var(--${ground}${i + 1})"></i>${label}</span>`;
+  return `<span><i class="s${i + 1}"></i>${label}</span>`;
 }).join("") + `<span><i class="na"></i>${esc(S.map_empty)}</span>`;
 
 // --- map ------------------------------------------------------------------------
-// The map shows either pay or how many salaries each region has. Counts run
-// from a handful to thousands, so their grey classes are on a log scale. Pay is
-// the default view: a reader asks where it pays more before how much data there is.
+// The map shows either pay or how many salaries each region has, each in five
+// classes from its lowest region to its highest, so both views use the whole
+// blue scale. Counts run from a handful to thousands, so theirs are on a log
+// scale. Pay was on the matrix's fixed bands until 2026-11-14: regions' medians
+// sit between about 40k and 60k, so the map was nearly all its palest blue.
+// Pay is the default view: a reader asks where it pays more before how much
+// data there is.
 let mapMetric = "pay";
 
 function map() {
@@ -387,13 +389,13 @@ function map() {
   }
   const pay = mapMetric === "pay";
   const value = (a) => pay ? a.median : a.n;
-  const vals = Object.values(stats).map((a) => Math.log(a.n));
+  const scaled = (a) => pay ? a.median : Math.log(a.n);
+  const vals = Object.values(stats).map(scaled);
   const lo = Math.min(...vals), hi = Math.max(...vals);
   const classes = vals.length ? 5 : 0;
   const step = (hi - lo) / classes || 1;
   // Both views are hatched with the map's <pattern>s #hcN, light to dark blue.
-  const fill = (a) => pay ? `url(#hc${shade(a.median)})`
-    : `url(#hc${hi === lo ? classes : Math.min(classes, 1 + Math.floor((Math.log(a.n) - lo) / step))})`;
+  const fill = (a) => `url(#hc${hi === lo ? classes : Math.min(classes, 1 + Math.floor((scaled(a) - lo) / step))})`;
 
   $("map-sub").textContent = pay ? S.map_pay_sub : S.map_count_sub;
   $("map-metric").querySelectorAll("button").forEach((b) => {
@@ -417,16 +419,13 @@ function map() {
   });
 
   let legend = "";
-  if (pay) legend = payLegend("c");
-  else {
-    const count = (v) => Math.round(Math.exp(v)).toLocaleString(LOCALE);
-    if (classes && hi > lo) {
-      for (let i = 1; i <= classes; i++) {
-        legend += `<span><i style="background:var(--c${i})"></i>${count(lo + step * (i - 1))}–${count(lo + step * i)}</span>`;
-      }
+  const label = pay ? (v) => short(Math.round(v / 1000) * 1000) : (v) => Math.round(Math.exp(v)).toLocaleString(LOCALE);
+  if (classes && hi > lo) {
+    for (let i = 1; i <= classes; i++) {
+      legend += `<span><i style="background:var(--c${i})"></i>${label(lo + step * (i - 1))}–${label(lo + step * i)}</span>`;
     }
-    legend += `<span><i class="na"></i>${esc(S.map_empty)}</span>`;
   }
+  legend += `<span><i class="na"></i>${esc(S.map_empty)}</span>`;
   $("legend").innerHTML = legend;
 
   const ranked = Object.entries(stats).sort((x, y) => value(y[1]) - value(x[1]));
@@ -654,8 +653,7 @@ function detail(a) {
   const chart = `<div class="ybars"><div class="yplot">${bars}` +
     `<span class="ref" style="bottom:${h(D.threshold)}px"><em>${short(D.threshold)}</em></span></div>` +
     `<div class="yaxis">${labels}</div><p class="yunit">${S.years_axis}</p></div>`;
-  // The company's links live here, not in the row: three logos on every row
-  // outweighed its figures.
+  // The links repeat here for phones, where the row has no room for them.
   return `<div class="detail">${years.some(([, y]) => y) ? chart : ""}` +
     split(a) + `<span class="links">${companyLinks(D.companies[a.c])}</span></div>`;
 }
@@ -674,7 +672,7 @@ function split(a) {
 }
 
 const opened = new Set();
-// A phone has room for one pay column, the one followed; the open row gives the total.
+// On a phone the companies table trades the 60k+ share for the total.
 const NARROW = matchMedia("(max-width: 640px)");
 
 // The asterisk opens a card about that company on a click or a tap, not a
@@ -772,7 +770,10 @@ function companies() {
     `aria-label="${esc(S.ast_label)}" aria-controls="asterisk-tip" aria-expanded="false">*</button>`;
   closeAsterisk();
   const hasTotal = !!T[state.role]?.fields?.includes("tshare");
-  const pays = !hasTotal ? ["median"] : NARROW.matches ? [onTotal() ? "total" : "median"] : ["median", "total"];
+  const pays = hasTotal ? ["median", "total"] : ["median"];
+  // A phone has room for three figures: with a total, the two pays and the
+  // count; the 60k+ share stays on a desktop and in the summary above.
+  const share = !(hasTotal && NARROW.matches);
   // The column followed leads: bold, with the asterisk when it has one; the
   // other pay is there to compare, quieter.
   const pay = (a, v, lead) => lead
@@ -790,18 +791,20 @@ function companies() {
   $("companies").innerHTML = !rows.length ? emptyTable(all.length > 0) :
     `<thead><tr><th class="chev"></th><th>${S.col_company}</th>` +
     pays.map((k) => th(k, S[`col_${k}`], S[`tip_${k}`], `pay${(k === "total") === onTotal() ? " lead" : ""}`)).join("") +
-    `${th("share", hasTotal ? both("share") : label("share"), label("tip_share"))}${th("n", S.col_n, S.tip_n)}</tr></thead><tbody>` +
+    (share ? th("share", hasTotal ? both("share") : label("share"), label("tip_share")) : "") +
+    `${th("n", S.col_n, S.tip_n)}</tr></thead><tbody>` +
     shown.map((a) => {
       const c = D.companies[a.c];
       const open = opened.has(a.c);
       return `<tr class="main${open ? " open" : ""}" tabindex="0" aria-expanded="${open}">` +
         `<td class="chev"><span>›</span></td>` +
-        `<td class="co"><span class="name">${esc(c.name)}</span>` +
-        `<span class="cities">${esc(c.cities.join(", "))}</span></td>` +
+        `<td class="co"><div class="co-in"><div><span class="name">${esc(c.name)}</span>` +
+        `<span class="cities">${esc(c.cities.join(", "))}</span></div>` +
+        `<span class="links">${companyLinks(c)}</span></div></td>` +
         pays.map((k) => pay(a, a[k], (k === "total") === onTotal())).join("") +
-        `<td class="num">${pct(paid(a).share)}</td>` +
+        (share ? `<td class="num">${pct(paid(a).share)}</td>` : "") +
         `<td class="num">${a.n}</td></tr>` +
-        `<tr class="det"${open ? "" : " hidden"}><td colspan="${4 + pays.length}">${open ? detail(a) : ""}</td></tr>`;
+        `<tr class="det"${open ? "" : " hidden"}><td colspan="${3 + pays.length + share}">${open ? detail(a) : ""}</td></tr>`;
     }).join("") + `</tbody>`;
   $("few-note").hidden = !shown.some(few);
   $("pay-note").hidden = !hasTotal || !rows.length;
