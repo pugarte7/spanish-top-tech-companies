@@ -158,9 +158,7 @@ const TOOLS = {
       inputSchema: { type: "object", required: ["id"], properties: {
         id: { type: "string", description: "A job id from find_jobs, e.g. greenhouse:cabify:1234567." } } } }),
     run: (data, args, env) => jobQuestions(data, args, env),
-    measure: (out) => ({ result_count: out.questions?.length ?? 0,
-                         form_read: out.form_source !== null && !out.questions?.some((q) => ["application_form", "find_posting"].includes(q.key)),
-                         ats: out.job?.ats ?? undefined }),
+    measure: (out) => ({ result_count: out.questions?.length ?? 0, ...formAccess(out), ats: out.job?.ats ?? undefined }),
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
   report_application: {
@@ -2096,6 +2094,19 @@ function locationCheck(job, live) {
   return { index: job.location, board: [...new Set(now)].join("; "),
            warning: "The board now gives another location than the index did when it was crawled. Go by the " +
                     "board, and tell the person before they decide." };
+}
+
+// How job_questions got on with a posting's form, for PostHog. form_read alone
+// counted a form the board keeps behind a sign-in or off its API (SmartRecruiters,
+// SuccessFactors, Amazon: by design) like a failure, and 35% of reads looked
+// broken; form_access says which. A read that fails is an upstream error instead.
+export function formAccess(out) {
+  const unread = (key) => out.questions?.some((q) => q.key === key);
+  const access = out.form_source === null ? "no_reader"
+    : unread("find_posting") ? "posting_moved"
+    : unread("application_form") ? (out.account_required ? "sign_in" : "not_public")
+    : "read";
+  return { form_read: access === "read", form_access: access };
 }
 
 export async function jobQuestions(data, args = {}, env = {}) {
