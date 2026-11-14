@@ -48,7 +48,7 @@ More than 400 job boards, more than 1,000 postings a day, each with the company'
 
 Your agent searches those postings, reads the form, writes the cover letter and the answers from your CV, shows you the full application and sends it when you say yes.
 
-<img alt="Your agent, connected to the MCP, finds senior openings in Barcelona at companies paying over 100,000 €, three at Workato, reads its form, asks for your salary (110,000 €), shows you the application and sends it when you say yes" src="docs/img/mcp-demo.en.gif" width="100%">
+<img alt="Your agent, connected to the MCP, finds remote backend openings at companies paying over 80,000 €, 16 at five companies, fills in Pleo's form from your CV, asks you for the three answers it lacks and sends the application when you say yes" src="docs/img/mcp-demo.en.gif" width="100%">
 
 1. **Give it your CV and what you want.** Only once, in the chat: your CV, where and how you want to work, the salary you ask for and your work authorization.
 2. **Tell it to apply.** For example:
