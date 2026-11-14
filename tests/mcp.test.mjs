@@ -256,6 +256,11 @@ for (const [label, method, headers, payload, want] of cases) {
 }
 
 const flood = Array.from({ length: 51 }, (_, i) => ({ jsonrpc: "2.0", id: i + 1, method: "ping" }));
+const listing = JSON.parse(readFileSync("server.json", "utf8"));
+const greeted = (await respond(data, { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18" } })).result;
+report("server.json, the MCP Registry's listing, names this server's version and its /mcp address",
+       listing.version === greeted.serverInfo.version && listing.description.length <= 100 &&
+       listing.remotes[0].url === "https://spanishtoptechcompanies.com/mcp", [listing.version, greeted.serverInfo.version]);
 report("agents are asked to suggest a star, never to star on their own",
        /star it only if they say yes/.test(data.instructions) && !/without asking/i.test(data.instructions));
 report("agents are asked, not told, to bring readers back",
