@@ -3,8 +3,24 @@
   "name": "io.github.pugarte7/spanish-top-tech-companies",
   "title": "Spanish Top Tech Companies",
   "description": "Tech salaries in Spain by role, region and company, and open job postings to apply to.",
-  "version": "1.20.1",
+  "version": "1.20.2",
   "websiteUrl": "https://spanishtoptechcompanies.com/en/",
+  "icons": [
+    {
+      "src": "https://spanishtoptechcompanies.com/favicon.svg",
+      "mimeType": "image/svg+xml",
+      "sizes": [
+        "any"
+      ]
+    },
+    {
+      "src": "https://spanishtoptechcompanies.com/apple-touch-icon.png",
+      "mimeType": "image/png",
+      "sizes": [
+        "180x180"
+      ]
+    }
+  ],
   "repository": {
     "url": "https://github.com/pugarte7/spanish-top-tech-companies",
     "source": "github"
