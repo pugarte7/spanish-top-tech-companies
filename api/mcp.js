@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.20.2" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.20.3" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -1180,7 +1180,9 @@ const LIVE_MAX_CHARS = 4_000_000;
 const LIVE_PER_REQUEST = 5;
 const DESCRIPTION_CHARS = 6000;
 
-class BoardError extends Error {}
+class BoardError extends Error {
+  constructor(message, status = null) { super(message); this.status = status; }
+}
 const hostOf = (url) => { try { return new URL(url).hostname; } catch { return ""; } };
 
 // `site` is a career site's own host, read from the board of a posting in the index
@@ -1202,7 +1204,7 @@ async function fetchBoard(env, url, { body, text = false, site = null, headers =
     throw new BoardError(e?.name === "TimeoutError" ? "the board did not answer in time" : "the board could not be reached");
   }
   if (answer.status === 404) throw new BoardError("the board no longer has this posting; it may have closed");
-  if (!answer.ok) throw new BoardError(`the board answered ${answer.status}`);
+  if (!answer.ok) throw new BoardError(`the board answered ${answer.status}`, answer.status);
   const content = await answer.text();
   if (content.length > LIVE_MAX_CHARS) throw new BoardError("the board's answer was too large");
   if (text) return content;
@@ -1674,13 +1676,27 @@ const workdaySteps = (company, ownQuestions) => [
            { who: "person", category: "disability" }),
 ];
 
+const WORKDAY_REFUSED = new Set([403, 429, 503]);
 async function workdayForm(env, board, external, job) {
   const [tenant, , site] = board.split("/");
   const u = new URL(job.url);
   const path = /\/job\/(.+)$/.exec(u.pathname)?.[1];
   if (!path || !u.hostname.startsWith(`${tenant}.`)) throw new BoardError("the posting's URL is not a Workday job page");
-  const p = await fetchBoard(env, `https://${u.hostname}/wday/cxs/${encodeURIComponent(tenant)}/` +
-                                   `${encodeURIComponent(site)}/job/${path}`);
+  let p;
+  try {
+    p = await fetchBoard(env, `https://${u.hostname}/wday/cxs/${encodeURIComponent(tenant)}/` +
+                              `${encodeURIComponent(site)}/job/${path}`);
+  } catch (e) {
+    if (!(e instanceof BoardError) || !WORKDAY_REFUSED.has(e.status)) throw e;
+    // Workday turns the server away (429 from Vercel on 2026-11-16 while the same
+    // URL answered from Spain): the steps are the same on every Workday form, so
+    // the answer goes on without the posting, which the person's browser still reads.
+    return { apply_url: `${job.url.replace(/\/+$/, "")}/apply`, questions: workdaySteps(job.company, true),
+             description: null, captcha: null, account_required: true, employer_questions: "unknown",
+             refused: e.status,
+             source: `Workday's standard steps; Workday refused this server (${e.status}), so the posting ` +
+                     "was not read: open url in the browser for its text and whether the employer adds questions" };
+  }
   const info = p?.jobPostingInfo;
   if (!isObject(info) || info.canApply === false)
     throw new BoardError("the board no longer takes applications for this posting; it may have closed");
@@ -2205,6 +2221,7 @@ function locationCheck(job, live) {
 export function formAccess(out) {
   const unread = (key) => out.questions?.some((q) => q.key === key);
   const access = out.form_source === null ? "no_reader"
+    : out.board_refused ? "refused"
     : unread("find_posting") ? "posting_moved"
     : unread("application_form") ? (out.account_required ? "sign_in" : "not_public")
     : "read";
@@ -2251,6 +2268,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
     questions: form.questions, person_questions: person, agent_questions: form.questions.length - person,
     captcha: form.captcha,
     ...(form.account_required ? { account_required: true, employer_questions: form.employer_questions } : {}),
+    ...(form.refused ? { board_refused: form.refused } : {}),
     ...(check ? { location_check: check } : {}),
     conditions: conditionsOf(form.description),
     description: untrusted(form.description),

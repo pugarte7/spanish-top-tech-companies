@@ -823,6 +823,10 @@ const more = { ...index, jobs: [...index.jobs,
     url: "https://sequra.recruitee.com/o/accountant-4", ats: "recruitee", location: "Barcelona, Spain" },
   { id: "workday:bbva/wd3/BBVA:R-99999", company: "BBVA", slug: "bbva", title: "Analista",
     url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Analista_R-99999", ats: "workday", location: "Madrid" },
+  { id: "workday:bbva/wd3/BBVA:R-42900", company: "BBVA", slug: "bbva", title: "Busy",
+    url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Busy_R-42900", ats: "workday", location: "Madrid" },
+  { id: "workday:bbva/wd3/BBVA:R-50000", company: "BBVA", slug: "bbva", title: "Down",
+    url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Down_R-50000", ats: "workday", location: "Madrid" },
   { id: "bendingspoons:jobs.bendingspoons.com:63c548b3521886004f3daec0", company: "Bending Spoons",
     slug: "bending-spoons", title: "Product manager", ats: "bendingspoons", location: "Madrid, Spain",
     url: "https://jobs.bendingspoons.com/positions/63c548b3521886004f3daec0" },
@@ -920,6 +924,8 @@ const WD = "https://bbva.wd3.myworkdayjobs.com/wday/cxs/bbva/BBVA/job/Madrid";
 BOARDS[`${WD}/R-12345`] = json({ jobPostingInfo: { jobDescription: "<p>Java en BBVA</p>", canApply: true,
   externalUrl: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345", questionnaireId: "abc123" } });
 BOARDS[`${WD}/Analista_R-99999`] = json({ jobPostingInfo: { canApply: false } });
+BOARDS[`${WD}/Busy_R-42900`] = () => new Response("Too Many Requests", { status: 429 });
+BOARDS[`${WD}/Down_R-50000`] = () => new Response("Internal Server Error", { status: 500 });
 BOARDS["https://wallbox.bamboohr.com/careers/123/detail"] = json({ result: {
   jobOpening: { description: "<p>Join People at Wallbox</p>", jobOpeningShareUrl: "https://wallbox.bamboohr.com/careers/123" },
   formFields: { firstName: { isRequired: true, label: "First Name" }, email: { isRequired: true, label: "Email" },
@@ -1163,6 +1169,17 @@ report("phenom: on another ATS, the apply URL, the description and one unread fo
 const wdClosed = await run("job_questions", { id: "workday:bbva/wd3/BBVA:R-99999" }, { jobs: more });
 report("workday: a posting that takes no more applications is a tool error", wdClosed.isError === true &&
   /no longer takes applications/.test(wdClosed.content[0].text));
+const wdBusy = await run("job_questions", { id: "workday:bbva/wd3/BBVA:R-42900" }, { jobs: more });
+const busy = wdBusy.structuredContent;
+report("workday: a board that turns the server away still answers with the standard steps, unread posting",
+  wdBusy.isError !== true && busy.board_refused === 429 && busy.description === null && busy.conditions === null &&
+  busy.employer_questions === "unknown" && busy.account_required === true && /refused this server \(429\)/.test(busy.form_source) &&
+  byLabel(busy, /account with BBVA/).who === "person" && byLabel(busy, /own application questions/).type === "unread" &&
+  busy.apply_url === "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Busy_R-42900/apply" &&
+  formAccess(busy).form_access === "refused" && formAccess(busy).form_read === false, busy);
+const wdDown = await run("job_questions", { id: "workday:bbva/wd3/BBVA:R-50000" }, { jobs: more });
+report("workday: any other board failure is still a tool error", wdDown.isError === true &&
+  /answered 500/.test(wdDown.content[0].text));
 const closed = await run("job_questions", { id: "greenhouse:cabify:7000003" });
 report("a posting the board no longer has is a tool error with the URL", closed.isError === true &&
   /may have closed/.test(closed.content[0].text) && closed.content[0].text.includes("https://job-boards.greenhouse.io/cabify/jobs/7000003"));
