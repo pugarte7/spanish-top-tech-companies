@@ -695,6 +695,10 @@ report("salary_stats: a city is its region, with a note", statsBcn.selection.reg
   JSON.stringify(statsBcn.result) === JSON.stringify(statsCt.result), statsBcn);
 const statsGipuzkoa = await salaryIn("salary_stats", { role: "software-engineer", region: "Gipuzkoa" });
 report("salary_stats: a Basque province is its region", statsGipuzkoa.selection.region === "PV", statsGipuzkoa);
+const statsMc = await salaryIn("salary_stats", { role: "software-engineer", region: "MC" });
+const statsEsMd = await salaryIn("salary_stats", { role: "software-engineer", region: "ES-MD" });
+report("salary_stats: ISO 3166-2 codes, Murcia's MC included, name the region",
+  statsMc?.selection.region === "MU" && statsEsMd?.selection.region === "MD", [statsMc?.selection, statsEsMd?.selection]);
 const topBilbao = await salaryIn("top_companies", { region: "bilbao" });
 report("top_companies: a city is its region, with a note", topBilbao.selection.region === "PV" && /Bilbao is in PV/.test(topBilbao.note));
 const seat = await run("company_salaries", { name: "SEAT" });

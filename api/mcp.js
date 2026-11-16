@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.20.3" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.20.4" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -310,10 +310,17 @@ function resolveRole(data, role, roles = data.roles) {
 // 2026-11) is the whole country, with a note for remote.
 const WHOLE_COUNTRY = /^(spain|espana|es|all|todas?|national|nacional)$/;
 const REMOTE_PLACE = /^(remote|remoto|teletrabajo|remote spain|remoto espana|anywhere)$/;
+// ISO 3166-2:ES codes, with or without "ES-", are the site's codes but for Murcia
+// (MC, ours MU): a script sent MC five times on 2026-11-15 and got nothing back.
+const ISO_REGION = /^(?:es-)?([a-z]{2})$/i;
+const ISO_ONLY = { MC: "MU" };
 function resolvePlace(data, region) {
   if (blank(region)) return { code: "", city: null };
   if (WHOLE_COUNTRY.test(words(region))) return { code: "", city: null };
   if (REMOTE_PLACE.test(words(region))) return { code: "", city: null, remote: true };
+  const iso = ISO_REGION.exec(String(region).trim())?.[1].toUpperCase();
+  const isoCode = iso && (ISO_ONLY[iso] ?? iso);
+  if (isoCode && data.regions[isoCode]) return { code: isoCode, city: null };
   const want = norm(region);
   const unknown = () => new QueryError(`unknown region '${region}'; use a code like MD, a name like ` +
     "Cataluña or a city like Barcelona");
