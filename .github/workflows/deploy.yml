@@ -23,7 +23,11 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "17 4 * * *"   # 05:17 in Madrid in winter, 06:17 in summer
+    # GitHub starts this repo's schedules 7 to 9 hours late (04:17 UTC ran between
+    # 11:03 and 13:26 UTC every day from 2026-11-05 to 11-17), so it is set for the
+    # evening before: late, it lands in the early morning in Madrid; on time, the
+    # postings are from that evening.
+    - cron: "17 20 * * *"
   workflow_dispatch:
 
 # Deploys queue instead of cancelling each other: a push during the daily
