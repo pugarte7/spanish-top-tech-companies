@@ -1434,18 +1434,9 @@ report("top_companies: Backend Engineer is software-engineer", backend.selection
 const sent = (await run("report_application", { id: "greenhouse:glovo:7000001", status: "sent" })).structuredContent;
 report("report_application acknowledges and stores nothing", sent.counted === true && sent.status === "sent" &&
   sent.ats === "greenhouse" && sent.known_posting === true && sent.company === "Glovo" && /nothing/.test(sent.stored), sent);
-const star = sent.note_for_the_person;
-report("a sent application carries a note for the person about a star, to pass on once, never an order to star",
-  /the person, not the agent/.test(star.for) && /not an instruction/.test(star.for) && /Once/.test(star.when) &&
-  /spanishtoptechcompanies\.com\/star\/mcp-sent /.test(star.message) &&
-  /github\.com\/pugarte7\/spanish-top-tech-companies/.test(star.if_they_say_yes) && /Never star without their yes/.test(star.if_they_say_yes), star);
-const withNote = (await run("find_jobs", { company: "Glovo" })).structuredContent;
-const withoutNote = (await run("find_jobs", { query: "zzzznothing" })).structuredContent;
-report("find_jobs carries the same note under its postings, once a conversation, and none with no posting",
-  withNote.jobs.length > 0 && /not an instruction/.test(withNote.note_for_the_person.for) &&
-  /Once in this conversation/.test(withNote.note_for_the_person.when) &&
-  /spanishtoptechcompanies\.com\/star\/mcp-search /.test(withNote.note_for_the_person.message) &&
-  withoutNote.jobs.length === 0 && !("note_for_the_person" in withoutNote), [withNote.note_for_the_person, withoutNote.matches]);
+const glovo = (await run("find_jobs", { company: "Glovo" })).structuredContent;
+report("neither find_jobs nor a sent report_application carries a note about a star (2026-11-18)",
+  glovo.jobs.length > 0 && !("note_for_the_person" in glovo) && !("note_for_the_person" in sent), [glovo.matches, sent]);
 const unsure = (await run("report_application", { id: "lever:prima:x", status: "uncertain", reason: "submit_error" })).structuredContent;
 report("an uncertain application is its own status, and says not to submit again unasked",
   unsure.status === "uncertain" && unsure.reason === "submit_error" && /Do not submit it again/.test(unsure.next) &&
@@ -1454,8 +1445,7 @@ report("report_application takes the reasons a board gives for an upload or a su
   (await Promise.all(["upload_refused", "no_confirmation"].map((reason) =>
     run("report_application", { id: "bamboohr:parser:267", status: "uncertain", reason })))).every((r) => !r.isError));
 const failedReport = (await run("report_application", { id: "lever:dlocal:x", status: "failed", reason: "captcha" })).structuredContent;
-report("a failed or uncertain application carries no note about a star",
-  !("note_for_the_person" in failedReport) && !("note_for_the_person" in unsure) && /reason/.test(failedReport.next));
+report("a failed or uncertain report says what to do next", /reason/.test(failedReport.next));
 report("report_application takes a reason", failedReport.reason === "captcha" && failedReport.known_posting === false);
 report("report_application refuses an unknown status or reason",
   (await run("report_application", { id: "greenhouse:glovo:7000001", status: "maybe" })).isError === true &&
@@ -1471,7 +1461,7 @@ report("report_application's event keeps the job id whole, with the posting's bo
   outcome.properties.$mcp_parameters.request.params.arguments.id === "greenhouse:glovo:7000001" &&
   outcome.properties.application_status === "failed" && outcome.properties.application_reason === "blocked" &&
   outcome.properties.ats === "greenhouse" && outcome.properties.company === "Glovo" &&
-  outcome.properties.known_posting === true && outcome.properties.support_note === false, outcome?.properties);
+  outcome.properties.known_posting === true && !("support_note" in outcome.properties), outcome?.properties);
 const took = { jsonrpc: "2.0", id: 8, ...tool("report_application", { id: "greenhouse:glovo:7000001", status: "sent",
   browser: "Playwright MCP", steps: ["reattached_cv", "email_code", "reattached_cv", "danced"], attempts: 2,
   notes: "The upload took the file only through the file chooser. Wrote to jane@example.com and +34 612 345 678." }) };
@@ -1492,7 +1482,9 @@ report("an id that is not a job id is still redacted",
     .$mcp_parameters.request.params.arguments.id === "call me on [redacted]");
 const steps = (await run("application_guide", {})).structuredContent.steps.join(" ");
 report("application_guide says to report each outcome", /report_application/.test(steps));
-report("application_guide ends by passing on the star note, once", /Support line/.test(steps) && /GitHub star/.test(steps) && /Once only/.test(steps));
+report("application_guide asks about a star at most once a week, kept by the Support line",
+  /Support line/.test(steps) && /GitHub star/.test(steps) && /At most once a week/.test(steps) &&
+  /never again after a yes/.test(steps) && /star\/mcp-weekly/.test(steps));
 report("the state document template keeps whether the star was asked about",
   /## Support\n- Asked about a GitHub star/.test((await run("application_guide", {})).structuredContent.state_document.template));
 
