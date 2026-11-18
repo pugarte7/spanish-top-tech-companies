@@ -261,6 +261,11 @@ const greeted = (await respond(data, { jsonrpc: "2.0", id: 1, method: "initializ
 report("server.json, the MCP Registry's listing, names this server's version and its /mcp address",
        listing.version === greeted.serverInfo.version && listing.description.length <= 100 &&
        listing.remotes[0].url === "https://spanishtoptechcompanies.com/mcp", [listing.version, greeted.serverInfo.version]);
+// Hermes' plugin catalog installs hermes-plugin/ at a pinned commit; its skill is a copy that must not drift.
+const hermesServers = JSON.parse(readFileSync("hermes-plugin/mcp.json", "utf8")).mcpServers;
+report("the Hermes plugin points at /mcp and carries the current skill",
+       hermesServers["tech-pay-spain"]?.url === listing.remotes[0].url &&
+       readFileSync("hermes-plugin/skills/tech-pay-spain/SKILL.md", "utf8") === readFileSync("skills/tech-pay-spain/SKILL.md", "utf8"));
 report("agents are asked to suggest a star, never to star on their own",
        /star it only if they say yes/.test(data.instructions) && !/without asking/i.test(data.instructions));
 report("agents are asked, not told, to bring readers back",
