@@ -1,18 +1,28 @@
 #!/usr/bin/env python3
 """Fetch every Spanish salary in every job family from Levels.fyi's signed-in feed.
 
-    python3 scripts/fetch_spain.py                    # all 129 roles, ~30 min
+    python3 scripts/fetch_spain.py                    # what is new since last run
+    python3 scripts/fetch_spain.py --full             # every role to the end, ~315 calls
     python3 scripts/fetch_spain.py --role data-scientist
     python3 scripts/fetch_spain.py --company glovo    # only this company written
     python3 scripts/fetch_spain.py --audit            # report, write nothing
 
 The submissions table's API (api.levels.fyi/v3/salary/search) without a
 companySlug is the country-wide feed: every Spanish submission in one job
-family, newest first. It answers `total: 250` at most but keeps serving rows
-past it, so feed() reads until an empty page rather than the total. That is
-every Spanish submission in the family - the old per-company loop and the
-discovery feed are both obsolete - at roughly 30 calls for software engineers
-and one or two for a family nobody in Spain has submitted to.
+family. It answers `total: 250` at most but keeps serving rows past it, so
+feed() reads until an empty page rather than the total. That is every
+Spanish submission in the family - the old per-company loop and the
+discovery feed are both obsolete - at roughly 100 calls for software
+engineers and one or two for a family nobody in Spain has submitted to.
+
+Since 2026-11-19 a run asks each role only for what was submitted after the
+newest row it has seen (the maintainer: "solo hacemos incremental loads para
+pasar más desapercibidos"), one call for a role with nothing new, and adds
+those rows to the file. A role is still read to the end and replaced once
+every FULL_WEEKS weeks, a quarter of the roles each week, because only a
+whole read sees a submission that was deleted or corrected; a role with
+nothing on file is asked only then. The cursors live in feed.json beside the
+CSV: an instant per role, never a submission id.
 
 The feed only exists behind a sign-in: the browser loads it with the
 visitor's Cognito id token. A Cognito refresh token kept in the macOS
@@ -122,6 +132,9 @@ NO_LEVEL = {"", "false", "none", "null"}
 MIN_GLOBAL = lib.MIN_GLOBAL
 GLOBAL_DAYS = 90
 GLOBAL_CACHE = lib.DATA.parent / "global.json"
+# How often a role is read to the end rather than from its cursor. Each role
+# has its own week of the cycle, so no run reads them all.
+FULL_WEEKS = 4
 
 
 def unscoped(entry: dict) -> bool:
@@ -371,13 +384,12 @@ class Truncated(Exception):
         self.rows = rows
 
 
-def since_date(raw) -> str | None:
-    """An offerDate as the ISO instant `sinceDate` takes, one second early.
+def instant(raw) -> datetime.datetime | None:
+    """An offerDate as a UTC datetime, to the second.
 
     The feed serves both "Thu Jul 04 2024 10:22:03 GMT+0000 (...)" and ISO.
-    A second early, because rows sharing the cursor's instant must not be
-    lost if the API reads sinceDate as strictly after; the repeats are
-    deduped downstream on uuid.
+    It is the moment the row was submitted, not a date its author typed: no
+    row carries midnight.
     """
     text = str(raw or "")
     try:
@@ -389,12 +401,93 @@ def since_date(raw) -> str | None:
         when = datetime.datetime.strptime(found.group(1), "%b %d %Y %H:%M:%S")
     if when.tzinfo:
         when = when.astimezone(datetime.timezone.utc).replace(tzinfo=None)
-    when -= datetime.timedelta(seconds=1)
+    return when.replace(microsecond=0)
+
+
+def _iso(when: datetime.datetime) -> str:
     return when.strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
 
-def feed(bearer: str, role: str, delay: float, company: str | None = None) -> list[dict] | None:
+def since_date(raw) -> str | None:
+    """An offerDate as the ISO instant `sinceDate` takes, one second early.
+
+    A second early, so rows sharing the cursor's instant are served again
+    while one query hands over to the next; the repeats are deduped
+    downstream on uuid.
+    """
+    when = instant(raw)
+    return _iso(when - datetime.timedelta(seconds=1)) if when else None
+
+
+def feed_state_path():
+    return lib.DATA.parent / "feed.json"
+
+
+def load_feed_state() -> dict:
+    """{"roles": {role: {"since": newest instant seen, "full": day of the last
+    whole read}}, "rates": {month index: dollar-to-euro rates}}."""
+    try:
+        state = json.loads(feed_state_path().read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        state = {}
+    state.setdefault("roles", {})
+    state.setdefault("rates", {})
+    return state
+
+
+def save_feed_state(state: dict) -> None:
+    path = feed_state_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(state, sort_keys=True), encoding="utf-8")
+
+
+def full_due(role: str, known: dict, today: str) -> bool:
+    """Is this the run that reads the role to the end?
+
+    Never read whole, or its week of the cycle, or two cycles without one
+    (the Mac was off on its Monday).
+    """
+    last = lib.parse_date(known.get("full"))
+    if not last:
+        return True
+    day = lib.parse_date(today)
+    age = (day - last).days
+    slot = zlib.crc32(role.encode()) % FULL_WEEKS
+    return age >= 14 * FULL_WEEKS or (age >= 7 and (day.toordinal() // 7) % FULL_WEEKS == slot)
+
+
+def after(cursor: str) -> str:
+    """The `sinceDate` that serves only rows newer than the cursor's.
+
+    sinceDate is inclusive (asked with a row's own instant it returns the
+    row, a second later nothing), so the next second is where new rows start.
+    """
+    return _iso(instant(cursor) + datetime.timedelta(seconds=1))
+
+
+def newest(rows: list[dict]) -> str | None:
+    seen = [when for when in (instant(row.get("offerDate")) for row in rows) if when]
+    return _iso(max(seen)) if seen else None
+
+
+def remember_rates(state: dict, rows: list[dict]) -> None:
+    """Keep a few of each month's euro rates: a week's new rows are often one
+    dollar row and no euro row to price it with."""
+    for month, rate in euro_rates(rows):
+        kept = state["rates"].setdefault(str(month), [])
+        if len(kept) < RATE_NEAREST:
+            kept.append(rate)
+
+
+def known_rates(state: dict) -> list[tuple[int, float]]:
+    return [(int(month), rate) for month, rates in state["rates"].items() for rate in rates]
+
+
+def feed(bearer: str, role: str, delay: float, company: str | None = None,
+         since: str | None = None) -> list[dict] | None:
     """Every Spanish submission in one job family, to the end of the query.
+
+    With `since`, only the rows from that instant on: an incremental read.
 
     Without `company` it is the country-wide feed. `total` in the answer tops
     out at 250 but the API keeps serving rows past it, so paging stops at an
@@ -415,7 +508,6 @@ def feed(bearer: str, role: str, delay: float, company: str | None = None) -> li
     """
     rows: list[dict] = []
     headers = _api_headers(bearer, f"{BASE}/t/{role}/locations/spain")
-    since = None
     while True:
         window: list[dict] = []
         for offset in range(0, MAX_OFFSET + 1, TABLE_PAGE):
@@ -694,12 +786,13 @@ def _dedupe_key(record: dict):
                 record.get("yearsOfExperience"), record.get("level")))
 
 
-def entries_by_company(rows: list[dict], role: str, rate, today: str):
+def entries_by_company(rows: list[dict], role: str, rate, today: str, known=()):
     """Feed rows to {canonical slug: {"name": ..., "entries": [...]}}.
 
     `rate` is the dollar-to-euro rate for rows paid in another currency: a
     number applies to every one, None takes it from the feed's own euro rows
-    nearest in month (`euro_rates`).
+    nearest in month (`euro_rates`) and from `known`, the rates earlier
+    feeds carried.
 
     Pure: tests hand it saved rows. Anything that names no employer, sits
     outside Spain, belongs to another family, states no years, or cannot be
@@ -707,7 +800,7 @@ def entries_by_company(rows: list[dict], role: str, rate, today: str):
     """
     by_slug: dict[str, dict] = {}
     seen: set = set()
-    rates = euro_rates(rows) if rate is None else None
+    rates = sorted(euro_rates(rows) + list(known)) if rate is None else None
     skipped = {"foreign": 0, "wrong-family": 0, "no-employer": 0,
                "no-years": 0, "not-euro": 0, "duplicate": 0}
     for record in rows:
@@ -801,8 +894,11 @@ def _as_rows(entries: list[dict]) -> collections.Counter:
                                for entry in entries)
 
 
-def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
+def write_role(role: str, by_slug: dict, only: set | None = None, append: bool = False) -> dict:
     """Replace one role's stored Levels.fyi rows with the feed's, per company.
+
+    With `append` the rows are an incremental read's, newer than anything on
+    file: they are added and nothing is taken away.
 
     Only the role's own rows are touched: first-hand entries and other roles
     stay exactly where they are. A company left with no rows at all is
@@ -816,7 +912,8 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
     engineer with the two windows' rows.
     """
     companies = lib.load_companies()
-    stats = {"rewritten": 0, "unchanged": 0, "created": 0, "adopted": 0, "dropped": 0,
+    changed = "added to" if append else "rewritten"
+    stats = {changed: 0, "unchanged": 0, "created": 0, "adopted": 0, "dropped": 0,
              "refused": 0}
     touched: set[int] = set()
     for company in companies:
@@ -827,7 +924,7 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
         found = by_slug.pop(canonical, None) if canonical else None
         kept = [entry for entry in company["entries"]
                 if not unscoped(entry)
-                and not (ours(entry) and entry.get("role") == role)]
+                and (append or not (ours(entry) and entry.get("role") == role))]
         if found is None and len(kept) == len(company["entries"]):
             continue
         updated = kept + (found["entries"] if found else [])
@@ -839,7 +936,7 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
             continue
         company["entries"] = updated
         touched.add(id(company))
-        stats["rewritten"] += 1
+        stats[changed] += 1
     for slug in sorted(by_slug):
         if slug in lib.EXCLUDED_SLUGS or (only is not None and slug not in only):
             continue
@@ -869,7 +966,7 @@ def write_role(role: str, by_slug: dict, only: set | None = None) -> dict:
                if id(company) in touched and not company["entries"]]
     stats["dropped"] = len(dropped)
     companies = [company for company in companies if company not in dropped]
-    if stats["rewritten"] or stats["created"] or stats["adopted"] or stats["dropped"]:
+    if stats[changed] or stats["created"] or stats["adopted"] or stats["dropped"]:
         lib.save_companies(companies)
     return stats
 
@@ -891,6 +988,9 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--company", action="append", default=[],
                         help="Write only this Levels.fyi slug. Repeatable. "
                              "The feeds are still read in full.")
+    parser.add_argument("--full", action="store_true",
+                        help="Read every role to the end and replace its rows, "
+                             "whatever its cursor says.")
     parser.add_argument("--delay", type=float, default=3.0,
                         help="Seconds between requests. Below ~2.5 trips their WAF.")
     parser.add_argument("--audit", action="store_true",
@@ -911,7 +1011,8 @@ def main(argv: list[str]) -> int:
     only = {lib.canonical(slug) for slug in args.company} or None
     today = lib.today_utc().isoformat()
     cache = load_global_cache()
-    read = skipped_roles = 0
+    state = load_feed_state()
+    read = quiet = waiting = skipped_roles = 0
     # Spain vouches for a company with MIN_GLOBAL rows on file over all its
     # roles: its small roles are not asked about (and not screened).
     spain_rows: collections.Counter = collections.Counter()
@@ -922,7 +1023,22 @@ def main(argv: list[str]) -> int:
 
     try:
         for role in roles_from_args(args):
-            answer = read_role(bearer, role, args.delay, lib.load_companies(), only)
+            known = state["roles"].get(role) or {}
+            cursor = known.get("since")
+            # --company writes one employer out of a feed read whole.
+            whole = bool(args.full or only or full_due(role, known, today))
+            if not whole and not cursor:
+                waiting += 1
+                continue
+            answer = None
+            if not whole:
+                try:
+                    rows = feed(bearer, role, args.delay, since=after(cursor))
+                    answer = None if rows is None else (rows, None)
+                except Truncated:
+                    whole = True
+            if whole:
+                answer = read_role(bearer, role, args.delay, lib.load_companies(), only)
             if answer is None:
                 skipped_roles += 1
                 print(f"  {role}: feed unreadable, left untouched", file=sys.stderr)
@@ -930,12 +1046,21 @@ def main(argv: list[str]) -> int:
             rows, scope = answer
             if scope is not None:
                 scope = scope & only if only else scope
+            # The cursor moves only past a feed read whole and written whole.
+            if not args.audit and not only and scope is None:
+                remember_rates(state, rows)
+                state["roles"][role] = {"since": newest(rows) or (None if whole else cursor),
+                                        "full": today if whole else known.get("full")}
+            if not rows and not whole:
+                quiet += 1
+                continue
             if not rows:
                 print(f"  {role}: no Spanish submissions")
                 if not args.audit:
                     write_role(role, {}, only if scope is None else scope)
+                    save_feed_state(state)
                 continue
-            by_slug, skipped = entries_by_company(rows, role, None, today)
+            by_slug, skipped = entries_by_company(rows, role, None, today, known_rates(state))
             # Asked now, judged by prune_unproven() once every role is in.
             # Audited too: --audit reads everything and writes nothing.
             for slug, group in by_slug.items():
@@ -943,11 +1068,14 @@ def main(argv: list[str]) -> int:
                     world_of(bearer, cache, group["slug"], role, args.delay, today)
             total = sum(len(group["entries"]) for group in by_slug.values())
             dropped = ", ".join(f"{k} {v}" for k, v in skipped.items() if v)
-            print(f"  {role}: {total} entries at {len(by_slug)} companies"
+            print(f"  {role}: {total} {'entries' if whole else 'new entries'} at "
+                  f"{len(by_slug)} companies"
                   + (f"  (skipped: {dropped})" if dropped else ""))
             read += 1
             if not args.audit:
-                stats = write_role(role, by_slug, only if scope is None else scope)
+                stats = write_role(role, by_slug, only if scope is None else scope,
+                                   append=not whole)
+                save_feed_state(state)
                 print("    file: " + ", ".join(f"{v} {k}" for k, v in stats.items() if v)
                       or "    file: nothing changed")
     except Blocked as exc:
@@ -958,15 +1086,16 @@ def main(argv: list[str]) -> int:
         pruned = prune_unproven(cache, today, only)
         print(f"\nunproven: {pruned['unproven']} rows dropped, {pruned['companies']} "
               "companies with under 5 submissions in the world over every role")
-    print(f"\nroles read: {read}, unreadable: {skipped_roles}")
+    print(f"\nroles read: {read}, nothing new: {quiet}, not asked (nothing on file, "
+          f"read whole every {FULL_WEEKS} weeks): {waiting}, unreadable: {skipped_roles}")
     if not args.audit:
         print(f"\n{ATTRIBUTION}")
         print("Next: python3 scripts/validate.py && python3 scripts/site.py --refresh")
-    if not read:
+    if not read and not quiet:
         print("\nNo role could be read: Levels.fyi is refusing this machine "
               "(GitHub's runners get exactly this).", file=sys.stderr)
         return 1
-    return 0 if skipped_roles < read else 1
+    return 0 if skipped_roles < read + quiet else 1
 
 
 if __name__ == "__main__":
