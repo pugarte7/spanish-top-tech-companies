@@ -41,6 +41,9 @@ spanishtoptechcompanies.com is what people use, built and deployed from
 `main`. Since 2026-11-09 the README leads with the MCP server, "the core":
 connecting is the `/mcp` link alone, then how `find_jobs` finds postings
 (400+ boards, 1,000+ postings a day), applying, the tools, then the site.
+Since 2026-11-19 the demo sits under the opening paragraph and the contents
+list under the link: the repo page is where a launch lands (6,057 visitors
+in two days from X on 2026-11-16, against 2,300 sessions on the site).
 Spanish is `README.md`, English `README.en.md`; the search link lists and
 FAQ were dropped. Its flow diagram is drawn by `scripts/readme_flow.mjs`
 into `docs/img/`, one white-card SVG per language (a dark variant followed

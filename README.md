@@ -8,18 +8,9 @@
 
 Un servidor MCP que da a tu agente de IA los salarios reales de las empresas tech en España y sus ofertas abiertas, y aplica por ti. Cada día rastrea más de 400 portales de empleo: una media de más de 1.000 ofertas diarias a las que puedes aplicar directamente con el MCP. Detrás, una web con el ranking: **[spanishtoptechcompanies.com](https://spanishtoptechcompanies.com/es/)**.
 
-## Contenido
+<img alt="Tu agente, conectado al MCP, busca ofertas de backend en remoto de empresas que pagan más de 80.000 €, encuentra 16 en cinco empresas, rellena el formulario de Pleo con tu CV, te pregunta las tres respuestas que le faltan y envía la solicitud cuando le dices que sí" src="docs/img/mcp-demo.es.gif" width="100%">
 
-- [Conecta tu agente](#conecta-tu-agente)
-- [Cómo busca las ofertas](#cómo-busca-las-ofertas)
-- [Aplica con tu agente](#aplica-con-tu-agente)
-- [Herramientas del MCP](#herramientas-del-mcp)
-- [La web](#la-web)
-- [Cómo se calcula](#cómo-se-calcula)
-- [Añade tu salario](#añade-tu-salario)
-- [Contribuir](#contribuir)
-- [Licencia](#licencia)
-- [Aviso](#aviso)
+Del 16 al 19 de noviembre de 2026, los agentes conectados enviaron más de 250 solicitudes.
 
 ## Conecta tu agente
 
@@ -39,6 +30,19 @@ hermes skills install pugarte7/spanish-top-tech-companies/skills/tech-pay-spain
 
 Es gratis y lo mantiene una sola persona. Si te sirve, deja una estrella ⭐ arriba a la derecha: es lo que hace que lo encuentre más gente que busca trabajo en España.
 
+## Contenido
+
+- [Conecta tu agente](#conecta-tu-agente)
+- [Cómo busca las ofertas](#cómo-busca-las-ofertas)
+- [Aplica con tu agente](#aplica-con-tu-agente)
+- [Herramientas del MCP](#herramientas-del-mcp)
+- [La web](#la-web)
+- [Cómo se calcula](#cómo-se-calcula)
+- [Añade tu salario](#añade-tu-salario)
+- [Contribuir](#contribuir)
+- [Licencia](#licencia)
+- [Aviso](#aviso)
+
 ## Cómo busca las ofertas
 
 Más de 400 portales de empleo, más de 1.000 ofertas al día, todas con el sueldo de la empresa al lado.
@@ -55,8 +59,6 @@ Más de 400 portales de empleo, más de 1.000 ofertas al día, todas con el suel
 ## Aplica con tu agente
 
 Tu agente busca entre esas ofertas, lee el formulario, escribe la carta y las respuestas a partir de tu CV, te enseña la solicitud completa y la envía cuando le dices que sí.
-
-<img alt="Tu agente, conectado al MCP, busca ofertas de backend en remoto de empresas que pagan más de 80.000 €, encuentra 16 en cinco empresas, rellena el formulario de Pleo con tu CV, te pregunta las tres respuestas que le faltan y envía la solicitud cuando le dices que sí" src="docs/img/mcp-demo.es.gif" width="100%">
 
 1. **Dale tu CV y lo que buscas.** Una sola vez, en el chat: tu CV, dónde y cómo quieres trabajar, el sueldo que pides y tu permiso de trabajo.
 2. **Dile que aplique.** Por ejemplo:
