@@ -359,7 +359,10 @@ What the API does:
 - Query: `companySlug` (empty for the country feed), `jobFamilySlug` (the
   role's slug), `countryIds[0]=226` (Spain), `offset`, `limit` (max 50, 400
   above it), `sortBy=offer_date`, `sortOrder` (`ASC` since 2026-11-08),
-  `sinceDate` (an ISO instant; rows on or after it). `total` caps at 250 and
+  `sinceDate` (an ISO instant; rows on or after it: asked on 2026-11-19 with
+  a row's own instant it returned that row, a second later nothing).
+  `offerDate` is the moment of submission, to the second, not a date the
+  author typed: no row carries midnight. `total` caps at 250 and
   lies — the API keeps serving rows past it (trap 7). `offset` stops at 990.
 - Answer: `{"payload": "<base64>"}`. AES-128-ECB, key = first 16 characters
   of base64(MD5("levelstothemoon!!")), then zlib, then JSON with `total`,
@@ -447,6 +450,32 @@ which was falsy, and replaced every company's software engineers with the
 two windows' rows (1,685 for 4,665). `write_role()` now tells `None` from an
 empty set.
 
+Since 2026-11-19 the whole read is the exception. The maintainer wanted
+fewer requests ("en vez de leer todo solo hacemos incremental loads para
+pasar más desapercibidos"): a whole run was about 315 calls every Monday,
+100 of them software engineers, to learn of a few dozen new rows. A run now
+asks each role with a cursor for the rows after it (`after()`: `sinceDate`
+one second past the newest `offerDate` seen, which works because
+`offerDate` is the submission instant and `sinceDate` is inclusive) and
+`write_role(append=True)` adds them, taking nothing away: one call for a
+role with nothing new, about 60 a run. The cursors are in `feed.json`
+beside the CSV (`{"roles": {role: {"since", "full"}}, "rates"}`), an
+instant and a day per role and no submission id. What an incremental run
+cannot see is a submission Levels.fyi deleted or its author corrected, so
+`full_due()` still sends each role through the whole read and the
+replacement once every `FULL_WEEKS` (4) weeks, each role in its own week of
+the cycle (a hash of its slug) so that no run reads them all, or after two
+cycles without one. A role with nothing on file has no cursor and is asked
+only on its whole read: 72 of 129 roles, one call each, every week, for
+families nobody in Spain reports to. `--full` reads everything whole,
+`--company` always does and leaves the cursors alone, and the first run
+without a `feed.json` is a whole one. A run where no role had anything new
+is a run that worked (exit 0); only one where nothing answered fails.
+`feed.json` also keeps up to five euro rates per month from every feed
+read, because a week's new rows are often a dollar row with no euro row
+beside it to price it; whole reads use them too, so a row is not priced one
+week and dropped at the next whole read.
+
 A feed row carries its own `exchangeRate` and `baseSalaryCurrency`, so euro
 submissions convert back at their own rate to exactly the figure typed, and
 non-euro rows convert at the median `exchangeRate` of the five euro rows
@@ -464,7 +493,7 @@ counted, never guessed.
 
 | Script | What it does | Safe? |
 | --- | --- | --- |
-| `fetch_spain.py` | Every Spanish salary in every job family. With a token, reads each role's country-wide feed to the end — paging past the lying `total` — and replaces that role's stored Levels.fyi rows per company; keeps Spanish rows of any seniority whatever the pay, converts USD to EUR, normalizes role/specialization/title/location fields, deletes any entry whose source URL names no location, creates employers the feed names, drops a company left with no rows, and leaves everything untouched when a role's feed cannot be read. | **Use this** |
+| `fetch_spain.py` | Every Spanish salary in every job family. With a token, asks each role's country-wide feed for the rows after its cursor and adds them; every `FULL_WEEKS` weeks (or with `--full`) reads the role's feed to the end — paging past the lying `total` — and replaces that role's stored Levels.fyi rows per company; keeps Spanish rows of any seniority whatever the pay, converts USD to EUR, normalizes role/specialization/title/location fields, deletes any entry whose source URL names no location, creates employers the feed names, drops a company left with no rows, and leaves everything untouched when a role's feed cannot be read. | **Use this** |
 | `fetch_taxonomy.py` | Regenerates `taxonomy.py` from the public `/t` index: 129 roles, categories, specializations, titles and aliases. Generated file; do not edit by hand. | Yes |
 | `fetch_radar.py` | Enriches salary-bearing companies from Spain Tech Radar's open dataset (offices, stack, careers page, type, CIF). Matches by domain, LinkedIn, then exact name; fills empty fields only. | Yes |
 | `fetch_company.py` | Company details only: website, HQ, headcount, sector, vesting. Writes no salary at all, by design. Only fills companies already in the CSV. | Yes |

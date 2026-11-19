@@ -98,15 +98,24 @@ The five things that will bite you:
    which is the backstop that catches whatever a fetcher gets wrong — leave it
    in place. This trap has been paid for twice: 682 foreign bands, then 205
    more carried in by a branch cut before the first fix.
-2. **The feed is read to the end, and a role's stored rows are replaced
-   wholesale.** `fetch_spain.feed()` pages one role's country feed until an
+2. **A whole read goes to the end and replaces the role's rows; the runs
+   between only add.** `fetch_spain.feed()` pages one role's country feed until an
    empty answer — `total` lies (caps at 250 while the API keeps serving) — so
    a run that stops at `total` silently drops older submissions. The same
    API without a token is the old trap: `fetch_spain.py` refuses to write
    without one (`--audit` only). `write_role()` replaces only that role's
    rows and only rows this script wrote: first-hand entries and other roles
    are never touched, and a feed that could not be read to the end changes
-   nothing, because half a feed looks exactly like deletions.
+   nothing, because half a feed looks exactly like deletions. Since
+   2026-11-19 ("solo hacemos incremental loads para pasar más
+   desapercibidos") a run asks each role only for rows submitted after the
+   newest it has seen (`sinceDate`, the cursor in the private `feed.json`
+   beside the CSV, an instant per role and never a submission id) and
+   appends them: about 60 calls where a whole run is about 315. Only a
+   whole read sees a deleted or corrected submission, so each role still
+   gets one every `FULL_WEEKS` (4) weeks, a quarter of the roles per run;
+   a role with nothing on file is asked only then, and `--full` forces it.
+   Never let an incremental read replace rows: it holds a week, not a role.
 3. **`sampleSize > 0` does not mean anything is published.** Many companies
    report a count with every percentile null and no samples, and
    `generatedOccupationSchema.sampleSize` is the company's *global* count
