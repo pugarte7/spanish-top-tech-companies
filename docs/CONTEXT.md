@@ -528,11 +528,14 @@ cannot be updated from new rows alone, so the rows have to be kept
 somewhere. They chose the incremental read with the rows kept encrypted.
 
 - The private files (`companies.csv`, `global.json`, `feed.json`,
-  `usage.csv`) live as one AES-256 tarball in the private repo
+  `usage.csv`, `private-sources.txt`) live as one AES-256 tarball in the private repo
   `pugarte7/spanish-top-tech-companies-data`. `scripts/private_data.sh pull`
   writes them beside `lib.DATA` (backing up what was there), `push` commits
   them back and refuses when the repo moved since that machine's last pull,
   so a stale Mac copy never undoes a Monday. Pull, edit by hand, push.
+  The first run on 2026-11-19 pulled no `private-sources.txt`, so the
+  unpublished source was unknown and `validate.py` stopped it (and named
+  it in the public log); pull now refuses to finish without that file.
 - The workflow pulls, runs what `weekly.sh` runs, pushes the private files
   back before anything public moves (feed.json's cursors are past this
   week's rows by then), commits `data/` to `main` as github-actions[bot],

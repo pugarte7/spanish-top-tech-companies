@@ -5,7 +5,8 @@ name: refresh
 # GitHub's runners no data. Since fetch_spain.py reads only the API, which
 # answers a runner like it answers the Mac, it runs here.
 #
-# The private files (companies.csv, global.json, feed.json, usage.csv) come
+# The private files (companies.csv, global.json, feed.json, usage.csv,
+# private-sources.txt) come
 # encrypted from the private repo pugarte7/spanish-top-tech-companies-data
 # (scripts/private_data.sh) and go back there before anything public moves.
 # fetch_spain.py reads only what was submitted since each role's cursor in

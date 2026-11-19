@@ -80,8 +80,8 @@ research in docs/CONTEXT.md, "Search traffic".
 on this branch either: one row per person is personal data and a copy of
 Levels.fyi's database. It lives at `lib.DATA`
 (`~/.local/share/spanish-top-tech-companies-data/website/companies.csv`, or
-`STC_DATA`), git ignores it, and beside `global.json`, `feed.json` and
-`usage.csv` it is kept encrypted in the private repo
+`STC_DATA`), git ignores it, and beside `global.json`, `feed.json`,
+`usage.csv` and `private-sources.txt` it is kept encrypted in the private repo
 `pugarte7/spanish-top-tech-companies-data` (`scripts/private_data.sh pull`
 before editing it by hand, `push` after; the passphrase is `DATA_KEY`, in the
 Keychain and in Actions). Only aggregates are published, in
