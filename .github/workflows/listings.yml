@@ -1,0 +1,78 @@
+name: listings
+
+# Keeps the places the MCP is published in step with main, the ones that hold a
+# copy and do not read this repository by themselves:
+#
+# - Hermes' plugin catalog pins hermes-plugin/ to a commit: a change there
+#   opens (or updates) the pull request that moves the pin.
+# - ClawHub holds a copy of the skill: a new version of it is published there.
+#
+# The rest need nothing: the site and /mcp deploy from main (deploy.yml),
+# server.json goes to the official MCP Registry (registry.yml), which Glama and
+# PulseMCP read, and skills.sh, `hermes skills install` and Glama's own page
+# read the repository. mcp.so and the awesome lists link to /mcp.
+#
+# A job whose secret is missing says so and passes, so a fork's runs stay green.
+
+on:
+  push:
+    branches: [main]
+    paths: ["hermes-plugin/**", "skills/tech-pay-spain/**"]
+  workflow_dispatch:
+
+concurrency:
+  group: listings
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  hermes:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.LISTINGS_TOKEN }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Move the catalog's pin
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::LISTINGS_TOKEN is not set: the Hermes catalog keeps its old pin"
+            exit 0
+          fi
+          scripts/hermes_bump.sh
+
+  clawhub:
+    runs-on: ubuntu-latest
+    env:
+      CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
+      CLAWHUB_VERSION: 0.26.0
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+
+      - name: Publish the skill's new version
+        run: |
+          set -euo pipefail
+          if [ -z "$CLAWHUB_TOKEN" ]; then
+            echo "::warning::CLAWHUB_TOKEN is not set: ClawHub keeps the skill's old version"
+            exit 0
+          fi
+          skill=skills/tech-pay-spain
+          version="$(sed -n 's/^version: *//p' "$skill/SKILL.md" | head -1)"
+          before="$(git show "HEAD^:$skill/SKILL.md" 2>/dev/null | sed -n 's/^version: *//p' | head -1)"
+          if [ "$GITHUB_EVENT_NAME" = push ] && [ "$version" = "$before" ]; then
+            echo "the skill is still $version: ClawHub takes each version once"
+            exit 0
+          fi
+          npx --yes "clawhub@$CLAWHUB_VERSION" --no-input login --token "$CLAWHUB_TOKEN" --no-browser
+          npx --yes "clawhub@$CLAWHUB_VERSION" --no-input publish "$skill" --slug tech-pay-spain --version "$version" \
+            --source-repo "$GITHUB_REPOSITORY" --source-commit "$GITHUB_SHA" --source-path "$skill"

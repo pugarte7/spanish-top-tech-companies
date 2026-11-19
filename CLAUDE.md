@@ -306,6 +306,18 @@ its board into `boards.json` by hand, which the next `--all` would undo.
 Santander UK, Santander Bank, Juniper and NTT Data are left out of it on
 purpose: their pages lead to another listed company's board or another entity.
 
+**Listings follow main.** Since 2026-11-19 `.github/workflows/listings.yml`
+keeps the two places that hold a copy in step, because the maintainer wanted
+every change to the MCP to reach "todos los sitios donde lo hemos publicado"
+without anyone doing it by hand: a change under `hermes-plugin/` opens or
+updates one pull request moving the pin of Hermes' plugin catalog
+(`scripts/hermes_bump.sh`, secret `LISTINGS_TOKEN`; bump the version in
+`hermes-plugin/plugin.json` with it, the title carries it), and a new
+`version:` in `skills/tech-pay-spain/SKILL.md` is published to ClawHub
+(secret `CLAWHUB_TOKEN`). Everything else reads the repository or `/mcp`
+itself: `server.json` goes to the MCP Registry through `registry.yml`.
+A new place that keeps a copy gets a job there.
+
 Releases are weekly: every Monday `.github/workflows/release.yml` tags
 `main` with one release holding every PR merged since the last tag, one
 bullet per PR title (so keep titles short), and nothing in a week without
