@@ -8,18 +8,9 @@
 
 An MCP server that gives your AI agent the real salaries of tech companies in Spain and their open positions, and applies for you. Every day it crawls more than 400 job boards: an average of more than 1,000 postings a day you can apply to directly through the MCP. Behind it, a website with the ranking: **[spanishtoptechcompanies.com](https://spanishtoptechcompanies.com/en/)**.
 
-## Contents
+<img alt="Your agent, connected to the MCP, finds remote backend openings at companies paying over 80,000 €, 16 at five companies, fills in Pleo's form from your CV, asks you for the three answers it lacks and sends the application when you say yes" src="docs/img/mcp-demo.en.gif" width="100%">
 
-- [Connect your agent](#connect-your-agent)
-- [How it finds postings](#how-it-finds-postings)
-- [Apply with your agent](#apply-with-your-agent)
-- [MCP tools](#mcp-tools)
-- [The website](#the-website)
-- [How it is calculated](#how-it-is-calculated)
-- [Add your salary](#add-your-salary)
-- [Contributing](#contributing)
-- [Licence](#licence)
-- [Disclaimer](#disclaimer)
+Between 16 and 19 November 2026, connected agents sent more than 250 applications.
 
 ## Connect your agent
 
@@ -39,6 +30,19 @@ hermes skills install pugarte7/spanish-top-tech-companies/skills/tech-pay-spain
 
 It is free and one person maintains it. If it is useful to you, leave a star ⭐ at the top right: it is what gets it found by more people looking for work in Spain.
 
+## Contents
+
+- [Connect your agent](#connect-your-agent)
+- [How it finds postings](#how-it-finds-postings)
+- [Apply with your agent](#apply-with-your-agent)
+- [MCP tools](#mcp-tools)
+- [The website](#the-website)
+- [How it is calculated](#how-it-is-calculated)
+- [Add your salary](#add-your-salary)
+- [Contributing](#contributing)
+- [Licence](#licence)
+- [Disclaimer](#disclaimer)
+
 ## How it finds postings
 
 More than 400 job boards, more than 1,000 postings a day, each with the company's salary alongside.
@@ -55,8 +59,6 @@ More than 400 job boards, more than 1,000 postings a day, each with the company'
 ## Apply with your agent
 
 Your agent searches those postings, reads the form, writes the cover letter and the answers from your CV, shows you the full application and sends it when you say yes.
-
-<img alt="Your agent, connected to the MCP, finds remote backend openings at companies paying over 80,000 €, 16 at five companies, fills in Pleo's form from your CV, asks you for the three answers it lacks and sends the application when you say yes" src="docs/img/mcp-demo.en.gif" width="100%">
 
 1. **Give it your CV and what you want.** Only once, in the chat: your CV, where and how you want to work, the salary you ask for and your work authorization.
 2. **Tell it to apply.** For example:
