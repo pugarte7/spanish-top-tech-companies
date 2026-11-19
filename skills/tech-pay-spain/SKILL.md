@@ -1,7 +1,7 @@
 ---
 name: tech-pay-spain
 description: Answer what jobs pay in Spain (salario, sueldo, cuánto se cobra) by role, region, years of experience or company, from medians of real Spanish salaries. Use for salary questions, offer checks, negotiation prep, finding open positions and applying to jobs in Spain.
-version: 1.4.0
+version: 1.4.1
 author: pugarte7
 license: CC-BY-SA-4.0
 metadata:
@@ -89,12 +89,17 @@ Spain or Europe), and helps apply to them. See "Applying" below.
   `account_required` is true, the person opens the account, and the
   questions are Workday's standard steps plus a marker for the employer's own.
   A Phenom career site (Cisco, Roche, HPE) whose application is on Workday
-  answers the same way. A SuccessFactors career site (Indra, Deloitte, EY, Telefónica,
-  Capgemini) and Amazon give the posting and `account_required`: the form appears once
+  answers the same way, Verisure's included. A SuccessFactors career site (Indra, Deloitte, EY,
+  Telefónica, Capgemini, and Allianz behind Phenom) and SmartRecruiters (Sopra Steria, T-Systems,
+  Glovo) keep their form off the public web: the answer has `standard_steps`, the steps every
+  application on that board has, with a marker for the employer's own questions, and
+  `board_notes`, what agents reported after sending there (shadow DOM fields and bot protection
+  on SmartRecruiters, the account and the Apply menu on SuccessFactors). Read the notes before
+  opening the form. Amazon gives the posting and `account_required`: the form appears once
   the person signs in or creates an account there. An employer's own careers site with
   schema.org JobPosting (Factorial, eDreams, Dynatrace, Adevinta), and Radancy and iCIMS
   career sites (ING, Sanofi, AXA, Publicis), give the posting, and the Apply link's form
-  when the page names one. SmartRecruiters, Oracle (Marriott, JPMorgan) and Cornerstone
+  when the page names one. Oracle (Marriott, JPMorgan) and Cornerstone
   (GMV, Bankinter) give the posting but not its form; there, and on any other system
   behind Phenom, the form is read in the browser.
 - `report_application(id, status, reason, browser, steps, attempts, notes)`: after sending or failing, the

@@ -846,6 +846,9 @@ const more = { ...index, jobs: [...index.jobs,
     location: "Madrid, Spain" },
   { id: "phenom:careers.allianz.com/AISAIPGB:94498", company: "Allianz", slug: "allianz", title: "Security Risk Intern",
     url: "https://careers.allianz.com/job/94498", ats: "phenom", location: "Barcelona, Spain" },
+  { id: "phenom:careers.verisure.com/VERIGLOBAL/global/en:r2023020375", company: "Verisure", slug: "verisure",
+    title: "Asesor comercial", url: "https://careers.verisure.com/global/en/job/r2023020375", ats: "phenom",
+    location: "Pozuelo de Alarcon, Spain" },
   { id: "teamtailor:careers.vueling.com:8681660", company: "Vueling", slug: "vueling", title: "Training Specialist",
     url: "https://careers.vueling.com/jobs/8681660-training-specialist", ats: "teamtailor", location: "Viladecans, Spain" },
   { id: "teamtailor:careers.vueling.com:8681661", company: "Vueling", slug: "vueling", title: "Elsewhere",
@@ -951,6 +954,12 @@ BOARDS["https://careers.roche.com/global/en/job/202602-104409"] = phenomPage({ d
 BOARDS["https://roche.wd3.myworkdayjobs.com/wday/cxs/roche/roche-ext/job/Madrid/Team-Lead_202602-104409-2"] = json({
   jobPostingInfo: { jobDescription: "<p>Reliability at Roche</p>", canApply: true,
     externalUrl: "https://roche.wd3.myworkdayjobs.com/roche-ext/job/Madrid/Team-Lead_202602-104409-2" } });
+// Verisure's Workday is on the shared host, with the tenant in the path.
+BOARDS["https://careers.verisure.com/global/en/job/r2023020375"] = phenomPage({ description: "<p>Verisure Pozuelo</p>",
+  applyUrl: "https://wd502.myworkdaysite.com/recruiting/verisure/eQuest/job/Pozuelo-de-Alarcon/Asesor_r2023020375-1/apply" });
+BOARDS["https://wd502.myworkdaysite.com/wday/cxs/verisure/eQuest/job/Pozuelo-de-Alarcon/Asesor_r2023020375-1"] = json({
+  jobPostingInfo: { jobDescription: "<p>Ventas en Verisure</p>", canApply: true, questionnaireId: "q1",
+    externalUrl: "https://wd502.myworkdaysite.com/recruiting/verisure/eQuest/job/Pozuelo-de-Alarcon/Asesor_r2023020375-1" } });
 BOARDS["https://careers.allianz.com/job/94498"] = phenomPage({ description: "<p>Allianz Barcelona</p>",
   applyUrl: "https://career5.successfactors.eu/careers?company=AZGROUPPROD&career_job_req_id=94498" });
 
@@ -1160,8 +1169,11 @@ BOARDS["https://api.smartrecruiters.com/v1/companies/Mirantis/postings/744000159
   location: { city: "Madrid", country: "es", fullLocation: "Madrid, Spain" },
   jobAd: { sections: { jobDescription: { title: "Job Description", text: "<p>Run Kubernetes for customers.</p>" } } } });
 const smart = await formOf("smartrecruiters:Mirantis:744000159424229");
-report("smartrecruiters: the posting and its apply URL; the form, not public, is read in the browser",
-  smart.questions.length === 1 && smart.questions[0].type === "unread" && /not public/.test(smart.form_source) &&
+report("smartrecruiters: the posting, its apply URL, the board's standard steps and what agents found there",
+  /not public/.test(smart.form_source) && smart.standard_steps === true && !smart.account_required &&
+  byLabel(smart, /^Resume/).who === "agent" && byLabel(smart, /screening questions/).type === "unread" &&
+  byLabel(smart, /Privacy/).who === "person" && smart.board_notes.notes.some((n) => /shadow/.test(n)) &&
+  formAccess(smart).form_access === "standard" && formAccess(smart).form_read === false &&
   /Run Kubernetes/.test(smart.description.text) &&
   smart.apply_url === "https://jobs.smartrecruiters.com/Mirantis/744000159424229-platform-engineer?oga=true", smart);
 const viaPhenom =await formIn("phenom:careers.roche.com/ROCHGLOBAL/global/en:202602-104409");
@@ -1171,10 +1183,18 @@ report("phenom: a posting applied to on Workday reads as Workday, through the Ph
   viaPhenom.apply_url === "https://roche.wd3.myworkdayjobs.com/roche-ext/job/Madrid/Team-Lead_202602-104409-2/apply",
   viaPhenom.questions);
 const otherAts = await formIn("phenom:careers.allianz.com/AISAIPGB:94498");
-report("phenom: on another ATS, the apply URL, the description and one unread form",
-  otherAts.questions.length === 1 && otherAts.questions[0].type === "unread" && /successfactors/.test(otherAts.questions[0].label) &&
+report("phenom: on SuccessFactors, the apply URL, the description and SuccessFactors' standard steps",
+  otherAts.account_required === true && otherAts.standard_steps === true &&
+  byLabel(otherAts, /account on career5\.successfactors\.eu/).who === "person" &&
+  byLabel(otherAts, /own application questions/).type === "unread" && otherAts.board_notes.notes.length > 0 &&
   /Allianz Barcelona/.test(otherAts.description.text) && otherAts.apply_url.startsWith("https://career5.successfactors.eu/"),
   otherAts.questions);
+const sharedWorkday = await formIn("phenom:careers.verisure.com/VERIGLOBAL/global/en:r2023020375");
+report("phenom: a posting on Workday's shared host reads as Workday",
+  sharedWorkday.account_required === true && sharedWorkday.employer_questions === "after sign-in" &&
+  byLabel(sharedWorkday, /account with Verisure/).who === "person" && /Ventas en Verisure/.test(sharedWorkday.description.text) &&
+  sharedWorkday.apply_url === "https://wd502.myworkdaysite.com/recruiting/verisure/eQuest/job/Pozuelo-de-Alarcon/Asesor_r2023020375-1/apply",
+  sharedWorkday);
 const wdClosed = await run("job_questions", { id: "workday:bbva/wd3/BBVA:R-99999" }, { jobs: more });
 report("workday: a posting that takes no more applications is a tool error", wdClosed.isError === true &&
   /no longer takes applications/.test(wdClosed.content[0].text));
@@ -1274,7 +1294,9 @@ BOARDS["https://careers.ey.com/ey/job/Valencia-Closed/1402220799/"] = (init) => 
 const ey = await formOf("successfactors:careers.ey.com:1402220733");
 report("successfactors: the posting page gives the description and place, and the form needs an account",
   ey.form_source.startsWith("SuccessFactors") && ey.account_required === true && ey.employer_questions === "after sign-in" &&
-  ey.questions.length === 1 && ey.questions[0].key === "application_form" && ey.questions[0].type === "unread" &&
+  ey.standard_steps === true && byLabel(ey, /account on careers\.ey\.com/).category === "account" &&
+  byLabel(ey, /privacy statement/).who === "person" && byLabel(ey, /own application questions/).type === "unread" &&
+  ey.board_notes.notes.some((n) => /Apply button/.test(n)) && formAccess(ey).form_access === "standard" &&
   /Join EY in Valencia\.\n+Hybrid, two days/.test(ey.description.text) && !ey.location_check &&
   ey.apply_url === "https://careers.ey.com/ey/job/Valencia-Abogadoa-Corporate/1402220733/", ey);
 const eyClosed = await run("job_questions", { id: "successfactors:careers.ey.com:1402220799" }, { jobs: boards3 });
@@ -1377,7 +1399,7 @@ report("cornerstone: the requisition found through the site's own search, with t
   /Fly satellites at GMV/.test(gmv.description.text) && gmv.form_source.startsWith("Cornerstone"), gmv);
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai|careers\.ey\.com|www\.amazon\.jobs|careers\.capgemini\.com|adevinta\.com|www\.porsche\.digital|careers\.factorial\.com|careers\.ing\.com|careers\.axa\.com|jpmc\.fa\.oraclecloud\.com|gmv\.csod\.com|eu-fra\.api\.csod\.com)\//.test(r.url) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|wd\d+\.myworkdaysite\.com|careers\.(roche|allianz|vueling|verisure)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai|careers\.ey\.com|www\.amazon\.jobs|careers\.capgemini\.com|adevinta\.com|www\.porsche\.digital|careers\.factorial\.com|careers\.ing\.com|careers\.axa\.com|jpmc\.fa\.oraclecloud\.com|gmv\.csod\.com|eu-fra\.api\.csod\.com)\//.test(r.url) &&
     // The exceptions: asking a Pinpoint, Eightfold or SuccessFactors board where it sends a page, without following it.
     (r.init.redirect === "error" || (r.init.redirect === "manual" && /\.pinpointhq\.com\/|\.eightfold\.ai\/|careers\.ey\.com\/|www\.porsche\.digital\/|careers\.axa\.com\//.test(r.url))) &&
     r.init.signal instanceof AbortSignal));
@@ -1550,6 +1572,8 @@ const q = (key) => ({ key });
 report("form_access tells a form behind a sign-in or off the API from one read",
   formAccess({ form_source: "x", questions: [q("first_name")] }).form_access === "read" &&
   formAccess({ form_source: "x", account_required: true, questions: [q("resume")] }).form_access === "read" &&
+  formAccess({ form_source: "x", standard_steps: true, questions: [q("resume")] }).form_access === "standard" &&
+  formAccess({ form_source: "x", standard_steps: true, board_refused: 429, questions: [q("resume")] }).form_access === "refused" &&
   formAccess({ form_source: "x", account_required: true, questions: [q("application_form")] }).form_access === "sign_in" &&
   formAccess({ form_source: "x", questions: [q("application_form")] }).form_access === "not_public" &&
   formAccess({ form_source: "x", questions: [q("find_posting")] }).form_access === "posting_moved" &&

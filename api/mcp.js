@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.21.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.22.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -163,8 +163,9 @@ const TOOLS = {
       description: "The application form of one posting from find_jobs, read live from its " +
                    "board (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, Bending Spoons and Eightfold; for Workday, whose form " +
                    "needs the person's account, the posting and Workday's standard steps, also when a " +
-                   "Phenom career site leads to it; for SmartRecruiters, the posting only; for SuccessFactors (Capgemini too) " +
-                   "and Amazon, the posting and account_required, since their form is shown after sign-in; for careers " +
+                   "Phenom career site leads to it; for SmartRecruiters and SuccessFactors (Capgemini too), whose forms are " +
+                   "not public, the posting, the board's standard steps and board_notes, what agents found when sending " +
+                   "there; for Amazon, the posting and account_required, since its form is shown after sign-in; for careers " +
                    "sites with schema.org JobPosting, the posting; other boards are read in the browser): " +
                    "each question with its type, options, whether it is required, the most characters " +
                    "the board takes (max_length) when it says, and who answers " +
@@ -1173,8 +1174,8 @@ const ATS_HOSTS = new Set(["boards-api.greenhouse.io", "boards-api.eu.greenhouse
   "api.lever.co", "api.eu.lever.co", "jobs.lever.co", "jobs.eu.lever.co", "jobs.ashbyhq.com",
   "apply.workable.com", "jobs.bendingspoons.com", "api.rippling.com", "api.smartrecruiters.com", "www.amazon.jobs"]);
 // Workday and Recruitee give each employer its own subdomain.
-const ATS_HOST_PATTERNS = [/^[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com$/, /^[a-z0-9-]+\.recruitee\.com$/,
-  /^[a-z0-9-]+\.bamboohr\.com$/];
+const ATS_HOST_PATTERNS = [/^[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com$/, /^wd\d+\.myworkdaysite\.com$/,
+  /^[a-z0-9-]+\.recruitee\.com$/, /^[a-z0-9-]+\.bamboohr\.com$/];
 const allowedHost = (host) => ATS_HOSTS.has(host) || ATS_HOST_PATTERNS.some((p) => p.test(host));
 // Teamtailor serves each career site on the employer's own domain; its host is
 // the board in our own index, and only that host is read for that posting.
@@ -1682,11 +1683,23 @@ const workdaySteps = (company, ownQuestions) => [
 ];
 
 const WORKDAY_REFUSED = new Set([403, 429, 503]);
+const WORKDAY_SHARED = /^wd\d+\.myworkdaysite\.com$/;
+// "tenant/wdN/site" from a Workday job URL on either kind of host; null for any other URL.
+export function workdayBoard(url) {
+  const own = /^https:\/\/([a-z0-9-]+)\.(wd\d+)\.myworkdayjobs\.com\/(?:[a-z]{2}-[A-Z]{2}\/)?([^/]+)\/job\//.exec(url);
+  if (own) return `${own[1]}/${own[2]}/${own[3]}`;
+  const shared = /^https:\/\/(wd\d+)\.myworkdaysite\.com\/(?:[a-z]{2}-[A-Z]{2}\/)?recruiting\/([A-Za-z0-9_-]+)\/([^/]+)\/job\//.exec(url);
+  return shared ? `${shared[2]}/${shared[1]}/${shared[3]}` : null;
+}
 async function workdayForm(env, board, external, job) {
   const [tenant, , site] = board.split("/");
   const u = new URL(job.url);
   const path = /\/job\/(.+)$/.exec(u.pathname)?.[1];
-  if (!path || !u.hostname.startsWith(`${tenant}.`)) throw new BoardError("the posting's URL is not a Workday job page");
+  // A tenant's own host (bbva.wd3.myworkdayjobs.com) or the shared one, which
+  // names the tenant in the path (wd502.myworkdaysite.com/recruiting/verisure/eQuest).
+  const own = u.hostname.startsWith(`${tenant}.`);
+  const shared = WORKDAY_SHARED.test(u.hostname) && u.pathname.includes(`/recruiting/${tenant}/${site}/job/`);
+  if (!path || !(own || shared)) throw new BoardError("the posting's URL is not a Workday job page");
   let p;
   try {
     p = await fetchBoard(env, `https://${u.hostname}/wday/cxs/${encodeURIComponent(tenant)}/` +
@@ -1698,24 +1711,26 @@ async function workdayForm(env, board, external, job) {
     // the answer goes on without the posting, which the person's browser still reads.
     return { apply_url: `${job.url.replace(/\/+$/, "")}/apply`, questions: workdaySteps(job.company, true),
              description: null, captcha: null, account_required: true, employer_questions: "unknown",
-             refused: e.status,
+             refused: e.status, standard_steps: true,
              source: `Workday's standard steps; Workday refused this server (${e.status}), so the posting ` +
                      "was not read: open url in the browser for its text and whether the employer adds questions" };
   }
   const info = p?.jobPostingInfo;
   if (!isObject(info) || info.canApply === false)
     throw new BoardError("the board no longer takes applications for this posting; it may have closed");
-  const own = typeof info.questionnaireId === "string" && info.questionnaireId !== "";
+  const ownQuestions = typeof info.questionnaireId === "string" && info.questionnaireId !== "";
   return { apply_url: String(info.externalUrl || job.url).replace(/\/?$/, "/apply"),
-           questions: workdaySteps(job.company, own), description: htmlText(info.jobDescription), captcha: null,
-           account_required: true, employer_questions: own ? "after sign-in" : "none announced",
+           questions: workdaySteps(job.company, ownQuestions), description: htmlText(info.jobDescription), captcha: null,
+           account_required: true, employer_questions: ownQuestions ? "after sign-in" : "none announced",
+           standard_steps: true,
            source: "Workday public API for the posting; the questions are the steps every Workday " +
                    "application has, since the form itself is shown only after sign-in" };
 }
 
 // Phenom is a front end: the posting page names the ATS the application goes to.
-// Behind Workday (Cisco, Roche, HPE) the Workday reader answers; behind anything
-// else (SuccessFactors for Allianz) only the apply URL and the description are known.
+// Behind Workday (Cisco, Roche, HPE, and Verisure on Workday's shared host) the
+// Workday reader answers; behind SuccessFactors (Allianz) its standard steps;
+// behind anything else only the apply URL and the description are known.
 const PHENOM_HOST = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
 async function phenomForm(env, board, external, job) {
   const [host, , country, lang] = board.split("/");
@@ -1729,12 +1744,18 @@ async function phenomForm(env, board, external, job) {
   } catch { /* read as no detail below */ }
   if (!isObject(detail)) throw new BoardError("the board no longer shows this posting; it may have closed");
   const apply = typeof detail.applyUrl === "string" ? detail.applyUrl : "";
-  const workday = /^https:\/\/([a-z0-9-]+)\.(wd\d+)\.myworkdayjobs\.com\/(?:[a-z]{2}-[A-Z]{2}\/)?([^/]+)\/job\//.exec(apply);
+  const workday = workdayBoard(apply);
   if (workday) {
-    const form = await workdayForm(env, `${workday[1]}/${workday[2]}/${workday[3]}`, external,
-                                   { ...job, url: apply.replace(/\/apply\/?$/, "") });
+    const form = await workdayForm(env, workday, external, { ...job, url: apply.replace(/\/apply\/?(\?.*)?$/, "") });
     return { ...form, source: `${form.source}; reached through ${host}, the employer's Phenom career site` };
   }
+  const applyHost = hostOf(apply);
+  if (SUCCESSFACTORS_HOST.test(applyHost))
+    return { apply_url: apply, description: htmlText(detail.description ?? ""), captcha: null,
+             account_required: true, employer_questions: "after sign-in", standard_steps: true,
+             board_notes: BOARD_NOTES.successfactors, questions: successfactorsSteps(job.company, applyHost),
+             source: `${host}, the employer's Phenom career site, read now; the application is on SAP SuccessFactors ` +
+                     `(${applyHost}), whose form is shown only after sign-in: the questions are its standard steps` };
   return { apply_url: apply || job.url, description: htmlText(detail.description ?? ""), captcha: null,
            questions: [question("application_form", `The application form on ${hostOf(apply) || host}, ` +
              "not public: read it in the browser and classify each question with the same rule", true, "unread",
@@ -1858,22 +1879,73 @@ async function ripplingForm(env, board, external) {
            source: "Rippling public job board API, read now" };
 }
 
+// What agents wrote in report_application after sending on a board whose form
+// the server cannot read (November 2026: 871 forms asked for on SmartRecruiters,
+// SuccessFactors and Phenom in a week, 25 applications sent). Each line is
+// something several reports agree on; job_questions hands them out with the steps.
+const BOARD_NOTES = {
+  smartrecruiters: [
+    "No account is needed. The form has two pages: the second, with the employer's screening questions and the " +
+      "privacy consent, appears only once the first is filled.",
+    "The fields are web components in shadow DOM: plain DOM queries and coordinate clicks miss them. Use " +
+      "locators or accessibility refs that reach into shadow roots.",
+    "Upload the CV first: the site parses it and overwrites the name and the city, so check both afterwards. " +
+      "If the file input cannot be reached, put the file in a temporary input and dispatch a drop on the " +
+      "Easy Apply dropzone.",
+    "City is taken only when picked from the field's own suggestions. The message to the hiring team " +
+      "refuses semicolons.",
+    "The site sits behind bot protection that answers a headless browser with a 403 page: use a browser with " +
+      "a window here. A slider check is the person's to do; if the site still refuses, hand the application over.",
+  ],
+  successfactors: [
+    "Start from the Apply button on the posting's page, which opens a menu; the apply link on its own may " +
+      "land on the site's home page.",
+    "The person types the email and password of the account. Fill the form after that: what was filled before " +
+      "the account existed is lost. Some sites create the account inside the form itself.",
+    "A second application on the same site comes prefilled from the profile, the earlier cover letter included: replace it.",
+    "Attachments go through a plus button whose menu holds the upload-from-device file input. Comboboxes open " +
+      "from their arrow or with Alt+Down, date fields want real clicks and typing, and number fields such as " +
+      "salary take digits only.",
+    "The privacy statement may be accepted in a dialog opened from a link, not with a checkbox, and some sites " +
+      "email a one-time code after Submit.",
+  ],
+};
+const STANDARD_STEPS_NOTE = "These questions are the steps every application on this board has, not this " +
+  "posting's form read live: the live form decides, and a question it adds is classified with the same rule.";
+
 // SmartRecruiters publishes the posting but not its form: the form's
-// configuration takes an API key, and the apply page turns away clients that are
-// not browsers. The posting gives the description and the place.
+// configuration takes an API key, and the apply page sits behind DataDome, which
+// turns away clients that are not browsers. The posting gives the description
+// and the place; the questions are the ones its Easy Apply form always has.
+const smartrecruitersSteps = (company) => [
+  question("first_name", "First name", true, "text", [], "personal_information"),
+  question("last_name", "Last name", true, "text", [], "personal_information"),
+  question("email", "Email", true, "email", [], "personal_information"),
+  question("city", "City (picked from the field's suggestions)", false, "text", [], "personal_information"),
+  question("phone", "Phone number", false, "phone", [], "personal_information"),
+  question("experience", "Experience (title, company, dates, description)", false, "list", [], "experience"),
+  question("education", "Education (institution, degree, dates)", false, "list", [], "education"),
+  question("profiles", "LinkedIn and website", false, "url", [], "profiles"),
+  question("resume", "Resume/CV", true, "file", [], "resume"),
+  question("message", "Message to the hiring team", false, "textarea", [], "message"),
+  question("screening_questions", `${company}'s screening questions, on a second page shown once the first is ` +
+    "filled: classify each on the live form with the same rule", true, "unread", [], "screening",
+    { who: "agent", category: "unread" }),
+  question("privacy", "Privacy notice consent", true, "consent", [], "screening", { who: "person", category: "consent" }),
+];
+
 async function smartrecruitersForm(env, board, external, job) {
   const p = await fetchBoard(env, `https://api.smartrecruiters.com/v1/companies/${encodeURIComponent(board)}/postings/` +
                                   encodeURIComponent(external));
   if (!isObject(p) || p.active === false) throw new BoardError("the board no longer has this posting; it may have closed");
   const sections = isObject(p.jobAd?.sections) ? Object.values(p.jobAd.sections).filter(isObject) : [];
   const apply = typeof p.applyUrl === "string" && hostOf(p.applyUrl) === "jobs.smartrecruiters.com" ? p.applyUrl : job.url;
-  return { apply_url: apply, captcha: null,
+  return { apply_url: apply, captcha: null, standard_steps: true, board_notes: BOARD_NOTES.smartrecruiters,
            description: sections.map((s) => [s.title, htmlText(s.text)].filter(Boolean).join("\n")).filter(Boolean).join("\n\n"),
            location: [p.location?.fullLocation, [p.location?.city, p.location?.country].filter(Boolean).join(", ")],
-           questions: [question("application_form", "The application form on jobs.smartrecruiters.com, not public: " +
-             "read it in the browser and classify each question with the same rule", true, "unread", [], "application",
-             { who: "agent", category: "unread" })],
-           source: "SmartRecruiters public posting API; the application form itself is not public" };
+           questions: smartrecruitersSteps(job.company),
+           source: "SmartRecruiters public posting API, read now; the application form is not public, so the " +
+                   "questions are the steps every SmartRecruiters application has" };
 }
 
 // Eightfold: the career site's apply page carries the whole form as JSON in its
@@ -1966,6 +2038,25 @@ async function eightfoldForm(env, board, external, job) {
 // with schema.org microdata. Its Apply button asks the person to sign in or
 // create an account on the site before SAP's candidate profile and the
 // employer's questions appear, so the page gives the description and the place.
+const SUCCESSFACTORS_HOST = /(^|\.)(successfactors\.(eu|com)|sapsf\.(eu|com|cn))$/;
+const successfactorsSteps = (company, host) => [
+  question("account", `Create an account on ${host} or sign in (email and password)`, true, "account", [], "account",
+           { who: "person", category: "account" }),
+  question("privacy_statement", "Data privacy statement, accepted when the account is created", true, "consent", [],
+           "account", { who: "person", category: "consent" }),
+  question("resume", "Resume/CV", true, "file", [], "profile"),
+  question("cover_letter", "Cover letter", false, "file", [], "profile"),
+  question("name", "First and last name", true, "text", [], "profile"),
+  question("phone", "Phone", false, "phone", [], "profile"),
+  question("residence", "Country and city of residence", false, "text", [], "profile"),
+  question("work_experience", "Work experience (job title, company, dates)", false, "list", [], "profile"),
+  question("education", "Education (school, degree, field of study)", false, "list", [], "profile"),
+  question("languages", "Languages", false, "list", [], "profile"),
+  question("application_questions", `${company}'s own application questions, shown after sign-in: classify each ` +
+    "on the live form with the same rule", true, "unread", [], "application_questions",
+    { who: "agent", category: "unread" }),
+];
+
 function elementAt(html, start) {
   const tag = /^<(\w+)/.exec(html.slice(html.lastIndexOf("<", start)))?.[1] ?? "span";
   const open = html.indexOf(">", start) + 1;
@@ -2009,11 +2100,10 @@ async function successfactorsForm(env, board, external, job) {
   // Sites of the newer generation (Fluidra) fill the description by script: the page still shows the posting.
   const post = successfactorsPosting(page);
   return { apply_url: job.url, captcha: null, description: post.description, location: post.location,
-           account_required: true, employer_questions: "after sign-in",
-           questions: [unread("application_form", `The application form on ${board}: the posting's Apply button asks ` +
-             "the person to sign in or create an account on the site, then shows SAP SuccessFactors' candidate " +
-             "profile and the employer's questions. Read it in the browser and classify each question with the same rule")],
-           source: "SuccessFactors career site's posting page, read now; the form is shown only after sign-in" };
+           account_required: true, employer_questions: "after sign-in", standard_steps: true,
+           board_notes: BOARD_NOTES.successfactors, questions: successfactorsSteps(job.company, board),
+           source: "SuccessFactors career site's posting page, read now; the form is shown only after sign-in, " +
+                   "so the questions are the steps every SuccessFactors application has" };
 }
 
 // Amazon: its public search finds one posting by its id with the whole text
@@ -2223,12 +2313,15 @@ function locationCheck(job, live) {
 // counted a form the board keeps behind a sign-in or off its API (SmartRecruiters,
 // SuccessFactors, Amazon: by design) like a failure, and 35% of reads looked
 // broken; form_access says which. A read that fails is an upstream error instead.
+// "standard" is a board whose form cannot be read and whose usual steps are
+// given in its place (Workday, SmartRecruiters, SuccessFactors).
 export function formAccess(out) {
   const unread = (key) => out.questions?.some((q) => q.key === key);
   const access = out.form_source === null ? "no_reader"
     : out.board_refused ? "refused"
     : unread("find_posting") ? "posting_moved"
     : unread("application_form") ? (out.account_required ? "sign_in" : "not_public")
+    : out.standard_steps ? "standard"
     : "read";
   return { form_read: access === "read", form_access: access };
 }
@@ -2274,6 +2367,9 @@ export async function jobQuestions(data, args = {}, env = {}) {
     captcha: form.captcha,
     ...(form.account_required ? { account_required: true, employer_questions: form.employer_questions } : {}),
     ...(form.refused ? { board_refused: form.refused } : {}),
+    ...(form.standard_steps ? { standard_steps: true, standard_steps_note: STANDARD_STEPS_NOTE } : {}),
+    ...(form.board_notes ? { board_notes: { from: "what agents reported after sending applications on this board",
+                                           notes: form.board_notes } } : {}),
     ...(check ? { location_check: check } : {}),
     conditions: conditionsOf(form.description),
     description: untrusted(form.description),
