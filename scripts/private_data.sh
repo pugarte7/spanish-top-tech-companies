@@ -6,6 +6,8 @@
 #
 #   scripts/private_data.sh pull   # private repo -> files beside lib.DATA
 #   scripts/private_data.sh push   # files -> private repo, as one new commit
+#   scripts/private_data.sh log    # print the last refresh's log
+#   scripts/private_data.sh log-push FILE   # keep FILE as that log (refresh.yml)
 #
 # Encrypted with AES-256 (openssl, PBKDF2) under DATA_KEY: the env variable
 # on Actions, the login Keychain on the Mac (service spanish-top-tech-companies,
@@ -22,6 +24,9 @@ REPO="${STC_PRIVATE_REPO:-git@github.com:pugarte7/spanish-top-tech-companies-dat
 # a run without it would publish them, so pull refuses to finish without it.
 FILES=(companies.csv global.json feed.json usage.csv private-sources.txt)
 BLOB=data.tar.gz.enc
+# What a refresh on Actions printed: its public log shows only which steps
+# passed, since the scripts' output names companies, counts and sources.
+LOG=logs/latest.log.enc
 
 csv="${STC_DATA:-$HOME/.local/share/spanish-top-tech-companies-data/website/companies.csv}"
 dir="$(dirname "$csv")"
@@ -47,6 +52,8 @@ sync_clone() {
 }
 
 remote_head() { git -C "$clone" rev-parse -q --verify origin/main || true; }
+# The last commit that changed the data; log commits in between do not count.
+data_head() { git -C "$clone" log -1 --format=%H origin/main -- "$BLOB" 2>/dev/null || true; }
 
 pull() {
   key
@@ -73,7 +80,7 @@ pull() {
   rm -f "$tarball"
   [ -s "$dir/private-sources.txt" ] \
     || { echo "The pulled data has no private-sources.txt: stopping before anything reads it." >&2; exit 1; }
-  echo "$head" > "$pulled"
+  data_head > "$pulled"
   echo "Pulled $(git -C "$clone" log -1 --format='%h %s')"
 }
 
@@ -82,11 +89,12 @@ push() {
   sync_clone
   local head
   head="$(remote_head)"
-  if [ -n "$head" ] && [ "$head" != "$(cat "$pulled" 2>/dev/null)" ]; then
+  if [ -n "$head" ] && [ "$(data_head)" != "$(cat "$pulled" 2>/dev/null)" ]; then
     echo "The private repo moved since the last pull here. Pull, redo the edit, push." >&2
     exit 1
   fi
   [ -f "$csv" ] || { echo "No $csv to push." >&2; exit 1; }
+  [ -s "$dir/private-sources.txt" ] || { echo "No private-sources.txt beside the CSV: not pushing." >&2; exit 1; }
   local present=()
   for f in "${FILES[@]}"; do [ -f "$dir/$f" ] && present+=("$f"); done
   if [ -n "$head" ]; then git -C "$clone" checkout -q -B main "$head"; else git -C "$clone" checkout -q -B main; fi
@@ -100,8 +108,34 @@ push() {
   echo "Pushed $(git -C "$clone" log -1 --format='%h %s')"
 }
 
+log_push() {
+  key
+  sync_clone
+  local head
+  head="$(remote_head)"
+  if [ -n "$head" ]; then git -C "$clone" checkout -q -B main "$head"; else git -C "$clone" checkout -q -B main; fi
+  mkdir -p "$clone/logs"
+  crypt -e -salt -in "$1" -out "$clone/$LOG"
+  git -C "$clone" add "$LOG"
+  git -C "$clone" -c user.name="${GIT_AUTHOR_NAME:-$(git config user.name || echo refresh)}" \
+    -c user.email="${GIT_AUTHOR_EMAIL:-$(git config user.email || echo refresh@localhost)}" \
+    commit -q -m "Log $(date -u +%F)"
+  git -C "$clone" push -q origin main
+  echo "Log kept in the private repo."
+}
+
+log() {
+  key
+  sync_clone
+  git -C "$clone" show "origin/main:$LOG" > "$clone/.git/log.enc"
+  crypt -d -in "$clone/.git/log.enc"
+  rm -f "$clone/.git/log.enc"
+}
+
 case "${1:-}" in
   pull) pull ;;
   push) push ;;
-  *) echo "usage: $0 pull|push" >&2; exit 2 ;;
+  log) log ;;
+  log-push) log_push "${2:?usage: $0 log-push FILE}" ;;
+  *) echo "usage: $0 pull|push|log|log-push FILE" >&2; exit 2 ;;
 esac

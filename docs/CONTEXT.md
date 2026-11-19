@@ -547,6 +547,24 @@ somewhere. They chose the incremental read with the rows kept encrypted.
   private repo).
 - `usage.py` gets stars and forks there but not traffic, which needs admin
   rights the workflow token lacks.
+- Since 2026-11-19, after the first run printed an unpublished source in its
+  public log, and with the maintainer asking that it never happen again and
+  that the refresh not look like a bot: the scripts write to a log kept
+  encrypted in the private repo (`private_data.sh log` prints the last one),
+  the public log carries only each step's verdict, and the unpublished
+  sources are masked in it as well. It stops with nothing pushed on pulled
+  data that does not validate (before any request), on any failed step, and
+  on `scripts/guard.py`: private-sources.txt present, none of its names in
+  `data/`, Levels.fyi rows down at most 5%, listed companies down at most
+  10%. A failure opens "Refresh failed" with the run's link only. A refusal
+  from Levels.fyi (`fetch_spain.py` exits 3) opens "Refresh paused: ..." and
+  every run is skipped while it is open; `REFRESH_PAUSED=true` as a
+  repository variable pauses it by hand. Against looking like a bot: pauses
+  between requests vary at random from `--delay` to 1.5 times it, a
+  scheduled run starts up to 45 minutes late at random, the incremental read
+  keeps it to some 60 calls, and the two HTML readers, which get 405 every
+  time, are no longer run. The runner's datacenter address is the one signal
+  left; only a self-hosted runner or the Mac removes it.
 
 Until 2026-11-19 it ran on the maintainer's Mac. On 2026-09-27 a
 GitHub-hosted runner minted a token fine and got `unreadable` for both glovo
