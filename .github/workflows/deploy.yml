@@ -3,8 +3,8 @@ name: deploy
 # Builds _site/ from the committed aggregates in data/ and publishes it, with
 # the MCP server at /mcp (api/mcp.js), to Vercel. Built here and uploaded
 # prebuilt: vercel.json turns off Vercel's own Git deployments so a push is
-# deployed once. companies.csv is private and never reaches GitHub; the Mac
-# fetches from Levels.fyi and commits data/ (site.py --refresh).
+# deployed once. companies.csv is private and reaches GitHub only encrypted,
+# in a private repo; refresh.yml fetches from Levels.fyi and commits data/.
 #
 # Needs repository secrets VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID
 # (the last two from .vercel/project.json after `vercel link`), and
@@ -29,6 +29,13 @@ on:
     # postings are from that evening.
     - cron: "17 20 * * *"
   workflow_dispatch:
+    inputs:
+      reuse_jobs:
+        # refresh.yml's push starts no workflow, so it dispatches this one,
+        # and a salary refresh should not wait on a crawl either.
+        description: "Reuse production's jobs.json while it is under 36 hours old"
+        type: boolean
+        default: false
 
 # Deploys queue instead of cancelling each other: a push during the daily
 # crawl (some 45 minutes, up to 90) used to cancel it, losing the day's postings
@@ -48,7 +55,7 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      JOBS_REUSE_HOURS: ${{ github.event_name == 'push' && '36' || '0' }}
+      JOBS_REUSE_HOURS: ${{ (github.event_name == 'push' || inputs.reuse_jobs) && '36' || '0' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
@@ -91,7 +98,7 @@ jobs:
       # scripts/offers.py merges today's jobs.json into offers.csv on the
       # `offers` branch (one row per posting and range, first and last day
       # seen). Its own branch, so the daily commit neither redeploys the site
-      # nor races the Mac's weekly push to main. A failure here is a lost day,
+      # nor races the weekly refresh's push to main. A failure here is a lost day,
       # never a failed deploy.
       - name: Check out offers
         id: offers

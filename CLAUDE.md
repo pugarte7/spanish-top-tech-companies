@@ -80,7 +80,11 @@ research in docs/CONTEXT.md, "Search traffic".
 on this branch either: one row per person is personal data and a copy of
 Levels.fyi's database. It lives at `lib.DATA`
 (`~/.local/share/spanish-top-tech-companies-data/website/companies.csv`, or
-`STC_DATA`), git ignores it, and only aggregates are published, in
+`STC_DATA`), git ignores it, and beside `global.json`, `feed.json` and
+`usage.csv` it is kept encrypted in the private repo
+`pugarte7/spanish-top-tech-companies-data` (`scripts/private_data.sh pull`
+before editing it by hand, `push` after; the passphrase is `DATA_KEY`, in the
+Keychain and in Actions). Only aggregates are published, in
 `data/` (`site.py --refresh` writes it; CI and deploys build the site from
 it). Never commit the CSV, link to it, or put a single person's salary in
 anything public: the weekly digest and its issue carry company aggregates
@@ -139,7 +143,9 @@ The five things that will bite you:
    and `LEVELS_PASSWORD` or a prompt, or takes a pasted refresh token when
    the email is left empty), which is what lets it run unattended, or
    with `LEVELS_TOKEN` for a one-off run. Since 2026-11-01 that login lives only
-   in the Keychain, never in a file. A
+   in the Keychain, never in a file; since 2026-11-19 the refresh on Actions
+   signs in from the `LEVELS_EMAIL` and `LEVELS_PASSWORD` secrets, as a runner
+   has no Keychain and a secret cannot follow a rotating refresh token. A
    refused refresh token stops the run rather than falling back to the public
    page. Only a full table read (`Spain (table)` in the run report) has seen every
    submission; the other labels mean the page's subset. The token and the
@@ -148,19 +154,24 @@ The five things that will bite you:
    table is against Levels.fyi's terms; the maintainer chose that on
    2026-09-21 knowing the account may be closed.
 
-All Levels.fyi fetching must run from Spain; the pages are IP-scoped. Keep
+Levels.fyi's HTML pages are IP-scoped and serve GitHub's runners nothing;
+the API (`api.levels.fyi`), the only source of pay, answers a runner as it
+answers the Mac. Keep
 `--delay` at 2.5s or more, and treat 402/403/405/429/503 as throttling rather
 than as "not found". 401 is an expired token. Without a token the fetcher
 refuses to write (`--audit` only), and a blocked run, or one that could read
 no company at all, exits 1.
 
-The weekly refresh runs on the maintainer's Mac, not on GitHub: Levels.fyi
-serves GitHub's runners pages without data. `scripts/weekly.sh` runs from
-launchd every Monday at 08:00 and pushes a "Refresh salaries" commit to
-`main`, which deploys the site (since 2026-11-01, when `website` was
-merged into `main`);
-`.github/workflows/weekly.yml` turns that push into an issue with
-`scripts/digest.py`'s summary of what changed. See docs/CONTEXT.md.
+The weekly refresh runs on GitHub Actions since 2026-11-19
+(`.github/workflows/refresh.yml`, Mondays): it pulls the private files from
+their encrypted repo, reads only what each role's feed got since its cursor,
+pushes the private files back, then commits "Refresh salaries" with `data/`
+to `main`, dispatches `deploy.yml` and opens the week's issue with
+`scripts/digest.py`'s summary (a push with `GITHUB_TOKEN` starts no
+workflow). Until then it ran on the maintainer's Mac from launchd, because
+fetch_spain.py read HTML pages that serve runners nothing; `scripts/weekly.sh`
+still does the same by hand, syncing the private repo around it. See
+docs/CONTEXT.md.
 
 Entries are individual Levels.fyi submissions. The stored fields are the
 normalized columns (`lib.ENTRY_COLUMNS`): role, specialization and title are

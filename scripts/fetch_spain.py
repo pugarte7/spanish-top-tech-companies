@@ -227,6 +227,12 @@ def token() -> str | None:
         if current != stored:
             keychain_write(current)
         return bearer
+    # A CI runner has no Keychain, and a secret cannot follow a rotating
+    # refresh token, so it signs in afresh from the account's email and password.
+    email = os.environ.get("LEVELS_EMAIL", "").strip()
+    password = os.environ.get("LEVELS_PASSWORD", "")
+    if email and password:
+        return refreshed(password_login(email, password))[0]
     return os.environ.get("LEVELS_TOKEN", "").strip() or None
 
 

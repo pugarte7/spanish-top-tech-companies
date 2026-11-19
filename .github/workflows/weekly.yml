@@ -24,8 +24,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      # The data is private, so the Mac computes the digest and sends it as
-      # the commit body.
+      # Only for a refresh pushed from the Mac (weekly.sh by hand): refresh.yml
+      # pushes with GITHUB_TOKEN, which starts no workflow, and opens its own
+      # issue. The data is private, so the digest comes as the commit body.
       - name: Open this week's issue
         env:
           GH_TOKEN: ${{ github.token }}
@@ -57,4 +58,4 @@ jobs:
             exit 0
           fi
           gh issue create --title "No salary refresh this week" --body \
-            "Monday's refresh never pushed. On the Mac, check ~/Library/Logs/spanish-top-tech-companies/weekly.log, or run ~/.local/share/spanish-top-tech-companies/scripts/weekly.sh by hand."
+            "Monday's refresh never pushed. Check the last run of the refresh workflow in Actions, or start it by hand (gh workflow run refresh.yml)."
