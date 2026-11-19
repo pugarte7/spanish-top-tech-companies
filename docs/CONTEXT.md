@@ -515,14 +515,43 @@ counted, never guessed.
 temporary file first, because an interrupted fetch must not truncate the only
 copy of the data.
 
-All Levels.fyi fetching **must run from Spain** — the pages are IP-scoped.
+Levels.fyi's HTML pages are IP-scoped: fetch them from Spain. The API is
+not: on 2026-11-19 a GitHub runner in the US got the same JSON 401 without a
+token that the Mac gets.
 
 ### The weekly refresh
 
-It runs on the maintainer's Mac. On 2026-09-27 a GitHub-hosted runner minted
-a token fine and got `unreadable` for both glovo and fever: HTML without the
-page data, most likely Levels.fyi's bot protection answering Azure addresses.
-So:
+Since 2026-11-19 it runs on GitHub Actions, `.github/workflows/refresh.yml`,
+every Monday (set for 01:00 UTC; GitHub starts this repo's schedules hours
+late). The maintainer asked whether Actions could do it with a Levels.fyi
+account, then whether the site could take Levels.fyi's own figures instead
+of computing them: it cannot (they are per company page, often null, foreign
+when Spain has none, and give no region or experience split), and a median
+cannot be updated from new rows alone, so the rows have to be kept
+somewhere. They chose the incremental read with the rows kept encrypted.
+
+- The private files (`companies.csv`, `global.json`, `feed.json`,
+  `usage.csv`) live as one AES-256 tarball in the private repo
+  `pugarte7/spanish-top-tech-companies-data`. `scripts/private_data.sh pull`
+  writes them beside `lib.DATA` (backing up what was there), `push` commits
+  them back and refuses when the repo moved since that machine's last pull,
+  so a stale Mac copy never undoes a Monday. Pull, edit by hand, push.
+- The workflow pulls, runs what `weekly.sh` runs, pushes the private files
+  back before anything public moves (feed.json's cursors are past this
+  week's rows by then), commits `data/` to `main` as github-actions[bot],
+  dispatches `deploy.yml` with `reuse_jobs` (a `GITHUB_TOKEN` push starts no
+  workflow) and opens "Week of" and keeps "Companies to verify" itself.
+- Secrets: `LEVELS_EMAIL` and `LEVELS_PASSWORD` (the account; `token()` signs
+  in by SRP each run), `DATA_KEY` (the tarball's passphrase, also in the
+  Keychain as account `data-key`) and `DATA_DEPLOY_KEY` (write access to the
+  private repo).
+- `usage.py` gets stars and forks there but not traffic, which needs admin
+  rights the workflow token lacks.
+
+Until 2026-11-19 it ran on the maintainer's Mac. On 2026-09-27 a
+GitHub-hosted runner minted a token fine and got `unreadable` for both glovo
+and fever: HTML without the page data, most likely Levels.fyi's bot
+protection answering Azure addresses. That setup, now for runs by hand:
 
 - launchd agent `com.pugarte7.spanish-top-tech-companies.weekly`
   (`~/Library/LaunchAgents/`) runs `scripts/weekly.sh` from its own clone in
@@ -534,11 +563,12 @@ So:
   "Refresh salaries YYYY-MM-DD" with `data/`, never the
   salaries themselves. That push is also what deploys the site.
   Its log is `~/Library/Logs/spanish-top-tech-companies/weekly.log`; a failure
-  also raises a macOS notification.
+  also raises a macOS notification. Since 2026-11-19 it pulls the private
+  files first and pushes them back before `data/`.
 - `sh weekly run` (repo root) starts the same launchd job by hand and follows
   its log; `sh weekly status` shows the job's last exit and the last refresh
   commit, `sh weekly log` the log.
-- `.github/workflows/weekly.yml` opens an issue from that push with
+- `.github/workflows/weekly.yml` opens an issue from a push from the Mac with
   `scripts/digest.py` (companies in and out, table moves, median changes,
   every new salary, a draft post). It runs as github-actions[bot] because
   GitHub never notifies people of their own activity. On Tuesdays at 12:00
