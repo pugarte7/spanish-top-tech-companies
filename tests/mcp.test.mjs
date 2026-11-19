@@ -1504,6 +1504,17 @@ const frontMadrid = await jobsOut({ role: "frontend", region: "MD" });
 report("dropping one filter suggests the postings it finds, and says which filter they miss",
   frontMadrid.matches === 0 && frontMadrid.no_match.suggestions?.[0]?.company === "Abacum" &&
   /^without region/.test(frontMadrid.no_match.suggestions_are), frontMadrid.no_match);
+const juniorBackend = await jobsOut({ role: "backend", seniority: "junior" });
+report("a level that finds nothing is widened one step, never to senior postings",
+  juniorBackend.matches === 0 && juniorBackend.no_match.suggestions.length > 0 &&
+  juniorBackend.no_match.without_each_filter.find((w) => w.drop === "seniority").matches >
+    juniorBackend.no_match.suggestions.length &&
+  juniorBackend.no_match.suggestions.every((j) => j.seniority !== "senior" && !/^Senior/.test(j.title)) &&
+  /^at a level next to junior \(intern, junior, mid/.test(juniorBackend.no_match.suggestions_are), juniorBackend.no_match);
+const juniorRemote = await jobsOut({ seniority: "junior", workplace: "remote" });
+report("with no company, role or query asked, the nearest postings are still suggested",
+  juniorRemote.matches === 0 && juniorRemote.no_match.suggestions.length > 0 &&
+  juniorRemote.no_match.suggestions.every((j) => j.workplace === "remote"), juniorRemote.no_match);
 const rich = await jobsOut({ role: "backend", min_salary_eur: 900000 });
 report("a salary floor nobody reaches is the filter to drop",
   rich.no_match.without_each_filter[0].drop === "min_salary_eur" && rich.no_match.suggestions.length > 0 &&
