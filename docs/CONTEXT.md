@@ -359,7 +359,10 @@ What the API does:
 - Query: `companySlug` (empty for the country feed), `jobFamilySlug` (the
   role's slug), `countryIds[0]=226` (Spain), `offset`, `limit` (max 50, 400
   above it), `sortBy=offer_date`, `sortOrder` (`ASC` since 2026-11-08),
-  `sinceDate` (an ISO instant; rows on or after it). `total` caps at 250 and
+  `sinceDate` (an ISO instant; rows on or after it: asked on 2026-11-19 with
+  a row's own instant it returned that row, a second later nothing).
+  `offerDate` is the moment of submission, to the second, not a date the
+  author typed: no row carries midnight. `total` caps at 250 and
   lies — the API keeps serving rows past it (trap 7). `offset` stops at 990.
 - Answer: `{"payload": "<base64>"}`. AES-128-ECB, key = first 16 characters
   of base64(MD5("levelstothemoon!!")), then zlib, then JSON with `total`,
@@ -447,6 +450,32 @@ which was falsy, and replaced every company's software engineers with the
 two windows' rows (1,685 for 4,665). `write_role()` now tells `None` from an
 empty set.
 
+Since 2026-11-19 the whole read is the exception. The maintainer wanted
+fewer requests ("en vez de leer todo solo hacemos incremental loads para
+pasar más desapercibidos"): a whole run was about 315 calls every Monday,
+100 of them software engineers, to learn of a few dozen new rows. A run now
+asks each role with a cursor for the rows after it (`after()`: `sinceDate`
+one second past the newest `offerDate` seen, which works because
+`offerDate` is the submission instant and `sinceDate` is inclusive) and
+`write_role(append=True)` adds them, taking nothing away: one call for a
+role with nothing new, about 60 a run. The cursors are in `feed.json`
+beside the CSV (`{"roles": {role: {"since", "full"}}, "rates"}`), an
+instant and a day per role and no submission id. What an incremental run
+cannot see is a submission Levels.fyi deleted or its author corrected, so
+`full_due()` still sends each role through the whole read and the
+replacement once every `FULL_WEEKS` (4) weeks, each role in its own week of
+the cycle (a hash of its slug) so that no run reads them all, or after two
+cycles without one. A role with nothing on file has no cursor and is asked
+only on its whole read: 72 of 129 roles, one call each, every week, for
+families nobody in Spain reports to. `--full` reads everything whole,
+`--company` always does and leaves the cursors alone, and the first run
+without a `feed.json` is a whole one. A run where no role had anything new
+is a run that worked (exit 0); only one where nothing answered fails.
+`feed.json` also keeps up to five euro rates per month from every feed
+read, because a week's new rows are often a dollar row with no euro row
+beside it to price it; whole reads use them too, so a row is not priced one
+week and dropped at the next whole read.
+
 A feed row carries its own `exchangeRate` and `baseSalaryCurrency`, so euro
 submissions convert back at their own rate to exactly the figure typed, and
 non-euro rows convert at the median `exchangeRate` of the five euro rows
@@ -464,7 +493,7 @@ counted, never guessed.
 
 | Script | What it does | Safe? |
 | --- | --- | --- |
-| `fetch_spain.py` | Every Spanish salary in every job family. With a token, reads each role's country-wide feed to the end — paging past the lying `total` — and replaces that role's stored Levels.fyi rows per company; keeps Spanish rows of any seniority whatever the pay, converts USD to EUR, normalizes role/specialization/title/location fields, deletes any entry whose source URL names no location, creates employers the feed names, drops a company left with no rows, and leaves everything untouched when a role's feed cannot be read. | **Use this** |
+| `fetch_spain.py` | Every Spanish salary in every job family. With a token, asks each role's country-wide feed for the rows after its cursor and adds them; every `FULL_WEEKS` weeks (or with `--full`) reads the role's feed to the end — paging past the lying `total` — and replaces that role's stored Levels.fyi rows per company; keeps Spanish rows of any seniority whatever the pay, converts USD to EUR, normalizes role/specialization/title/location fields, deletes any entry whose source URL names no location, creates employers the feed names, drops a company left with no rows, and leaves everything untouched when a role's feed cannot be read. | **Use this** |
 | `fetch_taxonomy.py` | Regenerates `taxonomy.py` from the public `/t` index: 129 roles, categories, specializations, titles and aliases. Generated file; do not edit by hand. | Yes |
 | `fetch_radar.py` | Enriches salary-bearing companies from Spain Tech Radar's open dataset (offices, stack, careers page, type, CIF). Matches by domain, LinkedIn, then exact name; fills empty fields only. | Yes |
 | `fetch_company.py` | Company details only: website, HQ, headcount, sector, vesting. Writes no salary at all, by design. Only fills companies already in the CSV. | Yes |
@@ -486,14 +515,43 @@ counted, never guessed.
 temporary file first, because an interrupted fetch must not truncate the only
 copy of the data.
 
-All Levels.fyi fetching **must run from Spain** — the pages are IP-scoped.
+Levels.fyi's HTML pages are IP-scoped: fetch them from Spain. The API is
+not: on 2026-11-19 a GitHub runner in the US got the same JSON 401 without a
+token that the Mac gets.
 
 ### The weekly refresh
 
-It runs on the maintainer's Mac. On 2026-09-27 a GitHub-hosted runner minted
-a token fine and got `unreadable` for both glovo and fever: HTML without the
-page data, most likely Levels.fyi's bot protection answering Azure addresses.
-So:
+Since 2026-11-19 it runs on GitHub Actions, `.github/workflows/refresh.yml`,
+every Monday (set for 01:00 UTC; GitHub starts this repo's schedules hours
+late). The maintainer asked whether Actions could do it with a Levels.fyi
+account, then whether the site could take Levels.fyi's own figures instead
+of computing them: it cannot (they are per company page, often null, foreign
+when Spain has none, and give no region or experience split), and a median
+cannot be updated from new rows alone, so the rows have to be kept
+somewhere. They chose the incremental read with the rows kept encrypted.
+
+- The private files (`companies.csv`, `global.json`, `feed.json`,
+  `usage.csv`) live as one AES-256 tarball in the private repo
+  `pugarte7/spanish-top-tech-companies-data`. `scripts/private_data.sh pull`
+  writes them beside `lib.DATA` (backing up what was there), `push` commits
+  them back and refuses when the repo moved since that machine's last pull,
+  so a stale Mac copy never undoes a Monday. Pull, edit by hand, push.
+- The workflow pulls, runs what `weekly.sh` runs, pushes the private files
+  back before anything public moves (feed.json's cursors are past this
+  week's rows by then), commits `data/` to `main` as github-actions[bot],
+  dispatches `deploy.yml` with `reuse_jobs` (a `GITHUB_TOKEN` push starts no
+  workflow) and opens "Week of" and keeps "Companies to verify" itself.
+- Secrets: `LEVELS_EMAIL` and `LEVELS_PASSWORD` (the account; `token()` signs
+  in by SRP each run), `DATA_KEY` (the tarball's passphrase, also in the
+  Keychain as account `data-key`) and `DATA_DEPLOY_KEY` (write access to the
+  private repo).
+- `usage.py` gets stars and forks there but not traffic, which needs admin
+  rights the workflow token lacks.
+
+Until 2026-11-19 it ran on the maintainer's Mac. On 2026-09-27 a
+GitHub-hosted runner minted a token fine and got `unreadable` for both glovo
+and fever: HTML without the page data, most likely Levels.fyi's bot
+protection answering Azure addresses. That setup, now for runs by hand:
 
 - launchd agent `com.pugarte7.spanish-top-tech-companies.weekly`
   (`~/Library/LaunchAgents/`) runs `scripts/weekly.sh` from its own clone in
@@ -505,11 +563,12 @@ So:
   "Refresh salaries YYYY-MM-DD" with `data/`, never the
   salaries themselves. That push is also what deploys the site.
   Its log is `~/Library/Logs/spanish-top-tech-companies/weekly.log`; a failure
-  also raises a macOS notification.
+  also raises a macOS notification. Since 2026-11-19 it pulls the private
+  files first and pushes them back before `data/`.
 - `sh weekly run` (repo root) starts the same launchd job by hand and follows
   its log; `sh weekly status` shows the job's last exit and the last refresh
   commit, `sh weekly log` the log.
-- `.github/workflows/weekly.yml` opens an issue from that push with
+- `.github/workflows/weekly.yml` opens an issue from a push from the Mac with
   `scripts/digest.py` (companies in and out, table moves, median changes,
   every new salary, a draft post). It runs as github-actions[bot] because
   GitHub never notifies people of their own activity. On Tuesdays at 12:00

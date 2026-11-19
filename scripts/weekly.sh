@@ -1,7 +1,8 @@
 #!/bin/bash
-# The website's Monday refresh, run by launchd on the maintainer's Mac:
-# Levels.fyi refuses GitHub's runners, so the fetch has to come from a Spanish
-# connection. It works in a clone of its own, reset to origin/main on every
+# The Monday refresh as the Mac ran it until 2026-11-19, when it moved to
+# .github/workflows/refresh.yml; kept to run by hand (`sh weekly run`). It
+# pulls the private files from their encrypted repo first and pushes them
+# back before data/, as the workflow does (scripts/private_data.sh). It works in a clone of its own, reset to origin/main on every
 # run, so it never touches a checkout someone is editing. The salaries are
 # private and live outside any clone (lib.DATA); the push carries only the
 # site's public aggregates in data/, with the week's digest as the commit
@@ -33,6 +34,8 @@ main() {
   # -B also moves a clone left on another branch.
   git checkout -q -f -B "$BRANCH" "origin/$BRANCH"
 
+  bash scripts/private_data.sh pull
+
   # npm and GitHub counters into the private usage.csv; GitHub keeps 14 days.
   python3 scripts/usage.py || echo "usage failed; usage.csv keeps what it had"
 
@@ -57,6 +60,8 @@ main() {
   # of open postings reaches them; ones found boardless are rechecked weekly.
   { [ -d node_modules ] || npm ci --omit=dev -q; } && node scripts/boards.mjs > /dev/null \
     || echo "boards failed; data/boards.json stays as it is"
+
+  bash scripts/private_data.sh push
 
   git add data scripts/taxonomy.py
   if git diff --cached --quiet; then
