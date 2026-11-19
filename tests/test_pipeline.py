@@ -550,8 +550,7 @@ def test_an_unread_feed_changes_nothing() -> None:
 def test_a_run_reads_only_what_is_new() -> None:
     """After a whole read, a run asks each role for the rows past its cursor.
 
-    Since 2026-11-19 (the maintainer: "solo hacemos incremental loads para
-    pasar más desapercibidos"): those rows are added, nothing on file is
+    Since 2026-11-19: those rows are added, nothing on file is
     taken away, and the whole read that replaces the role comes round every
     FULL_WEEKS weeks.
     """

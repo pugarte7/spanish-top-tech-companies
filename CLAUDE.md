@@ -111,8 +111,7 @@ The five things that will bite you:
    rows and only rows this script wrote: first-hand entries and other roles
    are never touched, and a feed that could not be read to the end changes
    nothing, because half a feed looks exactly like deletions. Since
-   2026-11-19 ("solo hacemos incremental loads para pasar más
-   desapercibidos") a run asks each role only for rows submitted after the
+   2026-11-19, to make fewer requests, a run asks each role only for rows submitted after the
    newest it has seen (`sinceDate`, the cursor in the private `feed.json`
    beside the CSV, an instant per role and never a submission id) and
    appends them: about 60 calls where a whole run is about 315. Only a
@@ -150,9 +149,7 @@ The five things that will bite you:
    page. Only a full table read (`Spain (table)` in the run report) has seen every
    submission; the other labels mean the page's subset. The token and the
    refresh token are a live login: never commit them,
-   never print them, never put them in a tool call's visible output. Reading the
-   table is against Levels.fyi's terms; the maintainer chose that on
-   2026-09-21 knowing the account may be closed.
+   never print them, never put them in a tool call's visible output.
 
 Levels.fyi's HTML pages are IP-scoped and serve GitHub's runners nothing;
 the API (`api.levels.fyi`), the only source of pay, answers a runner as it

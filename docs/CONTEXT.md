@@ -383,9 +383,7 @@ writing the page's one record in its place would delete last run's table
 entries. The label for a full table read is `Spain (table)`; the other labels
 in the run report mean the page's subset was all that could be read.
 
-Two things to know before running it. This is against Levels.fyi's terms and
-the account used can be closed; the maintainer chose it knowingly. And the
-token is a live login: never commit it, never print it, and rotate it (sign
+The token is a live login: never commit it, never print it, and rotate it (sign
 out and in) if it has been pasted anywhere it should not have been.
 
 **6. The list only knows the companies it already has. The feed fixes that.**
@@ -451,8 +449,7 @@ two windows' rows (1,685 for 4,665). `write_role()` now tells `None` from an
 empty set.
 
 Since 2026-11-19 the whole read is the exception. The maintainer wanted
-fewer requests ("en vez de leer todo solo hacemos incremental loads para
-pasar más desapercibidos"): a whole run was about 315 calls every Monday,
+fewer requests: a whole run was about 315 calls every Monday,
 100 of them software engineers, to learn of a few dozen new rows. A run now
 asks each role with a cursor for the rows after it (`after()`: `sinceDate`
 one second past the newest `offerDate` seen, which works because
