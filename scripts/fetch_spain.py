@@ -16,8 +16,7 @@ discovery feed are both obsolete - at roughly 100 calls for software
 engineers and one or two for a family nobody in Spain has submitted to.
 
 Since 2026-11-19 a run asks each role only for what was submitted after the
-newest row it has seen (the maintainer: "solo hacemos incremental loads para
-pasar más desapercibidos"), one call for a role with nothing new, and adds
+newest row it has seen, to make fewer requests, one call for a role with nothing new, and adds
 those rows to the file. A role is still read to the end and replaced once
 every FULL_WEEKS weeks, a quarter of the roles each week, because only a
 whole read sees a submission that was deleted or corrected; a role with
