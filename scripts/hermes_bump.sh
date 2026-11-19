@@ -52,11 +52,14 @@ fi
 
 gh repo sync "$fork" --source "$upstream" --branch main
 base="$(gh api "repos/$fork/commits/main" --jq .sha)"
-gh api -X PATCH "repos/$fork/git/refs/heads/$branch" -f sha="$base" -F force=true >/dev/null 2>&1 ||
-  gh api "repos/$fork/git/refs" -f ref="refs/heads/$branch" -f sha="$base" >/dev/null
-blob="$(gh api "repos/$fork/contents/$entry?ref=$branch" --jq .sha)"
-gh api -X PUT "repos/$fork/contents/$entry" -f message="$title" -f branch="$branch" -f sha="$blob" \
-  -f content="$(base64 < entry.yaml | tr -d '\n')" >/dev/null
+# One commit on top of the fork's main, then the branch moved to it in one step:
+# resetting the branch to main first leaves an open pull request with no diff,
+# and GitHub closes it.
+tree="$(gh api "repos/$fork/git/trees" -f base_tree="$base" -f "tree[][path]=$entry" -f "tree[][mode]=100644" \
+  -f "tree[][type]=blob" -f "tree[][content]=$(cat entry.yaml)" --jq .sha)"
+commit="$(gh api "repos/$fork/git/commits" -f message="$title" -f tree="$tree" -f "parents[]=$base" --jq .sha)"
+gh api -X PATCH "repos/$fork/git/refs/heads/$branch" -f sha="$commit" -F force=true >/dev/null 2>&1 ||
+  gh api "repos/$fork/git/refs" -f ref="refs/heads/$branch" -f sha="$commit" >/dev/null
 
 # Through the API: this repository's release-label hook reads any pull request
 # opened from a shell as one of its own.
