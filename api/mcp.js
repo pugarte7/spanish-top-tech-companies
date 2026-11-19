@@ -960,14 +960,29 @@ const NEUTRAL = {
 const TOPICAL = ["company", "role", "query"];
 const ALL_NEUTRAL = Object.assign({}, ...Object.values(NEUTRAL));
 const SUGGESTED = 5;
+// A level that finds nothing is widened one step each way, not dropped: a junior
+// search for remote Python work was offered senior and staff postings (2026-11-19).
+// A title that names no level counts as mid, as the mid filter reads it.
+const levelsNear = (level) => {
+  const at = SENIORITIES.indexOf(level);
+  return SENIORITIES.slice(Math.max(at - 1, 0), at + 2);
+};
 function noMatch({ data, index, args, filtersSet, pass, withTerms, dropped }) {
   const set = Object.keys(NEUTRAL).filter((k) => dropped[k]);
   if (!set.length) return { no_match: { reason: "today's index has no posting outside exclude" } };
   const without = set.map((k) => ({ drop: k, matches: pass({ ...filtersSet, ...NEUTRAL[k] }).results.length }));
-  const keepsTopic = (k) => TOPICAL.some((t) => t !== k && dropped[t]);
-  let source = without.find((w) => w.matches > 0 && keepsTopic(w.drop));
-  let sourceLabel = source && `without ${source.drop}`;
-  let results = source ? pass({ ...filtersSet, ...NEUTRAL[source.drop] }).results : [];
+  // With no company, role or query asked (remote internships), there is no topic to keep.
+  const topical = TOPICAL.some((t) => dropped[t]);
+  const keepsTopic = (k) => !topical || TOPICAL.some((t) => t !== k && dropped[t]);
+  let results = [], sourceLabel;
+  for (const { drop, matches } of without) {
+    if (!matches || !keepsTopic(drop)) continue;
+    const near = drop === "seniority" ? levelsNear(filtersSet.seniority) : null;
+    results = pass({ ...filtersSet, ...NEUTRAL[drop], ...(near ? { levels: new Set(near) } : {}) }).results;
+    sourceLabel = near ? `at a level next to ${filtersSet.seniority} (${near.join(", ")}; a title that names no level is mid)`
+      : `without ${drop}`;
+    if (results.length) break;
+  }
   if (!results.length) {
     // No single filter is the problem: keep only the most telling one.
     const keep = TOPICAL.filter((k) => dropped[k]);
@@ -1073,6 +1088,7 @@ export async function findJobs(data, args = {}, env = {}) {
       if (!g.roleTest(p) || !g.inRegion(p)) continue;
       if (g.workplace && p.workplace !== g.workplace) continue;
       if (g.seniority && p.seniority !== g.seniority && !(g.seniority === "mid" && p.seniority === null)) continue;
+      if (g.levels && !g.levels.has(p.seniority ?? "mid")) continue;
       if (g.years && p.years && p.years[0] > g.years.years) continue;
       const jobRole = g.special ? g.special.slug
         : g.classified && p.roles.includes(g.roleSlug) ? g.roleSlug : p.roles[0] ?? null;
