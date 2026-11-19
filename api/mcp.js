@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.22.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.22.1" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -2402,7 +2402,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
 // --- Jobs: the procedure -------------------------------------------------------------
 
 // How each client gets a browser when it has none. Pasting answers is the last resort.
-const PLAYWRIGHT = "the Playwright MCP server (npx @playwright/mcp@latest --headless), which runs Chromium in the " +
+const PLAYWRIGHT = "the Playwright MCP server (npx @playwright/mcp@0.0.86 --headless), which runs Chromium in the " +
   "background with no window";
 // The order is the skill's: a Chromium of the client's own, then Claude in Chrome
 // when its extension is enabled, then the Playwright MCP server.
@@ -2410,7 +2410,7 @@ const CLIENTS = {
   "claude-code": { names: /claude ?code|^cc$/, keeps: "file",
     browser: "Its built-in Chromium browser where the app has one; else Claude in Chrome when the extension " +
       "is enabled (run /chrome, or start with claude --chrome); else " +
-      "`claude mcp add playwright -- npx @playwright/mcp@latest --headless` and restart." },
+      "`claude mcp add playwright -- npx @playwright/mcp@0.0.86 --headless` and restart." },
   "claude-desktop": { names: /claude ?(desktop|app|ai)|^claude$/, keeps: "memory",
     browser: "Its built-in Chromium browser where the app has one; else Claude in Chrome when the extension " +
       "is installed and connected in Settings; else " + PLAYWRIGHT + " as a local MCP server." },
@@ -2419,7 +2419,7 @@ const CLIENTS = {
       "Chrome if its extension is enabled; else " + PLAYWRIGHT + " added in .cursor/mcp.json." },
   codex: { names: /codex/, keeps: "file",
     browser: "Codex's built-in Chromium browser where it has one; else " +
-      "`codex mcp add playwright -- npx @playwright/mcp@latest --headless`, then restart Codex." },
+      "`codex mcp add playwright -- npx @playwright/mcp@0.0.86 --headless`, then restart Codex." },
   hermes: { names: /hermes/, keeps: "file",
     browser: "Hermes's browser toolset (Chromium); else " + PLAYWRIGHT + " added as an MCP server." },
   chatgpt: { names: /chat ?gpt|openai/, keeps: "memory",
@@ -2445,6 +2445,7 @@ In the person's own words, with the date they gave each one.
 - Needs visa sponsorship:
 - Salary expectation (gross EUR a year):
 - Notice period, earliest start:
+- "How did you hear about us?":
 - Required privacy and data-processing consents: ask each time | allowed on YYYY-MM-DD
 - Optional consents (talent pool, marketing): decline
 - Demographic, veteran and disability questions: decline to answer | (their answer)
@@ -2618,10 +2619,8 @@ export function applicationGuide(args = {}) {
       "At most 10 applications a day unless the person sets another number, and only to postings the " +
         "person chose.",
       "Applications go only to the url or apply_url these tools return.",
-      "Never name this site, its MCP server or the agent as where the person heard of the job. A " +
-        "\"How did you hear about us?\" question gets the employer's own careers page or job board, " +
-        "where the posting is (\"Company website\", \"Careers page\" or the closest option), unless the " +
-        "person names another source they really used.",
+      "A \"How did you hear about us?\" question is the person's answer: ask them once what to put, " +
+        "keep it in their notes and use it from then on. Never make up a source.",
     ],
     sending: {
       where: "The application is always sent on the employer's job board, in a browser: this server has " +
