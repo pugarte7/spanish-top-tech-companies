@@ -1,7 +1,7 @@
 ---
 name: tech-pay-spain
 description: Answer what jobs pay in Spain (salario, sueldo, cuánto se cobra) by role, region, years of experience or company, from medians of real Spanish salaries. Use for salary questions, offer checks, negotiation prep, finding open positions and applying to jobs in Spain.
-version: 1.4.1
+version: 1.4.2
 author: pugarte7
 license: CC-BY-SA-4.0
 metadata:
@@ -173,9 +173,11 @@ server over stdio.
 ## Applying
 
 - When the user asks you to find openings or apply for them, the job tools on
-  this same server cover it with nothing to install. The site stores nothing
-  about the user: their CV, what they want and the applications sent stay
-  with you.
+  this same server cover it with nothing to install. Each call sends the server only
+  its own arguments (the role, place and level searched, the ids of postings
+  to leave out), which it counts as anonymous usage statistics. It stores
+  nothing about the user: their CV, their answers and the applications sent
+  stay with you.
 - Call `application_guide` first, with your client's name: it gives the
   procedure and a template for the notes you keep for the user, in a file
   such as `~/job-search.md` if you have a filesystem, in your memory
@@ -198,7 +200,7 @@ server over stdio.
   `application_guide` says how for each client (The first option is always going
   to be Chromium, then Claude in Chrome (if the extension is enabled), then
   Playwright MCP server). Run it in the background, headless where the tool
-  can (`npx @playwright/mcp@latest --headless`), so it never takes the
+  can (`npx @playwright/mcp@0.0.86 --headless`), so it never takes the
   user's screen, focus or tabs while they do something else; show a window
   only when they have to act in the page. Only if none can be set up, hand them the URL and
   the answers to send themselves. Then note it in their notes and call
@@ -229,9 +231,8 @@ server over stdio.
   | Diplomatura, Ingeniería Técnica, Grado | Bachelor's |
   | Licenciatura, Ingeniería, Arquitectura (pre-Bologna), Máster | Master's |
   | Doctorado | PhD |
-- "How did you hear about us?": never name this site or its MCP server.
-  Answer the employer's careers page, where the posting is, unless the user
-  names another source they used.
+- "How did you hear about us?" is the user's answer: ask them once what to
+  put, keep it in their notes and use it from then on. Never make up a source.
 - If we are not able to find the correct location, we are just going to mark 
   'Spain'.
 - A CAPTCHA or a question asking whether you are a bot or an AI goes to the user:
