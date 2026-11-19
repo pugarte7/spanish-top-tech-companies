@@ -154,10 +154,12 @@ The five things that will bite you:
 Levels.fyi's HTML pages are IP-scoped and serve GitHub's runners nothing;
 the API (`api.levels.fyi`), the only source of pay, answers a runner as it
 answers the Mac. Keep
-`--delay` at 2.5s or more, and treat 402/403/405/429/503 as throttling rather
+`--delay` at 2.5s or more (each pause is `--delay` to half as long again, at
+random, since 2026-11-19), and treat 402/403/405/429/503 as throttling rather
 than as "not found". 401 is an expired token. Without a token the fetcher
-refuses to write (`--audit` only), and a blocked run, or one that could read
-no company at all, exits 1.
+refuses to write (`--audit` only); a blocked run exits 3 (`EXIT_BLOCKED`),
+which pauses the refresh on Actions until its "Refresh paused" issue is
+closed, and one that could read no company at all exits 1.
 
 The weekly refresh runs on GitHub Actions since 2026-11-19
 (`.github/workflows/refresh.yml`, Mondays): it pulls the private files from
@@ -165,7 +167,12 @@ their encrypted repo, reads only what each role's feed got since its cursor,
 pushes the private files back, then commits "Refresh salaries" with `data/`
 to `main`, dispatches `deploy.yml` and opens the week's issue with
 `scripts/digest.py`'s summary (a push with `GITHUB_TOKEN` starts no
-workflow). Until then it ran on the maintainer's Mac from launchd, because
+workflow). Its public log shows only each step's verdict: the scripts'
+output is kept encrypted in the private repo (`private_data.sh log`), since
+on 2026-11-19 a validate.py error printed an unpublished source there.
+Bad pulled data stops it before any request, and `scripts/guard.py` before
+any push (private sources present and absent from `data/`, Levels rows and
+listed companies not shrinking). Until then it ran on the maintainer's Mac from launchd, because
 fetch_spain.py read HTML pages that serve runners nothing; `scripts/weekly.sh`
 still does the same by hand, syncing the private repo around it. See
 docs/CONTEXT.md.

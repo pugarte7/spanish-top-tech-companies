@@ -42,15 +42,13 @@ main() {
   before="$(mktemp)"
   cp "$(python3 -c 'import sys; sys.path.insert(0, "scripts"); import lib; print(lib.DATA)')" "$before"
 
-  # The two HTML readers are extras: Levels.fyi's WAF has answered 405 on
-  # its pages since 2026-11-01 while the API feed still works, and until
-  # 2026-11-02 their failure aborted the run before any salary was read.
-  # The repo's taxonomy and the companies' existing details stand in.
-  python3 scripts/fetch_taxonomy.py \
-    || echo "fetch_taxonomy failed; keeping scripts/taxonomy.py as it is"
+  # Bad data on file stops the run before a single request to Levels.fyi.
+  python3 scripts/validate.py
+  # The two HTML readers (fetch_taxonomy.py, fetch_company.py) are not run:
+  # Levels.fyi's WAF has answered 405 on its pages since 2026-11-01, and a
+  # weekly string of refused requests is a bot's trail. fetch_spain.py exits
+  # 3 when Levels.fyi refuses it, which stops this script with nothing pushed.
   python3 scripts/fetch_spain.py --delay 3.0
-  python3 scripts/fetch_company.py --missing --delay 3.0 \
-    || echo "fetch_company failed; company details stay as they are"
   python3 scripts/fetch_radar.py
   python3 tests/test_pipeline.py
   python3 scripts/validate.py
@@ -61,6 +59,7 @@ main() {
   { [ -d node_modules ] || npm ci --omit=dev -q; } && node scripts/boards.mjs > /dev/null \
     || echo "boards failed; data/boards.json stays as it is"
 
+  python3 scripts/guard.py "$before"
   bash scripts/private_data.sh push
 
   git add data scripts/taxonomy.py

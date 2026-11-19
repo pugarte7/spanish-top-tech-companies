@@ -58,6 +58,7 @@ import hmac
 import gzip
 import json
 import os
+import random
 import re
 import subprocess
 import sys
@@ -164,8 +165,23 @@ def ours(entry: dict) -> bool:
             and "/companies/" in url and "/locations/" in url)
 
 
+# fetch_spain.py's exit status when Levels.fyi refused it mid-run (a 4xx
+# throttle, a bot challenge or a rejected token), apart from the 1 of a feed
+# that could not be read.
+EXIT_BLOCKED = 3
+
+
 class Blocked(RuntimeError):
     """Levels.fyi's WAF returned a bot challenge, or the API refused the token."""
+
+
+def pause(delay: float) -> None:
+    """Wait between requests: `delay` at least, up to half as long again.
+
+    The same pause before every request, week after week, is what a script
+    looks like; a person reading pages never keeps time like that.
+    """
+    time.sleep(delay * random.uniform(1.0, 1.5))
 
 
 def get(url: str, delay: float, attempts: int = 3, headers: dict | None = None) -> str | None:
@@ -194,7 +210,7 @@ def get(url: str, delay: float, attempts: int = 3, headers: dict | None = None) 
             if "Human Verification" in body[:2000]:
                 raise Blocked("Levels.fyi served a bot challenge. Wait, then retry "
                               "with a larger --delay.")
-            time.sleep(delay)
+            pause(delay)
             return body
         except urllib.error.HTTPError as exc:
             time.sleep(delay)
@@ -1026,6 +1042,7 @@ def main(argv: list[str]) -> int:
             spain_rows[lib.canonical(company["levels_slug"])] += sum(
                 1 for entry in company["entries"] if ours(entry) and not unscoped(entry))
 
+    blocked = False
     try:
         for role in roles_from_args(args):
             known = state["roles"].get(role) or {}
@@ -1084,6 +1101,7 @@ def main(argv: list[str]) -> int:
                 print("    file: " + ", ".join(f"{v} {k}" for k, v in stats.items() if v)
                       or "    file: nothing changed")
     except Blocked as exc:
+        blocked = True
         print(f"\n{exc}", file=sys.stderr)
         print("Progress so far is saved.", file=sys.stderr)
 
@@ -1096,6 +1114,10 @@ def main(argv: list[str]) -> int:
     if not args.audit:
         print(f"\n{ATTRIBUTION}")
         print("Next: python3 scripts/validate.py && python3 scripts/site.py --refresh")
+    if blocked:
+        # Its own exit code: refresh.yml pauses itself on it, since asking
+        # again next week from the same kind of address looks like a bot.
+        return EXIT_BLOCKED
     if not read and not quiet:
         print("\nNo role could be read: Levels.fyi is refusing this machine "
               "(GitHub's runners get exactly this).", file=sys.stderr)
