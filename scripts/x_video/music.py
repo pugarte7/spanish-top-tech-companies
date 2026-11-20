@@ -114,4 +114,4 @@ def main(path, seconds, cuts=()):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], float(sys.argv[2]) if len(sys.argv) > 2 else 22, [float(a) for a in sys.argv[3:]])
+    main(sys.argv[1], float(sys.argv[2]) if len(sys.argv) > 2 else 24, [float(a) for a in sys.argv[3:]])

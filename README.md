@@ -28,7 +28,7 @@ Tu agente hace el trabajo, tú decides.
 2. **Pídele ofertas.** «Backend en remoto por encima de 60k». Busca entre las ofertas de hoy y te dice lo que paga cada empresa.
 3. **Aplica con tu sí.** Rellena el formulario con tu CV, te pregunta lo que no sabe y envía solo cuando lo apruebas.
 
-<p align="center"><img alt="La mascota conecta el MCP con un enlace, pide ofertas de backend en remoto por encima de 60k, ve lo que paga cada empresa, rellena el formulario con el CV y envía solo con tu sí" src="docs/img/mcp-video.es.gif" width="320"></p>
+<p align="center"><img alt="La mascota conecta el MCP con un enlace, pide ofertas de software engineer en remoto por encima de 80k, ve lo que paga cada empresa, rellena el formulario con el CV y envía solo con tu sí" src="docs/img/mcp-video.es.gif" width="320"></p>
 
 Para que aplique bien, dale una vez tu CV, dónde y cómo quieres trabajar, el sueldo que pides y tu permiso de trabajo. Después basta una frase:
 

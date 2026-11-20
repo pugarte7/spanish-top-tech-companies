@@ -28,7 +28,7 @@ Your agent does the work, you decide.
 2. **Ask it for jobs.** “Remote backend above 60k”. It searches today's postings and tells you what each company pays.
 3. **Apply with your yes.** It fills in the form from your CV, asks you what it does not know and sends only when you approve.
 
-<p align="center"><img alt="The mascot connects the MCP with a link, asks for remote backend jobs above 60k, sees what each company pays, fills in the form from the CV and sends only with your yes" src="docs/img/mcp-video.en.gif" width="320"></p>
+<p align="center"><img alt="The mascot connects the MCP with a link, asks for remote software engineer jobs above 80k, sees what each company pays, fills in the form from the CV and sends only with your yes" src="docs/img/mcp-video.en.gif" width="320"></p>
 
 For it to apply well, give it once your CV, where and how you want to work, the salary you ask for and your work authorization. After that one sentence is enough:
 

@@ -38,7 +38,8 @@ body { position: relative; color: #fff; font: 600 15px/20px "Inter Tight", sans-
 .body { position: absolute; left: 0; right: 0; top: 100px; bottom: 0; overflow: hidden; }
 .layer { position: absolute; inset: 0; padding: 12px 14px 0; }
 .comp { position: absolute; z-index: 2; left: 12px; right: 12px; bottom: 90px; display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 6px 6px 6px 16px; border-radius: 23px; background: #f4f4f4; box-shadow: inset 0 0 0 1px #e6e6e6; font: 400 15px/19px "Inter Tight", sans-serif; }
-.comp > span { flex: 1; white-space: nowrap; overflow: hidden; }
+.comp > span { flex: 1; font-size: 16px; line-height: 21px; padding: 4px 0; }
+.comp > b { align-self: flex-end; }
 .comp > b { width: 34px; height: 34px; border-radius: 50%; background: #0000f2; flex: none; display: grid; place-items: center; }
 .comp code, .me code { font: 500 12px/19px ui-monospace, Menlo, monospace; letter-spacing: -.02em; }
 .caret { display: inline-block; width: 2px; height: 17px; background: #0000f2; vertical-align: -3px; margin-left: 1px; }
@@ -84,17 +85,17 @@ body { position: relative; color: #fff; font: 600 15px/20px "Inter Tight", sans-
 <canvas id="fig"></canvas>
 <script src="../../web/mascot.js"></script>
 <script>
-// The vertical video: 22 seconds, 9:16, one take on one field. The mascot
+// The vertical video: 24 seconds, 9:16, one take on one field. The mascot
 // opens, the phone comes up and stays put in front, and the mascot's arm does
 // the tapping: it sends the link, sends the question, opens a posting and
 // presses "Sí, envía". Then the link again.
 // Real on 2026-11-20: 6,884 postings (jobs-summary.json) and find_jobs for
-// backend, remote, 60,000 € or more: 26 postings, with these companies and
-// medians (each from five people or more). Acted out: the form and the sending.
+// software engineer, remote, 80,000 € or more: 123 postings, with these
+// companies and medians (each from five people or more). Acted out: the form and the sending.
 //   ?t=12 draws that second · ?play loops in a browser
 (() => {
 const q = new URLSearchParams(location.search);
-const TOTAL = 22, DPR = window.devicePixelRatio || 2;
+const TOTAL = 24, DPR = window.devicePixelRatio || 2;
 const HUE = ["#ff7a1a", "#ff5fa8", "#19cdb9", "#7a4dff"];
 // The four taps, on the beat, and the two moves: the phone in and the phone out.
 const IN = 3, OUT = 18.5, TAP = { link: 5, ask: 8.5, open: 12.5, yes: 16.5 };
@@ -110,14 +111,14 @@ const URL = "spanishtoptechcompanies.com/mcp";
 // The words, in Spanish and (?lang=en) in English.
 const T = {
   es: { intro: "Aplica a *miles* *de* *trabajos* en tech con tu agente.", free: "Gratis.", agent: "Tu agente", connected: "conectado", hello: "Conectado. ¿Qué trabajo buscas?",
-    ask: "Backend en remoto por encima de 60k", postings: "ofertas", of: "de", remote: "remoto", median: "mediana", sep: ".", space: "espacio", keys: "asdfghjklñ",
+    ask: "Software engineer en remoto por encima de 80k", postings: "ofertas", of: "de", remote: "remoto", median: "mediana", sep: ".", space: "espacio", keys: "asdfghjklñ",
     rows: [["Nombre y email", "de tu CV"], ["LinkedIn", "de tu CV"], ["Experiencia", "de tu CV"], ["CV", "adjunto"], ["Sueldo que pides", "80.000 €"]],
     salary: "¿Qué sueldo pides?", answer: "80.000 €", whole: "Esta es la candidatura completa. ¿La envío?", change: "Cambiar algo", yes: "Sí, envía", sent: "Enviada", noted: "Anotada para no repetirla",
     placeholder: "Pregunta a tu agente", outro: "Pega esto en *tu agente*.", note: "Gratis · sin registro · nada se envía sin tu sí",
     caps: ["Conéctalo con un *enlace*.", "Pídele *ofertas*.", "Mira lo que *paga* cada empresa.", "Rellena el formulario con *tu CV*.", "Y envía solo con *tu sí*."],
     tags: ["Sin registro ni claves", "Sueldo base mediano, en España", "Lo que no sabe, te lo pregunta"] },
   en: { intro: "Apply to *thousands* *of* *tech* *jobs* with your agent.", free: "Free.", agent: "Your agent", connected: "connected", hello: "Connected. What job are you after?",
-    ask: "Remote backend above 60k", postings: "postings", of: "of", remote: "remote", median: "median", sep: ",", space: "space", keys: "asdfghjkl",
+    ask: "Remote software engineer above 80k", postings: "postings", of: "of", remote: "remote", median: "median", sep: ",", space: "space", keys: "asdfghjkl",
     rows: [["Name and email", "from your CV"], ["LinkedIn", "from your CV"], ["Experience", "from your CV"], ["CV", "attached"], ["Salary you ask for", "80,000 €"]],
     salary: "What salary do you ask for?", answer: "80,000 €", whole: "This is the whole application. Shall I send it?", change: "Change it", yes: "Yes, send", sent: "Sent", noted: "Noted so it is not repeated",
     placeholder: "Ask your agent", outro: "Paste this into *your agent*.", note: "Free · no sign-up · nothing is sent without your yes",
@@ -126,7 +127,7 @@ const T = {
 }[q.get("lang") === "en" ? "en" : "es"];
 const ASK = T.ask;
 document.documentElement.lang = q.get("lang") === "en" ? "en" : "es";
-const RES = [["Affirm", "Senior Software Engineer, Backend", 87], ["Cisco", "Technical Leader, Backend Services", 85], ["Qonto", "Senior/Staff Go Backend Engineer", 70], ["Semrush", "Senior Backend Developer", 67]];
+const RES = [["Grafana Labs", "Senior Full Stack Engineer", 102], ["Grafana Labs", "Senior Software Engineer, Security", 102], ["Affirm", "Senior Software Engineer, Backend", 87], ["Cisco", "Technical Leader, Backend Services", 85]];
 const KB = ["qwertyuiop", T.keys, "zxcvbnm"].map((r) => `<div>${[...r].map((c) => `<span>${c}</span>`).join("")}</div>`).join("") +
   `<div><span class="fn">123</span><span class="sp">${T.space}</span><span class="fn">↵</span></div>`;
 // [from, to, text]: the line over the phone.
@@ -145,12 +146,12 @@ ${TAGS.map(([, , s, c]) => `<div class="card tag ${c}">${s}</div>`).join("")}
   <div class="body">
     <div class="layer a"><div class="me"><code>${URL}</code></div><div class="tool"><i>✓</i>tech-pay-spain · ${T.connected}</div><div class="ag">${T.hello}</div></div>
     <div class="layer b"><div class="me">${ASK}</div><div class="tool"><i>✓</i><span></span></div>${
-      RES.map(([c, p, m], i) => `<div class="res">${lg(c, i)}<b>${c}</b><p>${p} · ${T.remote}</p><u>${m}${T.sep}000 €<small>${T.median}</small></u></div>`).join("")}</div>
-    <div class="layer c"><div class="job">${lg("Qonto", 2)}<div><b>Qonto</b><span>Senior/Staff Go Backend Engineer</span></div></div><div class="prog"><i></i></div>${
+      RES.map(([c, p, m], i) => `<div class="res">${lg(c, c === "Affirm" ? 2 : c === "Cisco" ? 1 : 0)}<b>${c}</b><p>${p} · ${T.remote}</p><u>${m}${T.sep}000 €<small>${T.median}</small></u></div>`).join("")}</div>
+    <div class="layer c"><div class="job">${lg("Affirm", 2)}<div><b>Affirm</b><span>Senior Software Engineer, Backend</span></div></div><div class="prog"><i></i></div>${
       T.rows.map(([a, b]) => `<div class="row">${a}<b>${b}<i>✓</i></b></div>`).join("")}
       <div class="ag">${T.salary}</div><div class="me"></div>
       <div class="ask">${T.whole}<div class="btns"><span>${T.change}</span><span>${T.yes}</span></div></div>
-      <div class="done"><div class="lg">✓</div><h3>${T.sent}<small>Qonto · Senior/Staff Go Backend Engineer<br>${T.noted}</small></h3></div></div>
+      <div class="done"><div class="lg">✓</div><h3>${T.sent}<small>Affirm · Senior Software Engineer, Backend<br>${T.noted}</small></h3></div></div>
     <div class="comp"><span></span>${SEND}</div><div class="kb">${KB}</div>
   </div></div></div></div>
 <i class="tap"></i>
@@ -274,8 +275,12 @@ const el = { intro: one("#intro"), free: one("#free"), caps: all(".h.cap"), tags
   kb: one(".kb"), keys: all(".kb span"), a: one(".layer.a"), b: one(".layer.b"), c: one(".layer.c"), tap: one(".tap"), outro: one("#outro"), url: one(".card.url"), note: one(".note"), brand: one(".brand") };
 const placeholder = `<span style="color:#9a9a9a">${T.placeholder}</span>`;
 
+// The question is typed at half speed so it can be read: the clock runs two
+// seconds while the story (every time below) runs one.
+const TYPE = [7.3, 8.3], real = (u) => u <= TYPE[0] ? u : u + (TYPE[1] - TYPE[0]);
 function render(t) {
   t = Math.min(t, TOTAL - 1 / 60);
+  t = t < TYPE[0] ? t : t < TYPE[0] + 2 * (TYPE[1] - TYPE[0]) ? TYPE[0] + (t - TYPE[0]) / 2 : t - (TYPE[1] - TYPE[0]);
   const enter = io((t - IN) / 0.9), leave = io((t - OUT) / 0.9), phoneOn = t >= IN && t < OUT + 0.9;
 
   // --- the opening line and its card ---
@@ -291,9 +296,9 @@ function render(t) {
   // The composer: the link pasted, then the question typed with the keyboard up.
   const typing = t >= 7 && t < TAP.ask, kb = ease((t - 6.9) / 0.35) - ease((t - TAP.ask) / 0.35);
   el.compText.innerHTML = t >= 4.2 && t < TAP.link ? `<code style="background:rgba(0,0,242,${0.18 * (1 - clamp((t - 4.2) / 0.6))})">${URL}</code>`
-    : typing ? typed(ASK, t, 7.3, 8.3) + caret(t) : placeholder;
+    : typing ? typed(ASK, t, TYPE[0], TYPE[1] - 0.08) + caret(t * 2) : placeholder;
   el.kb.style.transform = `translateY(${Math.round((1 - kb) * 330)}px)`; el.comp.style.transform = `translateY(${Math.round(-240 * kb)}px)`;
-  const hit = typing && t > 7.3 && t < 8.3 ? Math.floor(t * 23) % (T.keys.length + 17) : -1;
+  const hit = typing && t > TYPE[0] && t < TYPE[1] - 0.08 ? Math.floor(t * 23) % (T.keys.length + 17) : -1;
   el.keys.forEach((k, i) => { k.style.background = i === hit ? "#abb0bc" : ""; });
   const row = all(".res", el.b)[2], yes = one(".btns span:last-child", el.c), pressed = { link: bump(t, TAP.link, 0.3), ask: bump(t, TAP.ask, 0.3), open: bump(t, TAP.open, 0.3), yes: bump(t, TAP.yes, 0.3) };
   el.send.style.transform = `scale(${1 - 0.1 * Math.max(pressed.link, pressed.ask)})`;
@@ -308,7 +313,7 @@ function render(t) {
   const bOut = ease((t - TAP.open - 0.15) / 0.35), n = ease((t - 9.1) / 0.8);
   el.b.style.transform = `translateX(${-340 * bOut}px)`; el.b.style.visibility = t >= TAP.ask && bOut < 1 ? "visible" : "hidden";
   pop(one(".me", el.b), sp(t, TAP.ask + 0.05, 0.4)); pop(one(".tool", el.b), sp(t, 9, 0.4));
-  one(".tool span", el.b).textContent = n < 1 ? `find_jobs · ${dots(6884 + (26 - 6884) * n)} ${T.postings}` : `find_jobs · 26 ${T.of} ${dots(6884)} ${T.postings}`;
+  one(".tool span", el.b).textContent = n < 1 ? `find_jobs · ${dots(6884 + (123 - 6884) * n)} ${T.postings}` : `find_jobs · 123 ${T.of} ${dots(6884)} ${T.postings}`;
   all(".res", el.b).forEach((r, i) => {
     pop(r, sp(t, 9.6 + i * 0.15) * (r === row ? 1 - 0.04 * pressed.open : 1));
     r.style.background = r === row && t >= TAP.open ? "#e9e9ff" : "";
@@ -365,7 +370,7 @@ function render(t) {
 }
 window.render = render;
 window.TOTAL = TOTAL;
-window.CUTS = [0, IN, ...Object.values(TAP), OUT];
+window.CUTS = [0, IN, ...Object.values(TAP), OUT].map(real);
 window.READY = Promise.all([document.fonts.load('800 60px "Inter Tight"'), document.fonts.load('700 60px "Antonio"'), document.fonts.load('400 15px "Inter Tight"')])
   .then(() => render(Number(q.get("t") || 0)));
 if (q.has("play")) {
