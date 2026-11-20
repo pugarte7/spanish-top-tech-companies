@@ -125,8 +125,8 @@ mark { background: none; color: var(--accent); }
 /* At the end of the page, and at the bottom of the window when the page is
    shorter than it: never over the content. */
 .foot { margin-top: auto; padding: 18px 0 22px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap;
-        justify-content: space-between; gap: 6px 20px; font-size: 14px; color: var(--grey); }
-.foot span { display: flex; gap: 18px; }
+        justify-content: center; gap: 6px 18px; font-size: 14px; color: var(--grey); text-align: center; }
+.foot span { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; }
 
 /* The legal and privacy page: one readable column of text. */
 .legal { max-width: 72ch; margin: 0 auto; padding: 24px 16px 64px; }
