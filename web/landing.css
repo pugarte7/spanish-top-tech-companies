@@ -135,17 +135,18 @@ mark { background: none; color: var(--accent); }
 .legal h2 { margin: 28px 0 6px; font-size: 22px; line-height: 28px; font-weight: 500; }
 .legal p { margin: 0; overflow-wrap: anywhere; }
 
-/* On a phone the three figures have to show without scrolling (an iPhone's
-   Safari leaves about 660px): less air above them and a smaller mascot. */
+/* On a phone the three figures and their labels have to show without
+   scrolling, with the air shared out above them. Sized for the normal iPhones
+   from the 13 up, whose Safari leaves about 390 by 660. */
 @media (max-width: 560px) {
-  .page { padding-top: 10px; }
-  .center { margin-top: 0; }
-  .scene { max-width: 264px; margin-bottom: 0; }
-  h1 { margin: 6px 0 10px; }
-  .sub { margin-bottom: 16px; }
-  .btns { gap: 8px; }
-  .cta, .btn2 { padding-top: 12px; padding-bottom: 12px; }
-  .stats { margin-top: 20px; padding-top: 16px; }
+  .page { padding-top: 14px; }
+  .center { margin-top: 2px; }
+  .scene { max-width: 316px; margin-bottom: 0; }
+  h1 { margin: 8px 0 12px; }
+  .sub { margin-bottom: 20px; }
+  .btns { gap: 10px; }
+  .cta, .btn2 { padding-top: 13px; padding-bottom: 13px; }
+  .stats { margin-top: 30px; padding-top: 20px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
