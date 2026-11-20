@@ -59,7 +59,7 @@ tinted backgrounds.
 - Everything works at 320px wide with no sideways scroll. Rows of buttons
   stack on a phone.
 - The footer sits at the end of the page, or at the bottom of the window on a
-  page shorter than it. It never follows the scroll.
+  page shorter than it, with its links centred. It never follows the scroll.
 
 ## Components
 
