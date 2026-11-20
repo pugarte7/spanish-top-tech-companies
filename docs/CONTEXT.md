@@ -234,12 +234,13 @@ landed.
 - `offers.py` merges each build's stated pay into `offers.csv` on the
   `offers` branch, a branch of its own so the daily commit neither redeploys
   nor races the refresh.
-- `remote_boards.mjs` takes every Greenhouse, Ashby, Lever, Teamtailor and
-  Workable board Common Crawl's URL index names (read from its cluster index
-  and block files; its search API times out) and reads each one. Workable
-  refuses anything faster than a board every 2.5s; an ATS that refuses 25
-  boards in a row is left, marked incomplete, and the next run starts
-  elsewhere in its list. A remote board's postings count only when they name
+- `remote_boards.mjs` takes every Greenhouse, Ashby, Lever and Teamtailor
+  board Common Crawl's URL index names (read from its cluster index and
+  block files; its search API times out) and reads each one. Workable is
+  left out on purpose: it refuses anything faster than a board every 2.5s,
+  hours of run for a handful of employers; its boards on file are
+  `via: hand`. An ATS that refuses 25 boards in a row is left, marked
+  incomplete, and the next run starts elsewhere in its list. A remote board's postings count only when they name
   Spain or Europe: a bare "Remote" does not.
 - `remote_levels.py` guesses Levels.fyi's slug from the board's name, so a
   namesake can answer: the match counts only with Levels.fyi's domain in the

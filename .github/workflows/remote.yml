@@ -3,8 +3,8 @@ name: remote boards
 # Twice a month: which employers post remote work open to Spain or Europe on
 # the job boards the crawl can read, beyond the companies with salaries here.
 # scripts/remote_boards.mjs takes every board Common Crawl's index names on
-# Greenhouse, Ashby, Lever, Teamtailor and Workable and reads each one (about
-# 14,000 requests, four hours, most of them Workable's pace); scripts/remote_levels.py keeps those Levels.fyi
+# Greenhouse, Ashby, Lever and Teamtailor and reads each one (about 9,500
+# requests, an hour); scripts/remote_levels.py keeps those Levels.fyi
 # knows or whose posting states pay, in data/remote-boards.json. site.py adds
 # that file to the boards the daily deploy crawls, so nothing is deployed
 # from here: the next daily build reads the new boards.
@@ -37,7 +37,7 @@ jobs:
   remote:
     if: vars.REFRESH_PAUSED != 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 355
+    timeout-minutes: 180
     steps:
       - name: Skip while paused
         id: paused
