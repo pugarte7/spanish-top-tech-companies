@@ -556,6 +556,13 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
           { identifier: "location_SIT-ES_Barcelona" }, { identifier: "location_SIT-BG_Sofia" }] }] } }
       : { jobs: [{ id: "48", title: "SOC Analyst", location: "Barcelona", url: "https://schwarz-digits.de/en/jobsearch/soc-48" }],
           pagination: { totalCount: 1 } },
+    "https://careers.epam.com/api/jobs/v2/search/careers-i18n": { data: { total: 2, jobs: [
+      { uid: "blt1", name: "Senior Java Engineer", vacancy_type: "Hybrid", description: "<p>Java</p>",
+        seo: { url: "/en/vacancy/senior-java-engineer-blt1_en" }, created_at: "2026-11-01T10:00:00Z",
+        city: [{ name: "Madrid", country: { name: "Spain" } }, { name: "Warsaw", country: { name: "Poland" } }],
+        category: { requirements: ["5+ years of Java"] } },
+      { uid: "blt2", name: "Data Engineer", vacancy_type: "Remote", seo: { url: "/en/vacancy/data-engineer-blt2_en" },
+        city: null, country: [{ name: "Spain" }] }] } },
     "https://api.rippling.com/platform/api/ats/v2/board/chess/jobs": { page: 0, pageSize: 100, totalItems: 2, totalPages: 1, items: [
       { id: "a1", name: "Site Reliability Engineer", url: "https://ats.rippling.com/chess/jobs/a1",
         locations: [{ name: "Remote", country: "Spain", countryCode: "ES", workplaceType: "REMOTE" }] },
@@ -583,6 +590,12 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
   const sd = await read("Schwarz Digits", "jsonapi", "schwarz-digits");
   assert.deepEqual(sd.map((j) => j.locationsRaw), [["Barcelona, Spain"]]);
   assert.deepEqual(posted.at(-1).filters.location_city, ["location_SIT-ES_Barcelona"], "only the Spanish offices are asked for");
+  const epam = await read("EPAM Systems", "jsonapi", "epam-es");
+  assert.deepEqual(epam.map((j) => [j.title, j.locationsRaw, j.url]), [
+    ["Senior Java Engineer", ["Madrid, Spain"], "https://careers.epam.com/en/vacancy/senior-java-engineer-blt1_en"],
+    ["Data Engineer", ["Remote, Spain"], "https://careers.epam.com/en/vacancy/data-engineer-blt2_en"]]);
+  assert.equal(inSpain(epam).length, 2);
+  assert.match(epam[0].descriptionText, /5\+ years of Java/);
   await assert.rejects(read("X", "jsonapi", "nobody"), /no jsonapi mapping/);
   const chess = await read("Chess.com", "rippling", "chess");
   assert.deepEqual(inSpain(chess).map((j) => [j.title, j.workplaceType]), [["Site Reliability Engineer", "remote"]]);
