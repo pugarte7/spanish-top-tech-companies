@@ -80,12 +80,13 @@ The server is called `tech-pay-spain`. Your agent picks the tool; you do not nee
 
 | Tool | What it does | Parameters |
 |---|---|---|
-| `find_jobs` | Searches the day's more than 1,000 open postings by role, stack, industry or language, each with the company's median base salary for that role. When nothing matches, it says which filter is in the way and suggests the closest ones. | `query`, `role`, `region`, `workplace`, `seniority`, `years`, `company`, `min_salary_eur`, `exclude`, `limit` |
+| `find_jobs` | Searches the day's more than 1,000 open postings by role, stack, industry or language, each with the company's median base salary for that role. When nothing matches, it says which filter is in the way and suggests the closest ones. | `query`, `role`, `region`, `workplace`, `seniority`, `years`, `company`, `company_size`, `min_salary_eur`, `exclude`, `limit` |
 | `job_questions` | Reads one posting's form live: every question, whether it is required and whether you or the agent answers it, and the link to apply. | `id` |
+| `hiring_contact` | For one posting, someone at the company to write to: a recruiter, or the hiring manager or lead it is for. An email only where one was published for candidates, a LinkedIn profile otherwise. Your agent writes the message and you approve it; an email goes from your own mailbox through the mail MCP server you connected, a LinkedIn message you send yourself. At most 3 a day, a term of use of the server. | `id` |
 | `application_guide` | The procedure for applying on someone's behalf and the notes template the agent keeps. | `client` |
 | `report_application` | How each application went: sent, uncertain (submitted, nothing confirmed it), failed and why, or handed to you, and what sending took. It carries nothing about you. | `id`, `status`, `reason`, `browser`, `steps`, `attempts`, `notes` |
 | `salary_stats` | Median base salary, range (p25-p75), median total pay and how many people earn €60,000 or more. | `role`, `region`, `years` |
-| `top_companies` | The best-paying companies for a role, region and experience. | `role`, `region`, `years`, `search`, `limit` |
+| `top_companies` | The best-paying companies for a role, region and experience. | `role`, `region`, `years`, `search`, `company_size`, `limit` |
 | `company_salaries` | What one company pays, overall and by role, region or experience. | `name`, `role`, `region`, `years` |
 | `list_filters` | Roles, regions, experience buckets and the date of the data. | |
 

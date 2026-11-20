@@ -56,6 +56,27 @@ After any data change: `python3 scripts/validate.py && python3 scripts/site.py
   company with no entries, not a low median.
 - An unknown company gets close names offered and nothing about why.
 
+## Company size and contacts
+
+- `data/sizes.json` (public) maps a slug to `[bucket, employees]`, or
+  `[null, employees, 1]` for a figure that is only one office or the Spanish
+  subsidiary; `site.py` adds it to the built data.json for `company_size`.
+- `contacts.json` (private, beside the CSV, in the private repo) holds the
+  people `hiring_contact` gives: a recruiter, or the hiring manager or lead a
+  posting is for (`jobs`). An email only where it was published for
+  candidates, a LinkedIn profile otherwise; never guessed, never from a data
+  broker, never behind a login. `deploy.yml` writes it to `api/_contacts.json`
+  (git-ignored), bundled with the MCP function only.
+- Never commit contacts, put them in a public issue or log, or publish them
+  as a file. Remove anyone who asks.
+- The limit is 3 messages a day per person, emails and LinkedIn together, a
+  term of use: `MESSAGES_A_DAY` in `api/mcp.js` and `site.py`, the legal page,
+  SKILL.md. The person sends every message; the server sends nothing.
+- New companies are asked about through `instinct/` (brief and schema for the
+  outside agent): `enrich.yml` opens one issue per company in the private
+  repo and `scripts/enrich.py collect` checks and stores the answers. Change
+  `brief.md` and `schema.json` together.
+
 ## The digest's lists
 
 `lib.engineer_entries()` picks every software-engineer row with a base; the

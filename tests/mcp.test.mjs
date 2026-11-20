@@ -1593,5 +1593,76 @@ report("form_access tells a form behind a sign-in or off the API from one read",
   formAccess({ form_source: null, questions: null }).form_access === "no_reader" &&
   formAccess({ form_source: null, questions: null }).form_read === false);
 
+// --- Company size and recruiting contacts ------------------------------------------
+const sizeOfSlug = (slug) => data.companies.find((c) => c.levels === slug)?.size ?? null;
+const sized = (await run("find_jobs", { company_size: "51-200, 201-1000" })).structuredContent;
+const unsized = (await run("find_jobs", {})).structuredContent;
+report("find_jobs: company_size keeps the postings of employers in those buckets and says how many had no size",
+  sized.matches > 0 && sized.matches < unsized.matches &&
+  sized.jobs.every((j) => ["51-200", "201-1000"].includes(j.company_size) && j.company_size === sizeOfSlug(j.slug)) &&
+  sized.left_out_without_company_size >= 1 && sized.filters.company_size.length === 2 && /worldwide/.test(sized.company_size_note), sized.filters);
+const sizeMiss = (await run("find_jobs", { company_size: "1-50", company: "glovo" })).structuredContent;
+report("find_jobs: a size nothing matches says what dropping it would find",
+  sizeMiss.matches === 0 && sizeMiss.no_match.without_each_filter.some((w) => w.drop === "company_size" && w.matches > 0), sizeMiss.no_match);
+report("company_size outside the buckets is refused with the buckets", /company_size is one of 1-50/.test(
+  (await run("find_jobs", { company_size: "huge" })).content[0].text));
+const sizedTop = (await run("top_companies", { company_size: "5001+", limit: 200 })).structuredContent;
+report("top_companies: company_size keeps the employers of that size",
+  sizedTop.companies_listed > 0 && sizedTop.result.every((r) => r.company_size === "5001+") &&
+  sizedTop.companies_listed === data.companies.filter((c) => c.size === "5001+").length, sizedTop.companies_listed);
+const branchCompany = data.companies.find((c) => c.branch);
+const branchAnswer = (await run("company_salaries", { name: branchCompany.name })).structuredContent;
+report("a branch's headcount is shown without a bucket", branchAnswer.company_size.bucket === null &&
+  branchAnswer.company_size.employees === branchCompany.employees && /subsidiary/.test(branchAnswer.company_size.covers), branchAnswer.company_size);
+
+const glovoIds = index.jobs.filter((j) => j.slug === "glovo").map((j) => j.id);
+const [glovoA, glovoB] = glovoIds;
+const peopleFixture = { as_of: "2026-11-20", companies: { glovo: [
+  { kind: "recruiter", name: "Ada Example", role: "Talent Partner", email: "ada@example.com", linkedin: null, jobs: [],
+    scope: "Spain", published: "Careers page asks for CVs here", source: "https://example.com/careers" },
+  { kind: "hiring_manager", name: "Bo Example", role: "Engineering Manager", email: null,
+    linkedin: "https://www.linkedin.com/in/bo-example", jobs: [glovoA], scope: "Spain",
+    published: "Current title matches the posting's team", source: "https://www.linkedin.com/in/bo-example" },
+] } };
+const withContacts = { contacts: peopleFixture };
+const toolNames = async (env) => (await respond(data, { jsonrpc: "2.0", id: 1, method: "tools/list" }, env)).result.tools.map((t) => t.name);
+report("hiring_contact is offered only where the deployment holds contacts",
+  !(await toolNames({})).includes("hiring_contact") && (await toolNames(withContacts)).includes("hiring_contact") &&
+  /unknown tool/.test((await respond(data, { jsonrpc: "2.0", id: 1, ...tool("hiring_contact", { id: glovoA }) })).error?.message));
+const flagged = (await run("find_jobs", {}, withContacts)).structuredContent;
+report("find_jobs marks the postings of a company with a contact, and only those",
+  flagged.jobs.some((j) => j.hiring_contact) && flagged.jobs.every((j) => Boolean(j.hiring_contact) === (j.slug === "glovo")) &&
+  /option beside/.test(flagged.hiring_contact_note) && !("hiring_contact_note" in unsized));
+const forA = (await run("hiring_contact", { id: glovoA }, withContacts)).structuredContent;
+report("hiring_contact gives the recruiter and the manager tied to the posting, with the limit and the rules",
+  forA.contacts.length === 2 && forA.contacts[0].write_by === "email" && forA.contacts[0].email === "ada@example.com" &&
+  forA.contacts[1].kind === "hiring_manager" && forA.contacts[1].write_by === "linkedin" && forA.contacts[1].email === null &&
+  forA.messages_a_day === 3 && /At most 3 messages a day/.test(forA.rules[0]) &&
+  forA.rules.some((r) => /own mailbox/.test(r)) && forA.rules.some((r) => /Do not drive LinkedIn/.test(r)) &&
+  forA.rules.some((r) => /terms of use/.test(r)) && forA.posting.id === glovoA, forA);
+if (glovoB) {
+  const forB = (await run("hiring_contact", { id: glovoB }, withContacts)).structuredContent;
+  report("a manager is given only for the postings they are tied to",
+    forB.contacts.length === 1 && forB.contacts[0].kind === "recruiter", forB.contacts);
+}
+const cabifyId = index.jobs.find((j) => j.slug === "cabify").id;
+const unreached = (await run("hiring_contact", { id: cabifyId }, withContacts)).structuredContent;
+report("a company with no contact says so and gives no rules to send by", unreached.contacts.length === 0 &&
+  /do not guess/.test(unreached.reason) && !("rules" in unreached), unreached);
+const notIndexed = (await run("hiring_contact", { id: "greenhouse:glovo:1" }, withContacts));
+report("hiring_contact answers only for a posting in today's index",
+  notIndexed.isError === true && /today's index/.test(notIndexed.content[0].text));
+const guideWith = (await run("application_guide", {}, withContacts)).structuredContent;
+report("application_guide carries the message rules only where there are contacts",
+  guideWith.writing_to_the_company.messages_a_day === 3 && /## Messages/.test(guideWith.state_document.template) &&
+  !("writing_to_the_company" in (await run("application_guide", {})).structuredContent));
+const lookupCall = { jsonrpc: "2.0", id: 9, ...tool("hiring_contact", { id: glovoA }) };
+const [lookupEvent] = analytics(data, {}, lookupCall, await respond(data, lookupCall, withContacts), Date.now());
+const seen = JSON.stringify(lookupEvent);
+report("a contact lookup is counted without the contacts", lookupEvent?.properties.result_count === 2 &&
+  !/ada@example\.com|Ada Example|Bo Example|bo-example/.test(seen), lookupEvent?.properties);
+report("list_filters gives the size buckets", (await run("list_filters", {})).structuredContent.company_sizes.join() ===
+  "1-50,51-200,201-1000,1001-5000,5001+");
+
 console.log(failed ? `${failed} failed` : "api/mcp.js answers as expected");
 process.exit(failed ? 1 : 0);
