@@ -122,7 +122,20 @@ pauses the refresh until its "Refresh paused" issue is closed.
 - In the demo and in the agent's instructions the agent invents nothing: it
   fills in facts from the CV, asks for the rest, and never writes an opinion
   answer for the person.
-- `scripts/seo.py` writes the static search pages from `data.json` cells.
+- The site is a funnel into the MCP and shows no salaries: one page per
+  language, `scripts/landing.py` with `web/landing.css`, `web/landing.js` and
+  the mascot's renderer `web/mascot.js`. Its headline carries no figure, which
+  would go stale. `vercel.json` sends the old salary and company URLs to it.
+  `data/`, `/api/v1/` and the llms files are still published: the MCP reads
+  them.
+- The agent calls on the home page come from `/api/calls`, PostHog's count of
+  `$mcp_tool_call` without `internal` ones, about a minute late, so there is
+  no counter of our own to run. It needs `POSTHOG_PERSONAL_API_KEY` on the
+  deployment; without it the page leaves the figure out.
+- The tab icon and the link previews are drawn by `tests/site/og-image.mjs`
+  (`npm run og`); run it after a change to the headline or the mascot.
+- The salary page's code (`page()` and what it calls in `site.py`, `seo.py`,
+  `web/app.js`, `web/style.css`) is unused and still to be removed.
 - `api/mcp.js` is the only MCP implementation. `server.json`'s version must
   equal `SERVER.version` there.
 

@@ -47,6 +47,7 @@ import sys
 import unicodedata
 import urllib.request
 
+import landing
 import lib
 import seo
 import taxonomy
@@ -1333,7 +1334,9 @@ def root_page(data: dict) -> str:
     browser's language (the maintainer's choice, 2026-11-03); English is one
     click away. A link preview never follows the redirect, so the head carries
     the Spanish page's title, text, image and icons."""
-    e = strings("es", data)
+    t = landing.TEXT["es"]
+    e = {"page_title": html.escape(t["title"]), "description": html.escape(t["description"]),
+         "title": html.escape(t["name"])}
     return f"""<!doctype html>
 <html lang="es">
 <head>
@@ -1354,6 +1357,29 @@ def root_page(data: dict) -> str:
 """
 
 
+# What the home page loads from web/: its stylesheet, its script and the mascot's.
+LANDING_ASSETS = ("landing.css", "landing.js", "mascot.js")
+
+
+def home_page(lang: str, data: dict) -> str:
+    """landing.py's page with this site's head: link preview, canonical and
+    hreflang, the dataset and the questions as JSON-LD, icons and analytics."""
+    title = html.escape(landing.TEXT[lang]["title"])
+    ld = json.dumps(landing.faq_ld(lang), ensure_ascii=False).replace("</", "<\\/")
+    head = "\n".join([
+        share_meta(lang, title),
+        head_links(lang, f"/{lang}/", {"es": "/es/", "en": "/en/"}),
+        '<link rel="alternate" type="application/json" href="/api/v1/data.json" title="Salary aggregates">',
+        '<link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Salary aggregates for agents">',
+        f'<script type="application/ld+json">{json_ld(lang, data)}</script>',
+        f'<script type="application/ld+json">{ld}</script>',
+        ICON_LINKS, VERCEL_SCRIPTS.rstrip("\n")])
+    version = hashlib.sha256("".join(asset_version(name) for name in LANDING_ASSETS).encode()).hexdigest()[:10]
+    return landing.page(lang, head=head, stars=repo_stars(), version=version)
+
+
+# The salary home page of before 2026-11-20 and the search pages' shell, no
+# longer called from main(): kept until the old page code is removed in one go.
 def page(lang: str, svg: str, data_version: str, data: dict) -> str:
     s = strings(lang, data)
     e = {k: html.escape(v) for k, v in s.items()}
@@ -1689,12 +1715,12 @@ def legal_page(lang: str) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(t['title'])} · Spanish Top Tech Companies</title>
-<meta name="color-scheme" content="light">
+<meta name="color-scheme" content="light dark">
 <script>try {{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }} catch (_) {{}}</script>
 {head_links(lang, f"/{lang}/legal/", {"es": "/es/legal/", "en": "/en/legal/"})}
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
-<link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
+<link rel="stylesheet" href="/landing.css?v={asset_version("landing.css")}">
 {VERCEL_SCRIPTS}</head>
 <body data-lang="{lang}">
 <main class="legal">
@@ -1749,20 +1775,17 @@ def main(argv: list[str]) -> int:
     # Like asset_version, for the JSON the page fetches: a browser holding
     # yesterday's tables under the same URL would run new code on old fields.
     data_version = hashlib.sha256("".join(files.values()).encode()).hexdigest()[:10]
-    svg = spain_svg()
+    # Since 2026-11-20 the site is one page per language that leads to the MCP
+    # (landing.py) and the legal page: the salary home page and seo.py's search
+    # pages are no longer written, and vercel.json sends their URLs to the home
+    # page. The aggregates below are still published, for the MCP and for agents.
     for lang in ("en", "es"):
         (OUT / lang).mkdir()
-        (OUT / lang / "index.html").write_text(page(lang, svg, data_version, data), encoding="utf-8")
+        (OUT / lang / "index.html").write_text(home_page(lang, data), encoding="utf-8")
         (OUT / lang / "legal").mkdir()
         (OUT / lang / "legal" / "index.html").write_text(legal_page(lang), encoding="utf-8")
     (OUT / "index.html").write_text(root_page(data), encoding="utf-8")
-    guides = seo.pages(data, guide_shell(data), PUBLIC)
-    for g in guides:
-        for lang, path in g["paths"].items():
-            (OUT / path.strip("/")).mkdir(parents=True, exist_ok=True)
-            (OUT / path.strip("/") / "index.html").write_text(g["html"][lang], encoding="utf-8")
-    groups = ([{"es": "/es/", "en": "/en/"}] + [g["paths"] for g in guides]
-              + [{"es": "/es/legal/", "en": "/en/legal/"}])
+    groups = [{"es": "/es/", "en": "/en/"}, {"es": "/es/legal/", "en": "/en/legal/"}]
     (OUT / "sitemap.xml").write_text(sitemap(groups, data["data_as_of"]), encoding="utf-8")
     (OUT / "robots.txt").write_text(
         f"User-agent: *\nAllow: /\nDisallow: /ingest/\n\nSitemap: {PUBLIC}/sitemap.xml\n", encoding="utf-8")
@@ -1771,7 +1794,7 @@ def main(argv: list[str]) -> int:
     # og-*.png is the link preview, drawn by tests/site/og-image.mjs.
     # mcp-demo.* is the recorded demo of an agent applying and mcp-demo-m.* its cut for
     # phones, both drawn by scripts/mcp_demo.mjs.
-    for name in ("app.js", "style.css", "cenefa.svg",
+    for name in (*LANDING_ASSETS,
                  "favicon.svg", "favicon.ico", "apple-touch-icon.png", "og-es.png", "og-en.png",
                  *(f"{demo}.{lang}.{ext}" for demo in ("mcp-demo", "mcp-demo-m") for lang in ("es", "en")
                    for ext in ("mp4", "webm", "jpg"))):
@@ -1807,7 +1830,7 @@ def main(argv: list[str]) -> int:
     (OUT / ".well-known" / "skills" / "index.json").write_text(
         json.dumps({"skills": index}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"Built _site/: {len(data['companies'])} companies, {len(data['cells'])} cells "
-          f"of {lib.MIN_GROUP}+ people, {2 * len(guides)} search pages.")
+          f"of {lib.MIN_GROUP}+ people.")
     return 0
 
 
@@ -1951,8 +1974,7 @@ more submissions on Levels.fyi from anywhere in the world over every role.
 Agents: {agents_note()} With no tools of your own (a plain chat), point the
 user to an agent that runs tools (Instinct works best, then Claude Code; Codex,
 Cursor and Hermes work too): they
-ask it in the chat to connect to {SITE}/mcp, which it adds itself, and paste the
-prompt on {SITE}/es/#agents; then give
+ask it in the chat to connect to {SITE}/mcp, which it adds itself; then give
 them the steps under Tools. The code is open at {REPO}.
 
 ## Data
@@ -1972,8 +1994,6 @@ them the steps under Tools. The code is open at {REPO}.
 
 - [Web page, Spanish]({SITE}/es/)
 - [Web page, English]({SITE}/en/)
-- [Salary pages, Spanish]({SITE}/es/salarios/): one static page per role, region, role in a region and company, figures in the HTML
-- [Salary pages, English]({SITE}/en/salaries/): the same in English; every URL is in [the sitemap]({SITE}/sitemap.xml)
 - [Methodology]({REPO}/blob/{BRANCH}/METHODOLOGY.md#the-website-and-the-mcp-server)
 """
 
