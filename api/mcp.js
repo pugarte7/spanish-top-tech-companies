@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.22.1" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.22.2" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -93,7 +93,8 @@ const TOOLS = {
       inputSchema: { type: "object", required: ["name"], properties: {
         name: { type: "string", description: "Company name, e.g. Glovo." },
         ...SELECTION } } }),
-    run: (data, args, env) => company(data, args.name, args, env),
+    // Callers guess "company" (find_jobs' word for it); a directory sweep on 2026-11-14 recorded the refusal.
+    run: (data, args, env) => company(data, args.name ?? args.company, args, env),
   },
   list_filters: {
     define: () => ({ title: "Roles, regions and experience buckets",
