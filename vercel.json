@@ -8,9 +8,9 @@
   "redirects": [
     { "source": "/", "destination": "/es/", "permanent": false },
     { "source": "/es/:old(salarios|empresas)", "destination": "/es/", "permanent": false },
-    { "source": "/es/:old(salarios|empresas)/:path*", "destination": "/es/", "permanent": false },
+    { "source": "/es/:old(salarios|empresas)/:path(.*)", "destination": "/es/", "permanent": false },
     { "source": "/en/:old(salaries|companies)", "destination": "/en/", "permanent": false },
-    { "source": "/en/:old(salaries|companies)/:path*", "destination": "/en/", "permanent": false },
+    { "source": "/en/:old(salaries|companies)/:path(.*)", "destination": "/en/", "permanent": false },
     { "source": "/:lang(es|en)", "destination": "/:lang/", "permanent": true },
     { "source": "/:lang(es|en)/:path((?:[^/.]+/)*[^/.]+)", "destination": "/:lang/:path/", "permanent": true }
   ],
