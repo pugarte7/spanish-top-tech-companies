@@ -1,344 +1,144 @@
 # spanish-top-tech-companies
 
-What tech companies in Spain pay, by role, region and experience: the website
-spanishtoptechcompanies.com, its JSON and its MCP server, built from Levels.fyi
-submissions. Read [docs/CONTEXT.md](docs/CONTEXT.md) before
-changing anything in the data pipeline — it records why several
-obvious-looking approaches are wrong.
-
-**One median per company, over every software engineer.** `companies.csv` holds
-individual salaries: since 2026-10-14 each row is one person in Spain in any
-of Levels.fyi's job families, at any seniority, paid whatever they are paid —
-the file feeds the website. `lib.engineer_entries()` picks every
-software-engineer row with a base, at any experience, and the weekly digest
-reports one median per company over those and which list it is on (median at
-`lib.THRESHOLD_EUR` 60k: "60k+"; between `lib.FLOOR_EUR` 50k and the bar:
-"need to improve"; under the floor: on file but unlisted). Until 2026-11-01
-the README showed those lists as tables. The bar never trims the rows the
-median is of. Filter positions by role, aggregate, then filter companies by
-the aggregate, in that order. No mean, and never another role in these
-medians.
-
-How this was reached: on 2026-09-16 the maintainer rejected averages across
-levels, a filter on titles that said senior, and set "the mean of the 60k+
-seniors only". On 2026-09-22, after readers called that cherry-picking
-(Minsait read 90k off two engineers while fourteen seniors under 60k went
-unrecorded), the maintainer chose the median over every senior, the share at
-60k+ as the second column, and no 15-year cap (it changed
-nothing). "At least one senior at 60k+" as the listing rule lasted a day: a
-reader pointed out that a company filter belongs on the aggregate, and it
-became median >= 60k, dropping 33 companies. On 2026-09-23 the maintainer
-brought the 24 with a median of 50k+ back under "Need to improve" ("I don't
-wanna lose all those companies"); the nine under 50k stayed out. On
-2026-10-17 the maintainer dropped the 5-year cut, which only existed because
-the old fetcher stored seniors only: "I think we no longer need to have the
-5+ exp data. If they pay more than 60K lets count it in." Do not bring back
-the 60k-filtered mean, the any-row rule, a years filter, or other families
-in the median.
-
-**The website is the product; the README introduces it.** Since 2026-11-01
-spanishtoptechcompanies.com is what people use, built and deployed from
-`main`. Since 2026-11-09 the README leads with the MCP server, "the core":
-connecting is the `/mcp` link alone, then how `find_jobs` finds postings
-(400+ boards, 1,000+ postings a day), applying, the tools, then the site.
-Spanish is `README.md`, English `README.en.md`; the search link lists and
-FAQ were dropped. Its flow diagram is drawn by `scripts/readme_flow.mjs`
-into `docs/img/`, one white-card SVG per language (a dark variant followed
-the system theme, not the page's). Since 2026-11-10 the home page leads with
-the MCP too: its header card is today's postings, which app.js reads from
-`/api/v1/jobs-summary.json` (written by `scripts/jobs.mjs` beside jobs.json,
-after `site.py` builds). The salary card with the histogram was removed the
-same day at the maintainer's request. The header reads "Cada día, las ofertas
-top de tech en España, en tu agente" with the salaries as the filter ("para que
-solo apliques donde te interesa"), and the agent's section under it is "Así
-funciona": the video beside three short steps (the first with the /mcp link)
-and the agents' logos, which open each agent's name and link on a click,
-without the rotating agent stage. Both READMEs and that section show the same
-recorded demo, drawn by `scripts/mcp_demo.mjs` from `scripts/mcp_demo/demo.html`:
-since 2026-11-14 three acts without a chat (the day's postings filtered to 16
-remote backend ones at five companies, Pleo's form filled in from the CV with
-what it does not hold asked for, the yes and the sending), because the
-maintainer wanted several companies on show and an agent that "no se inventa
-nada" and asks "antes de asumir nada": it fills in only facts from the CV and
-never writes an opinion answer for the person. Its find_jobs and job_questions answers are real, the sending is acted
-out. The site also has a 4:5 cut with larger type for phones (`mcp-demo-m.*`).
-It holds no salary data: on 2026-11-01
-the maintainer had the software-engineer tables and `scripts/build.py` that
-wrote them removed ("Elimina del readme todo lo que había antes"). Do not
-bring tables back to the README; the data is on the site and in `data/`.
-
-**Search pages.** Since 2026-11-04 `scripts/seo.py` writes a static page per
-role, region, role in a region and company in both languages (`/es/salarios/`,
-`/en/salaries/`, `/es/empresas/`, `/en/companies/`), listed in `sitemap.xml`,
-because the home page draws its figures with JavaScript and ranked for nothing
-people search ("salario programador", "software engineer salary spain").
-They print only `data.json` cells, so MIN_GROUP holds there too: a company
-gets a page only with five salaries. Titles and FAQs follow the keyword
-research in docs/CONTEXT.md, "Search traffic".
-
-**`companies.csv` is private.** Since 2026-10-25 it is not in the repository
-on this branch either: one row per person is personal data and a copy of
-Levels.fyi's database. It lives at `lib.DATA`
-(`~/.local/share/spanish-top-tech-companies-data/website/companies.csv`, or
-`STC_DATA`), git ignores it, and beside `global.json`, `feed.json`,
-`usage.csv` and `private-sources.txt` it is kept encrypted in the private repo
-`pugarte7/spanish-top-tech-companies-data` (`scripts/private_data.sh pull`
-before editing it by hand, `push` after; the passphrase is `DATA_KEY`, in the
-Keychain and in Actions). Only aggregates are published, in
-`data/` (`site.py --refresh` writes it; CI and deploys build the site from
-it). Never commit the CSV, link to it, or put a single person's salary in
-anything public: the weekly digest and its issue carry company aggregates
-only.
-
-The five things that will bite you:
-
-1. **Levels.fyi serves another country's salaries when it has no Spanish data**,
-   and the page currency stays EUR for Germany, the Netherlands, France and
-   Ireland. Guard on each submission's own location, never on currency and
-   never on `locationMeta`. `scripts/fetch_spain.py` is the only script that
-   writes pay; `scripts/fetch_company.py` is details-only for exactly this
-   reason. `validate.py` rejects any levels.fyi source URL without
-   `/locations/` in it, or that is not a company's software-engineer page,
-   which is the backstop that catches whatever a fetcher gets wrong — leave it
-   in place. This trap has been paid for twice: 682 foreign bands, then 205
-   more carried in by a branch cut before the first fix.
-2. **A whole read goes to the end and replaces the role's rows; the runs
-   between only add.** `fetch_spain.feed()` pages one role's country feed until an
-   empty answer — `total` lies (caps at 250 while the API keeps serving) — so
-   a run that stops at `total` silently drops older submissions. The same
-   API without a token is the old trap: `fetch_spain.py` refuses to write
-   without one (`--audit` only). `write_role()` replaces only that role's
-   rows and only rows this script wrote: first-hand entries and other roles
-   are never touched, and a feed that could not be read to the end changes
-   nothing, because half a feed looks exactly like deletions. Since
-   2026-11-19, to make fewer requests, a run asks each role only for rows submitted after the
-   newest it has seen (`sinceDate`, the cursor in the private `feed.json`
-   beside the CSV, an instant per role and never a submission id) and
-   appends them: about 60 calls where a whole run is about 315. Only a
-   whole read sees a deleted or corrected submission, so each role still
-   gets one every `FULL_WEEKS` (4) weeks, a quarter of the roles per run;
-   a role with nothing on file is asked only then, and `--full` forces it.
-   Never let an incremental read replace rows: it holds a week, not a role.
-3. **`sampleSize > 0` does not mean anything is published.** Many companies
-   report a count with every percentile null and no samples, and
-   `generatedOccupationSchema.sampleSize` is the company's *global* count
-   whenever `averages` is empty.
-4. **Every figure in the payload is USD.** A record's own `exchangeRate`
-   converts to the currency its author was paid in, so use it only when
-   `baseSalaryCurrency` is EUR; a dollar or pound row converts at the rate of
-   the feed's euro rows nearest in month (`fetch_spain.euro_rates()`, since
-   2026-11-02; before that the role page's `locationExchangeRate`, an HTML
-   page the WAF now blocks). Missing the conversion once put all 141 bands on
-   the front page 16% high; using the record's rate for a dollar salary
-   listed Smile.io's 105k USD as 105k EUR.
-5. **The public page is a subset; the submissions table needs a sign-in.**
-   The browser fills "Latest Salary Submissions" from `api.levels.fyi` with the
-   visitor's session token and shows anonymous visitors asterisks. Fever's page
-   embedded one record and the README said "none with 5+ years at 60k+" while
-   its table had 29 Spanish engineers, ten at 60k+. `fetch_spain.py` reads
-   the table with an id token it mints each run from the Cognito refresh token
-   in the macOS login Keychain (service `spanish-top-tech-companies`, stored
-   with `fetch_spain.py --login`, which signs in by SRP from `LEVELS_EMAIL`
-   and `LEVELS_PASSWORD` or a prompt, or takes a pasted refresh token when
-   the email is left empty), which is what lets it run unattended, or
-   with `LEVELS_TOKEN` for a one-off run. Since 2026-11-01 that login lives only
-   in the Keychain, never in a file; since 2026-11-19 the refresh on Actions
-   signs in from the `LEVELS_EMAIL` and `LEVELS_PASSWORD` secrets, as a runner
-   has no Keychain and a secret cannot follow a rotating refresh token. A
-   refused refresh token stops the run rather than falling back to the public
-   page. Only a full table read (`Spain (table)` in the run report) has seen every
-   submission; the other labels mean the page's subset. The token and the
-   refresh token are a live login: never commit them,
-   never print them, never put them in a tool call's visible output.
-
-Levels.fyi's HTML pages are IP-scoped and serve GitHub's runners nothing;
-the API (`api.levels.fyi`), the only source of pay, answers a runner as it
-answers the Mac. Keep
-`--delay` at 2.5s or more (each pause is `--delay` to half as long again, at
-random, since 2026-11-19), and treat 402/403/405/429/503 as throttling rather
-than as "not found". 401 is an expired token. Without a token the fetcher
-refuses to write (`--audit` only); a blocked run exits 3 (`EXIT_BLOCKED`),
-which pauses the refresh on Actions until its "Refresh paused" issue is
-closed, and one that could read no company at all exits 1.
-
-The weekly refresh runs on GitHub Actions since 2026-11-19
-(`.github/workflows/refresh.yml`, Mondays): it pulls the private files from
-their encrypted repo, reads only what each role's feed got since its cursor,
-pushes the private files back, then commits "Refresh salaries" with `data/`
-to `main`, dispatches `deploy.yml` and opens the week's issue with
-`scripts/digest.py`'s summary (a push with `GITHUB_TOKEN` starts no
-workflow). Its public log shows only each step's verdict: the scripts'
-output is kept encrypted in the private repo (`private_data.sh log`), since
-on 2026-11-19 a validate.py error printed an unpublished source there.
-Bad pulled data stops it before any request, and `scripts/guard.py` before
-any push (private sources present and absent from `data/`, Levels rows and
-listed companies not shrinking). Until then it ran on the maintainer's Mac from launchd, because
-fetch_spain.py read HTML pages that serve runners nothing; `scripts/weekly.sh`
-still does the same by hand, syncing the private repo around it. See
-docs/CONTEXT.md.
-
-Entries are individual Levels.fyi submissions. The stored fields are the
-normalized columns (`lib.ENTRY_COLUMNS`): role, specialization and title are
-the taxonomy's official slugs or empty — never free text, which is how a row
-still cannot point at a person. Keep no submission ids, exact days, teams or
-free-text detail, keep the attribution, and remove anything someone asks to
-have removed. The CSV is row-level and private; the website and MCP publish only
-aggregates of five or more people (`lib.MIN_GROUP`), quartiles included, and
-every euro figure rounded to 1.000 € (`lib.ROUND_EUR`): with three people, a
-median and its quartiles gave back all three salaries. Quartiles needed ten
-until 2026-11-02, when the maintainer wanted one minimum across the site
-("que en un sitio no sea 1, en otro 3, en otro 5 y en otro 10");
-`lib.QUARTILE_MIN` is `MIN_GROUP` since.
-**Every verified company is shown, whatever it pays.** Until 2026-11-04 the
-site left out companies whose median base over all their salaries was under
-45,000 EUR (`COMPANY_FLOOR_EUR`, 138 verified companies such as Santander);
-that day the maintainer dropped it: "Vamos a mostrar todas las empresas
-independientemente de la mediana. Las medianas generales se actualizan." The
-ranking says which pay best, and every aggregate covers all of them. Still
-left out: unverified companies and ones the world does not vouch for (both
-below). The digest's bar and floor (`lib.THRESHOLD_EUR`, `lib.FLOOR_EUR`) are
-unrelated: they only sort the weekly lists.
-
-The one exception is the companies table: on 2026-11-01 the maintainer chose
-to list every company with data under the filters, one salary included, with
-its summary and its bars per experience band (`site.company_filters()`),
-still rounded. A role with 85 salaries had listed one company. data.json,
-the map and the matrix keep MIN_GROUP. On 2026-11-04 the MCP's company tools
-followed the table ("si hay datos en la web el mcp lo pilla, nada de lo de
-mínimo de 5"): 6 of the first 13 `company_salaries` calls had failed.
-`top_companies`, `company_salaries` and `find_jobs`' salary_context read
-`/api/v1/company-cells.json`, the table's own rows re-keyed by
-`site.company_cells()`, flag a figure under MIN_GROUP with `few: true` and
-sort under MIN_RANKED after the rest; `salary_stats` keeps MIN_GROUP. A
-company the site does not list stays unknown, with close names offered and
-nothing said about why. Since 2026-11-02 a company
-with fewer than MIN_RANKED salaries in Spain (`n` in data.json's `companies`)
-has its median greyed with an asterisk; the asterisk opens a card naming the
-company and its count (real company, figure from one or two people), and a
-note under the table says the same for all of them.
-
-A row should ideally mean the maintainer knows someone in Spain doing that job,
-or was offered the position. Crowdsourced figures are placeholders; first-hand
-entries (`community`, `offer-letter`) sort above them.
-
-On file means having salaries: a company stays in `companies.csv` while it
-has any row, however junior or underpaid — the website needs them all. What
-leaves is a company with no rows at all after a full role read (the feed says
-nobody there reported), or one struck off by hand. The digest's bar and floor
-apply to the aggregate only; `validate.py` refuses a company
-with no entries but no longer polices medians — a 40k median is data.
-
-Enrichment comes from two more sources, in this precedence: a value set by
-hand wins, then Spain Tech Radar (`fetch_radar.py`, offices/stack/careers/
-type/CIF, CC BY 4.0, only for companies with salaries), then Levels.fyi
-(`fetch_company.py`). No fetcher ever overwrites a filled field; a `-` cell
-means "checked, there is none", and counts as filled.
-
-**A company with no LinkedIn page and no website is unverified** (since
-2026-11-01: "si no encontramos LinkedIn o web de la empresa lo consideramos
-como falso"). `lib.verified()` decides; its rows stay in the CSV, the site
-publishes nothing of it, not even its rows in the role and region groups,
-and `scripts/review.py` lists it. The weekly writes that list to
-`data/review.md` and keeps the "Companies to verify" issue at it (`gh` from
-the Mac, as the maintainer); they find the company and type its
-`linkedin_url` or `website` into the CSV, or strike the slug off. A `-` cell
-counts as none. On 2026-11-01, before the fetchers had enriched the feed's new
-employers, 1,446 of 1,753 companies were unverified, 1,141 of them on one salary.
-The feed's own company record carries the employer's domain (its logo URL),
-which `fetch_spain.write_role()` writes as `website` when there is none.
-
-**The world has to vouch for a small company.** Also since 2026-11-01: a
-company with fewer than `fetch_spain.MIN_GLOBAL` (5) submissions anywhere in
-the world, summed over every role it has rows for, loses its Levels.fyi rows
-after the last role is written (`prune_unproven()`, "unproven" in the run
-report). DEKA's 300k entry-level mechanical engineer in Malaga was the only
-DEKA submission on Levels.fyi. The sum is over roles, not per role, since
-2026-11-02: the per-role version dropped Repsol, Endesa and Bankinter, three
-engineers and three product managers each. The same day the maintainer
-removed a second rule that dropped a Spanish base above everything the
-company paid the role abroad: with three or four salaries from cheaper
-countries it took real seniors at Stenn, Kiwi.com and Zooplus, and caught no
-DEKA the count had not. Do not bring it back. The count
-comes from one API call per company-role pair (`companySlug` +
-`jobFamilySlug`, no country; the API refuses a query with no job family),
-cached in `global.json` beside the CSV for `GLOBAL_DAYS` (90); pairs with
-five Spanish rows, and every pair of a company with five Levels.fyi rows on
-file over its roles, are never looked up (Spain already vouches). A missing
-or stale answer judges nothing. First-hand rows are never screened.
-
-Hand-made facts live in `lib.py`, not in the CSV: `SLUG_ALIASES` (two
-Levels.fyi slugs, one employer: `tiger-data` into `timescale`, `meta` into
-`facebook`; the alias is read with the canonical slug and each row keeps its
-own page URL), `EXCLUDED_SLUGS` (struck off with a reason, never fetched or
-discovered), `EXTRA_SPEC_ALIASES` (unambiguous shorthand like `DS` or `ML / AI`
-onto the taxonomy's slugs) and `CITY_FIXES`. `scripts/taxonomy.py` is
-generated by `fetch_taxonomy.py` from Levels.fyi's `/t` index — never edit it
-by hand; curations go in `lib.py` instead. LinkedIn URLs the fetcher cannot
-find are typed into the CSV and never overwritten. New companies arrive with
-the feed itself: every employer in a role's Spanish feed is written, so "add
-your salary on Levels.fyi and it gets picked up" holds without anyone editing
-the CSV.
-
-A first-hand software-engineer row must itself be at 60k+, since it is the
-maintainer vouching that the company pays that; `validate.py` refuses one
-under.
-
-Since 2026-11-01 companies with fewer than `lib.MIN_RANKED` (3) salaries sort
-after the rest in the site's companies table, whichever column is sorted: 120
-of 341 listed companies had one salary, 87 of them topping the main table, and
-the maintainer chose to keep them listed but not ranked ("si limitamos
-empresas con más de 5 submisiones, sería demasiado").
+What tech companies in Spain pay and which of them are hiring: the MCP server
+at spanishtoptechcompanies.com/mcp (the core), the website and its JSON, built
+from Levels.fyi submissions and the companies' own job boards. Read
+[docs/CONTEXT.md](docs/CONTEXT.md) before changing the data pipeline: it holds
+the Levels.fyi traps in detail.
 
 After any data change: `python3 scripts/validate.py && python3 scripts/site.py
 --refresh`, and commit the regenerated `data/`, never `companies.csv`.
 
-`data/boards.json` is not regenerated by `--refresh`: it maps a Levels.fyi
-slug to the company's job board, found by `node scripts/boards.mjs` (only
-companies with no board and not found boardless in the last 7 days, which
-`data/boards-none.json` remembers; `--all` probes everyone again, a few
-hours). Since 2026-11-09 a company's own board is kept even with no posting in
-Spain that day ("dormant"), so the crawl sees the day it posts here; only a
-guessed slug that is empty or names someone else is dropped. The site publishes it at `/api/v1/boards.json`, tiered by that day's
-ranking, and `scripts/jobs.mjs` crawls every board in it daily into
-`/api/v1/jobs.json`, which the MCP's job tools search. The ATS adapters both
-scripts use live in `lib/ats/` (since 2026-11-04: "vamos a migrar todo dentro
-de este repo"); fix them there. Applying goes through `/mcp` with nothing
-installed. `data/careers.json` (slug to careers page, from the maintainer's
-careers-URL list of 2026-11-09) is read before the company's website and
-trusted the same way; add a company's careers page there rather than writing
-its board into `boards.json` by hand, which the next `--all` would undo.
-Santander UK, Santander Bank, Juniper and NTT Data are left out of it on
-purpose: their pages lead to another listed company's board or another entity.
-Since 2026-11-20 discovery runs on Actions after each refresh
-(`.github/workflows/boards.yml`, `boards.mjs --render`): when a page's HTML
-names no board, headless Chromium loads it with the project's User-Agent and
-the board is read off the built DOM and the page's API calls; a board another
-listed company already holds is not given to a second one (Eventbrite's page
-leads to Bending Spoons'). Of the 305 then without a board it found 8: most
-of the rest run an ATS the repo has no adapter for (SuccessFactors, iCIMS,
-Avature, EPAM's own) or a site of their own, and 24 refuse the client.
+## Privacy
 
-**Listings follow main.** Since 2026-11-19 `.github/workflows/listings.yml`
-keeps the two places that hold a copy in step, because the maintainer wanted
-every change to the MCP to reach "todos los sitios donde lo hemos publicado"
-without anyone doing it by hand: a change under `hermes-plugin/` opens or
-updates one pull request moving the pin of Hermes' plugin catalog
-(`scripts/hermes_bump.sh`, secret `LISTINGS_TOKEN`; bump the version in
-`hermes-plugin/plugin.json` with it, the title carries it), and a new
-`version:` in `skills/tech-pay-spain/SKILL.md` is published to ClawHub
-(secret `CLAWHUB_TOKEN`). Everything else reads the repository or `/mcp`
-itself: `server.json` goes to the MCP Registry through `registry.yml`.
-A new place that keeps a copy gets a job there.
+- `companies.csv` is one row per person and private. It lives at `lib.DATA`
+  (`~/.local/share/spanish-top-tech-companies-data/website/companies.csv`, or
+  `STC_DATA`) beside `global.json`, `feed.json`, `usage.csv` and
+  `private-sources.txt`, all kept encrypted in the private repo
+  `pugarte7/spanish-top-tech-companies-data`: `scripts/private_data.sh pull`
+  before editing by hand, `push` after (passphrase `DATA_KEY`, in the Keychain
+  and in Actions).
+- Never commit the CSV, link to it, or put one person's salary in anything
+  public. Only aggregates are published, in `data/`; the digest and its issue
+  carry company aggregates only.
+- Sources named in `private-sources.txt` stay off the site
+  (`lib.published()`). Never name them in the repo, commits, PRs or logs.
+- A row holds only `lib.ENTRY_COLUMNS`: role, specialization and title are
+  taxonomy slugs or empty, never free text. No submission ids, exact days or
+  teams. Keep the attribution, and remove anything someone asks to have
+  removed.
+- The Levels.fyi token and refresh token are a live login: never commit them,
+  print them or put them in a tool call's visible output.
+- The refresh's public log shows only each step's verdict; the scripts'
+  output goes to an encrypted log in the private repo (`private_data.sh log`).
 
-Releases are weekly: every Monday `.github/workflows/release.yml` tags
-`main` with one release holding every PR merged since the last tag, one
-bullet per PR title (so keep titles short), and nothing in a week without
-PRs; it can also be run by hand. The biggest label among those PRs sets the
-bump: `major` (breaks whoever consumes us: `data/` format, MCP tool names or
-arguments, removed URLs), else `minor` (something new and visible: a site
-section, an MCP tool, a data field), else `patch` (fixes, copy, data,
-tooling); no label is patch. The hook in `.claude/hooks/release-label.py`
-refuses opening a PR into `main` without one of those labels. On
-2026-11-10 the maintainer replaced one release per merged PR (24 tags in a
-day, folded into v1.2.0) with this. Since 2026-11-09 the line restarts at
-v1.1.0; v2.0.0 was withdrawn.
+## What gets published
+
+- Aggregates need `lib.MIN_GROUP` (5) people, quartiles included, and every
+  euro figure is rounded to `lib.ROUND_EUR` (1.000 €). One minimum across the
+  site, on purpose.
+- The exception is the companies table and the MCP's company tools
+  (`top_companies`, `company_salaries`, `find_jobs`' salary context, all from
+  `/api/v1/company-cells.json`): every company with data, down to one salary,
+  with its count and `few: true` under `MIN_GROUP`. `salary_stats`,
+  `data.json`, the map, the matrix and the search pages keep `MIN_GROUP`.
+- Companies under `lib.MIN_RANKED` (3) salaries sort after the rest and show
+  their median greyed with an asterisk.
+- Every verified company is shown, whatever it pays. No median floor.
+- Unverified means no LinkedIn page and no website (`lib.verified()`; a `-`
+  cell counts as none): rows stay in the CSV, nothing of it is published, and
+  `scripts/review.py` lists it in `data/review.md` and the "Companies to
+  verify" issue.
+- A company with fewer than `MIN_GLOBAL` (5) submissions worldwide, summed
+  over its roles, loses its Levels.fyi rows (`fetch_spain.prune_unproven()`).
+  First-hand rows are never screened. A missing or stale count judges nothing.
+- A company stays on file while it has any row. `validate.py` refuses a
+  company with no entries, not a low median.
+- An unknown company gets close names offered and nothing about why.
+
+## The digest's lists
+
+`lib.engineer_entries()` picks every software-engineer row with a base; the
+weekly digest reports one median per company over those: 60k+
+(`lib.THRESHOLD_EUR`), "need to improve" (from `lib.FLOOR_EUR`, 50k), or
+unlisted. Filter rows by role, aggregate, then filter companies by the
+aggregate. The bar and floor sort the digest only; the site ignores them.
+
+Do not bring back: a mean, a mean over the 60k+ rows only, "any row at 60k+"
+as the listing rule, a years-of-experience filter, other roles in these
+medians, or dropping a Spanish base for being above what the company pays
+abroad. Each was tried and rejected.
+
+A first-hand software-engineer row (`community`, `offer-letter`) must itself
+be at 60k+; first-hand rows sort above crowdsourced ones.
+
+## Levels.fyi, in short
+
+1. It serves another country's salaries when it has no Spanish data, and the
+   currency stays EUR. Guard on each submission's own location.
+   `validate.py` rejects a levels.fyi source URL without `/locations/` or that
+   is not a software-engineer page: leave that in place.
+   `scripts/fetch_spain.py` is the only script that writes pay.
+2. A whole read pages a role's feed until an empty answer (`total` lies) and
+   replaces that role's Levels.fyi rows; a feed not read to the end changes
+   nothing. An incremental read (rows after the role's cursor in `feed.json`)
+   only appends: never let it replace rows. Each role gets a whole read every
+   `FULL_WEEKS` (4); `--full` forces it.
+3. `sampleSize > 0` does not mean anything is published.
+4. Every figure in the payload is USD. Use a record's own `exchangeRate` only
+   when `baseSalaryCurrency` is EUR; other rows convert at the feed's euro
+   rows nearest in month (`euro_rates()`).
+5. The submissions table needs a sign-in. `fetch_spain.py` mints an id token
+   from the Keychain (service `spanish-top-tech-companies`, stored with
+   `--login`), from `LEVELS_EMAIL` and `LEVELS_PASSWORD` on Actions, or takes
+   `LEVELS_TOKEN`. Without a token it refuses to write (`--audit` only); a
+   refused token stops the run.
+
+Keep `--delay` at 2.5s or more. 402/403/405/429/503 mean throttled, not "not
+found"; 401 is an expired token. A blocked run exits 3 (`EXIT_BLOCKED`), which
+pauses the refresh until its "Refresh paused" issue is closed.
+
+## Where hand-made facts live
+
+- `lib.py`: `SLUG_ALIASES`, `EXCLUDED_SLUGS`, `EXTRA_SPEC_ALIASES`,
+  `CITY_FIXES`. `scripts/taxonomy.py` is generated by `fetch_taxonomy.py`:
+  never edit it.
+- Enrichment precedence: a value set by hand, then Spain Tech Radar
+  (`fetch_radar.py`), then Levels.fyi (`fetch_company.py`, details only). No
+  fetcher overwrites a filled field, and `-` means "checked, there is none".
+- `data/careers.json` (slug to careers page) is where a company's board is
+  set by hand; `data/boards.json` is written by `node scripts/boards.mjs` and
+  a hand edit there is undone by the next `--all`. Santander UK, Santander
+  Bank, Juniper and NTT Data are left out of careers.json on purpose. A board
+  another listed company holds is not given to a second one.
+- ATS adapters live in `lib/ats/`; `scripts/jobs.mjs` crawls every board
+  daily into `/api/v1/jobs.json`, which the MCP's job tools search.
+
+## Site, README and MCP
+
+- The README (Spanish `README.md`, English `README.en.md`) leads with the MCP
+  and holds no salary data or tables. Its diagram comes from
+  `scripts/readme_flow.mjs`, the demo video from `scripts/mcp_demo.mjs`.
+- In the demo and in the agent's instructions the agent invents nothing: it
+  fills in facts from the CV, asks for the rest, and never writes an opinion
+  answer for the person.
+- `scripts/seo.py` writes the static search pages from `data.json` cells.
+- `api/mcp.js` is the only MCP implementation. `server.json`'s version must
+  equal `SERVER.version` there.
+
+## Automation
+
+- `refresh.yml` (Mondays): pulls the private files, reads the feeds, pushes
+  the private files back, commits "Refresh salaries" with `data/` to `main`,
+  dispatches `deploy.yml` and opens the week's issue. `scripts/guard.py`
+  stops it before any push. `scripts/weekly.sh` does the same by hand.
+- `boards.yml` runs board discovery after each refresh.
+- `listings.yml` keeps outside copies in step: a change under
+  `hermes-plugin/` needs a version bump in `hermes-plugin/plugin.json`; a new
+  `version:` in `skills/tech-pay-spain/SKILL.md` is published to ClawHub;
+  `server.json` goes to the MCP Registry through `registry.yml`. A new place
+  that keeps a copy gets a job there.
+- `release.yml` tags `main` every Monday, one bullet per merged PR title, so
+  keep titles short. A PR into `main` needs a label, which a hook enforces:
+  `major` (breaks consumers: `data/` format, MCP tool names or arguments,
+  removed URLs), `minor` (something new and visible), `patch` (the rest).
