@@ -309,6 +309,14 @@ trusted the same way; add a company's careers page there rather than writing
 its board into `boards.json` by hand, which the next `--all` would undo.
 Santander UK, Santander Bank, Juniper and NTT Data are left out of it on
 purpose: their pages lead to another listed company's board or another entity.
+Since 2026-11-20 discovery runs on Actions after each refresh
+(`.github/workflows/boards.yml`, `boards.mjs --render`): when a page's HTML
+names no board, headless Chromium loads it with the project's User-Agent and
+the board is read off the built DOM and the page's API calls; a board another
+listed company already holds is not given to a second one (Eventbrite's page
+leads to Bending Spoons'). Of the 305 then without a board it found 8: most
+of the rest run an ATS the repo has no adapter for (SuccessFactors, iCIMS,
+Avature, EPAM's own) or a site of their own, and 24 refuse the client.
 
 **Listings follow main.** Since 2026-11-19 `.github/workflows/listings.yml`
 keeps the two places that hold a copy in step, because the maintainer wanted

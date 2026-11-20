@@ -7,6 +7,7 @@
 //   node scripts/boards.mjs --all           # every listed company again
 //   node scripts/boards.mjs --only "BBVA,airbus"     # names or Levels.fyi slugs
 //   node scripts/boards.mjs --all --resume  # continue an interrupted --all run
+//   node scripts/boards.mjs --render        # a browser reads pages whose HTML links no board
 //
 // The rules live in lib/ats/presets/spain.js: a board is kept when it is the
 // company's own (its site or careers page links it, or its postings name it),
@@ -25,6 +26,12 @@
 // board on the employer's own domain is only recognisable from its careers page.
 // An entry may instead be the board itself, {"ats", "board", "query"?}, for
 // sites nothing on the page identifies.
+//
+// --render (on Actions, .github/workflows/boards.yml): when a page's HTML gives
+// no board, headless Chromium loads it and the board is read off the built DOM
+// and the requests the page makes. On 2026-11-20, 305 of 747 listed companies
+// had no board, Glovo and Skyscanner among them, because their careers pages
+// are built in JavaScript. The browser sends the same User-Agent as the client.
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -59,6 +66,7 @@ const { values } = parseArgs({
     limit: { type: "string" },
     resume: { type: "boolean", default: false },
     "no-websites": { type: "boolean", default: false },
+    render: { type: "boolean", default: false },
   },
 });
 
@@ -70,6 +78,35 @@ async function fetchPage(url) {
   } catch {
     return null;
   }
+}
+
+// One browser for the run, one context per page. Images, fonts and media are
+// never loaded: the board shows in the DOM and in the page's API calls.
+async function openBrowser() {
+  const { chromium } = await import("@playwright/test");
+  const browser = await chromium.launch();
+  const SKIP = new Set(["image", "media", "font"]);
+  return {
+    async renderPage(url) {
+      let context;
+      try {
+        context = await browser.newContext({ userAgent: process.env.ATS_USER_AGENT, locale: "es-ES" });
+        const page = await context.newPage();
+        await page.route("**/*", (route) => (SKIP.has(route.request().resourceType()) ? route.abort() : route.continue()));
+        const requests = [];
+        page.on("request", (request) => requests.push(request.url()));
+        const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20_000 });
+        if (!response || response.status() >= 400) return null;
+        await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
+        return { url: page.url(), html: await page.content(), requests: [...requests, ...page.frames().map((frame) => frame.url())] };
+      } catch {
+        return null;
+      } finally {
+        await context?.close().catch(() => {});
+      }
+    },
+    close: () => browser.close(),
+  };
 }
 
 const snapshot = spain.readSiteSnapshot(readJson(values.data), { "software-engineer": readJson(values.tables) });
@@ -103,6 +140,8 @@ const deps = {
   listJobs: (company) => adapterFor(company.ats).listJobs(company, capturedAt),
   ...(values["no-websites"] ? {} : { fetchPage }),
 };
+const browser = values.render && !values["no-websites"] ? await openBrowser() : null;
+if (browser) deps.renderPage = browser.renderPage;
 
 let index = 0;
 for (const company of companies) {
@@ -124,6 +163,8 @@ for (const company of companies) {
   process.stderr.write(`[${index}/${companies.length}] ${company.name}: ${report.candidates.length} board(s), ${kept}\n`);
 }
 
+await browser?.close();
+
 const preset = spain.assemblePreset(reports);
 const slugOf = new Map(snapshot.companies.map((company) => [company.name, company.levelsSlug]));
 const kept = new Map(preset.companies.map((entry) => [entry.name, entry]));
@@ -132,6 +173,15 @@ for (const report of reports) {
   if (!slug || report.timedOut) continue;
   const entry = kept.get(report.name);
   if (!entry) {
+    delete boards[slug];
+    none[slug] = today;
+    continue;
+  }
+  // A board another company already holds is theirs: Eventbrite's careers page
+  // has led to Bending Spoons' since Bending Spoons bought it.
+  const key = spain.boardKey({ ats: entry.ats, board: entry.board, region: entry.region ?? "global" });
+  const holder = Object.keys(boards).find((other) => other !== slug && spain.boardKey({ region: "global", ...boards[other] }) === key);
+  if (holder) {
     delete boards[slug];
     none[slug] = today;
     continue;

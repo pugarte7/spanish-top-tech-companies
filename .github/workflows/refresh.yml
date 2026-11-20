@@ -82,11 +82,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        if: steps.paused.outputs.skip != 'true'
-        with:
-          node-version: "22"
-
       # The same minute every Monday is a script's signature too.
       - name: Start at a different time each week
         if: steps.paused.outputs.skip != 'true' && github.event_name == 'schedule'
@@ -148,8 +143,7 @@ jobs:
           step python3 scripts/validate.py || { echo "validate.py failed."; exit 1; }
           step python3 scripts/site.py --refresh || { echo "site.py failed."; exit 1; }
           python3 scripts/review.py > data/review.md 2>> "$RUN_LOG" || { echo "review.py failed."; exit 1; }
-          { step npm ci --omit=dev -q && step node scripts/boards.mjs; } \
-            || echo "boards.mjs failed; data/boards.json stays as it is"
+          # Job boards are found after this run, by boards.yml.
           step python3 scripts/guard.py "$RUNNER_TEMP/before.csv" \
             || { echo "guard.py stopped the refresh."; exit 1; }
           echo "Data rebuilt and guarded."

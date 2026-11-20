@@ -829,4 +829,42 @@ assert.deepEqual(pageLinks('<a href="/jobs/page/2/">2</a><a href="/jobs/?page=3"
                            '<a href="/jobs/page/99/">99</a>', new URL("https://acme.example/jobs/")),
                  ["https://acme.example/jobs/page/2/", "https://acme.example/jobs/?page=3"], "listing pages, capped at 10");
 
+// --- Boards behind a page built with JavaScript ---------------------------------
+
+{
+  const { boardFromRequest, probeCompany } = await import("../lib/ats/presets/spain.js");
+  assert.deepEqual(boardFromRequest("https://boards-api.greenhouse.io/v1/boards/acme/jobs?content=true"), { ats: "greenhouse", board: "acme", region: "global" });
+  assert.deepEqual(boardFromRequest("https://api.eu.lever.co/v0/postings/acme?mode=json"), { ats: "lever", board: "acme", region: "eu" });
+  assert.deepEqual(boardFromRequest("https://api.ashbyhq.com/posting-api/job-board/acme"), { ats: "ashby", board: "acme", region: "global" });
+  assert.deepEqual(boardFromRequest("https://api.smartrecruiters.com/v1/companies/Acme/postings"), { ats: "smartrecruiters", board: "Acme", region: "global" });
+  assert.deepEqual(boardFromRequest("https://apply.workable.com/api/v3/accounts/acme/jobs"), { ats: "workable", board: "acme", region: "global" });
+  assert.deepEqual(boardFromRequest("https://acme.wd3.myworkdayjobs.com/wday/cxs/acme/External/jobs"), { ats: "workday", board: "acme/wd3/External", region: "global" });
+  assert.deepEqual(boardFromRequest("https://jobs.ashbyhq.com/acme/embed"), { ats: "ashby", board: "acme", region: "global" }, "links still count");
+  assert.equal(boardFromRequest("https://www.googletagmanager.com/gtm.js?id=X"), null);
+
+  const company = { name: "Acme", levelsSlug: "acme", website: "https://acme.example", careers: "https://acme.example/careers", cities: [], engineerMedian: null, engineerCount: 0 };
+  const rules = { threshold: 60_000, companyFloor: 45_000, minRanked: 3, dataAsOf: "" };
+  const rendered = [];
+  const deps = {
+    resolve: async () => [],
+    listJobs: async () => [],
+    fetchPage: async () => "<div id=root></div>",
+    renderPage: async (url) => {
+      rendered.push(url);
+      return url === "https://acme.example/careers"
+        ? { url, html: "<div id=root>Jobs</div>", requests: ["https://boards-api.greenhouse.io/v1/boards/acme/jobs"] }
+        : null;
+    },
+  };
+  const report = await probeCompany(company, rules, deps);
+  assert.deepEqual(rendered, ["https://acme.example/careers"], "rendered once, after the HTML gave nothing");
+  assert.equal(report.kept?.board, "acme", "the board the page called is the company's own");
+  assert.equal(report.dormant, true);
+
+  rendered.length = 0;
+  deps.fetchPage = async () => '<a href="https://jobs.lever.co/acme">Jobs</a>';
+  await probeCompany(company, rules, deps);
+  assert.deepEqual(rendered, [], "no browser when the HTML links a board");
+}
+
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);
