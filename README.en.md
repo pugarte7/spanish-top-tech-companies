@@ -6,7 +6,7 @@
 
 <h2 align="center"><a href="https://spanishtoptechcompanies.com/en/">spanishtoptechcompanies.com</a></h2>
 
-<p align="center"><a href="./README.md">ES</a> / <b>EN</b></p>
+<p align="center"><a href="./README.md">🇪🇸</a> / <b>🇬🇧</b></p>
 
 ## Connect it
 

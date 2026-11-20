@@ -6,7 +6,7 @@
 
 <h2 align="center"><a href="https://spanishtoptechcompanies.com/es/">spanishtoptechcompanies.com</a></h2>
 
-<p align="center"><b>ES</b> / <a href="./README.en.md">EN</a></p>
+<p align="center"><b>🇪🇸</b> / <a href="./README.en.md">🇬🇧</a></p>
 
 ## Conéctalo
 
