@@ -4,49 +4,19 @@
 
 <p align="center">Haz que tu agente aplique por ti. Gratis.</p>
 
+<h2 align="center"><a href="https://spanishtoptechcompanies.com/es/">spanishtoptechcompanies.com</a></h2>
+
 <p align="center"><b>ES</b> / <a href="./README.en.md">EN</a></p>
 
 ## Conéctalo
 
-Un minuto, con el agente que ya usas. Pega este enlace en su chat, o añádelo como servidor MCP.
+Pega este enlace en el chat de tu agente y él se conecta solo.
 
 ```text
 https://spanishtoptechcompanies.com/mcp
 ```
 
-Sin registro ni claves. Funciona con cualquier agente que admita MCP: Claude Code, Codex, Cursor, Hermes, Grok, Instinct y los demás.
-
-<details>
-<summary>Paso a paso en cada agente</summary>
-
-**Claude Code**
-
-```text
-claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp
-```
-
-**Codex**, en `~/.codex/config.toml`
-
-```toml
-[mcp_servers.tech-pay-spain]
-url = "https://spanishtoptechcompanies.com/mcp"
-```
-
-**Cursor**, en `~/.cursor/mcp.json`
-
-```json
-{ "mcpServers": { "tech-pay-spain": { "url": "https://spanishtoptechcompanies.com/mcp" } } }
-```
-
-**Claude**: Ajustes, Conectores, Añadir conector personalizado, y pega el enlace.
-
-**Hermes**: instala además la skill, que le enseña a usar el MCP y a aplicar por ti.
-
-```text
-hermes skills install pugarte7/spanish-top-tech-companies/skills/tech-pay-spain
-```
-
-</details>
+Sin registro, sin claves y sin instalar nada. Funciona con cualquier agente que admita MCP: Claude Code, Codex, Cursor, Hermes, Grok, Instinct y los demás.
 
 Lo mantiene una sola persona. Si te sirve, una estrella hace que lo encuentre más gente que busca trabajo en España.
 
@@ -58,13 +28,15 @@ Tu agente hace el trabajo, tú decides.
 2. **Pídele ofertas.** «Backend en remoto por encima de 60k». Busca entre las ofertas de hoy y te dice lo que paga cada empresa.
 3. **Aplica con tu sí.** Rellena el formulario con tu CV, te pregunta lo que no sabe y envía solo cuando lo apruebas.
 
-<img alt="Tu agente, conectado al MCP, busca ofertas de backend en remoto de empresas que pagan más de 80.000 €, encuentra 16 en cinco empresas, rellena el formulario de Pleo con tu CV, te pregunta las tres respuestas que le faltan y envía la solicitud cuando le dices que sí" src="docs/img/mcp-demo.es.gif" width="100%">
+<p align="center"><img alt="La mascota conecta el MCP con un enlace, pide ofertas de backend en remoto por encima de 60k, ve lo que paga cada empresa, rellena el formulario con el CV y envía solo con tu sí" src="docs/img/mcp-video.es.gif" width="320"></p>
 
 Para que aplique bien, dale una vez tu CV, dónde y cómo quieres trabajar, el sueldo que pides y tu permiso de trabajo. Después basta una frase:
 
 > Aplica a 5 ofertas de backend en Barcelona.
 
 > Aplica a las ofertas en remoto que pueda hacer desde España y que paguen 60.000 € o más.
+
+<img alt="Más de 400 portales y más de 1.000 ofertas al día llegan a find_jobs; con tu CV, find_jobs encuentra ofertas con el sueldo de la empresa, job_questions lee el formulario, el agente escribe la carta y las respuestas y, si das el sí, la envía con su navegador y lo anota con report_application" src="docs/img/apply-flow.es.svg" width="100%">
 
 ## Preguntas frecuentes
 
@@ -141,22 +113,23 @@ El servidor se llama `tech-pay-spain`. Tu agente elige la herramienta, no tienes
 </details>
 
 <details>
-<summary>Cómo aplica, paso a paso</summary>
-
-<img alt="Más de 400 portales y más de 1.000 ofertas al día llegan a find_jobs; con tu CV, find_jobs encuentra ofertas con el sueldo de la empresa, job_questions lee el formulario, el agente escribe la carta y las respuestas y, si das el sí, la envía con su navegador y lo anota con report_application" src="docs/img/apply-flow.es.svg" width="100%">
-
-</details>
-
-<details>
 <summary>Servidor, datos y código</summary>
 
 - Streamable HTTP en `https://spanishtoptechcompanies.com/mcp`, sin autenticación y con CORS abierto.
 - El mismo servidor por stdio, con Node 22 o posterior y sin dependencias: `node scripts/mcp-stdio.mjs`.
 - Los datos en [data.json](https://spanishtoptechcompanies.com/api/v1/data.json), las ofertas en [jobs.json](https://spanishtoptechcompanies.com/api/v1/jobs.json) y un resumen en [llms.txt](https://spanishtoptechcompanies.com/llms.txt).
 - Una [skill para agentes](skills/tech-pay-spain/SKILL.md) con cómo leer las cifras.
-- Los pull requests son bienvenidos. [METHODOLOGY.md](METHODOLOGY.md) explica las reglas y [docs/CONTEXT.md](docs/CONTEXT.md) por qué el código es como es. Si quieres hablarlo antes, abre un [issue](../../issues/new/choose).
 
 </details>
+
+## Contribuir
+
+Los pull requests son bienvenidos, y un [issue](../../issues/new/choose) también si prefieres hablarlo antes.
+
+- [CONTRIBUTING.md](CONTRIBUTING.md): cómo añadir un sueldo o una empresa y cómo abrir un pull request.
+- [Código de conducta](CODE_OF_CONDUCT.md): lo que se espera de quien participa.
+- [SECURITY.md](SECURITY.md): cómo avisar de un fallo de seguridad.
+- [METHODOLOGY.md](METHODOLOGY.md) explica las reglas y [docs/CONTEXT.md](docs/CONTEXT.md) por qué el código es como es.
 
 ## Licencia y aviso
 

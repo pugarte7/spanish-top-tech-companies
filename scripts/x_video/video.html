@@ -14,7 +14,7 @@ body { position: relative; color: #fff; font: 600 15px/20px "Inter Tight", sans-
 .w { display: inline-block; white-space: nowrap; }
 .w em { font-style: normal; color: #19cdb9; }
 .card { position: absolute; z-index: 4; border-radius: 22px; padding: 12px 18px 14px; color: #0a0a0a; font: 700 24px/28px "Inter Tight", sans-serif; letter-spacing: -.03em; box-shadow: 0 12px 26px rgba(0, 0, 40, .22); }
-.card.tag { right: 12px; top: 168px; }
+.card.tag { right: 12px; top: 176px; }
 .orange { background: #ff7a1a; } .pink { background: #ff5fa8; } .teal { background: #19cdb9; } .purple { background: #7a4dff; color: #fff; } .white { background: #fff; }
 .url { left: 30px; right: 30px; top: 250px; border-radius: 30px; padding: 26px 8px; text-align: center; font: 700 23px/28px ui-monospace, Menlo, monospace; letter-spacing: -.03em; color: #0000f2; }
 .note { position: absolute; left: 0; right: 0; top: 866px; text-align: center; font: 600 21px/28px "Inter Tight", sans-serif; letter-spacing: -.01em; }
@@ -46,6 +46,8 @@ body { position: relative; color: #fff; font: 600 15px/20px "Inter Tight", sans-
 .kb div { display: flex; justify-content: center; gap: 5px; margin-bottom: 9px; }
 .kb span { width: 26px; height: 38px; border-radius: 6px; background: #fff; box-shadow: 0 1px 0 #898a8d; text-align: center; font: 400 17px/36px -apple-system, sans-serif; }
 .kb span.sp { width: 170px; font-size: 13px; color: #6b6b6b; } .kb span.fn { width: 52px; background: #abb0bc; }
+.layer.c .me { font-size: 17px; font-weight: 600; padding: 10px 15px; }
+.me .caret { background: #fff; }
 .me { margin: 0 0 8px auto; width: fit-content; max-width: 86%; padding: 9px 13px; border-radius: 19px 19px 5px 19px; background: #0000f2; color: #fff; font-size: 14.5px; line-height: 19px; transform-origin: 100% 100%; }
 .tool { display: flex; width: fit-content; align-items: center; gap: 6px; margin-bottom: 8px; padding: 5px 10px; border-radius: 9px; background: #f4f4f4; font: 500 11.5px/16px ui-monospace, Menlo, monospace; color: #6b6b6b; transform-origin: 0 50%; font-variant-numeric: tabular-nums; }
 .tool i { width: 14px; height: 14px; border-radius: 50%; background: #17b26a; color: #fff; font: 700 10px/14px sans-serif; text-align: center; font-style: normal; }
@@ -104,39 +106,57 @@ const eye = (x) => `<ellipse cx="${132 + x}" cy="112" rx="21" ry="31"/><circle c
 const LOGO = `<svg viewBox="-12 -42 324 324"><path d="${COAST}" fill="#fff" stroke="#000" stroke-width="13" stroke-linejoin="round"/>${eye(-30)}${eye(30)}</svg>`;
 const ICONS = `<svg width="66" height="14" viewBox="0 0 66 14"><path d="M1 10h3v3H1zM6 7h3v6H6zM11 4h3v9h-3zM16 1h3v12h-3z"/><path d="M25 5.5a8 8 0 0 1 12 0M27.4 8a5 5 0 0 1 7.2 0M29.8 10.4a1.8 1.8 0 0 1 2.4 0" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round"/><rect x="42.5" y="1.5" width="20" height="11" rx="3.5" fill="none" stroke="#000" opacity=".4"/><rect x="44" y="3" width="14" height="8" rx="2"/><path d="M64 5v4" stroke="#000" opacity=".4" stroke-width="1.6" stroke-linecap="round"/></svg>`;
 const SEND = `<b><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></b>`;
-const URL = "spanishtoptechcompanies.com/mcp", ASK = "Backend en remoto por encima de 60k";
+const URL = "spanishtoptechcompanies.com/mcp";
+// The words, in Spanish and (?lang=en) in English.
+const T = {
+  es: { intro: "Aplica a *miles* *de* *trabajos* en tech con tu agente.", free: "Gratis.", agent: "Tu agente", connected: "conectado", hello: "Conectado. ¿Qué trabajo buscas?",
+    ask: "Backend en remoto por encima de 60k", postings: "ofertas", of: "de", remote: "remoto", median: "mediana", sep: ".", space: "espacio", keys: "asdfghjklñ",
+    rows: [["Nombre y email", "de tu CV"], ["LinkedIn", "de tu CV"], ["Experiencia", "de tu CV"], ["CV", "adjunto"], ["Sueldo que pides", "80.000 €"]],
+    salary: "¿Qué sueldo pides?", answer: "80.000 €", whole: "Esta es la candidatura completa. ¿La envío?", change: "Cambiar algo", yes: "Sí, envía", sent: "Enviada", noted: "Anotada para no repetirla",
+    placeholder: "Pregunta a tu agente", outro: "Pega esto en *tu agente*.", note: "Gratis · sin registro · nada se envía sin tu sí",
+    caps: ["Conéctalo con un *enlace*.", "Pídele *ofertas*.", "Mira lo que *paga* cada empresa.", "Rellena el formulario con *tu CV*.", "Y envía solo con *tu sí*."],
+    tags: ["Sin registro ni claves", "Sueldo base mediano, en España", "Lo que no sabe, te lo pregunta"] },
+  en: { intro: "Apply to *thousands* *of* *tech* *jobs* with your agent.", free: "Free.", agent: "Your agent", connected: "connected", hello: "Connected. What job are you after?",
+    ask: "Remote backend above 60k", postings: "postings", of: "of", remote: "remote", median: "median", sep: ",", space: "space", keys: "asdfghjkl",
+    rows: [["Name and email", "from your CV"], ["LinkedIn", "from your CV"], ["Experience", "from your CV"], ["CV", "attached"], ["Salary you ask for", "80,000 €"]],
+    salary: "What salary do you ask for?", answer: "80,000 €", whole: "This is the whole application. Shall I send it?", change: "Change it", yes: "Yes, send", sent: "Sent", noted: "Noted so it is not repeated",
+    placeholder: "Ask your agent", outro: "Paste this into *your agent*.", note: "Free · no sign-up · nothing is sent without your yes",
+    caps: ["Connect it with a *link*.", "Ask it for *jobs*.", "See what each company *pays*.", "It fills in the form from *your CV*.", "And sends only with *your yes*."],
+    tags: ["No sign-up, no keys", "Median base salary, in Spain", "What it does not know, it asks you"] },
+}[q.get("lang") === "en" ? "en" : "es"];
+const ASK = T.ask;
+document.documentElement.lang = q.get("lang") === "en" ? "en" : "es";
 const RES = [["Affirm", "Senior Software Engineer, Backend", 87], ["Cisco", "Technical Leader, Backend Services", 85], ["Qonto", "Senior/Staff Go Backend Engineer", 70], ["Semrush", "Senior Backend Developer", 67]];
-const KB = ["qwertyuiop", "asdfghjklñ", "zxcvbnm"].map((r) => `<div>${[...r].map((c) => `<span>${c}</span>`).join("")}</div>`).join("") +
-  `<div><span class="fn">123</span><span class="sp">espacio</span><span class="fn">↵</span></div>`;
+const KB = ["qwertyuiop", T.keys, "zxcvbnm"].map((r) => `<div>${[...r].map((c) => `<span>${c}</span>`).join("")}</div>`).join("") +
+  `<div><span class="fn">123</span><span class="sp">${T.space}</span><span class="fn">↵</span></div>`;
 // [from, to, text]: the line over the phone.
-const CAPS = [[3.4, 7, "Conéctalo con un *enlace*."], [7, 9.8, "Pídele *ofertas*."], [9.8, 12.8, "Mira lo que *paga* cada empresa."],
-  [12.8, 15.5, "Rellena el formulario con *tu CV*."], [15.5, 18.4, "Y envía solo con *tu sí*."]];
+const CAPS = [[3.4, 7], [7, 9.8], [9.8, 12.8], [12.8, 15.9], [15.9, 18.4]].map((c, i) => [...c, T.caps[i]]);
 // [from, to, text, colour, tilt]: a card over the phone's top corner.
-const TAGS = [[5.6, 7, "Sin registro ni claves", "orange", 4], [10.5, 12.4, "Sueldo base mediano, en España", "pink", -3], [14.2, 16.2, "Lo que no sabe, te lo pregunta", "teal", 3]];
+const TAGS = [[5.6, 7, T.tags[0], "orange", 2], [10.5, 12.4, T.tags[1], "pink", -2], [14.1, 16, T.tags[2], "teal", 2]];
 
 document.getElementById("stage").innerHTML = `
-${head("Aplica a *miles* *de* *trabajos* en tech con tu agente.", "", "intro")}
-<div class="card purple" id="free" style="left:330px;top:318px;font-size:44px;line-height:48px;padding:14px 24px 18px">Gratis.</div>
+${head(T.intro, "", "intro")}
+<div class="card purple" id="free" style="left:330px;top:352px;font-size:44px;line-height:48px;padding:14px 24px 18px">${T.free}</div>
 ${CAPS.map(([, , s]) => head(s, "cap")).join("")}
 ${TAGS.map(([, , s, c]) => `<div class="card tag ${c}">${s}</div>`).join("")}
 <div class="rig"><div class="ph"><i class="btn" style="left:-3px;top:150px;height:34px"></i><i class="btn" style="left:-3px;top:200px;height:60px"></i><i class="btn" style="right:-3px;top:210px;height:92px"></i>
   <div class="scr"><div class="isl"></div><div class="stat"><span>9:41</span>${ICONS}</div>
-  <div class="app">${LOGO}<div><b>Tu agente</b><small><i></i>${URL}</small></div></div>
+  <div class="app">${LOGO}<div><b>${T.agent}</b><small><i></i>${URL}</small></div></div>
   <div class="body">
-    <div class="layer a"><div class="me"><code>${URL}</code></div><div class="tool"><i>✓</i>tech-pay-spain · conectado</div><div class="ag">Conectado. ¿Qué trabajo buscas?</div></div>
+    <div class="layer a"><div class="me"><code>${URL}</code></div><div class="tool"><i>✓</i>tech-pay-spain · ${T.connected}</div><div class="ag">${T.hello}</div></div>
     <div class="layer b"><div class="me">${ASK}</div><div class="tool"><i>✓</i><span></span></div>${
-      RES.map(([c, p, m], i) => `<div class="res">${lg(c, i)}<b>${c}</b><p>${p} · remoto</p><u>${m}.000 €<small>mediana</small></u></div>`).join("")}</div>
+      RES.map(([c, p, m], i) => `<div class="res">${lg(c, i)}<b>${c}</b><p>${p} · ${T.remote}</p><u>${m}${T.sep}000 €<small>${T.median}</small></u></div>`).join("")}</div>
     <div class="layer c"><div class="job">${lg("Qonto", 2)}<div><b>Qonto</b><span>Senior/Staff Go Backend Engineer</span></div></div><div class="prog"><i></i></div>${
-      [["Nombre y email", "de tu CV"], ["LinkedIn", "de tu CV"], ["Experiencia", "de tu CV"], ["CV", "adjunto"], ["Sueldo que pides", "70.000 €"]].map(([a, b]) => `<div class="row">${a}<b>${b}<i>✓</i></b></div>`).join("")}
-      <div class="ag">¿Qué sueldo pides?</div><div class="me"></div>
-      <div class="ask">Esta es la candidatura completa. ¿La envío?<div class="btns"><span>Cambiar algo</span><span>Sí, envía</span></div></div>
-      <div class="done"><div class="lg">✓</div><h3>Enviada<small>Qonto · Senior/Staff Go Backend Engineer<br>Anotada para no repetirla</small></h3></div></div>
+      T.rows.map(([a, b]) => `<div class="row">${a}<b>${b}<i>✓</i></b></div>`).join("")}
+      <div class="ag">${T.salary}</div><div class="me"></div>
+      <div class="ask">${T.whole}<div class="btns"><span>${T.change}</span><span>${T.yes}</span></div></div>
+      <div class="done"><div class="lg">✓</div><h3>${T.sent}<small>Qonto · Senior/Staff Go Backend Engineer<br>${T.noted}</small></h3></div></div>
     <div class="comp"><span></span>${SEND}</div><div class="kb">${KB}</div>
   </div></div></div></div>
 <i class="tap"></i>
-${head("Pega esto en *tu agente*.", "", "outro")}
+${head(T.outro, "", "outro")}
 <div class="card white url">${URL}</div>
-<div class="note">Gratis · sin registro · nada se envía sin tu sí</div>
+<div class="note">${T.note}</div>
 <div class="brand">Spanish Top Tech Companies</div>`;
 
 const clamp = (x) => Math.max(0, Math.min(1, x)), ease = (x) => 1 - Math.pow(1 - clamp(x), 3);
@@ -146,7 +166,7 @@ const bump = (t, a, d = 0.4) => t > a && t < a + d ? Math.sin(Math.PI * (t - a) 
 const pop = (el, p, extra = "") => { el.style.transform = `scale(${p}) ${extra}`; el.style.opacity = clamp(p * 4); };
 const typed = (s, t, a, b) => s.slice(0, Math.round(s.length * clamp((t - a) / (b - a))));
 const caret = (t) => `<span class="caret" style="opacity:${Math.floor(t * 2.5) % 2 ? 0 : 1}"></span>`;
-const dots = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+const dots = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, T.sep);
 const all = (s, el = document) => [...el.querySelectorAll(s)];
 const one = (s, el = document) => el.querySelector(s);
 const lerp = (a, b, k) => a + (b - a) * k, lerp2 = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
@@ -252,7 +272,7 @@ function fig(t, o) {
 const BIG = { x: 270, y: 640, s: 1.15, rot: 0 }, CORNER = { x: 92, y: 905, s: .82, rot: -6 }, END = { x: 270, y: 620, s: 1.1, rot: 0 }, HOVER = [296, 846];
 const el = { intro: one("#intro"), free: one("#free"), caps: all(".h.cap"), tags: all(".card.tag"), rig: one(".rig"), comp: one(".comp"), compText: one(".comp > span"), send: one(".comp > b"),
   kb: one(".kb"), keys: all(".kb span"), a: one(".layer.a"), b: one(".layer.b"), c: one(".layer.c"), tap: one(".tap"), outro: one("#outro"), url: one(".card.url"), note: one(".note"), brand: one(".brand") };
-const placeholder = `<span style="color:#9a9a9a">Pregunta a tu agente</span>`;
+const placeholder = `<span style="color:#9a9a9a">${T.placeholder}</span>`;
 
 function render(t) {
   t = Math.min(t, TOTAL - 1 / 60);
@@ -273,7 +293,7 @@ function render(t) {
   el.compText.innerHTML = t >= 4.2 && t < TAP.link ? `<code style="background:rgba(0,0,242,${0.18 * (1 - clamp((t - 4.2) / 0.6))})">${URL}</code>`
     : typing ? typed(ASK, t, 7.3, 8.3) + caret(t) : placeholder;
   el.kb.style.transform = `translateY(${Math.round((1 - kb) * 330)}px)`; el.comp.style.transform = `translateY(${Math.round(-240 * kb)}px)`;
-  const hit = typing && t > 7.3 && t < 8.3 ? Math.floor(t * 23) % 27 : -1;
+  const hit = typing && t > 7.3 && t < 8.3 ? Math.floor(t * 23) % (T.keys.length + 17) : -1;
   el.keys.forEach((k, i) => { k.style.background = i === hit ? "#abb0bc" : ""; });
   const row = all(".res", el.b)[2], yes = one(".btns span:last-child", el.c), pressed = { link: bump(t, TAP.link, 0.3), ask: bump(t, TAP.ask, 0.3), open: bump(t, TAP.open, 0.3), yes: bump(t, TAP.yes, 0.3) };
   el.send.style.transform = `scale(${1 - 0.1 * Math.max(pressed.link, pressed.ask)})`;
@@ -288,7 +308,7 @@ function render(t) {
   const bOut = ease((t - TAP.open - 0.15) / 0.35), n = ease((t - 9.1) / 0.8);
   el.b.style.transform = `translateX(${-340 * bOut}px)`; el.b.style.visibility = t >= TAP.ask && bOut < 1 ? "visible" : "hidden";
   pop(one(".me", el.b), sp(t, TAP.ask + 0.05, 0.4)); pop(one(".tool", el.b), sp(t, 9, 0.4));
-  one(".tool span", el.b).textContent = n < 1 ? `find_jobs · ${dots(6884 + (26 - 6884) * n)} ofertas` : "find_jobs · 26 de 6.884 ofertas";
+  one(".tool span", el.b).textContent = n < 1 ? `find_jobs · ${dots(6884 + (26 - 6884) * n)} ${T.postings}` : `find_jobs · 26 ${T.of} ${dots(6884)} ${T.postings}`;
   all(".res", el.b).forEach((r, i) => {
     pop(r, sp(t, 9.6 + i * 0.15) * (r === row ? 1 - 0.04 * pressed.open : 1));
     r.style.background = r === row && t >= TAP.open ? "#e9e9ff" : "";
@@ -296,17 +316,18 @@ function render(t) {
   });
 
   // Screen three: the form, the one question, the whole application and the yes.
-  const cIn = ease((t - TAP.open - 0.15) / 0.35), rows = all(".row", el.c), answered = t >= 15.2, asking = t < 15.5;
+  const cIn = ease((t - TAP.open - 0.15) / 0.35), rows = all(".row", el.c), answered = t >= 15.45, asking = t < 15.95;
   el.c.style.transform = `translateX(${340 * (1 - cIn)}px)`; el.c.style.visibility = cIn > 0 ? "visible" : "hidden";
-  one(".prog i", el.c).style.width = `${80 * ease((t - 13.1) / 1.2) + 20 * ease((t - 15.2) / 0.4)}%`;
+  one(".prog i", el.c).style.width = `${80 * ease((t - 13.1) / 1.2) + 20 * ease((t - 15.45) / 0.4)}%`;
   rows.forEach((r, i) => {
     if (i < 4) return pop(one("b", r), sp(t, 13.2 + i * 0.25, 0.4));
-    r.style.opacity = clamp((t - 14.3) * 5); pop(one("b", r), answered ? sp(t, 15.2, 0.4) : 0);
+    r.style.opacity = clamp((t - 14.1) * 5); pop(one("b", r), answered ? sp(t, 15.45, 0.4) : 0);
   });
   const ag = one(".ag", el.c), me = one(".me", el.c), box = one(".ask", el.c), done = one(".done", el.c);
   ag.style.display = me.style.display = asking ? "block" : "none"; box.style.display = asking ? "none" : "block";
-  pop(ag, sp(t, 14.3, 0.4)); pop(me, sp(t, 14.6, 0.4)); me.innerHTML = typed("70.000 €", t, 14.65, 15.05) || "&nbsp;";
-  box.style.opacity = clamp((t - 15.5) * 6);
+  // The answer is typed slowly enough to read, caret and all.
+  pop(ag, sp(t, 14.1, 0.4)); pop(me, sp(t, 14.4, 0.35)); me.innerHTML = typed(T.answer, t, 14.55, 15.35) + (t < 15.45 ? caret(t) : "");
+  box.style.opacity = clamp((t - 15.95) * 6);
   done.style.visibility = t >= TAP.yes + 0.3 ? "visible" : "hidden"; done.style.opacity = clamp((t - TAP.yes - 0.3) * 8);
   one(".lg", done).style.transform = `scale(${sp(t, TAP.yes + 0.35)})`;
   el.comp.style.opacity = 1 - cIn;

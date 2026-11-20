@@ -4,49 +4,19 @@
 
 <p align="center">Have your agent apply for you. Free.</p>
 
+<h2 align="center"><a href="https://spanishtoptechcompanies.com/en/">spanishtoptechcompanies.com</a></h2>
+
 <p align="center"><a href="./README.md">ES</a> / <b>EN</b></p>
 
 ## Connect it
 
-One minute, with the agent you already use. Paste this link into its chat, or add it as an MCP server.
+Paste this link into your agent's chat and it connects itself.
 
 ```text
 https://spanishtoptechcompanies.com/mcp
 ```
 
-No sign-up, no keys. It works with any agent that supports MCP: Claude Code, Codex, Cursor, Hermes, Grok, Instinct and the rest.
-
-<details>
-<summary>Step by step in each agent</summary>
-
-**Claude Code**
-
-```text
-claude mcp add --transport http tech-pay-spain https://spanishtoptechcompanies.com/mcp
-```
-
-**Codex**, in `~/.codex/config.toml`
-
-```toml
-[mcp_servers.tech-pay-spain]
-url = "https://spanishtoptechcompanies.com/mcp"
-```
-
-**Cursor**, in `~/.cursor/mcp.json`
-
-```json
-{ "mcpServers": { "tech-pay-spain": { "url": "https://spanishtoptechcompanies.com/mcp" } } }
-```
-
-**Claude**: Settings, Connectors, Add custom connector, and paste the link.
-
-**Hermes**: also install the skill, which teaches it to use the MCP and to apply for you.
-
-```text
-hermes skills install pugarte7/spanish-top-tech-companies/skills/tech-pay-spain
-```
-
-</details>
+No sign-up, no keys, nothing to install. It works with any agent that supports MCP: Claude Code, Codex, Cursor, Hermes, Grok, Instinct and the rest.
 
 One person maintains it. If it is useful to you, a star gets it found by more people looking for work in Spain.
 
@@ -58,13 +28,15 @@ Your agent does the work, you decide.
 2. **Ask it for jobs.** “Remote backend above 60k”. It searches today's postings and tells you what each company pays.
 3. **Apply with your yes.** It fills in the form from your CV, asks you what it does not know and sends only when you approve.
 
-<img alt="Your agent, connected to the MCP, finds remote backend openings at companies paying over 80,000 €, 16 at five companies, fills in Pleo's form from your CV, asks you for the three answers it lacks and sends the application when you say yes" src="docs/img/mcp-demo.en.gif" width="100%">
+<p align="center"><img alt="The mascot connects the MCP with a link, asks for remote backend jobs above 60k, sees what each company pays, fills in the form from the CV and sends only with your yes" src="docs/img/mcp-video.en.gif" width="320"></p>
 
 For it to apply well, give it once your CV, where and how you want to work, the salary you ask for and your work authorization. After that one sentence is enough:
 
 > Apply to 5 backend openings in Barcelona.
 
 > Apply to the remote openings I can do from Spain that pay 60,000 € or more.
+
+<img alt="More than 400 job boards and more than 1,000 postings a day feed find_jobs; with your CV, find_jobs finds postings with the company's salary, job_questions reads the form, the agent writes the cover letter and the answers and, if you say yes, sends it with its own browser and records it with report_application" src="docs/img/apply-flow.en.svg" width="100%">
 
 ## Questions
 
@@ -141,22 +113,23 @@ The server is called `tech-pay-spain`. Your agent picks the tool, you do not hav
 </details>
 
 <details>
-<summary>How it applies, step by step</summary>
-
-<img alt="More than 400 job boards and more than 1,000 postings a day feed find_jobs; with your CV, find_jobs finds postings with the company's salary, job_questions reads the form, the agent writes the cover letter and the answers and, if you say yes, sends it with its own browser and records it with report_application" src="docs/img/apply-flow.en.svg" width="100%">
-
-</details>
-
-<details>
 <summary>Server, data and code</summary>
 
 - Streamable HTTP at `https://spanishtoptechcompanies.com/mcp`, no authentication, CORS open.
 - The same server over stdio, with Node 22 or later and no dependencies: `node scripts/mcp-stdio.mjs`.
 - The data in [data.json](https://spanishtoptechcompanies.com/api/v1/data.json), the postings in [jobs.json](https://spanishtoptechcompanies.com/api/v1/jobs.json) and a summary in [llms.txt](https://spanishtoptechcompanies.com/llms.txt).
 - A [skill for agents](skills/tech-pay-spain/SKILL.md) on how to read the figures.
-- Pull requests are welcome. [METHODOLOGY.md](METHODOLOGY.md) explains the rules and [docs/CONTEXT.md](docs/CONTEXT.md) why the code is the way it is. If you would rather talk it over first, open an [issue](../../issues/new/choose).
 
 </details>
+
+## Contributing
+
+Pull requests are welcome, and so is an [issue](../../issues/new/choose) if you would rather talk it over first.
+
+- [CONTRIBUTING.md](CONTRIBUTING.md): how to add a salary or a company and how to open a pull request.
+- [Code of conduct](CODE_OF_CONDUCT.md): what is expected of everyone taking part.
+- [SECURITY.md](SECURITY.md): how to report a security problem.
+- [METHODOLOGY.md](METHODOLOGY.md) explains the rules and [docs/CONTEXT.md](docs/CONTEXT.md) why the code is the way it is.
 
 ## Licence and disclaimer
 
