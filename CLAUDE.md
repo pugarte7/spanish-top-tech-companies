@@ -117,8 +117,15 @@ pauses the refresh until its "Refresh paused" issue is closed.
 ## Site, README and MCP
 
 - The README (Spanish `README.md`, English `README.en.md`) leads with the MCP
-  and holds no salary data or tables. Its diagram comes from
-  `scripts/readme_flow.mjs`, the demo video from `scripts/mcp_demo.mjs`.
+  and holds no salary data or tables. It follows the site: the mascot, the
+  headline, the link, the three steps and the questions, with the rest folded
+  away, written as [docs/STYLE.md](docs/STYLE.md) says. Its mascot comes from
+  `scripts/readme_mascot.mjs`, its diagram from `scripts/readme_flow.mjs`, the
+  demo video from `scripts/mcp_demo.mjs`.
+- The vertical video for social feeds comes from `scripts/x_video.mjs`
+  (`scripts/x_video/`), with figures read from the MCP on the day it is made.
+  It alone uses the card colours and the mascot in halftone: neither goes on
+  the site.
 - In the demo and in the agent's instructions the agent invents nothing: it
   fills in facts from the CV, asks for the rest, and never writes an opinion
   answer for the person.

@@ -14,3 +14,5 @@ node_modules
 # One row per person: private, kept outside the repository (lib.DATA).
 companies.csv
 test-results/
+# The recorded video: made on demand, too large for the repository.
+scripts/x_video/out/
