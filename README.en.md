@@ -1,12 +1,16 @@
+<p align="right"><a href="https://github.com/pugarte7/spanish-top-tech-companies"><img alt="Star it on GitHub" src="https://img.shields.io/github/stars/pugarte7/spanish-top-tech-companies?style=for-the-badge&logo=github&label=Star&color=0000f2"></a></p>
+
 <p align="center"><img alt="The mascot: Spain with two eyes and six arms sending CVs" src="docs/img/mascot.gif" width="420"></p>
 
 <h1 align="center">Apply to thousands of tech jobs with your agent</h1>
 
 <p align="center">Have your agent apply for you. Free.</p>
 
-<h2 align="center"><a href="https://spanishtoptechcompanies.com/en/">spanishtoptechcompanies.com</a></h2>
+<p align="center"><a href="https://spanishtoptechcompanies.com/en/">spanishtoptechcompanies.com</a> · <a href="./README.md">🇪🇸</a> / <b>🇬🇧</b></p>
 
-<p align="center"><a href="./README.md">🇪🇸</a> / <b>🇬🇧</b></p>
+<h3 align="center">⭐ Useful to you? Give it a star: the <b>Star</b> button, top right of this page</h3>
+
+<p align="center">One person maintains it, and every star gets it found by more people looking for work in Spain.</p>
 
 ## Connect it
 
@@ -17,8 +21,6 @@ https://spanishtoptechcompanies.com/mcp
 ```
 
 No sign-up, no keys, nothing to install. It works with any agent that supports MCP: Claude Code, Codex, Cursor, Hermes, Grok, Instinct and the rest.
-
-One person maintains it. If it is useful to you, a star gets it found by more people looking for work in Spain.
 
 ## How it works
 
