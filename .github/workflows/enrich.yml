@@ -1,0 +1,106 @@
+name: enrich
+
+# Company size and contacts from an outside agent (instinct/). Every day it
+# stores the answers the agent left in the private repo's issues (labelled
+# `enriched`), then opens issues for the next companies missing a size or a
+# contact check (scripts/enrich.py). After the weekly boards run too, so a
+# company that arrives with the feed is asked about that day.
+#
+# Contacts are people: the issues live in the private repo, contacts.json is
+# kept encrypted there (private_data.sh) and nothing here prints them. This
+# log is public and shows counts only. Sizes are public and go to main as
+# data/sizes.json.
+#
+# Secrets: DATA_KEY and DATA_DEPLOY_KEY (as refresh.yml) and DATA_ISSUES_TOKEN,
+# a fine-grained token with Issues read and write on the private repo only.
+
+on:
+  schedule:
+    - cron: "40 9 * * *"
+  workflow_run:
+    workflows: [boards]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Issues to open in this run"
+        type: string
+        default: "25"
+
+concurrency:
+  group: enrich
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  enrich:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ secrets.DATA_ISSUES_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Pull the private data
+        env:
+          DATA_KEY: ${{ secrets.DATA_KEY }}
+          DATA_DEPLOY_KEY: ${{ secrets.DATA_DEPLOY_KEY }}
+        run: |
+          [ -n "$GH_TOKEN" ] || { echo "DATA_ISSUES_TOKEN is not set."; exit 1; }
+          export STC_DATA="$RUNNER_TEMP/data/website/companies.csv"
+          echo "STC_DATA=$STC_DATA" >> "$GITHUB_ENV"
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DATA_DEPLOY_KEY" > ~/.ssh/data_key
+          chmod 600 ~/.ssh/data_key
+          ssh-keyscan -q github.com >> ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/data_key -o IdentitiesOnly=yes"
+          echo "GIT_SSH_COMMAND=$GIT_SSH_COMMAND" >> "$GITHUB_ENV"
+          bash scripts/private_data.sh pull > /dev/null 2>&1 \
+            || { echo "Could not pull the private data."; exit 1; }
+          sha256sum "$(dirname "$STC_DATA")/contacts.json" 2>/dev/null > "$RUNNER_TEMP/contacts.sum" || true
+          echo "Private data pulled."
+
+      - name: Store the agent's answers
+        run: python3 scripts/enrich.py collect
+
+      - name: Push the contacts
+        env:
+          DATA_KEY: ${{ secrets.DATA_KEY }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          if sha256sum -c --quiet "$RUNNER_TEMP/contacts.sum" > /dev/null 2>&1; then
+            echo "No new contacts."
+            exit 0
+          fi
+          bash scripts/private_data.sh push > /dev/null 2>&1 \
+            || { echo "Could not push the private data."; exit 1; }
+          echo "Contacts pushed."
+
+      - name: Commit data/sizes.json
+        run: |
+          if git diff --quiet -- data/sizes.json; then
+            echo "No new sizes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/sizes.json
+          git commit -q -m "Company sizes $(date -u +%F)"
+          git pull --rebase -q origin main
+          git push -q origin HEAD:main
+          echo "data/sizes.json pushed."
+
+      - name: Ask about the next companies
+        env:
+          LIMIT: ${{ inputs.limit || '25' }}
+        run: python3 scripts/enrich.py open --limit "$LIMIT"

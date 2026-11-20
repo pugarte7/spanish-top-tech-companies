@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Company enrichment answer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "slug",
+    "size",
+    "contacts",
+    "searched",
+    "notes"
+  ],
+  "properties": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "size": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "employees",
+        "range",
+        "scope",
+        "as_of",
+        "source_url",
+        "source_type"
+      ],
+      "properties": {
+        "employees": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "range": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^\\d+(-\\d+|\\+)$"
+        },
+        "scope": {
+          "enum": [
+            "group",
+            "company",
+            "branch",
+            null
+          ]
+        },
+        "as_of": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^\\d{4}-\\d{2}$"
+        },
+        "source_url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri"
+        },
+        "source_type": {
+          "enum": [
+            "annual_report",
+            "registry",
+            "company_site",
+            "linkedin",
+            "press",
+            "estimate",
+            null
+          ]
+        }
+      }
+    },
+    "contacts": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "name",
+          "role",
+          "scope",
+          "linkedin",
+          "email",
+          "jobs",
+          "link_evidence",
+          "evidence_url",
+          "evidence_quote",
+          "published_on"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "recruiter",
+              "hiring_manager",
+              "lead"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "role": {
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "Spain",
+              "EMEA",
+              "Europe",
+              "Global",
+              null
+            ]
+          },
+          "linkedin": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^https://([a-z]{2,3}\\.)?linkedin\\.com/in/"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "email"
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "link_evidence": {
+            "type": "string"
+          },
+          "evidence_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "evidence_quote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "published_on": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{4}-\\d{2}$"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "hiring_manager",
+                    "lead"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "jobs": {
+                  "minItems": 1
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "email": {
+                  "type": "string"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "evidence_quote": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "anyOf": [
+              {
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "linkedin": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "searched": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

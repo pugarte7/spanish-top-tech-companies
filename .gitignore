@@ -16,3 +16,5 @@ companies.csv
 test-results/
 # The recorded video: made on demand, too large for the repository.
 scripts/x_video/out/
+# The people hiring_contact gives: written by deploy.yml from the private repo.
+api/_contacts.json

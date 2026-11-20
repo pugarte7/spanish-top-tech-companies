@@ -95,18 +95,23 @@ function show(key, n) {
 
 const read = async (url) => (await fetch(url)).json();
 
-// /api/calls is PostHog's count of tool calls, about a minute behind and cached
-// 30 s by the CDN, so asking more often would only repeat the answer. With no
-// count (no key on the deployment, PostHog down) its column is taken away.
+// /api/calls is PostHog's count of tool calls. Asked every second while the tab
+// is on show: the CDN answers, so it costs nothing, and the figure moves within
+// seconds of PostHog having a new call. With no count (no key on the
+// deployment, PostHog down) the figure stays as it is, or its column is taken away.
+let asking = false;
 async function calls() {
+  if (asking) return;   // a slow answer is not asked for twice
+  asking = true;
   try { show("calls", (await read("/api/calls")).calls); } catch { /* keep what is shown */ }
+  asking = false;
   const el = document.querySelector('[data-stat="calls"]');
   if (el) el.hidden = !el.querySelector("b").dataset.shown;
 }
 
 async function figures() {
   calls();
-  setInterval(() => { if (!document.hidden) calls(); }, 30000);
+  setInterval(() => { if (!document.hidden) calls(); }, 1000);
   try {
     const jobs = await read("/api/v1/jobs-summary.json");
     show("postings", jobs.postings); show("companies", jobs.companies);

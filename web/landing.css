@@ -39,7 +39,14 @@ button { font: inherit; color: inherit; }
 :root:not([data-theme="dark"]) #theme .sun, :root[data-theme="dark"] #theme .moon { color: var(--ink); }
 :root:not([data-theme="dark"]) #theme .sun svg, :root[data-theme="dark"] #theme .moon svg { stroke-width: 2.6; }
 @media (hover: hover) { .langs a:hover, #theme:hover { color: var(--ink); } }
-@media (max-width: 560px) { .brand b { display: none; } }
+/* On a phone no logo and no name, which would repeat the mascot and the footer:
+   the languages on the left, the theme on the right. */
+@media (max-width: 560px) {
+  .brand { display: none; }
+  .nav-r { flex: 1; justify-content: space-between; }
+  .langs { padding-left: 0; }
+  #theme { padding-right: 0; }
+}
 
 .center { max-width: 780px; margin: 8px auto 0; text-align: center; }
 /* 8:5, the canvas's shape, held before the script draws it. */
@@ -134,6 +141,20 @@ mark { background: none; color: var(--accent); }
 .legal h1 { margin: 24px 0 8px; font-size: clamp(32px, 6vw, 44px); }
 .legal h2 { margin: 28px 0 6px; font-size: 22px; line-height: 28px; font-weight: 500; }
 .legal p { margin: 0; overflow-wrap: anywhere; }
+
+/* On a phone the three figures and their labels have to show without
+   scrolling, with the air shared out above them. Sized for the normal iPhones
+   from the 13 up, whose Safari leaves about 390 by 660. */
+@media (max-width: 560px) {
+  .page { padding-top: 14px; }
+  .center { margin-top: 2px; }
+  .scene { max-width: 316px; margin-bottom: 0; }
+  h1 { margin: 8px 0 12px; }
+  .sub { margin-bottom: 20px; }
+  .btns { gap: 10px; }
+  .cta, .btn2 { padding-top: 13px; padding-bottom: 13px; }
+  .stats { margin-top: 30px; padding-top: 20px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
