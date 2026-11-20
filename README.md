@@ -1,12 +1,16 @@
+<p align="right"><a href="https://github.com/pugarte7/spanish-top-tech-companies"><img alt="Dale una estrella en GitHub" src="https://img.shields.io/github/stars/pugarte7/spanish-top-tech-companies?style=for-the-badge&logo=github&label=Star&color=0000f2"></a></p>
+
 <p align="center"><img alt="La mascota: España con dos ojos y seis brazos que envían CVs" src="docs/img/mascot.gif" width="420"></p>
 
 <h1 align="center">Aplica a miles de trabajos en tech con tu agente</h1>
 
 <p align="center">Haz que tu agente aplique por ti. Gratis.</p>
 
-<h2 align="center"><a href="https://spanishtoptechcompanies.com/es/">spanishtoptechcompanies.com</a></h2>
+<p align="center"><a href="https://spanishtoptechcompanies.com/es/">spanishtoptechcompanies.com</a> · <b>🇪🇸</b> / <a href="./README.en.md">🇬🇧</a></p>
 
-<p align="center"><b>🇪🇸</b> / <a href="./README.en.md">🇬🇧</a></p>
+<h3 align="center">⭐ ¿Te sirve? Dale una estrella: botón <b>Star</b>, arriba a la derecha de esta página</h3>
+
+<p align="center">Lo mantiene una sola persona, y cada estrella hace que lo encuentre más gente que busca trabajo en España.</p>
 
 ## Conéctalo
 
@@ -17,8 +21,6 @@ https://spanishtoptechcompanies.com/mcp
 ```
 
 Sin registro, sin claves y sin instalar nada. Funciona con cualquier agente que admita MCP: Claude Code, Codex, Cursor, Hermes, Grok, Instinct y los demás.
-
-Lo mantiene una sola persona. Si te sirve, una estrella hace que lo encuentre más gente que busca trabajo en España.
 
 ## Cómo funciona
 
