@@ -78,6 +78,33 @@ jobs:
       - name: Install
         run: npm ci --omit=dev
 
+      # The people hiring_contact gives come from the private repo into
+      # api/_contacts.json, which vercel.json bundles with the MCP function
+      # only (never under _site/) and git ignores. Nothing of it is printed.
+      # Without the secrets or the file, hiring_contact is not offered.
+      - name: Contacts for hiring_contact
+        if: env.VERCEL_TOKEN != ''
+        env:
+          DATA_KEY: ${{ secrets.DATA_KEY }}
+          DATA_DEPLOY_KEY: ${{ secrets.DATA_DEPLOY_KEY }}
+        run: |
+          if [ -z "$DATA_KEY" ] || [ -z "$DATA_DEPLOY_KEY" ]; then
+            echo "No private-repo secrets: hiring_contact is off."
+            exit 0
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DATA_DEPLOY_KEY" > ~/.ssh/data_key
+          chmod 600 ~/.ssh/data_key
+          ssh-keyscan -q github.com >> ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/data_key -o IdentitiesOnly=yes"
+          export STC_DATA="$RUNNER_TEMP/data/website/companies.csv"
+          if bash scripts/private_data.sh contacts api/_contacts.json > /dev/null 2>&1; then
+            echo "Contacts read."
+          else
+            rm -f api/_contacts.json
+            echo "::warning::Contacts not read: hiring_contact is off."
+          fi
+
       - name: Build for Vercel
         if: env.VERCEL_TOKEN != ''
         env:

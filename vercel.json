@@ -4,6 +4,9 @@
   "buildCommand": "python3 scripts/site.py && node scripts/jobs.mjs",
   "outputDirectory": "_site",
   "regions": ["fra1"],
+  "functions": {
+    "api/mcp.js": { "includeFiles": "api/_contacts.json" }
+  },
   "git": { "deploymentEnabled": false },
   "redirects": [
     { "source": "/", "destination": "/es/", "permanent": false },

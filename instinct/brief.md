@@ -45,6 +45,7 @@ belongs to several companies and you cannot tell which, stop and label
       "kind": "recruiter",
       "name": "Jane Doe",
       "role": "Talent Acquisition Partner, Spain",
+      "scope": "Spain",
       "linkedin": "https://www.linkedin.com/in/...",
       "email": "jane.doe@acme.com",
       "jobs": [],
@@ -57,6 +58,7 @@ belongs to several companies and you cannot tell which, stop and label
       "kind": "hiring_manager",
       "name": "John Roe",
       "role": "Engineering Manager, Payments",
+      "scope": "Spain",
       "linkedin": "https://www.linkedin.com/in/...",
       "email": null,
       "jobs": ["acme-123"],
@@ -94,6 +96,9 @@ belongs to several companies and you cannot tell which, stop and label
 A `hiring_manager` or `lead` lists the job ids they relate to in `jobs`, and
 `link_evidence` says how: the posting names them, or their current title at
 this company matches the posting's team and place.
+
+`scope`: where the person hires or works: `Spain`, `EMEA`, `Europe`,
+`Global`, or null when the page does not say.
 
 `linkedin`: the profile URL, found through a web search or the company's own
 pages.

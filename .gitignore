@@ -14,3 +14,5 @@ node_modules
 # One row per person: private, kept outside the repository (lib.DATA).
 companies.csv
 test-results/
+# The people hiring_contact gives: written by deploy.yml from the private repo.
+api/_contacts.json
