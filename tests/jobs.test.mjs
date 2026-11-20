@@ -330,6 +330,11 @@ assert.deepEqual([pod.url, pod.location, pod.workplace, pod.posted_at],
   ["https://pod.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/2108", "Madrid, Spain", "hybrid",
    "2026-11-02T15:51:16+00:00"]);
 assert.ok(requested.includes("https://az.eightfold.ai/api/pcsx/position_details"), "pcsx descriptions are read");
+{
+  const { parseBoard } = await import("../lib/ats/sources/oracle.js");
+  assert.equal(parseBoard("enterpriseplatform.dell.com/CX_1001").host, "enterpriseplatform.dell.com", "a known vanity host");
+  assert.throws(() => parseBoard("careers.example.com/CX_1"), /oracle board/);
+}
 assert.ok(!requested.some((u) => u.startsWith("https://old.eightfold.ai/api/pcsx/position")), "v2 lists carry descriptions");
 // A posting dated 0 has no date rather than 1970.
 const london = await eightfold.listJobs({ name: "AZ", ats: "eightfold", board: "az.eightfold.ai/az.com", query: "" },
@@ -480,6 +485,14 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
       description: "<p>Go.</p>", datePosted: "2026-10-28", location: { addressCountry: "Spain" } } } }),
     "https://acme.bamboohr.com/careers/6/detail": JSON.stringify({ result: { jobOpening: {
       description: "<p>Sell.</p>", location: { addressCountry: "Argentina" } } } }),
+    "https://acme.jobs.personio.de/xml": `<?xml version="1.0" encoding="UTF-8"?>
+<workzag-jobs>
+<position><id>11</id><office>Spain - Barcelona</office><name>Backend Engineer</name>
+<jobDescriptions><jobDescription><name>Your role</name><value><![CDATA[<p>Build & ship.</p>]]></value></jobDescription></jobDescriptions>
+<employmentType>permanent</employmentType><createdAt>2026-10-20T09:00:00+00:00</createdAt></position>
+<position><id>12</id><office>Munich</office><additionalOffices><office>Madrid</office></additionalOffices><name>Sales</name></position>
+<position><id>13</id><office>Germany - Berlin</office><name>Accountant</name></position>
+</workzag-jobs>`,
   };
   const seen = [];
   const before = globalThis.fetch;
@@ -518,6 +531,13 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
                    "the country after the hash wins over the address country");
   assert.deepEqual(spainPostings(bamboo).map((j) => j.externalId), ["5"]);
   assert.equal(bamboo[0].postedAt, "2026-10-28");
+  const personio = await list("personio", "acme");
+  assert.deepEqual(personio.map((j) => j.locationsRaw), [["Barcelona, Spain"], ["Munich", "Madrid"], ["Berlin, Germany"]],
+                   "\"Country - City\" is turned round; additional offices are kept");
+  assert.deepEqual(spainPostings(personio).map((j) => j.externalId), ["11", "12"]);
+  assert.match(personio[0].descriptionText, /Build & ship/);
+  assert.equal(personio[0].url, "https://acme.jobs.personio.de/job/11?language=en");
+  assert.match(personio[0].postedAt, /^2026-10-20/);
   globalThis.fetch = before;
 
   // Board recognition, for scripts/boards.mjs.
@@ -529,6 +549,8 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
   assert.equal(from("pinpoint", "https://app.pinpointhq.com/assets/x.js"), null);
   assert.equal(from("bamboohr", "https://wallbox.bamboohr.com/careers")?.board, "wallbox");
   assert.equal(from("bamboohr", "https://staticfe.bamboohr.com/careers/x.js"), null);
+  assert.equal(from("personio", "https://tado.jobs.personio.com/job/123?language=en")?.board, "tado");
+  assert.equal(from("personio", "https://www.personio.com/careers/"), null);
   assert.deepEqual(adapterFor("radancy").boardFromPage("https://careers.ing.com/en/search-jobs",
                    '<link href="https://tbcdn.talentbrew.com/x.css"><a href="/en/search-jobs">'),
                    { ats: "radancy", board: "careers.ing.com/en", region: "global" });
