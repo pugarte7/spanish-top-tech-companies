@@ -1,12 +1,13 @@
 #!/bin/bash
 # The private files beside companies.csv (lib.DATA): the CSV itself,
-# global.json, feed.json, usage.csv and private-sources.txt. They live
+# global.json, feed.json, usage.csv, private-sources.txt and contacts.json. They live
 # encrypted in the private repo pugarte7/spanish-top-tech-companies-data so the Monday refresh can run
 # on GitHub Actions (refresh.yml) and the Mac can still edit them by hand.
 #
 #   scripts/private_data.sh pull   # private repo -> files beside lib.DATA
 #   scripts/private_data.sh push   # files -> private repo, as one new commit
 #   scripts/private_data.sh log    # print the last refresh's log
+#   scripts/private_data.sh contacts OUT   # only contacts.json, to OUT (deploy.yml)
 #   scripts/private_data.sh log-push FILE   # keep FILE as that log (refresh.yml)
 #
 # Encrypted with AES-256 (openssl, PBKDF2) under DATA_KEY: the env variable
@@ -22,7 +23,7 @@ set -Eeuo pipefail
 REPO="${STC_PRIVATE_REPO:-git@github.com:pugarte7/spanish-top-tech-companies-data.git}"
 # private-sources.txt names the sources lib.py keeps off everything public;
 # a run without it would publish them, so pull refuses to finish without it.
-FILES=(companies.csv global.json feed.json usage.csv private-sources.txt)
+FILES=(companies.csv global.json feed.json usage.csv private-sources.txt contacts.json)
 BLOB=data.tar.gz.enc
 # What a refresh on Actions printed: its public log shows only which steps
 # passed, since the scripts' output names companies, counts and sources.
@@ -132,10 +133,22 @@ log() {
   rm -f "$clone/.git/log.enc"
 }
 
+# The people hiring_contact gives, and nothing else of the data: the deploy
+# needs them and has no reason to hold the CSV.
+contacts() {
+  key
+  sync_clone
+  local tmp
+  tmp="$(mktemp)"
+  git -C "$clone" show "origin/main:$BLOB" | crypt -d | tar -xzOf - contacts.json > "$tmp"
+  mv "$tmp" "$1"
+}
+
 case "${1:-}" in
   pull) pull ;;
   push) push ;;
   log) log ;;
   log-push) log_push "${2:?usage: $0 log-push FILE}" ;;
-  *) echo "usage: $0 pull|push|log|log-push FILE" >&2; exit 2 ;;
+  contacts) contacts "${2:?usage: $0 contacts OUT}" ;;
+  *) echo "usage: $0 pull|push|log|log-push FILE|contacts OUT" >&2; exit 2 ;;
 esac

@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>X video</title>
+<style>
+@font-face { font-family: "Inter Tight"; font-weight: 100 900; src: url(../../web/fonts/InterTight-Variable.woff2) format("woff2"); }
+@font-face { font-family: "Antonio"; font-weight: 100 700; src: url(../../web/fonts/Antonio-Variable.woff2) format("woff2"); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 540px; height: 960px; overflow: hidden; background: #0000f2; }
+body { position: relative; color: #fff; font: 600 15px/20px "Inter Tight", sans-serif; -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+.h { margin: 0; position: absolute; left: 34px; right: 34px; top: 64px; font: 800 72px/70px "Inter Tight", sans-serif; letter-spacing: -.04em; }
+.h.cap { top: 50px; font-size: 46px; line-height: 48px; }
+.w { display: inline-block; white-space: nowrap; }
+.w em { font-style: normal; color: #19cdb9; }
+.card { position: absolute; z-index: 4; border-radius: 22px; padding: 12px 18px 14px; color: #0a0a0a; font: 700 24px/28px "Inter Tight", sans-serif; letter-spacing: -.03em; box-shadow: 0 12px 26px rgba(0, 0, 40, .22); }
+.card.tag { right: 12px; top: 176px; }
+.orange { background: #ff7a1a; } .pink { background: #ff5fa8; } .teal { background: #19cdb9; } .purple { background: #7a4dff; color: #fff; } .white { background: #fff; }
+.url { left: 30px; right: 30px; top: 250px; border-radius: 30px; padding: 26px 8px; text-align: center; font: 700 23px/28px ui-monospace, Menlo, monospace; letter-spacing: -.03em; color: #0000f2; }
+.note { position: absolute; left: 0; right: 0; top: 866px; text-align: center; font: 600 21px/28px "Inter Tight", sans-serif; letter-spacing: -.01em; }
+.brand { position: absolute; left: 0; right: 0; top: 816px; text-align: center; font: 700 30px/36px "Inter Tight", sans-serif; letter-spacing: -.03em; }
+#fig { position: absolute; z-index: 9; left: 0; top: 0; width: 540px; height: 960px; pointer-events: none; }
+.tap { position: absolute; z-index: 8; width: 74px; height: 74px; margin: -37px 0 0 -37px; border-radius: 50%; background: rgba(10, 10, 40, .2); box-shadow: 0 0 0 3px rgba(255, 255, 255, .8); opacity: 0; }
+
+/* The phone: in front, still, drawn at its final size (zoom, not a transform) so its type stays sharp. */
+.rig { position: absolute; left: 0; right: 0; top: 176px; z-index: 2; }
+.ph { position: relative; zoom: 1.3; width: 330px; height: 690px; margin: 0 auto; padding: 10px; border-radius: 56px;
+  background: linear-gradient(135deg, #8d8d99 0%, #2a2a31 18%, #0b0b0f 60%, #55555f 100%); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .12), 0 40px 70px rgba(0, 0, 50, .45), 0 10px 22px rgba(0, 0, 50, .3); }
+.ph > i.btn { position: absolute; width: 4px; border-radius: 2px; background: #2a2a31; }
+.scr { position: relative; height: 100%; border-radius: 46px; background: #fff; overflow: hidden; color: #0a0a0a; font: 400 15px/20px "Inter Tight", sans-serif; box-shadow: 0 0 0 2px #000; }
+.isl { position: absolute; z-index: 6; top: 11px; left: 50%; width: 94px; height: 28px; margin-left: -47px; border-radius: 14px; background: #000; }
+.stat { display: flex; justify-content: space-between; align-items: center; height: 50px; padding: 4px 26px 0 32px; font: 600 15px/1 "Inter Tight", sans-serif; }
+.app { display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 14px; border-bottom: 1px solid #e6e6e6; }
+.app svg { width: 36px; height: 36px; flex: none; }
+.app b { display: block; font: 600 15.5px/18px "Inter Tight", sans-serif; }
+.app small { display: block; font: 500 11px/14px ui-monospace, Menlo, monospace; color: #0000f2; }
+.app small i { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; background: #17b26a; }
+.body { position: absolute; left: 0; right: 0; top: 100px; bottom: 0; overflow: hidden; }
+.layer { position: absolute; inset: 0; padding: 12px 14px 0; }
+.comp { position: absolute; z-index: 2; left: 12px; right: 12px; bottom: 90px; display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 6px 6px 6px 16px; border-radius: 23px; background: #f4f4f4; box-shadow: inset 0 0 0 1px #e6e6e6; font: 400 15px/19px "Inter Tight", sans-serif; }
+.comp > span { flex: 1; font-size: 16px; line-height: 21px; padding: 4px 0; }
+.comp > b { align-self: flex-end; }
+.comp > b { width: 34px; height: 34px; border-radius: 50%; background: #0000f2; flex: none; display: grid; place-items: center; }
+.comp code, .me code { font: 500 12px/19px ui-monospace, Menlo, monospace; letter-spacing: -.02em; }
+.caret { display: inline-block; width: 2px; height: 17px; background: #0000f2; vertical-align: -3px; margin-left: 1px; }
+.kb { position: absolute; z-index: 2; left: 0; right: 0; bottom: 78px; height: 232px; padding: 8px 4px 0; background: #d5d7de; }
+.kb div { display: flex; justify-content: center; gap: 5px; margin-bottom: 9px; }
+.kb span { width: 26px; height: 38px; border-radius: 6px; background: #fff; box-shadow: 0 1px 0 #898a8d; text-align: center; font: 400 17px/36px -apple-system, sans-serif; }
+.kb span.sp { width: 170px; font-size: 13px; color: #6b6b6b; } .kb span.fn { width: 52px; background: #abb0bc; }
+.layer.c .me { font-size: 17px; font-weight: 600; padding: 10px 15px; }
+.me .caret { background: #fff; }
+.me { margin: 0 0 8px auto; width: fit-content; max-width: 86%; padding: 9px 13px; border-radius: 19px 19px 5px 19px; background: #0000f2; color: #fff; font-size: 14.5px; line-height: 19px; transform-origin: 100% 100%; }
+.tool { display: flex; width: fit-content; align-items: center; gap: 6px; margin-bottom: 8px; padding: 5px 10px; border-radius: 9px; background: #f4f4f4; font: 500 11.5px/16px ui-monospace, Menlo, monospace; color: #6b6b6b; transform-origin: 0 50%; font-variant-numeric: tabular-nums; }
+.tool i { width: 14px; height: 14px; border-radius: 50%; background: #17b26a; color: #fff; font: 700 10px/14px sans-serif; text-align: center; font-style: normal; }
+.ag { width: fit-content; max-width: 86%; margin: 0 0 8px; padding: 9px 13px; border-radius: 19px 19px 19px 5px; background: #f4f4f4; font-size: 14.5px; line-height: 19px; transform-origin: 0 100%; }
+.lg { display: grid; place-items: center; border-radius: 13px; color: #fff; font: 700 18px/1 "Inter Tight", sans-serif; }
+.res { position: relative; display: grid; grid-template-columns: 40px 1fr auto; column-gap: 10px; align-items: center; margin-bottom: 7px; padding: 9px 11px; border-radius: 17px; background: #fff; box-shadow: 0 0 0 1px #e6e6e6, 0 6px 14px rgba(0, 0, 60, .07); }
+.res .lg { width: 40px; height: 40px; grid-row: 1 / span 2; }
+.res b { font: 600 15px/18px "Inter Tight", sans-serif; }
+.res p { margin: 0; grid-column: 2; font-size: 11.5px; line-height: 15px; color: #6b6b6b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.res u { grid-column: 3; grid-row: 1 / span 2; text-align: right; text-decoration: none; font: 700 15.5px/18px "Inter Tight", sans-serif; font-variant-numeric: tabular-nums; transform-origin: 100% 50%; }
+.res u small { display: block; font: 500 10px/12px "Inter Tight", sans-serif; color: #6b6b6b; }
+.job { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.job .lg { width: 42px; height: 42px; flex: none; }
+.job b { display: block; font: 600 16px/19px "Inter Tight", sans-serif; }
+.job span { font-size: 12px; line-height: 15px; color: #6b6b6b; }
+.prog { height: 5px; border-radius: 3px; background: #eee; margin-bottom: 4px; overflow: hidden; }
+.prog i { display: block; height: 100%; border-radius: 3px; background: #0000f2; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px solid #e6e6e6; font-size: 14px; line-height: 18px; color: #6b6b6b; }
+.row b { color: #0a0a0a; font-weight: 600; transform-origin: 100% 50%; }
+.row b i { font-style: normal; color: #17b26a; margin-left: 4px; }
+.layer.c .ag { margin-top: 10px; }
+.ask { margin-top: 12px; padding: 12px 13px; border-radius: 18px; background: #f4f4f4; font-size: 14.5px; line-height: 19px; }
+.btns { display: flex; gap: 8px; margin-top: 10px; }
+.btns span { flex: 1; padding: 10px 0; border-radius: 10px; background: #fff; color: #0a0a0a; box-shadow: inset 0 0 0 1px #d6d6d6; text-align: center; font: 600 14.5px/18px "Inter Tight", sans-serif; }
+.btns span + span { background: #0000f2; color: #fff; box-shadow: none; }
+.done { position: absolute; inset: 0; z-index: 3; padding: 90px 14px 0; background: #fff; text-align: center; }
+.done .lg { width: 84px; height: 84px; margin: 0 auto 16px; border-radius: 50%; background: #17b26a; font-size: 42px; }
+.done h3 { margin: 0; font: 700 38px/40px "Inter Tight", sans-serif; letter-spacing: -.04em; }
+.done h3 small { display: block; margin-top: 8px; font: 500 14px/19px "Inter Tight", sans-serif; letter-spacing: 0; color: #6b6b6b; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<canvas id="fig"></canvas>
+<script src="../../web/mascot.js"></script>
+<script>
+// The vertical video: 24 seconds, 9:16, one take on one field. The mascot
+// opens, the phone comes up and stays put in front, and the mascot's arm does
+// the tapping: it sends the link, sends the question, opens a posting and
+// presses "Sí, envía". Then the link again.
+// Real on 2026-11-20: 6,884 postings (jobs-summary.json) and find_jobs for
+// software engineer, remote, 80,000 € or more: 123 postings, with these
+// companies and medians (each from five people or more). Acted out: the form and the sending.
+//   ?t=12 draws that second · ?play loops in a browser
+(() => {
+const q = new URLSearchParams(location.search);
+const TOTAL = 24, DPR = window.devicePixelRatio || 2;
+const HUE = ["#ff7a1a", "#ff5fa8", "#19cdb9", "#7a4dff"];
+// The four taps, on the beat, and the two moves: the phone in and the phone out.
+const IN = 3, OUT = 18.5, TAP = { link: 5, ask: 8.5, open: 12.5, yes: 16.5 };
+const head = (s, c = "", id = "") => `<h1 class="h ${c}" id="${id}">${s.split(/(\*[^*]+\*[.,?!]*)/).filter(Boolean).map((p) => p[0] === "*"
+  ? `<span class="w"><em>${p.slice(1, p.lastIndexOf("*"))}</em>${p.slice(p.lastIndexOf("*") + 1)}</span>`
+  : p.trim().split(/\s+/).filter(Boolean).map((w) => `<span class="w">${w}</span>`).join(" ")).join(" ")}</h1>`;
+const lg = (name, i) => `<span class="lg" style="background:${HUE[i % HUE.length]}">${name[0]}</span>`;
+const eye = (x) => `<ellipse cx="${132 + x}" cy="112" rx="21" ry="31"/><circle cx="${138 + x}" cy="100" r="7.5" fill="#fff"/>`;
+const LOGO = `<svg viewBox="-12 -42 324 324"><path d="${COAST}" fill="#fff" stroke="#000" stroke-width="13" stroke-linejoin="round"/>${eye(-30)}${eye(30)}</svg>`;
+const ICONS = `<svg width="66" height="14" viewBox="0 0 66 14"><path d="M1 10h3v3H1zM6 7h3v6H6zM11 4h3v9h-3zM16 1h3v12h-3z"/><path d="M25 5.5a8 8 0 0 1 12 0M27.4 8a5 5 0 0 1 7.2 0M29.8 10.4a1.8 1.8 0 0 1 2.4 0" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round"/><rect x="42.5" y="1.5" width="20" height="11" rx="3.5" fill="none" stroke="#000" opacity=".4"/><rect x="44" y="3" width="14" height="8" rx="2"/><path d="M64 5v4" stroke="#000" opacity=".4" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+const SEND = `<b><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></b>`;
+const URL = "spanishtoptechcompanies.com/mcp";
+// The words, in Spanish and (?lang=en) in English.
+const T = {
+  es: { intro: "Aplica a *miles* *de* *trabajos* en tech con tu agente.", free: "Gratis.", agent: "Tu agente", connected: "conectado", hello: "Conectado. ¿Qué trabajo buscas?",
+    ask: "Software engineer en remoto por encima de 80k", postings: "ofertas", of: "de", remote: "remoto", median: "mediana", sep: ".", space: "espacio", keys: "asdfghjklñ",
+    rows: [["Nombre y email", "de tu CV"], ["LinkedIn", "de tu CV"], ["Experiencia", "de tu CV"], ["CV", "adjunto"], ["Sueldo que pides", "80.000 €"]],
+    salary: "¿Qué sueldo pides?", answer: "80.000 €", whole: "Esta es la candidatura completa. ¿La envío?", change: "Cambiar algo", yes: "Sí, envía", sent: "Enviada", noted: "Anotada para no repetirla",
+    placeholder: "Pregunta a tu agente", outro: "Pega esto en *tu agente*.", note: "Gratis · sin registro · nada se envía sin tu sí",
+    caps: ["Conéctalo con un *enlace*.", "Pídele *ofertas*.", "Mira lo que *paga* cada empresa.", "Rellena el formulario con *tu CV*.", "Y envía solo con *tu sí*."],
+    tags: ["Sin registro ni claves", "Sueldo base mediano, en España", "Lo que no sabe, te lo pregunta"] },
+  en: { intro: "Apply to *thousands* *of* *tech* *jobs* with your agent.", free: "Free.", agent: "Your agent", connected: "connected", hello: "Connected. What job are you after?",
+    ask: "Remote software engineer above 80k", postings: "postings", of: "of", remote: "remote", median: "median", sep: ",", space: "space", keys: "asdfghjkl",
+    rows: [["Name and email", "from your CV"], ["LinkedIn", "from your CV"], ["Experience", "from your CV"], ["CV", "attached"], ["Salary you ask for", "80,000 €"]],
+    salary: "What salary do you ask for?", answer: "80,000 €", whole: "This is the whole application. Shall I send it?", change: "Change it", yes: "Yes, send", sent: "Sent", noted: "Noted so it is not repeated",
+    placeholder: "Ask your agent", outro: "Paste this into *your agent*.", note: "Free · no sign-up · nothing is sent without your yes",
+    caps: ["Connect it with a *link*.", "Ask it for *jobs*.", "See what each company *pays*.", "It fills in the form from *your CV*.", "And sends only with *your yes*."],
+    tags: ["No sign-up, no keys", "Median base salary, in Spain", "What it does not know, it asks you"] },
+}[q.get("lang") === "en" ? "en" : "es"];
+const ASK = T.ask;
+document.documentElement.lang = q.get("lang") === "en" ? "en" : "es";
+const RES = [["Grafana Labs", "Senior Full Stack Engineer", 102], ["Grafana Labs", "Senior Software Engineer, Security", 102], ["Affirm", "Senior Software Engineer, Backend", 87], ["Cisco", "Technical Leader, Backend Services", 85]];
+const KB = ["qwertyuiop", T.keys, "zxcvbnm"].map((r) => `<div>${[...r].map((c) => `<span>${c}</span>`).join("")}</div>`).join("") +
+  `<div><span class="fn">123</span><span class="sp">${T.space}</span><span class="fn">↵</span></div>`;
+// [from, to, text]: the line over the phone.
+const CAPS = [[3.4, 7], [7, 9.8], [9.8, 12.8], [12.8, 15.9], [15.9, 18.4]].map((c, i) => [...c, T.caps[i]]);
+// [from, to, text, colour, tilt]: a card over the phone's top corner.
+const TAGS = [[5.6, 7, T.tags[0], "orange", 2], [10.5, 12.4, T.tags[1], "pink", -2], [14.1, 16, T.tags[2], "teal", 2]];
+
+document.getElementById("stage").innerHTML = `
+${head(T.intro, "", "intro")}
+<div class="card purple" id="free" style="left:330px;top:352px;font-size:44px;line-height:48px;padding:14px 24px 18px">${T.free}</div>
+${CAPS.map(([, , s]) => head(s, "cap")).join("")}
+${TAGS.map(([, , s, c]) => `<div class="card tag ${c}">${s}</div>`).join("")}
+<div class="rig"><div class="ph"><i class="btn" style="left:-3px;top:150px;height:34px"></i><i class="btn" style="left:-3px;top:200px;height:60px"></i><i class="btn" style="right:-3px;top:210px;height:92px"></i>
+  <div class="scr"><div class="isl"></div><div class="stat"><span>9:41</span>${ICONS}</div>
+  <div class="app">${LOGO}<div><b>${T.agent}</b><small><i></i>${URL}</small></div></div>
+  <div class="body">
+    <div class="layer a"><div class="me"><code>${URL}</code></div><div class="tool"><i>✓</i>tech-pay-spain · ${T.connected}</div><div class="ag">${T.hello}</div></div>
+    <div class="layer b"><div class="me">${ASK}</div><div class="tool"><i>✓</i><span></span></div>${
+      RES.map(([c, p, m], i) => `<div class="res">${lg(c, c === "Affirm" ? 2 : c === "Cisco" ? 1 : 0)}<b>${c}</b><p>${p} · ${T.remote}</p><u>${m}${T.sep}000 €<small>${T.median}</small></u></div>`).join("")}</div>
+    <div class="layer c"><div class="job">${lg("Affirm", 2)}<div><b>Affirm</b><span>Senior Software Engineer, Backend</span></div></div><div class="prog"><i></i></div>${
+      T.rows.map(([a, b]) => `<div class="row">${a}<b>${b}<i>✓</i></b></div>`).join("")}
+      <div class="ag">${T.salary}</div><div class="me"></div>
+      <div class="ask">${T.whole}<div class="btns"><span>${T.change}</span><span>${T.yes}</span></div></div>
+      <div class="done"><div class="lg">✓</div><h3>${T.sent}<small>Affirm · Senior Software Engineer, Backend<br>${T.noted}</small></h3></div></div>
+    <div class="comp"><span></span>${SEND}</div><div class="kb">${KB}</div>
+  </div></div></div></div>
+<i class="tap"></i>
+${head(T.outro, "", "outro")}
+<div class="card white url">${URL}</div>
+<div class="note">${T.note}</div>
+<div class="brand">Spanish Top Tech Companies</div>`;
+
+const clamp = (x) => Math.max(0, Math.min(1, x)), ease = (x) => 1 - Math.pow(1 - clamp(x), 3);
+const io = (x) => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const sp = (t, a = 0, d = 0.5) => { const u = (t - a) / d; return u <= 0 ? 0 : 1 - Math.exp(-5 * u) * Math.cos(7 * u); };
+const bump = (t, a, d = 0.4) => t > a && t < a + d ? Math.sin(Math.PI * (t - a) / d) : 0;
+const pop = (el, p, extra = "") => { el.style.transform = `scale(${p}) ${extra}`; el.style.opacity = clamp(p * 4); };
+const typed = (s, t, a, b) => s.slice(0, Math.round(s.length * clamp((t - a) / (b - a))));
+const caret = (t) => `<span class="caret" style="opacity:${Math.floor(t * 2.5) % 2 ? 0 : 1}"></span>`;
+const dots = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, T.sep);
+const all = (s, el = document) => [...el.querySelectorAll(s)];
+const one = (s, el = document) => el.querySelector(s);
+const lerp = (a, b, k) => a + (b - a) * k, lerp2 = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
+const centre = (el, fx = .5, fy = .5) => { const r = el.getBoundingClientRect(); return [r.left + r.width * fx, r.top + r.height * fy]; };
+// Words come up one after another; `out` (0 to 1) takes the line away.
+const words = (h, t, out = 0) => {
+  h.style.visibility = t > 0 && out < 1 ? "visible" : "hidden";
+  all(".w", h).forEach((w, n) => { const p = sp(t, 0.04 + n * 0.08, 0.45); w.style.transform = `translateY(${(1 - p) * 26 - out * 18}px)`; w.style.opacity = clamp(p * 5) * (1 - out); });
+};
+
+// ---------- the mascot in grey 3D, put through a dot screen ----------
+// Shaded in greys on a canvas nobody sees (a slab with a lit face, two glossy
+// eyes, six tube arms ending in balls), then every pixel is set black or
+// white against a 45 degree dot screen, as a newspaper would print it. It is
+// drawn at the screen's own pixels, so it is as sharp as the frame.
+const BODY = new Path2D(COAST);
+// In the coast's own units (300 by 241, centre 140, 120): where each arm leaves from behind the body and where its hand idles.
+const ANCH = [[90, 95], [86, 127], [96, 159], [196, 95], [200, 127], [190, 159]];
+const REST = [[-44, 17], [-72, 123], [-38, 231], [344, 17], [372, 123], [338, 231]];
+const cv = document.getElementById("fig"), out = cv.getContext("2d"), work = document.createElement("canvas"), wc = work.getContext("2d", { willReadFrequently: true });
+cv.width = work.width = 540 * DPR; cv.height = work.height = 960 * DPR;
+let last = null;
+// o: x, y (the body's centre on screen), s (scale), rot (degrees), focus [x, y] the eyes follow,
+// joy (eyes as ^ ^), hands {arm: [x, y] on screen}, press (0 to 1, the reaching hand squeezed).
+function fig(t, o) {
+  const c = wc, s = o.s, rad = o.rot * Math.PI / 180, co = Math.cos(rad), si = Math.sin(rad), bob = Math.sin(t * 3) * 3 * s;
+  const at = (ux, uy) => { const dx = (ux - 140) * s, dy = (uy - 120) * s; return [o.x + dx * co - dy * si, o.y + dx * si + dy * co + bob]; };
+  const anchors = ANCH.map(([x, y]) => at(x, y));
+  const hands = REST.map(([x, y], i) => (o.hands && o.hands[i]) || at(x + Math.cos(t * 2.4 + i * 1.7) * 6, y + Math.sin(t * 2.9 + i * 1.3) * 7));
+  // Only the part of the frame the figure covers is shaded and screened.
+  const xs = [o.x - 190 * s, o.x + 190 * s, ...hands.map((h) => h[0] - 24 * s), ...hands.map((h) => h[0] + 24 * s)];
+  const ys = [o.y - 160 * s, o.y + 170 * s, ...hands.map((h) => h[1] - 24 * s), ...hands.map((h) => h[1] + 24 * s)];
+  const x0 = Math.max(0, Math.floor(Math.min(...xs) * DPR)), y0 = Math.max(0, Math.floor(Math.min(...ys) * DPR));
+  const x1 = Math.min(cv.width, Math.ceil(Math.max(...xs) * DPR)), y1 = Math.min(cv.height, Math.ceil(Math.max(...ys) * DPR)), bw = x1 - x0, bh = y1 - y0;
+  c.setTransform(1, 0, 0, 1, 0, 0);
+  if (last) { c.clearRect(...last); out.clearRect(...last); }
+  last = [x0, y0, bw, bh];
+  if (bw <= 0 || bh <= 0) return;
+  c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  c.lineCap = "round"; c.lineJoin = "round";
+  hands.forEach(([hx, hy], i) => {
+    const [ax, ay] = anchors[i], dx = hx - ax, dy = hy - ay, len = Math.hypot(dx, dy) || 1, bow = (16 * s + len * .13) * (i < 3 ? 1 : -1);
+    const cx = ax + dx / 2 - dy / len * bow, cy = ay + dy / 2 + dx / len * bow;
+    for (const [col, w, ox, oy] of [["#141414", 19, 0, 0], ["#6c6c6c", 14, -.8, -1.2], ["#cdcdcd", 6, -3, -4]]) {
+      c.beginPath(); c.moveTo(ax + ox * s, ay + oy * s); c.quadraticCurveTo(cx + ox * s, cy + oy * s, hx + ox * s, hy + oy * s);
+      c.strokeStyle = col; c.lineWidth = w * s * (o.hands && o.hands[i] ? 1.35 : 1); c.stroke();
+    }
+  });
+  const eyeAt = at(132, 112), fx = o.focus ? o.focus[0] - eyeAt[0] : 0, fy = o.focus ? o.focus[1] - eyeAt[1] : 0, fd = Math.hypot(fx, fy) || 1, pull = Math.min(1, fd / 140);
+  const look = { x: fx / fd * pull, y: fy / fd * pull };
+  c.save();
+  c.translate(o.x, o.y + bob); c.rotate(rad + look.x * .03); c.scale(s, s); c.translate(-140, -120);
+  // The slab's side, away from the light, then its lit face with a rim of light and one of shadow inside the edge.
+  for (let i = 15; i >= 1; i--) {
+    c.save(); c.translate(i * .9, i * 1.5);
+    c.fillStyle = c.strokeStyle = i > 12 ? "#0c0c0c" : "#3a3a3a"; c.lineWidth = 7; c.stroke(BODY); c.fill(BODY);
+    c.restore();
+  }
+  const face = c.createLinearGradient(30, 0, 250, 240);
+  face.addColorStop(0, "#fff"); face.addColorStop(.5, "#d9d9d9"); face.addColorStop(1, "#8f8f8f");
+  c.strokeStyle = "#0c0c0c"; c.lineWidth = 7; c.stroke(BODY); c.fillStyle = face; c.fill(BODY);
+  c.save(); c.clip(BODY);
+  c.filter = `blur(${5 * s * DPR}px)`; c.lineWidth = 17;
+  c.save(); c.translate(-6, -8); c.strokeStyle = "rgba(0,0,0,.6)"; c.stroke(BODY); c.restore();
+  c.save(); c.translate(6, 8); c.strokeStyle = "#fff"; c.stroke(BODY); c.restore();
+  c.filter = "none";
+  c.restore();
+  const blink = o.joy ? 0 : bump((t + .6) % 2.6, 2.3, .18), open = 1 - blink * .92;
+  for (const side of [-1, 1]) {
+    const cx = 132 + side * 30 + look.x * 7, cy = 112 + look.y * 7;
+    if (o.joy) {
+      c.beginPath(); c.moveTo(cx - 18, cy + 9); c.quadraticCurveTo(cx, cy - 26, cx + 18, cy + 9);
+      c.strokeStyle = "#000"; c.lineWidth = 9; c.stroke();
+      continue;
+    }
+    const g = c.createRadialGradient(cx - 6, cy - 12, 2, cx, cy, 34);
+    g.addColorStop(0, "#3c3c3c"); g.addColorStop(.6, "#000");
+    c.beginPath(); c.ellipse(cx, cy, 21, 31 * open, 0, 0, 7); c.fillStyle = g; c.fill();
+    if (open > .5) {
+      c.fillStyle = "#fff";
+      c.beginPath(); c.ellipse(cx + 6 + look.x * 3, cy - 12 + look.y * 3, 7.5, 7.5 * open, 0, 0, 7); c.fill();
+      c.beginPath(); c.arc(cx - 7, cy + 13, 3, 0, 7); c.fill();
+    }
+  }
+  c.restore();
+  hands.forEach(([hx, hy], i) => {
+    const r = 15 * s * (o.hands && o.hands[i] ? 1.25 - .2 * (o.press || 0) : 1), g = c.createRadialGradient(hx - r / 3, hy - r * .4, 1, hx, hy, r * 1.07);
+    g.addColorStop(0, "#fff"); g.addColorStop(.55, "#b5b5b5"); g.addColorStop(1, "#404040");
+    c.beginPath(); c.arc(hx, hy, r, 0, 7); c.fillStyle = g; c.fill(); c.strokeStyle = "#0c0c0c"; c.lineWidth = 3.5 * s; c.stroke();
+  });
+  // The screen moves with the body, so the dots do not crawl while it travels.
+  const img = c.getImageData(x0, y0, bw, bh), d = img.data, f = 2 * Math.PI / (4.5 * DPR) * Math.SQRT1_2;
+  const ox = Math.round(o.x * DPR), oy = Math.round((o.y + bob) * DPR), A = new Float32Array(bw + bh), B = new Float32Array(bw + bh);
+  for (let k = 0; k < bw + bh; k++) { A[k] = 57 * Math.cos((k + x0 + y0 - ox - oy) * f); B[k] = 57 * Math.cos((k - bh + x0 - y0 - ox + oy) * f); }
+  for (let y = 0, i = 0; y < bh; y++) for (let x = 0; x < bw; x++, i += 4) {
+    if (!d[i + 3]) continue;
+    const v = (d[i] - 128 - A[x + y] - B[x - y + bh]) * 5 + 128;
+    d[i] = d[i + 1] = d[i + 2] = v < 0 ? 0 : v > 255 ? 255 : v;
+  }
+  out.putImageData(img, x0, y0);
+}
+
+const BIG = { x: 270, y: 640, s: 1.15, rot: 0 }, CORNER = { x: 92, y: 905, s: .82, rot: -6 }, END = { x: 270, y: 620, s: 1.1, rot: 0 }, HOVER = [296, 846];
+const el = { intro: one("#intro"), free: one("#free"), caps: all(".h.cap"), tags: all(".card.tag"), rig: one(".rig"), comp: one(".comp"), compText: one(".comp > span"), send: one(".comp > b"),
+  kb: one(".kb"), keys: all(".kb span"), a: one(".layer.a"), b: one(".layer.b"), c: one(".layer.c"), tap: one(".tap"), outro: one("#outro"), url: one(".card.url"), note: one(".note"), brand: one(".brand") };
+const placeholder = `<span style="color:#9a9a9a">${T.placeholder}</span>`;
+
+// The question is typed at half speed so it can be read: the clock runs two
+// seconds while the story (every time below) runs one.
+const TYPE = [7.3, 8.3], real = (u) => u <= TYPE[0] ? u : u + (TYPE[1] - TYPE[0]);
+function render(t) {
+  t = Math.min(t, TOTAL - 1 / 60);
+  t = t < TYPE[0] ? t : t < TYPE[0] + 2 * (TYPE[1] - TYPE[0]) ? TYPE[0] + (t - TYPE[0]) / 2 : t - (TYPE[1] - TYPE[0]);
+  const enter = io((t - IN) / 0.9), leave = io((t - OUT) / 0.9), phoneOn = t >= IN && t < OUT + 0.9;
+
+  // --- the opening line and its card ---
+  words(el.intro, t, clamp((t - IN + 0.25) / 0.3));
+  pop(el.free, sp(t, 1.3) * (1 - ease((t - IN + 0.2) / 0.25)), `rotate(${5 + Math.sin(t * 2)}deg)`);
+
+  // --- the phone: up once, down once, still in between ---
+  el.rig.style.visibility = phoneOn ? "visible" : "hidden";
+  el.rig.style.transform = `translateY(${Math.round((1 - ease((t - IN) / 0.8)) * 820 + Math.pow(clamp((t - OUT) / 0.6), 3) * 900)}px)`;
+  CAPS.forEach(([a, b], i) => words(el.caps[i], t - a, clamp((t - b + 0.2) / 0.2)));
+  TAGS.forEach(([a, b, , , tilt], i) => pop(el.tags[i], sp(t, a) * (1 - ease((t - b) / 0.25)), `rotate(${tilt + Math.sin(t * 2 + i)}deg)`));
+
+  // The composer: the link pasted, then the question typed with the keyboard up.
+  const typing = t >= 7 && t < TAP.ask, kb = ease((t - 6.9) / 0.35) - ease((t - TAP.ask) / 0.35);
+  el.compText.innerHTML = t >= 4.2 && t < TAP.link ? `<code style="background:rgba(0,0,242,${0.18 * (1 - clamp((t - 4.2) / 0.6))})">${URL}</code>`
+    : typing ? typed(ASK, t, TYPE[0], TYPE[1] - 0.08) + caret(t * 2) : placeholder;
+  el.kb.style.transform = `translateY(${Math.round((1 - kb) * 330)}px)`; el.comp.style.transform = `translateY(${Math.round(-240 * kb)}px)`;
+  const hit = typing && t > TYPE[0] && t < TYPE[1] - 0.08 ? Math.floor(t * 23) % (T.keys.length + 17) : -1;
+  el.keys.forEach((k, i) => { k.style.background = i === hit ? "#abb0bc" : ""; });
+  const row = all(".res", el.b)[2], yes = one(".btns span:last-child", el.c), pressed = { link: bump(t, TAP.link, 0.3), ask: bump(t, TAP.ask, 0.3), open: bump(t, TAP.open, 0.3), yes: bump(t, TAP.yes, 0.3) };
+  el.send.style.transform = `scale(${1 - 0.1 * Math.max(pressed.link, pressed.ask)})`;
+  yes.style.filter = `brightness(${1 - 0.25 * pressed.yes})`; yes.style.transform = `scale(${1 - 0.06 * pressed.yes})`;
+
+  // Screen one: connected.
+  const aOut = ease((t - TAP.ask) / 0.3);
+  el.a.style.transform = `translateY(${-30 * aOut}px)`; el.a.style.opacity = 1 - aOut;
+  pop(one(".me", el.a), sp(t, TAP.link + 0.05, 0.4)); pop(one(".tool", el.a), sp(t, 5.5, 0.4)); pop(one(".ag", el.a), sp(t, 5.9, 0.4));
+
+  // Screen two: the postings, each with what the company pays.
+  const bOut = ease((t - TAP.open - 0.15) / 0.35), n = ease((t - 9.1) / 0.8);
+  el.b.style.transform = `translateX(${-340 * bOut}px)`; el.b.style.visibility = t >= TAP.ask && bOut < 1 ? "visible" : "hidden";
+  pop(one(".me", el.b), sp(t, TAP.ask + 0.05, 0.4)); pop(one(".tool", el.b), sp(t, 9, 0.4));
+  one(".tool span", el.b).textContent = n < 1 ? `find_jobs · ${dots(6884 + (123 - 6884) * n)} ${T.postings}` : `find_jobs · 123 ${T.of} ${dots(6884)} ${T.postings}`;
+  all(".res", el.b).forEach((r, i) => {
+    pop(r, sp(t, 9.6 + i * 0.15) * (r === row ? 1 - 0.04 * pressed.open : 1));
+    r.style.background = r === row && t >= TAP.open ? "#e9e9ff" : "";
+    pop(one("u", r), sp(t, 10 + i * 0.15, 0.4), `scale(${1 + 0.2 * bump(t, 10.9 + i * 0.22, 0.35)})`);
+  });
+
+  // Screen three: the form, the one question, the whole application and the yes.
+  const cIn = ease((t - TAP.open - 0.15) / 0.35), rows = all(".row", el.c), answered = t >= 15.45, asking = t < 15.95;
+  el.c.style.transform = `translateX(${340 * (1 - cIn)}px)`; el.c.style.visibility = cIn > 0 ? "visible" : "hidden";
+  one(".prog i", el.c).style.width = `${80 * ease((t - 13.1) / 1.2) + 20 * ease((t - 15.45) / 0.4)}%`;
+  rows.forEach((r, i) => {
+    if (i < 4) return pop(one("b", r), sp(t, 13.2 + i * 0.25, 0.4));
+    r.style.opacity = clamp((t - 14.1) * 5); pop(one("b", r), answered ? sp(t, 15.45, 0.4) : 0);
+  });
+  const ag = one(".ag", el.c), me = one(".me", el.c), box = one(".ask", el.c), done = one(".done", el.c);
+  ag.style.display = me.style.display = asking ? "block" : "none"; box.style.display = asking ? "none" : "block";
+  // The answer is typed slowly enough to read, caret and all.
+  pop(ag, sp(t, 14.1, 0.4)); pop(me, sp(t, 14.4, 0.35)); me.innerHTML = typed(T.answer, t, 14.55, 15.35) + (t < 15.45 ? caret(t) : "");
+  box.style.opacity = clamp((t - 15.95) * 6);
+  done.style.visibility = t >= TAP.yes + 0.3 ? "visible" : "hidden"; done.style.opacity = clamp((t - TAP.yes - 0.3) * 8);
+  one(".lg", done).style.transform = `scale(${sp(t, TAP.yes + 0.35)})`;
+  el.comp.style.opacity = 1 - cIn;
+
+  // --- the close ---
+  words(el.outro, t - OUT - 0.4);
+  pop(el.url, sp(t, OUT + 0.8)); const up = sp(t, OUT + 1.3);
+  el.note.style.opacity = clamp(up * 4); el.note.style.transform = `translateY(${(1 - up) * 20}px)`;
+  el.brand.style.opacity = clamp((t - OUT - 1.5) * 4);
+
+  // --- the mascot: in the middle, down to the corner while the phone is up, back to the middle ---
+  const pose = {};
+  for (const k of ["x", "y", "s", "rot"]) pose[k] = lerp(lerp(BIG[k], CORNER[k], enter), END[k], leave);
+  const rest = (i) => [pose.x + (REST[i][0] - 140) * pose.s, pose.y + (REST[i][1] - 120) * pose.s];
+  // Its arm reaches for each thing it presses, and waits near the screen in between.
+  let hand = [HOVER[0] + Math.cos(t * 2.3) * 4, HOVER[1] + Math.sin(t * 3) * 5], press = 0, focus = null, ring = 0;
+  if (phoneOn) for (const [at, target] of [[TAP.link, el.send], [TAP.ask, el.send], [TAP.open, row], [TAP.yes, yes]]) {
+    if (t < at - 0.55 || t > at + 0.65) continue;
+    const p = centre(target, target === row ? .62 : .5), k = t < at ? io((t - at + 0.55) / 0.5) : 1 - io((t - at - 0.2) / 0.45), u = clamp((t - at) / 0.5);
+    hand = lerp2(hand, p, k); press = bump(t, at - 0.05, 0.25);
+    if (u > 0 && u < 1) { ring = 1 - u; el.tap.style.left = `${p[0]}px`; el.tap.style.top = `${p[1]}px`; el.tap.style.transform = `scale(${0.5 + 0.8 * u})`; }
+  }
+  el.tap.style.opacity = ring;
+  const reach = io((t - IN - 0.5) / 0.5) * (1 - io((t - OUT + 0.3) / 0.4)), hands = {};
+  if (reach > 0) { hands[3] = lerp2(rest(3), hand, reach); focus = hands[3]; }
+  // At the end two hands hold the link up.
+  const hold = io((t - OUT - 0.8) / 0.5);
+  if (hold > 0) {
+    const sway = Math.sin(t * 3) * 3;
+    hands[0] = lerp2(rest(0), [74, 344 + sway], hold); hands[3] = lerp2(rest(3), [466, 344 - sway], hold);
+    focus = [270, 290];
+  }
+  if (t < IN) focus = [270 + 120 * Math.sin(t * 1.6), 200];
+  fig(t, { ...pose, hands, press, focus, joy: (t >= TAP.yes + 0.3 && t < OUT) || (t > OUT + 2.2 && t < OUT + 2.9) });
+}
+window.render = render;
+window.TOTAL = TOTAL;
+window.CUTS = [0, IN, ...Object.values(TAP), OUT].map(real);
+window.READY = Promise.all([document.fonts.load('800 60px "Inter Tight"'), document.fonts.load('700 60px "Antonio"'), document.fonts.load('400 15px "Inter Tight"')])
+  .then(() => render(Number(q.get("t") || 0)));
+if (q.has("play")) {
+  let t0 = performance.now();
+  const tick = (now) => { let t = (now - t0) / 1000; if (t >= TOTAL) { t0 = now; t = 0; } render(t); requestAnimationFrame(tick); };
+  window.READY.then(() => requestAnimationFrame(tick));
+}
+})();
+</script>
+</body>
+</html>
