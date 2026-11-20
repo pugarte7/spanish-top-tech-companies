@@ -955,7 +955,8 @@ def job_boards(data: dict, tables: dict) -> dict:
     in the companies.json format lib/ats reads (scripts/jobs.mjs crawls it daily).
 
     data/boards.json maps a Levels.fyi slug to its board; scripts/boards.mjs
-    finds them. The tier is the site's
+    finds them. data/remote-boards.json adds the boards of employers with no
+    board there that post remote work, marked `remote`. The tier is the site's
     own ranking, today's: A when the engineers' median reaches the bar over
     min_ranked salaries, B at the bar on fewer or above BOARD_TIER_FLOOR_EUR,
     C below it or with no engineers."""
@@ -978,6 +979,20 @@ def job_boards(data: dict, tables: dict) -> dict:
         out.append({"name": company["name"], "ats": board["ats"], "board": board["board"],
                     "tier": tier, "tags": list(dict.fromkeys(["spain", *cities])),
                     **{k: board[k] for k in ("region", "query", "country") if board.get(k)}})
+    # Employers with no board above that post remote work open to Spain or
+    # Europe (scripts/remote_levels.py), most of them with no salary in Spain
+    # on file. No tier: the site ranks nobody it has no salaries for.
+    remote_path = AGGREGATES / "remote-boards.json"
+    remote = json.loads(remote_path.read_text(encoding="utf-8")) if remote_path.exists() else {}
+    boards_taken = {(e["ats"], e["board"].lower()) for e in out}
+    names_taken = {e["name"].casefold() for e in out}
+    by_levels = {c.get("levels"): c["name"] for c in data["companies"] if c.get("levels")}
+    for entry in remote.values():
+        name = by_levels.get(entry.get("levels"), entry["name"])
+        if (entry["ats"], entry["board"].lower()) in boards_taken or name.casefold() in names_taken:
+            continue
+        out.append({"name": name, "ats": entry["ats"], "board": entry["board"],
+                    "remote": True, "tags": ["remote"]})
     return {"version": 1, "data_as_of": data["data_as_of"],
             "companies": sorted(out, key=lambda e: e["name"].casefold())}
 
@@ -1612,7 +1627,8 @@ LEGAL = {
              "rounded, and so do the JSON and the MCP server for one company's figures, saying "
              "how many people each comes from. Company details come from Spain "
              "Tech Radar (CC BY 4.0) and Levels.fyi. Once a day the site also publishes a list "
-             "of the open positions at the companies it lists, taken from their public job "
+             "of the open positions at the companies it lists, and at other employers that "
+             "offer remote work open to Spain or Europe, taken from their public job "
              "boards (Greenhouse, Lever, Ashby, Workday and others): only positions in Spain or "
              "remote open to Spain or Europe, and nothing about any person. The project is not "
              "affiliated with Levels.fyi or with any company listed, and the figures are not "
@@ -1690,7 +1706,8 @@ LEGAL = {
              "las cifras de cada empresa, diciendo de cuántas personas sale cada una. Los "
              "datos de cada empresa vienen de Spain Tech Radar (CC BY 4.0) y Levels.fyi. Una vez "
              "al día la web publica también una lista de las ofertas abiertas de las empresas "
-             "que muestra, sacada de sus portales de empleo públicos (Greenhouse, Lever, Ashby, "
+             "que muestra, y de otras que ofrecen trabajo en remoto abierto a España o Europa, "
+             "sacada de sus portales de empleo públicos (Greenhouse, Lever, Ashby, "
              "Workday y otros): solo ofertas en España o en remoto abiertas a España o Europa, y "
              "nada sobre ninguna persona. El proyecto no tiene relación con Levels.fyi ni con ninguna empresa de la lista, y "
              "las cifras no son ofertas ni asesoramiento."),
@@ -2057,8 +2074,8 @@ them the steps under Tools. The code is open at {REPO}.
 - [All aggregates for agents (markdown)]({SITE}/llms-full.txt): national, per role, region, experience and the best-paying companies
 - [All aggregates (JSON)]({SITE}/api/v1/data.json): `cells["role|region|years"]` (empty part = all) gives n, median, p25, p75 (null under {data['quartile_min']} people), total, share at 60k+; `company_cells` the same per company from {data['min_group']} people, `c` indexing `companies`
 - [Companies table by selection (JSON)]({SITE}/api/v1/company-cells.json): the site's companies table keyed like `cells`, every company with data down to one salary, rows in `fields` order (`c` indexing data.json's `companies`); what the MCP server's company tools read
-- [Open postings (JSON)]({SITE}/api/v1/jobs.json): the open postings at the companies listed here, refreshed daily from their public job boards (Greenhouse, Lever, Ashby, Workday and others); only postings in Spain or remote open to Spain or Europe, and nothing about any person; `find_jobs` searches it
-- [Job boards (JSON)]({SITE}/api/v1/boards.json): the companies listed here whose job board is known (`ats`, `board`, `tier` A/B/C by the engineers' median, `tags`), the list the daily postings are read from
+- [Open postings (JSON)]({SITE}/api/v1/jobs.json): the open postings at the companies listed here, and at employers with no salaries here that post remote work open to Spain or Europe (`slug` null, no `tier`), refreshed daily from their public job boards (Greenhouse, Lever, Ashby, Workday and others); only postings in Spain or remote open to Spain or Europe, and nothing about any person; `find_jobs` searches it
+- [Job boards (JSON)]({SITE}/api/v1/boards.json): the companies listed here whose job board is known (`ats`, `board`, `tier` A/B/C by the engineers' median, `tags`) and the employers read only for their remote postings (`remote: true`, no tier), the list the daily postings are read from
 
 ## Tools
 

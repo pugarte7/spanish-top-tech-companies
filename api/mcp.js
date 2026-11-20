@@ -26,7 +26,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.23.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.24.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -119,7 +119,8 @@ const TOOLS = {
   },
   find_jobs: {
     define: (data) => ({ title: "Open job postings",
-      description: "Open postings at the companies on this site, from their public job boards " +
+      description: "Open postings at the companies on this site, and at employers with no salaries here " +
+                   "that post remote work open to Spain or Europe, from their public job boards " +
                    "(Greenhouse, Lever, Ashby, Workday and others), refreshed daily. Filter by text, " +
                    "role, region or remote, workplace, level, the person's years of experience, company, " +
                    "company size and minimum salary. Each result carries the roles, level and years of experience " +
@@ -2697,7 +2698,8 @@ export function applicationGuide(args = {}, env = {}) {
   const keepMemory = "The client's memory or project knowledge, under the title \"Job search\". Without " +
     "either, give the person the document at the end of the session to paste back next time.";
   return {
-    summary: "find_jobs searches the daily index of open postings at the companies on this site; " +
+    summary: "find_jobs searches the daily index of open postings at the companies on this site and at " +
+      "employers that post remote work open to Spain or Europe, which have no salary figure here; " +
       "job_questions reads one posting's application form live from its board; this guide is the " +
       "procedure. This server stores nothing about the person: the agent keeps their details in a " +
       "state document of its own, and sends each application with its own browser once the person " +

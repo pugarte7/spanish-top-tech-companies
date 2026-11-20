@@ -879,5 +879,34 @@ assert.deepEqual(pageLinks('<a href="/jobs/page/2/">2</a><a href="/jobs/?page=3"
   await probeCompany(company, rules, deps);
   assert.deepEqual(rendered, [], "no browser when the HTML links a board");
 }
+// --- Remote boards: employers with no salary in Spain on file ---------------
+const { boardOf, hostsIn, judge, rotated, REMOTE_CLASSES } = await import("../scripts/remote_boards.mjs");
+const { openToSpain: open } = await import("../scripts/jobs.mjs");
+const remoteBoard = { name: "Far", ats: "ashby", board: "far", remote: true, tags: ["remote"] };
+const { normalizeJob } = await import("../lib/ats/sources/normalize.js");
+const posting = (id, locations, more = {}) => normalizeJob({
+  company: spoonsAts.CompanySchema.parse(remoteBoard), externalId: id, title: "Backend Engineer",
+  locations, url: `https://jobs.ashbyhq.com/far/${id}`, descriptionPlain: "Write to jobs@far.dev or see www.far.dev/team.", ...more,
+}, new Date().toISOString());
+const farJobs = [posting("1", ["Remote - Europe"], { workplaceType: "remote" }), posting("2", ["Remote"], { workplaceType: "remote" }),
+                 posting("3", ["Madrid, Spain"]), posting("4", ["Remote - Spain"], { workplaceType: "remote",
+                   structuredCompensation: { min: 70000, max: 90000, currency: "EUR", period: "year", source: "ats-structured" } })];
+const kept = (board) => farJobs.map((j) => entry(j, board, null, spoonsAts.location)).filter(Boolean).map((r) => r.id.split(":")[2]);
+assert.deepEqual(kept(remoteBoard), ["1", "3", "4"], "a bare Remote on a remote board is not open to Spain");
+assert.deepEqual(kept({ ...remoteBoard, remote: undefined }), ["1", "2", "3", "4"], "as it is on a listed company's");
+assert.equal(entry(farJobs[0], remoteBoard, null, spoonsAts.location).tier, null, "and nobody without salaries is tiered");
+const verdict = judge(farJobs, open, spoonsAts.location.analyzeLocation);
+assert.deepEqual([verdict.postings, verdict.remote, verdict.paid], [4, 2, 1], "an office in Spain is not remote work");
+assert.ok(verdict.hosts.includes("far.dev") && verdict.hosts.includes("jobs.ashbyhq.com"));
+assert.deepEqual(hostsIn([{ descriptionText: "v1.2 and e.g. nothing", url: "https://www.acme.com/x" }]), ["acme.com"]);
+assert.ok(REMOTE_CLASSES.has("remote-europe") && !REMOTE_CLASSES.has("spain") && !REMOTE_CLASSES.has("remote-global"));
+assert.equal(boardOf("com,ashbyhq,jobs)/linear/abc 2026", "com,ashbyhq,jobs)/", "path"), "linear");
+assert.equal(boardOf("com,ashbyhq,jobs)/api/x", "com,ashbyhq,jobs)/", "path"), null);
+assert.equal(boardOf("com,teamtailor,acme)/jobs", "com,teamtailor,", "host"), "acme");
+assert.equal(boardOf("com,teamtailor,www)/", "com,teamtailor,", "host"), null);
+assert.equal(boardOf("com,workable,apply)/j/ABC123", "com,workable,apply)/", "path"), null, "a posting's short link");
+assert.deepEqual(rotated(["a", "b", "c"], 1), ["c", "a", "b"]);
+assert.deepEqual([rotated([], 5), rotated(["a", "b", "c"], 3)], [[], ["a", "b", "c"]]);
+assert.equal(boardOf("com,ashbyhq,jobs)/%zz", "com,ashbyhq,jobs)/", "path"), null);
 
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);

@@ -134,6 +134,15 @@ pauses the refresh until its "Refresh paused" issue is closed.
   another listed company holds is not given to a second one.
 - ATS adapters live in `lib/ats/`; `scripts/jobs.mjs` crawls every board
   daily into `/api/v1/jobs.json`, which the MCP's job tools search.
+- `data/remote-boards.json` adds employers with no salary in Spain to that
+  crawl: a board with remote postings naming Spain or Europe, kept when
+  Levels.fyi knows the employer (`MIN_GLOBAL` anywhere) or a posting states
+  pay. `remote.yml` writes it twice a month (`scripts/remote_boards.mjs`,
+  `scripts/remote_levels.py`). A Levels.fyi match needs its domain in the
+  postings or in the board's name, never the name alone. `"via": "hand"`
+  keeps an entry whatever a run finds; `"no"` in
+  `data/remote-boards-none.json` strikes a board off. Nothing of these
+  employers reaches `data.json` or a median.
 
 ## Site, README and MCP
 

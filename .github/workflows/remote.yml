@@ -1,0 +1,107 @@
+name: remote boards
+
+# Twice a month: which employers post remote work open to Spain or Europe on
+# the job boards the crawl can read, beyond the companies with salaries here.
+# scripts/remote_boards.mjs takes every board Common Crawl's index names on
+# Greenhouse, Ashby, Lever, Teamtailor and Workable and reads each one (about
+# 14,000 requests, four hours, most of them Workable's pace); scripts/remote_levels.py keeps those Levels.fyi
+# knows or whose posting states pay, in data/remote-boards.json. site.py adds
+# that file to the boards the daily deploy crawls, so nothing is deployed
+# from here: the next daily build reads the new boards.
+#
+# Levels.fyi is asked only about boards not judged in the last 90 days
+# (data/remote-boards-none.json), a handful per run. A refusal opens
+# "Refresh paused", the same issue refresh.yml opens and waits on, and this
+# workflow skips while it is open too: it is the same account.
+#
+# Secrets: LEVELS_EMAIL and LEVELS_PASSWORD, as in refresh.yml.
+
+on:
+  schedule:
+    # GitHub starts this repo's schedules hours late (see deploy.yml).
+    - cron: "0 2 5,19 * *"
+  workflow_dispatch:
+
+concurrency:
+  group: remote-boards
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+env:
+  PAUSED_TITLE: "Refresh paused: Levels.fyi refused the refresh"
+
+jobs:
+  remote:
+    if: vars.REFRESH_PAUSED != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - name: Skip while paused
+        id: paused
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          number="$(gh issue list -R "$GITHUB_REPOSITORY" --state open --search "\"$PAUSED_TITLE\" in:title" \
+                    --json number --jq '.[0].number')"
+          if [ -n "$number" ]; then
+            echo "Paused by issue #$number; close it to resume."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.paused.outputs.skip != 'true'
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        if: steps.paused.outputs.skip != 'true'
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.paused.outputs.skip != 'true'
+        with:
+          node-version: "22"
+
+      - name: Read the boards
+        if: steps.paused.outputs.skip != 'true'
+        run: |
+          npm ci --omit=dev -q
+          node scripts/remote_boards.mjs
+
+      - name: Keep the ones Levels.fyi knows or that state pay
+        id: judge
+        if: steps.paused.outputs.skip != 'true'
+        env:
+          LEVELS_EMAIL: ${{ secrets.LEVELS_EMAIL }}
+          LEVELS_PASSWORD: ${{ secrets.LEVELS_PASSWORD }}
+        run: |
+          status=0
+          python3 scripts/remote_levels.py || status=$?
+          [ "$status" = 0 ] || [ "$status" = 3 ] || exit "$status"
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          python3 tests/test_pipeline.py > /dev/null || { echo "Tests failed."; exit 1; }
+
+      - name: Commit data/
+        if: steps.paused.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/remote-boards.json data/remote-boards-none.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -q -m "Refresh remote boards $(date -u +%F)"
+          git pull -q --rebase origin "$GITHUB_REF_NAME"
+          git push -q origin "HEAD:$GITHUB_REF_NAME"
+
+      - name: Pause on a refusal
+        if: steps.judge.outputs.status == '3'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create --title "$PAUSED_TITLE" \
+            --body "Levels.fyi refused remote_levels.py on $(date -u +%F). The salary refresh and the remote boards wait while this issue is open; close it to resume." > /dev/null
+          exit 1

@@ -1001,8 +1001,20 @@ def test_job_boards_follow_the_ranking() -> None:
             "beta": {"ats": "lever", "board": "beta", "region": "eu"}}))
         try:
             boards = site_build.job_boards(data, tables)
+            (site_build.AGGREGATES / "remote-boards.json").write_text(json.dumps({
+                "ashby:delta": {"name": "Delta", "ats": "ashby", "board": "delta", "via": "pay"},
+                "ashby:gamma-hq": {"name": "GAMMA Inc", "ats": "ashby", "board": "gamma-hq", "levels": "gamma"},
+                "ashby:beta": {"name": "Beta", "ats": "ashby", "board": "beta", "levels": "beta"},
+                "greenhouse:acme": {"name": "Acme Corp", "ats": "greenhouse", "board": "acme"}}))
+            with_remote = site_build.job_boards(data, tables)
         finally:
             site_build.AGGREGATES = original
+    check("remote boards join untiered, under the site's name, behind a company's own board",
+          [c for c in with_remote["companies"] if c.get("remote")],
+          [{"name": "Delta", "ats": "ashby", "board": "delta", "remote": True, "tags": ["remote"]},
+           {"name": "Gamma", "ats": "ashby", "board": "gamma-hq", "remote": True, "tags": ["remote"]}])
+    check("and change nothing else", [c for c in with_remote["companies"] if not c.get("remote")],
+          boards["companies"])
     check("one entry per company with a board, as lib/ats reads them", boards["companies"], [
         {"name": "Acme", "ats": "greenhouse", "board": "acme", "tier": "A", "tags": ["spain", "madrid"]},
         {"name": "Beta", "ats": "lever", "board": "beta", "tier": "B",
@@ -1066,6 +1078,55 @@ def test_companies_table_shows_any_data() -> None:
     check("review.py lists it for the maintainer, with a count and no salary",
           ("| Ghost | [ghost](https://www.levels.fyi/companies/ghost/salaries) | 6 | software-engineer |"
            in review_md, "90" in review_md, "Acme" in review_md), (True, False, False))
+
+
+def test_remote_boards_need_levels_or_pay() -> None:
+    """remote_levels.py keeps a board Levels.fyi knows, by its domain, or one
+    stating pay; the rest wait RECHECK_DAYS, and hand edits stay."""
+    print("remote boards: Levels.fyi or stated pay")
+    import fetch_spain
+    import remote_levels as rl
+    check("a posting names the domain", rl.owns("acme-jobs", "acme.com", ["careers.acme.com"]), True)
+    check("or the board is named after it", rl.owns("duck-duck-go", "duckduckgo.com", []), True)
+    check("a board that is a domain must be that domain", rl.owns("primer.io", "primer.ai", []), False)
+    check("another company's domain is not it", rl.owns("block-labs", "block.xyz", ["blocklabs.io"]), False)
+    check("Teamtailor's host is the employer's label", rl.owns("acme.teamtailor.com", "acme.es", []), True)
+    asked = []
+
+    def lookup(candidate):
+        asked.append(candidate["board"])
+        if candidate["board"] == "refused":
+            raise fetch_spain.Blocked("no")
+        return {"known": {"name": "Known", "slug": "known"}, "unread": None}.get(candidate["board"], {})
+
+    def board(slug, **more):
+        return {"ats": "ashby", "board": slug, **more}
+
+    kept = {"ashby:old": board("old", name="Old", via="levels", seen="2026-09-01"),
+            "ashby:mine": board("mine", name="Mine", via="hand", seen="2026-09-01"),
+            "lever:quiet": {"ats": "lever", "board": "quiet", "name": "Quiet", "via": "pay", "seen": "2026-09-01"},
+            "ashby:here": board("here", name="Here", via="pay", seen="2026-11-01")}
+    none = {"ashby:struck": "no", "ashby:lately": "2026-11-01", "ashby:long-ago": "2026-06-01",
+            "ashby:paid-now": "2026-11-01"}
+    candidates = {"incomplete": ["lever"], "boards": [
+        board("here"), board("known"), board("paid", paid=1), board("nobody"), board("unread"),
+        board("struck", paid=1), board("lately"), board("long-ago"), board("paid-now", paid=2),
+        board("refused"), board("after", paid=1), board("after-unpaid")]}
+    report = rl.decide(candidates, kept, none, "2026-11-20", lookup)
+    check("kept: seen again, known to Levels.fyi, or stating pay",
+          {k: (v["via"], v["seen"]) for k, v in sorted(kept.items())},
+          {"ashby:after": ("pay", "2026-11-20"), "ashby:here": ("pay", "2026-11-20"),
+           "ashby:known": ("levels", "2026-11-20"), "ashby:mine": ("hand", "2026-09-01"),
+           "ashby:paid": ("pay", "2026-11-20"), "ashby:paid-now": ("pay", "2026-11-20"),
+           "lever:quiet": ("pay", "2026-09-01")})
+    check("a board unseen for DROP_DAYS leaves, unless hand-kept or its ATS was cut short",
+          report["dropped"], ["Old"])
+    check("the rest wait, an unread or refused answer judging nothing", none,
+          {"ashby:struck": "no", "ashby:lately": "2026-11-01", "ashby:long-ago": "2026-11-20",
+           "ashby:nobody": "2026-11-20"})
+    check("nobody asked about lately is asked again, nor anyone after a refusal", asked,
+          ["known", "paid", "nobody", "unread", "long-ago", "refused"])
+    check("and the run says it was refused", (report["blocked"], report["unread"]), (True, 3))
 
 
 def test_site_dates_and_minimum_base() -> None:
@@ -1166,6 +1227,7 @@ def main() -> int:
                  test_companies_table_shows_any_data,
                  test_location_files_list_companies_all_there,
                  test_job_boards_follow_the_ranking,
+                 test_remote_boards_need_levels_or_pay,
                  test_site_dates_and_minimum_base,
                  test_floor_aliases_and_exclusions,
                  test_normalization,
