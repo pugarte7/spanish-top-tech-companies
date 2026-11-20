@@ -133,8 +133,8 @@
   "lever:xsolla": {"name": "Xsolla", "ats": "lever", "board": "xsolla", "levels": "xsolla", "via": "levels", "seen": "2026-11-20"},
   "teamtailor:dfds.teamtailor.com": {"name": "DFDS", "ats": "teamtailor", "board": "dfds.teamtailor.com", "levels": "dfds", "via": "levels", "seen": "2026-11-20"},
   "teamtailor:ravenpack.teamtailor.com": {"name": "Ravenpack", "ats": "teamtailor", "board": "ravenpack.teamtailor.com", "levels": null, "via": "hand", "seen": "2026-11-20"},
-  "workable:fairmoney": {"name": "FairMoney", "ats": "workable", "board": "fairmoney", "levels": "fairmoney", "via": "levels", "seen": "2026-11-20"},
-  "workable:power-factors": {"name": "Power Factors", "ats": "workable", "board": "power-factors", "levels": "power-factors", "via": "levels", "seen": "2026-11-20"},
-  "workable:seeq": {"name": "Seeq", "ats": "workable", "board": "seeq", "levels": "seeq", "via": "levels", "seen": "2026-11-20"},
-  "workable:trinetix": {"name": "Trinetix", "ats": "workable", "board": "trinetix", "levels": "trinetix", "via": "levels", "seen": "2026-11-20"}
+  "workable:fairmoney": {"name": "FairMoney", "ats": "workable", "board": "fairmoney", "levels": "fairmoney", "via": "hand", "seen": "2026-11-20"},
+  "workable:power-factors": {"name": "Power Factors", "ats": "workable", "board": "power-factors", "levels": "power-factors", "via": "hand", "seen": "2026-11-20"},
+  "workable:seeq": {"name": "Seeq", "ats": "workable", "board": "seeq", "levels": "seeq", "via": "hand", "seen": "2026-11-20"},
+  "workable:trinetix": {"name": "Trinetix", "ats": "workable", "board": "trinetix", "levels": "trinetix", "via": "hand", "seen": "2026-11-20"}
 }

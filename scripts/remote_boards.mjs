@@ -15,11 +15,12 @@
 // blocks hold a host); its search API times out. Each board is then read
 // through the adapters and the polite client the daily crawl uses.
 //
-// Only an ATS whose URL carries the board is here. Workable refused the Mac
-// for a day after 3,800 boards at the others' pace, so its boards are read
-// 2.5s apart. Each run starts somewhere else in an ATS's list: one that is
-// cut short by refusals reaches other boards the next time. Recruitee,
-// BambooHR and Rippling had no remote posting in 120 boards each (2026-11-20).
+// Only an ATS whose URL carries the board is here. Each run starts somewhere
+// else in an ATS's list: one that is cut short by refusals reaches other
+// boards the next time. Workable is left out: it refuses anything faster
+// than a board every 2.5s, which took 3.5 hours for 4,900 boards and 3 new
+// employers; the ones found then stay in remote-boards.json by hand.
+// Recruitee, BambooHR and Rippling had no remote posting in 120 boards each.
 
 import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -41,7 +42,6 @@ export const SOURCES = {
   ashby: { prefixes: ["com,ashbyhq,jobs)/"], in: "path" },
   lever: { prefixes: ["co,lever,jobs)/"], in: "path" },
   teamtailor: { prefixes: ["com,teamtailor,"], in: "host", board: (slug) => `${slug}.teamtailor.com` },
-  workable: { prefixes: ["com,workable,apply)/"], in: "path", gapMs: 2500 },
 };
 const NOT_A_BOARD = new Set(["embed", "api", "v1", "jobs", "job_app", "job_board", "boards", "careers", "www", "j",
                              "robots.txt", "favicon.ico", "sitemap.xml", "app", "assets", "static"]);
@@ -147,7 +147,6 @@ async function probe(kind, boards, ats, openToSpain, log) {
   let strikes = 0;
   let read = 0;
   for (const board of boards) {
-    if (SOURCES[kind].gapMs) await new Promise((resolve) => setTimeout(resolve, SOURCES[kind].gapMs));
     try {
       const company = ats.CompanySchema.parse({ name: board, ats: kind, board, active: true });
       const jobs = await Promise.race([
