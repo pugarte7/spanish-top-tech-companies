@@ -16,9 +16,10 @@ const QUERY = "SELECT count() FROM events WHERE event = '$mcp_tool_call' " +
 
 export default {
   async fetch() {
-    const none = (status) => Response.json({ calls: null }, { status, headers: { "Cache-Control": "no-store" } });
+    // 200 with no count: an error status would put a failed request in every reader's console.
+    const none = () => Response.json({ calls: null }, { headers: { "Cache-Control": "no-store" } });
     const key = process.env.POSTHOG_PERSONAL_API_KEY;
-    if (!key) return none(503);
+    if (!key) return none();
     try {
       const r = await fetch(`${HOST}/api/projects/${PROJECT}/query/`, {
         method: "POST",
@@ -34,7 +35,7 @@ export default {
       });
     } catch (e) {
       console.error("calls:", e?.message ?? e);
-      return none(502);
+      return none();
     }
   },
 };
