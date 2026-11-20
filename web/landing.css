@@ -39,7 +39,9 @@ button { font: inherit; color: inherit; }
 :root:not([data-theme="dark"]) #theme .sun, :root[data-theme="dark"] #theme .moon { color: var(--ink); }
 :root:not([data-theme="dark"]) #theme .sun svg, :root[data-theme="dark"] #theme .moon svg { stroke-width: 2.6; }
 @media (hover: hover) { .langs a:hover, #theme:hover { color: var(--ink); } }
-@media (max-width: 560px) { .brand b { display: none; } }
+/* On a phone the name alone: the logo would repeat the mascot right under it. */
+@media (max-width: 560px) { .brand .mark { display: none; } .brand b { white-space: nowrap; } }
+@media (max-width: 380px) { .brand { font-size: 14px; } .nav { gap: 8px; } .langs, #theme { padding-left: 6px; padding-right: 6px; } }
 
 .center { max-width: 780px; margin: 8px auto 0; text-align: center; }
 /* 8:5, the canvas's shape, held before the script draws it. */
