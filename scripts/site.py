@@ -1290,6 +1290,7 @@ def share_meta(lang: str, title: str) -> str:
             '<meta property="og:image:height" content="630">\n'
             f'<meta property="og:image:alt" content="{html.escape(title)}">\n'
             '<meta name="twitter:card" content="summary_large_image">\n'
+            f'<meta name="twitter:title" content="{html.escape(title)}">\n'
             f'<meta name="twitter:image" content="{image}">')
 
 
