@@ -36,6 +36,22 @@ the old fetcher stored seniors only: "I think we no longer need to have the
 the 60k-filtered mean, the any-row rule, a years filter, or other families
 in the median.
 
+**The site is a funnel into the MCP.** The home page shows no salaries: one
+minimalist page per language (`scripts/landing.py`, with `web/landing.css`,
+`web/landing.js` and the mascot's renderer `web/mascot.js`), white, black and
+the blue, light unless the reader picks dark. Its headline carries no figure,
+which would go stale. The agent calls it shows come from `/api/calls`,
+PostHog's count of `$mcp_tool_call` without `internal` ones, about a minute
+late: reading PostHog adds no service of our own. It needs
+`POSTHOG_PERSONAL_API_KEY` on the deployment; without it the figure is left
+out. The salary home page, the ranking and the search pages are not built, and
+`vercel.json` sends their URLs to the home page. `data/`, `/api/v1/` and the
+llms files are still published: the MCP reads them. The old page code
+(`page()` and what it calls in `site.py`, `seo.py`, `web/app.js`,
+`web/style.css`) is unused and still to be removed; what follows about the
+home page and the search pages describes that code. The tab icon and the link
+previews are drawn by `tests/site/og-image.mjs` (`npm run og`).
+
 **The website is the product; the README introduces it.** Since 2026-11-01
 spanishtoptechcompanies.com is what people use, built and deployed from
 `main`. Since 2026-11-09 the README leads with the MCP server, "the core":
