@@ -330,6 +330,11 @@ assert.deepEqual([pod.url, pod.location, pod.workplace, pod.posted_at],
   ["https://pod.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/2108", "Madrid, Spain", "hybrid",
    "2026-11-02T15:51:16+00:00"]);
 assert.ok(requested.includes("https://az.eightfold.ai/api/pcsx/position_details"), "pcsx descriptions are read");
+{
+  const { parseBoard } = await import("../lib/ats/sources/oracle.js");
+  assert.equal(parseBoard("enterpriseplatform.dell.com/CX_1001").host, "enterpriseplatform.dell.com", "a known vanity host");
+  assert.throws(() => parseBoard("careers.example.com/CX_1"), /oracle board/);
+}
 assert.ok(!requested.some((u) => u.startsWith("https://old.eightfold.ai/api/pcsx/position")), "v2 lists carry descriptions");
 // A posting dated 0 has no date rather than 1970.
 const london = await eightfold.listJobs({ name: "AZ", ats: "eightfold", board: "az.eightfold.ai/az.com", query: "" },

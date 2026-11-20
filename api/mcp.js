@@ -2288,7 +2288,7 @@ async function jsonldForm(env, board, external, job) {
 
 // Oracle Recruiting Cloud (Marriott, JPMorgan, Uber): the public REST resource
 // gives one requisition by id; applying starts with an email and a code Oracle sends.
-const ORACLE_HOST = /^[a-z0-9-]+(?:\.[a-z0-9-]+)*\.oraclecloud\.com$/;
+const ORACLE_HOST = /^[a-z0-9-]+(?:\.[a-z0-9-]+)*\.oraclecloud\.com$|^enterpriseplatform\.dell\.com$/;
 async function oracleForm(env, board, external, job) {
   const [host, site, ...rest] = String(board).split("/");
   if (rest.length || !ORACLE_HOST.test(host ?? "") || !/^[A-Za-z0-9_-]{1,80}$/.test(site ?? "") ||
