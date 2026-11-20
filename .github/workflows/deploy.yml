@@ -3,8 +3,8 @@ name: deploy
 # Builds _site/ from the committed aggregates in data/ and publishes it, with
 # the MCP server at /mcp (api/mcp.js), to Vercel. Built here and uploaded
 # prebuilt: vercel.json turns off Vercel's own Git deployments so a push is
-# deployed once. companies.csv is private and never reaches GitHub; the Mac
-# fetches from Levels.fyi and commits data/ (site.py --refresh).
+# deployed once. companies.csv is private and reaches GitHub only encrypted,
+# in a private repo; refresh.yml fetches from Levels.fyi and commits data/.
 #
 # Needs repository secrets VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID
 # (the last two from .vercel/project.json after `vercel link`), and
@@ -23,8 +23,19 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "17 4 * * *"   # 05:17 in Madrid in winter, 06:17 in summer
+    # GitHub starts this repo's schedules 7 to 9 hours late (04:17 UTC ran between
+    # 11:03 and 13:26 UTC every day from 2026-11-05 to 11-17), so it is set for the
+    # evening before: late, it lands in the early morning in Madrid; on time, the
+    # postings are from that evening.
+    - cron: "17 20 * * *"
   workflow_dispatch:
+    inputs:
+      reuse_jobs:
+        # refresh.yml's push starts no workflow, so it dispatches this one,
+        # and a salary refresh should not wait on a crawl either.
+        description: "Reuse production's jobs.json while it is under 36 hours old"
+        type: boolean
+        default: false
 
 # Deploys queue instead of cancelling each other: a push during the daily
 # crawl (some 45 minutes, up to 90) used to cancel it, losing the day's postings
@@ -44,15 +55,15 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      JOBS_REUSE_HOURS: ${{ github.event_name == 'push' && '36' || '0' }}
+      JOBS_REUSE_HOURS: ${{ (github.event_name == 'push' || inputs.reuse_jobs) && '36' || '0' }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
 
@@ -79,21 +90,31 @@ jobs:
       - name: /mcp answers
         run: node tests/mcp.test.mjs
 
+      # A deploy takes 10-20 seconds. On 2026-11-10 Vercel's side hung for an
+      # hour on "Downloading deployment files" and then failed; a rerun went
+      # through at once. So each try gets five minutes, and there are three.
       - name: Deploy to Vercel
         if: env.VERCEL_TOKEN != ''
-        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+        timeout-minutes: 20
+        run: |
+          for try in 1 2 3; do
+            timeout 300 vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN" && exit 0
+            echo "::warning::Vercel deploy try $try failed or hung, retrying"
+            sleep 30
+          done
+          exit 1
 
       # The pay employers state in their postings, kept day by day:
       # scripts/offers.py merges today's jobs.json into offers.csv on the
       # `offers` branch (one row per posting and range, first and last day
       # seen). Its own branch, so the daily commit neither redeploys the site
-      # nor races the Mac's weekly push to main. A failure here is a lost day,
+      # nor races the weekly refresh's push to main. A failure here is a lost day,
       # never a failed deploy.
       - name: Check out offers
         id: offers
         if: ${{ !cancelled() && hashFiles('_site/api/v1/jobs.json') != '' }}
         continue-on-error: true
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: offers
           path: offers-branch

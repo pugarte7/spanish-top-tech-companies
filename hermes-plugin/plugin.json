@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "spanish-top-tech-companies",
+  "version": "1.0.2",
+  "description": "Find today's tech job postings in Spain and remote roles open to it, with what each company pays the role, read the application form, and apply with the person's yes. Salary medians from real Spanish salaries.",
+  "author": {
+    "name": "pugarte7",
+    "url": "https://github.com/pugarte7"
+  },
+  "homepage": "https://spanishtoptechcompanies.com",
+  "repository": "https://github.com/pugarte7/spanish-top-tech-companies",
+  "license": "CC-BY-SA-4.0",
+  "keywords": ["jobs", "job-search", "salaries", "spain", "careers", "recruiting", "mcp"]
+}

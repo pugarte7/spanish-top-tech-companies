@@ -547,6 +547,105 @@ def test_an_unread_feed_changes_nothing() -> None:
         fetch_spain.feed, fetch_spain.write_role, fetch_spain.token = original
 
 
+def test_a_run_reads_only_what_is_new() -> None:
+    """After a whole read, a run asks each role for the rows past its cursor.
+
+    Since 2026-11-19: those rows are added, nothing on file is
+    taken away, and the whole read that replaces the role comes round every
+    FULL_WEEKS weeks.
+    """
+    print("a run reads from each role's cursor and adds what it finds")
+    import fetch_spain
+
+    first = [row(uuid="a", base=100000, offerDate="Mon Nov 02 2026 10:00:00 GMT+0000"),
+             row(uuid="b", base=110000, offerDate="Thu Nov 05 2026 09:30:15 GMT+0000")]
+    later = [row(uuid="c", base=120000, offerDate="Tue Nov 10 2026 08:00:00 GMT+0000"),
+             row("globex", uuid="d", offerDate="Wed Nov 11 2026 08:00:00 GMT+0000"),
+             # No euro row comes with it: priced with the rates the whole read left.
+             row(uuid="e", base=50000, baseSalaryCurrency="USD", exchangeRate=1,
+                 offerDate="Wed Nov 11 2026 09:00:00 GMT+0000")]
+    serving, asked = list(first), []
+
+    def fake_feed(bearer, role, delay, company=None, since=None):
+        asked.append(since)
+        return [r for r in serving
+                if not since or fetch_spain._iso(fetch_spain.instant(r["offerDate"])) >= since]
+
+    def run(day, *args):
+        lib.today_utc = lambda: lib.parse_date(day)
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            return fetch_spain.main(["--role", "software-engineer", *args])
+
+    def bases(slug="acme"):
+        return sorted(e["base"] for e in stored(slug)["entries"])
+
+    original = (fetch_spain.feed, fetch_spain.token, fetch_spain.world_of,
+                fetch_spain.prune_unproven, lib.today_utc)
+    fetch_spain.token = lambda: "test-token"
+    fetch_spain.feed = fake_feed
+    fetch_spain.world_of = lambda *a, **kw: None
+    fetch_spain.prune_unproven = lambda *a, **kw: {"unproven": 0, "companies": 0}
+    try:
+        with temp_data(acme(entry(PER_LOCATION, base=1))):
+            run("2026-11-06")
+            state = fetch_spain.load_feed_state()["roles"]["software-engineer"]
+            check("the first run reads the role whole and replaces its rows",
+                  (asked, bases(), state),
+                  ([None], [86000, 94600],
+                   {"since": "2026-11-05T09:30:15.000Z", "full": "2026-11-06"}))
+
+            asked.clear()
+            check("nothing new is a run that worked", (run("2026-11-07"), bases()),
+                  (0, [86000, 94600]))
+            check("it asked from the second after the newest row", asked,
+                  ["2026-11-05T09:30:16.000Z"])
+
+            serving += later
+            asked.clear()
+            run("2026-11-12")
+            check("new rows are added, a new employer filed, a dollar row priced",
+                  (bases(), bases("globex"), asked),
+                  ([43000, 86000, 94600, 103200], [86000], ["2026-11-05T09:30:16.000Z"]))
+            check("the cursor moves to the newest row; the whole read's day stays",
+                  fetch_spain.load_feed_state()["roles"]["software-engineer"],
+                  {"since": "2026-11-11T09:00:00.000Z", "full": "2026-11-06"})
+
+            # A submission deleted at Levels.fyi leaves only on a whole read.
+            del serving[0]
+            asked.clear()
+            run("2026-11-13")
+            check("an incremental run never takes a row away", bases(),
+                  [43000, 86000, 94600, 103200])
+            run("2026-11-14", "--full")
+            check("--full reads to the end and replaces",
+                  (asked[-1], bases()), (None, [43000, 94600, 103200]))
+
+            asked.clear()
+            run("2026-11-15", "--company", "acme")
+            check("--company reads whole and leaves the cursor alone",
+                  (asked, fetch_spain.load_feed_state()["roles"]["software-engineer"]["full"]),
+                  ([None], "2026-11-14"))
+
+            asked.clear()
+            run("2027-01-20")
+            check("two cycles without a whole read bring one", asked, [None])
+
+        days = [lib.parse_date("2026-11-16") + __import__("datetime").timedelta(days=7 * n)
+                for n in range(fetch_spain.FULL_WEEKS)]
+        due = [sum(fetch_spain.full_due(role, {"full": "2026-11-02"}, day.isoformat())
+                   for day in days) for role in ("software-engineer", "data-scientist", "sales")]
+        check("each role is read whole one week in the cycle", due, [1, 1, 1])
+        with temp_data(acme(entry(PER_LOCATION))):
+            asked.clear()
+            fetch_spain.save_feed_state({"roles": {"software-engineer": {"since": None,
+                                                                         "full": "2026-11-12"}}})
+            run("2026-11-13")
+            check("a role with nothing on file is not asked between whole reads", asked, [])
+    finally:
+        (fetch_spain.feed, fetch_spain.token, fetch_spain.world_of,
+         fetch_spain.prune_unproven, lib.today_utc) = original
+
+
 def test_companies_are_their_salaries() -> None:
     """On file means having salaries; the floor and the bar are about the median.
 
@@ -1059,6 +1158,7 @@ def main() -> int:
                  test_feed_is_read_to_the_end, test_feed_moves_past_the_offset_ceiling_by_date,
                  test_a_role_past_the_ceiling_is_read_per_company,
                  test_an_unread_feed_changes_nothing,
+                 test_a_run_reads_only_what_is_new,
                  test_companies_are_their_salaries,
                  test_rows_compare_with_empty_cells,
                  test_median_over_every_engineer,

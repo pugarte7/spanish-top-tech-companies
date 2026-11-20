@@ -1,0 +1,234 @@
+name: refresh
+
+# The Monday salary refresh. Until 2026-11-19 it ran on the maintainer's Mac
+# (scripts/weekly.sh, still there to run by hand): Levels.fyi's pages served
+# GitHub's runners no data. Since fetch_spain.py reads only the API, which
+# answers a runner like it answers the Mac, it runs here.
+#
+# The private files (companies.csv, global.json, feed.json, usage.csv,
+# private-sources.txt) come encrypted from the private repo
+# pugarte7/spanish-top-tech-companies-data (scripts/private_data.sh) and go
+# back there before anything public moves. fetch_spain.py reads only what was
+# submitted since each role's cursor in feed.json, a quarter of the roles
+# whole every week.
+#
+# This repo is public and so is this log. The scripts' output goes to a file
+# that is kept encrypted in the private repo (private_data.sh log reads it);
+# here only the steps' verdicts show. On 2026-11-19 a validate.py error named
+# an unpublished source in this log on every row it rejected.
+#
+# It stops, and nothing is pushed, at the first thing that fails: data that
+# does not validate before any request, a refusal from Levels.fyi, a failed
+# test, validate.py or scripts/guard.py. A refusal (fetch_spain.py exits 3)
+# also opens "Refresh paused", and the refresh skips every run while that
+# issue is open: asking again the next week from the same kind of address is
+# what gets an account flagged. Close the issue to resume. The repository
+# variable REFRESH_PAUSED=true pauses it by hand.
+#
+# Secrets: LEVELS_EMAIL and LEVELS_PASSWORD (the Levels.fyi account; a runner
+# has no Keychain and a secret cannot follow a rotating refresh token, so it
+# signs in each run), DATA_KEY (the private files' passphrase) and
+# DATA_DEPLOY_KEY (an SSH key with write access to the private repo).
+#
+# A push with GITHUB_TOKEN starts no other workflow, so this one dispatches
+# deploy.yml and opens the week's issue itself (weekly.yml's digest job only
+# answers pushes from the Mac).
+
+on:
+  schedule:
+    # GitHub starts this repo's schedules 7 to 9 hours late (see deploy.yml):
+    # set for 01:00 UTC, it lands Monday morning.
+    - cron: "0 1 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+env:
+  PAUSED_TITLE: "Refresh paused: Levels.fyi refused the refresh"
+
+jobs:
+  refresh:
+    if: vars.REFRESH_PAUSED != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Skip while paused
+        id: paused
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          number="$(gh issue list -R "$GITHUB_REPOSITORY" --state open --search "\"$PAUSED_TITLE\" in:title" \
+                    --json number --jq '.[0].number')"
+          if [ -n "$number" ]; then
+            echo "Paused by issue #$number; close it to resume."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.paused.outputs.skip != 'true'
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        if: steps.paused.outputs.skip != 'true'
+        with:
+          python-version: "3.12"
+
+      # The same minute every Monday is a script's signature too.
+      - name: Start at a different time each week
+        if: steps.paused.outputs.skip != 'true' && github.event_name == 'schedule'
+        run: sleep $((RANDOM % 2700))
+
+      - name: Pull the private data
+        if: steps.paused.outputs.skip != 'true'
+        env:
+          DATA_KEY: ${{ secrets.DATA_KEY }}
+          DATA_DEPLOY_KEY: ${{ secrets.DATA_DEPLOY_KEY }}
+        run: |
+          export STC_DATA="$RUNNER_TEMP/data/website/companies.csv"
+          export RUN_LOG="$RUNNER_TEMP/run.log"
+          echo "STC_DATA=$STC_DATA" >> "$GITHUB_ENV"
+          echo "RUN_LOG=$RUN_LOG" >> "$GITHUB_ENV"
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DATA_DEPLOY_KEY" > ~/.ssh/data_key
+          chmod 600 ~/.ssh/data_key
+          ssh-keyscan -q github.com >> ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/data_key -o IdentitiesOnly=yes"
+          echo "GIT_SSH_COMMAND=$GIT_SSH_COMMAND" >> "$GITHUB_ENV"
+          bash scripts/private_data.sh pull >> "$RUN_LOG" 2>&1 \
+            || { echo "Could not pull the private data."; exit 1; }
+          # Whatever still reaches this log, the unpublished sources show as ***.
+          { grep -v '^#' "$(dirname "$STC_DATA")/private-sources.txt" || true; } | while IFS= read -r name; do
+            [ -n "$name" ] && echo "::add-mask::$name"
+          done
+          cp "$STC_DATA" "$RUNNER_TEMP/before.csv"
+          # Bad data on file stops the run before a single request to Levels.fyi.
+          python3 scripts/validate.py >> "$RUN_LOG" 2>&1 \
+            || { echo "The pulled data does not validate; nothing was fetched."; exit 1; }
+          echo "Private data pulled and valid."
+
+      - name: Fetch and rebuild data/
+        if: steps.paused.outputs.skip != 'true'
+        env:
+          LEVELS_EMAIL: ${{ secrets.LEVELS_EMAIL }}
+          LEVELS_PASSWORD: ${{ secrets.LEVELS_PASSWORD }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          step() { echo "== $*" >> "$RUN_LOG"; "$@" >> "$RUN_LOG" 2>&1; }
+          # The traffic API wants admin rights the workflow token lacks; stars
+          # and forks still come through.
+          step python3 scripts/usage.py || echo "usage.py failed; usage.csv keeps what it had"
+          # fetch_taxonomy.py and fetch_company.py read HTML pages that answer
+          # 405 to the Mac and nothing to a runner: not asked from here, since
+          # a weekly string of refused requests is a bot's trail.
+          status=0
+          step python3 scripts/fetch_spain.py --delay 3.0 || status=$?
+          if [ "$status" = 3 ]; then
+            touch "$RUNNER_TEMP/blocked"
+            echo "Levels.fyi refused the refresh; pausing it."
+            exit 1
+          fi
+          [ "$status" = 0 ] || { echo "fetch_spain.py failed ($status)."; exit 1; }
+          echo "fetch_spain.py done."
+          step python3 scripts/fetch_radar.py || { echo "fetch_radar.py failed."; exit 1; }
+          step python3 tests/test_pipeline.py || { echo "Tests failed."; exit 1; }
+          step python3 scripts/validate.py || { echo "validate.py failed."; exit 1; }
+          step python3 scripts/site.py --refresh || { echo "site.py failed."; exit 1; }
+          python3 scripts/review.py > data/review.md 2>> "$RUN_LOG" || { echo "review.py failed."; exit 1; }
+          # Job boards are found after this run, by boards.yml.
+          step python3 scripts/guard.py "$RUNNER_TEMP/before.csv" \
+            || { echo "guard.py stopped the refresh."; exit 1; }
+          echo "Data rebuilt and guarded."
+
+      # Before the public push: feed.json's cursors have moved past this
+      # week's rows, so losing the CSV now would lose them for good.
+      - name: Push the private data
+        if: steps.paused.outputs.skip != 'true'
+        env:
+          DATA_KEY: ${{ secrets.DATA_KEY }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          bash scripts/private_data.sh push >> "$RUN_LOG" 2>&1 \
+            || { echo "Could not push the private data."; exit 1; }
+          echo "Private data pushed."
+
+      - name: Commit data/, deploy and open the week's issue
+        if: steps.paused.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data scripts/taxonomy.py
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          python3 scripts/digest.py "$RUNNER_TEMP/before.csv" > digest.md 2>> "$RUN_LOG"
+          git commit -q -m "Refresh salaries $(date -u +%F)" -m "$(cat digest.md)"
+          git pull -q --rebase origin main
+          git push -q origin HEAD:main
+          gh workflow run deploy.yml --ref main -f reuse_jobs=true
+          gh issue list --state open --limit 100 --json number,title,author \
+            --jq '.[] | select(.author.is_bot) | select((.title | startswith("Week of ")) or .title == "No salary refresh this week" or .title == "Refresh failed") | .number' |
+            while read -r number; do gh issue close "$number" --reason completed; done
+          gh issue create --title "Week of $(date -u +%F)" --body-file digest.md > /dev/null
+          echo "data/ pushed, deploy dispatched, issue opened."
+
+      - name: Keep "Companies to verify" current
+        if: steps.paused.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/review.py --limit 200 > verify.md 2>> "$RUN_LOG"
+          number="$(gh issue list --state open --search '"Companies to verify" in:title' \
+                    --json number --jq '.[0].number')"
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --body-file verify.md > /dev/null
+          else
+            gh issue create --title "Companies to verify" --body-file verify.md > /dev/null
+          fi
+
+      - name: Keep the log, privately
+        if: always() && steps.paused.outputs.skip != 'true' && env.RUN_LOG != ''
+        env:
+          DATA_KEY: ${{ secrets.DATA_KEY }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          [ -f "$RUN_LOG" ] || exit 0
+          if bash scripts/private_data.sh log-push "$RUN_LOG" > /dev/null 2>&1; then
+            echo "Log kept; read it with: bash scripts/private_data.sh log"
+          else
+            echo "Could not keep the log."
+          fi
+
+      # The issue carries the run's link and nothing from the log.
+      - name: Say it failed
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -f "$RUNNER_TEMP/blocked" ]; then
+            title="$PAUSED_TITLE"
+            body="Levels.fyi refused the refresh ($RUN_URL). Every refresh is skipped while this issue is open. Read the log with \`bash scripts/private_data.sh log\`, and close this issue once it is safe to ask again."
+          else
+            title="Refresh failed"
+            body="The refresh failed ($RUN_URL); the step that failed says whether anything was pushed. Read the log with \`bash scripts/private_data.sh log\`."
+          fi
+          number="$(gh issue list -R "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" --json number --jq '.[0].number')"
+          if [ -n "$number" ]; then
+            gh issue comment -R "$GITHUB_REPOSITORY" "$number" --body "$body" > /dev/null
+          else
+            gh issue create -R "$GITHUB_REPOSITORY" --title "$title" --body "$body" > /dev/null
+          fi

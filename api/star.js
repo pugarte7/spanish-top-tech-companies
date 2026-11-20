@@ -1,5 +1,5 @@
-// /star and /star/<via> (rewrites in vercel.json): the link the MCP's star note
-// carries (api/mcp.js supportNote), so a click is counted before GitHub takes
+// /star and /star/<via> (rewrites in vercel.json): the link the MCP's star ask
+// carries (api/mcp.js STAR_LINK), so a click is counted before GitHub takes
 // over. A star came from one in ten visitors of the repo page, but GitHub's
 // traffic names only the site a visitor came from, and a link an agent shows
 // has none: whether a note was ever followed was unknown. Counts the click and
@@ -8,7 +8,9 @@
 import { after, capture, event, origin } from "./_track.js";
 
 const REPO = "https://github.com/pugarte7/spanish-top-tech-companies";
-const VIA = ["mcp-search", "mcp-sent"];
+// mcp-search and mcp-sent were the notes on find_jobs and report_application
+// (2026-11-14 to 2026-11-18); mcp-weekly is application_guide's weekly ask.
+const VIA = ["mcp-search", "mcp-sent", "mcp-weekly"];
 // Link previews, crawlers and scripts fetch the link without anyone opening it.
 const NOT_A_PERSON = /bot|crawl|spider|preview|slack|whatsapp|telegram|discord|facebookexternalhit|curl|python|node|go-http|undici|axios/i;
 

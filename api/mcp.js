@@ -25,7 +25,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.20.2" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.22.2" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -153,7 +153,7 @@ const TOOLS = {
                    "postings already applied to, shown or turned down." },
         limit: { type: "integer", minimum: 1, maximum: JOB_MAX, default: JOB_DEFAULT } } } }),
     run: (data, args, env) => findJobs(data, args, env),
-    measure: (out) => ({ result_count: out.matches, support_note: "note_for_the_person" in out,
+    measure: (out) => ({ result_count: out.matches,
                          // Returned postings found only through the description's keywords.
                          ...(out.filters?.query ? { keyword_matched: out.jobs.filter((j) =>
                            j.matched_in_keywords && j.matched_in_keywords.length === j.matched_terms.length).length } : {}),
@@ -164,8 +164,9 @@ const TOOLS = {
       description: "The application form of one posting from find_jobs, read live from its " +
                    "board (Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, Bending Spoons and Eightfold; for Workday, whose form " +
                    "needs the person's account, the posting and Workday's standard steps, also when a " +
-                   "Phenom career site leads to it; for SmartRecruiters, the posting only; for SuccessFactors (Capgemini too) " +
-                   "and Amazon, the posting and account_required, since their form is shown after sign-in; for careers " +
+                   "Phenom career site leads to it; for SmartRecruiters and SuccessFactors (Capgemini too), whose forms are " +
+                   "not public, the posting, the board's standard steps and board_notes, what agents found when sending " +
+                   "there; for Amazon, the posting and account_required, since its form is shown after sign-in; for careers " +
                    "sites with schema.org JobPosting, the posting; other boards are read in the browser): " +
                    "each question with its type, options, whether it is required, the most characters " +
                    "the board takes (max_length) when it says, and who answers " +
@@ -218,8 +219,7 @@ const TOOLS = {
                          application_step_count: out.steps.length,
                          application_attempts: out.attempts ?? undefined,
                          application_notes: out.notes ?? undefined,
-                         ats: out.ats, company: out.company ?? undefined, known_posting: out.known_posting,
-                         support_note: "note_for_the_person" in out }),
+                         ats: out.ats, company: out.company ?? undefined, known_posting: out.known_posting }),
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
   application_guide: {
@@ -311,10 +311,17 @@ function resolveRole(data, role, roles = data.roles) {
 // 2026-11) is the whole country, with a note for remote.
 const WHOLE_COUNTRY = /^(spain|espana|es|all|todas?|national|nacional)$/;
 const REMOTE_PLACE = /^(remote|remoto|teletrabajo|remote spain|remoto espana|anywhere)$/;
+// ISO 3166-2:ES codes, with or without "ES-", are the site's codes but for Murcia
+// (MC, ours MU): a script sent MC five times on 2026-11-15 and got nothing back.
+const ISO_REGION = /^(?:es-)?([a-z]{2})$/i;
+const ISO_ONLY = { MC: "MU" };
 function resolvePlace(data, region) {
   if (blank(region)) return { code: "", city: null };
   if (WHOLE_COUNTRY.test(words(region))) return { code: "", city: null };
   if (REMOTE_PLACE.test(words(region))) return { code: "", city: null, remote: true };
+  const iso = ISO_REGION.exec(String(region).trim())?.[1].toUpperCase();
+  const isoCode = iso && (ISO_ONLY[iso] ?? iso);
+  if (isoCode && data.regions[isoCode]) return { code: isoCode, city: null };
   const want = norm(region);
   const unknown = () => new QueryError(`unknown region '${region}'; use a code like MD, a name like ` +
     "Cataluña or a city like Barcelona");
@@ -954,14 +961,29 @@ const NEUTRAL = {
 const TOPICAL = ["company", "role", "query"];
 const ALL_NEUTRAL = Object.assign({}, ...Object.values(NEUTRAL));
 const SUGGESTED = 5;
+// A level that finds nothing is widened one step each way, not dropped: a junior
+// search for remote Python work was offered senior and staff postings (2026-11-19).
+// A title that names no level counts as mid, as the mid filter reads it.
+const levelsNear = (level) => {
+  const at = SENIORITIES.indexOf(level);
+  return SENIORITIES.slice(Math.max(at - 1, 0), at + 2);
+};
 function noMatch({ data, index, args, filtersSet, pass, withTerms, dropped }) {
   const set = Object.keys(NEUTRAL).filter((k) => dropped[k]);
   if (!set.length) return { no_match: { reason: "today's index has no posting outside exclude" } };
   const without = set.map((k) => ({ drop: k, matches: pass({ ...filtersSet, ...NEUTRAL[k] }).results.length }));
-  const keepsTopic = (k) => TOPICAL.some((t) => t !== k && dropped[t]);
-  let source = without.find((w) => w.matches > 0 && keepsTopic(w.drop));
-  let sourceLabel = source && `without ${source.drop}`;
-  let results = source ? pass({ ...filtersSet, ...NEUTRAL[source.drop] }).results : [];
+  // With no company, role or query asked (remote internships), there is no topic to keep.
+  const topical = TOPICAL.some((t) => dropped[t]);
+  const keepsTopic = (k) => !topical || TOPICAL.some((t) => t !== k && dropped[t]);
+  let results = [], sourceLabel;
+  for (const { drop, matches } of without) {
+    if (!matches || !keepsTopic(drop)) continue;
+    const near = drop === "seniority" ? levelsNear(filtersSet.seniority) : null;
+    results = pass({ ...filtersSet, ...NEUTRAL[drop], ...(near ? { levels: new Set(near) } : {}) }).results;
+    sourceLabel = near ? `at a level next to ${filtersSet.seniority} (${near.join(", ")}; a title that names no level is mid)`
+      : `without ${drop}`;
+    if (results.length) break;
+  }
   if (!results.length) {
     // No single filter is the problem: keep only the most telling one.
     const keep = TOPICAL.filter((k) => dropped[k]);
@@ -1067,6 +1089,7 @@ export async function findJobs(data, args = {}, env = {}) {
       if (!g.roleTest(p) || !g.inRegion(p)) continue;
       if (g.workplace && p.workplace !== g.workplace) continue;
       if (g.seniority && p.seniority !== g.seniority && !(g.seniority === "mid" && p.seniority === null)) continue;
+      if (g.levels && !g.levels.has(p.seniority ?? "mid")) continue;
       if (g.years && p.years && p.years[0] > g.years.years) continue;
       const jobRole = g.special ? g.special.slug
         : g.classified && p.roles.includes(g.roleSlug) ? g.roleSlug : p.roles[0] ?? null;
@@ -1140,7 +1163,6 @@ export async function findJobs(data, args = {}, env = {}) {
                  role: Boolean(role), company: Boolean(company) } })),
     ...(results.length > jobs.length ? { more: `${results.length - jobs.length} more match; narrow the ` +
         "filters, or call again with the ids shown so far (also_posted_as included) added to exclude." } : {}),
-    ...(jobs.length ? { note_for_the_person: supportNote("search") } : {}),
     order: ORDER,
     classification_note: "roles, seniority, years_asked and keywords are read from each posting when the index " +
       "is built: roles from the title, best first (the first is the one salary_context uses); seniority " +
@@ -1169,8 +1191,8 @@ const ATS_HOSTS = new Set(["boards-api.greenhouse.io", "boards-api.eu.greenhouse
   "api.lever.co", "api.eu.lever.co", "jobs.lever.co", "jobs.eu.lever.co", "jobs.ashbyhq.com",
   "apply.workable.com", "jobs.bendingspoons.com", "api.rippling.com", "api.smartrecruiters.com", "www.amazon.jobs"]);
 // Workday and Recruitee give each employer its own subdomain.
-const ATS_HOST_PATTERNS = [/^[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com$/, /^[a-z0-9-]+\.recruitee\.com$/,
-  /^[a-z0-9-]+\.bamboohr\.com$/];
+const ATS_HOST_PATTERNS = [/^[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com$/, /^wd\d+\.myworkdaysite\.com$/,
+  /^[a-z0-9-]+\.recruitee\.com$/, /^[a-z0-9-]+\.bamboohr\.com$/];
 const allowedHost = (host) => ATS_HOSTS.has(host) || ATS_HOST_PATTERNS.some((p) => p.test(host));
 // Teamtailor serves each career site on the employer's own domain; its host is
 // the board in our own index, and only that host is read for that posting.
@@ -1181,7 +1203,9 @@ const LIVE_MAX_CHARS = 4_000_000;
 const LIVE_PER_REQUEST = 5;
 const DESCRIPTION_CHARS = 6000;
 
-class BoardError extends Error {}
+class BoardError extends Error {
+  constructor(message, status = null) { super(message); this.status = status; }
+}
 const hostOf = (url) => { try { return new URL(url).hostname; } catch { return ""; } };
 
 // `site` is a career site's own host, read from the board of a posting in the index
@@ -1203,7 +1227,7 @@ async function fetchBoard(env, url, { body, text = false, site = null, headers =
     throw new BoardError(e?.name === "TimeoutError" ? "the board did not answer in time" : "the board could not be reached");
   }
   if (answer.status === 404) throw new BoardError("the board no longer has this posting; it may have closed");
-  if (!answer.ok) throw new BoardError(`the board answered ${answer.status}`);
+  if (!answer.ok) throw new BoardError(`the board answered ${answer.status}`, answer.status);
   const content = await answer.text();
   if (content.length > LIVE_MAX_CHARS) throw new BoardError("the board's answer was too large");
   if (text) return content;
@@ -1675,27 +1699,55 @@ const workdaySteps = (company, ownQuestions) => [
            { who: "person", category: "disability" }),
 ];
 
+const WORKDAY_REFUSED = new Set([403, 429, 503]);
+const WORKDAY_SHARED = /^wd\d+\.myworkdaysite\.com$/;
+// "tenant/wdN/site" from a Workday job URL on either kind of host; null for any other URL.
+export function workdayBoard(url) {
+  const own = /^https:\/\/([a-z0-9-]+)\.(wd\d+)\.myworkdayjobs\.com\/(?:[a-z]{2}-[A-Z]{2}\/)?([^/]+)\/job\//.exec(url);
+  if (own) return `${own[1]}/${own[2]}/${own[3]}`;
+  const shared = /^https:\/\/(wd\d+)\.myworkdaysite\.com\/(?:[a-z]{2}-[A-Z]{2}\/)?recruiting\/([A-Za-z0-9_-]+)\/([^/]+)\/job\//.exec(url);
+  return shared ? `${shared[2]}/${shared[1]}/${shared[3]}` : null;
+}
 async function workdayForm(env, board, external, job) {
   const [tenant, , site] = board.split("/");
   const u = new URL(job.url);
   const path = /\/job\/(.+)$/.exec(u.pathname)?.[1];
-  if (!path || !u.hostname.startsWith(`${tenant}.`)) throw new BoardError("the posting's URL is not a Workday job page");
-  const p = await fetchBoard(env, `https://${u.hostname}/wday/cxs/${encodeURIComponent(tenant)}/` +
-                                   `${encodeURIComponent(site)}/job/${path}`);
+  // A tenant's own host (bbva.wd3.myworkdayjobs.com) or the shared one, which
+  // names the tenant in the path (wd502.myworkdaysite.com/recruiting/verisure/eQuest).
+  const own = u.hostname.startsWith(`${tenant}.`);
+  const shared = WORKDAY_SHARED.test(u.hostname) && u.pathname.includes(`/recruiting/${tenant}/${site}/job/`);
+  if (!path || !(own || shared)) throw new BoardError("the posting's URL is not a Workday job page");
+  let p;
+  try {
+    p = await fetchBoard(env, `https://${u.hostname}/wday/cxs/${encodeURIComponent(tenant)}/` +
+                              `${encodeURIComponent(site)}/job/${path}`);
+  } catch (e) {
+    if (!(e instanceof BoardError) || !WORKDAY_REFUSED.has(e.status)) throw e;
+    // Workday turns the server away (429 from Vercel on 2026-11-16 while the same
+    // URL answered from Spain): the steps are the same on every Workday form, so
+    // the answer goes on without the posting, which the person's browser still reads.
+    return { apply_url: `${job.url.replace(/\/+$/, "")}/apply`, questions: workdaySteps(job.company, true),
+             description: null, captcha: null, account_required: true, employer_questions: "unknown",
+             refused: e.status, standard_steps: true,
+             source: `Workday's standard steps; Workday refused this server (${e.status}), so the posting ` +
+                     "was not read: open url in the browser for its text and whether the employer adds questions" };
+  }
   const info = p?.jobPostingInfo;
   if (!isObject(info) || info.canApply === false)
     throw new BoardError("the board no longer takes applications for this posting; it may have closed");
-  const own = typeof info.questionnaireId === "string" && info.questionnaireId !== "";
+  const ownQuestions = typeof info.questionnaireId === "string" && info.questionnaireId !== "";
   return { apply_url: String(info.externalUrl || job.url).replace(/\/?$/, "/apply"),
-           questions: workdaySteps(job.company, own), description: htmlText(info.jobDescription), captcha: null,
-           account_required: true, employer_questions: own ? "after sign-in" : "none announced",
+           questions: workdaySteps(job.company, ownQuestions), description: htmlText(info.jobDescription), captcha: null,
+           account_required: true, employer_questions: ownQuestions ? "after sign-in" : "none announced",
+           standard_steps: true,
            source: "Workday public API for the posting; the questions are the steps every Workday " +
                    "application has, since the form itself is shown only after sign-in" };
 }
 
 // Phenom is a front end: the posting page names the ATS the application goes to.
-// Behind Workday (Cisco, Roche, HPE) the Workday reader answers; behind anything
-// else (SuccessFactors for Allianz) only the apply URL and the description are known.
+// Behind Workday (Cisco, Roche, HPE, and Verisure on Workday's shared host) the
+// Workday reader answers; behind SuccessFactors (Allianz) its standard steps;
+// behind anything else only the apply URL and the description are known.
 const PHENOM_HOST = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
 async function phenomForm(env, board, external, job) {
   const [host, , country, lang] = board.split("/");
@@ -1709,12 +1761,18 @@ async function phenomForm(env, board, external, job) {
   } catch { /* read as no detail below */ }
   if (!isObject(detail)) throw new BoardError("the board no longer shows this posting; it may have closed");
   const apply = typeof detail.applyUrl === "string" ? detail.applyUrl : "";
-  const workday = /^https:\/\/([a-z0-9-]+)\.(wd\d+)\.myworkdayjobs\.com\/(?:[a-z]{2}-[A-Z]{2}\/)?([^/]+)\/job\//.exec(apply);
+  const workday = workdayBoard(apply);
   if (workday) {
-    const form = await workdayForm(env, `${workday[1]}/${workday[2]}/${workday[3]}`, external,
-                                   { ...job, url: apply.replace(/\/apply\/?$/, "") });
+    const form = await workdayForm(env, workday, external, { ...job, url: apply.replace(/\/apply\/?(\?.*)?$/, "") });
     return { ...form, source: `${form.source}; reached through ${host}, the employer's Phenom career site` };
   }
+  const applyHost = hostOf(apply);
+  if (SUCCESSFACTORS_HOST.test(applyHost))
+    return { apply_url: apply, description: htmlText(detail.description ?? ""), captcha: null,
+             account_required: true, employer_questions: "after sign-in", standard_steps: true,
+             board_notes: BOARD_NOTES.successfactors, questions: successfactorsSteps(job.company, applyHost),
+             source: `${host}, the employer's Phenom career site, read now; the application is on SAP SuccessFactors ` +
+                     `(${applyHost}), whose form is shown only after sign-in: the questions are its standard steps` };
   return { apply_url: apply || job.url, description: htmlText(detail.description ?? ""), captcha: null,
            questions: [question("application_form", `The application form on ${hostOf(apply) || host}, ` +
              "not public: read it in the browser and classify each question with the same rule", true, "unread",
@@ -1838,22 +1896,73 @@ async function ripplingForm(env, board, external) {
            source: "Rippling public job board API, read now" };
 }
 
+// What agents wrote in report_application after sending on a board whose form
+// the server cannot read (November 2026: 871 forms asked for on SmartRecruiters,
+// SuccessFactors and Phenom in a week, 25 applications sent). Each line is
+// something several reports agree on; job_questions hands them out with the steps.
+const BOARD_NOTES = {
+  smartrecruiters: [
+    "No account is needed. The form has two pages: the second, with the employer's screening questions and the " +
+      "privacy consent, appears only once the first is filled.",
+    "The fields are web components in shadow DOM: plain DOM queries and coordinate clicks miss them. Use " +
+      "locators or accessibility refs that reach into shadow roots.",
+    "Upload the CV first: the site parses it and overwrites the name and the city, so check both afterwards. " +
+      "If the file input cannot be reached, put the file in a temporary input and dispatch a drop on the " +
+      "Easy Apply dropzone.",
+    "City is taken only when picked from the field's own suggestions. The message to the hiring team " +
+      "refuses semicolons.",
+    "The site sits behind bot protection that answers a headless browser with a 403 page: use a browser with " +
+      "a window here. A slider check is the person's to do; if the site still refuses, hand the application over.",
+  ],
+  successfactors: [
+    "Start from the Apply button on the posting's page, which opens a menu; the apply link on its own may " +
+      "land on the site's home page.",
+    "The person types the email and password of the account. Fill the form after that: what was filled before " +
+      "the account existed is lost. Some sites create the account inside the form itself.",
+    "A second application on the same site comes prefilled from the profile, the earlier cover letter included: replace it.",
+    "Attachments go through a plus button whose menu holds the upload-from-device file input. Comboboxes open " +
+      "from their arrow or with Alt+Down, date fields want real clicks and typing, and number fields such as " +
+      "salary take digits only.",
+    "The privacy statement may be accepted in a dialog opened from a link, not with a checkbox, and some sites " +
+      "email a one-time code after Submit.",
+  ],
+};
+const STANDARD_STEPS_NOTE = "These questions are the steps every application on this board has, not this " +
+  "posting's form read live: the live form decides, and a question it adds is classified with the same rule.";
+
 // SmartRecruiters publishes the posting but not its form: the form's
-// configuration takes an API key, and the apply page turns away clients that are
-// not browsers. The posting gives the description and the place.
+// configuration takes an API key, and the apply page sits behind DataDome, which
+// turns away clients that are not browsers. The posting gives the description
+// and the place; the questions are the ones its Easy Apply form always has.
+const smartrecruitersSteps = (company) => [
+  question("first_name", "First name", true, "text", [], "personal_information"),
+  question("last_name", "Last name", true, "text", [], "personal_information"),
+  question("email", "Email", true, "email", [], "personal_information"),
+  question("city", "City (picked from the field's suggestions)", false, "text", [], "personal_information"),
+  question("phone", "Phone number", false, "phone", [], "personal_information"),
+  question("experience", "Experience (title, company, dates, description)", false, "list", [], "experience"),
+  question("education", "Education (institution, degree, dates)", false, "list", [], "education"),
+  question("profiles", "LinkedIn and website", false, "url", [], "profiles"),
+  question("resume", "Resume/CV", true, "file", [], "resume"),
+  question("message", "Message to the hiring team", false, "textarea", [], "message"),
+  question("screening_questions", `${company}'s screening questions, on a second page shown once the first is ` +
+    "filled: classify each on the live form with the same rule", true, "unread", [], "screening",
+    { who: "agent", category: "unread" }),
+  question("privacy", "Privacy notice consent", true, "consent", [], "screening", { who: "person", category: "consent" }),
+];
+
 async function smartrecruitersForm(env, board, external, job) {
   const p = await fetchBoard(env, `https://api.smartrecruiters.com/v1/companies/${encodeURIComponent(board)}/postings/` +
                                   encodeURIComponent(external));
   if (!isObject(p) || p.active === false) throw new BoardError("the board no longer has this posting; it may have closed");
   const sections = isObject(p.jobAd?.sections) ? Object.values(p.jobAd.sections).filter(isObject) : [];
   const apply = typeof p.applyUrl === "string" && hostOf(p.applyUrl) === "jobs.smartrecruiters.com" ? p.applyUrl : job.url;
-  return { apply_url: apply, captcha: null,
+  return { apply_url: apply, captcha: null, standard_steps: true, board_notes: BOARD_NOTES.smartrecruiters,
            description: sections.map((s) => [s.title, htmlText(s.text)].filter(Boolean).join("\n")).filter(Boolean).join("\n\n"),
            location: [p.location?.fullLocation, [p.location?.city, p.location?.country].filter(Boolean).join(", ")],
-           questions: [question("application_form", "The application form on jobs.smartrecruiters.com, not public: " +
-             "read it in the browser and classify each question with the same rule", true, "unread", [], "application",
-             { who: "agent", category: "unread" })],
-           source: "SmartRecruiters public posting API; the application form itself is not public" };
+           questions: smartrecruitersSteps(job.company),
+           source: "SmartRecruiters public posting API, read now; the application form is not public, so the " +
+                   "questions are the steps every SmartRecruiters application has" };
 }
 
 // Eightfold: the career site's apply page carries the whole form as JSON in its
@@ -1946,6 +2055,25 @@ async function eightfoldForm(env, board, external, job) {
 // with schema.org microdata. Its Apply button asks the person to sign in or
 // create an account on the site before SAP's candidate profile and the
 // employer's questions appear, so the page gives the description and the place.
+const SUCCESSFACTORS_HOST = /(^|\.)(successfactors\.(eu|com)|sapsf\.(eu|com|cn))$/;
+const successfactorsSteps = (company, host) => [
+  question("account", `Create an account on ${host} or sign in (email and password)`, true, "account", [], "account",
+           { who: "person", category: "account" }),
+  question("privacy_statement", "Data privacy statement, accepted when the account is created", true, "consent", [],
+           "account", { who: "person", category: "consent" }),
+  question("resume", "Resume/CV", true, "file", [], "profile"),
+  question("cover_letter", "Cover letter", false, "file", [], "profile"),
+  question("name", "First and last name", true, "text", [], "profile"),
+  question("phone", "Phone", false, "phone", [], "profile"),
+  question("residence", "Country and city of residence", false, "text", [], "profile"),
+  question("work_experience", "Work experience (job title, company, dates)", false, "list", [], "profile"),
+  question("education", "Education (school, degree, field of study)", false, "list", [], "profile"),
+  question("languages", "Languages", false, "list", [], "profile"),
+  question("application_questions", `${company}'s own application questions, shown after sign-in: classify each ` +
+    "on the live form with the same rule", true, "unread", [], "application_questions",
+    { who: "agent", category: "unread" }),
+];
+
 function elementAt(html, start) {
   const tag = /^<(\w+)/.exec(html.slice(html.lastIndexOf("<", start)))?.[1] ?? "span";
   const open = html.indexOf(">", start) + 1;
@@ -1989,11 +2117,10 @@ async function successfactorsForm(env, board, external, job) {
   // Sites of the newer generation (Fluidra) fill the description by script: the page still shows the posting.
   const post = successfactorsPosting(page);
   return { apply_url: job.url, captcha: null, description: post.description, location: post.location,
-           account_required: true, employer_questions: "after sign-in",
-           questions: [unread("application_form", `The application form on ${board}: the posting's Apply button asks ` +
-             "the person to sign in or create an account on the site, then shows SAP SuccessFactors' candidate " +
-             "profile and the employer's questions. Read it in the browser and classify each question with the same rule")],
-           source: "SuccessFactors career site's posting page, read now; the form is shown only after sign-in" };
+           account_required: true, employer_questions: "after sign-in", standard_steps: true,
+           board_notes: BOARD_NOTES.successfactors, questions: successfactorsSteps(job.company, board),
+           source: "SuccessFactors career site's posting page, read now; the form is shown only after sign-in, " +
+                   "so the questions are the steps every SuccessFactors application has" };
 }
 
 // Amazon: its public search finds one posting by its id with the whole text
@@ -2203,11 +2330,15 @@ function locationCheck(job, live) {
 // counted a form the board keeps behind a sign-in or off its API (SmartRecruiters,
 // SuccessFactors, Amazon: by design) like a failure, and 35% of reads looked
 // broken; form_access says which. A read that fails is an upstream error instead.
+// "standard" is a board whose form cannot be read and whose usual steps are
+// given in its place (Workday, SmartRecruiters, SuccessFactors).
 export function formAccess(out) {
   const unread = (key) => out.questions?.some((q) => q.key === key);
   const access = out.form_source === null ? "no_reader"
+    : out.board_refused ? "refused"
     : unread("find_posting") ? "posting_moved"
     : unread("application_form") ? (out.account_required ? "sign_in" : "not_public")
+    : out.standard_steps ? "standard"
     : "read";
   return { form_read: access === "read", form_access: access };
 }
@@ -2252,6 +2383,10 @@ export async function jobQuestions(data, args = {}, env = {}) {
     questions: form.questions, person_questions: person, agent_questions: form.questions.length - person,
     captcha: form.captcha,
     ...(form.account_required ? { account_required: true, employer_questions: form.employer_questions } : {}),
+    ...(form.refused ? { board_refused: form.refused } : {}),
+    ...(form.standard_steps ? { standard_steps: true, standard_steps_note: STANDARD_STEPS_NOTE } : {}),
+    ...(form.board_notes ? { board_notes: { from: "what agents reported after sending applications on this board",
+                                           notes: form.board_notes } } : {}),
     ...(check ? { location_check: check } : {}),
     conditions: conditionsOf(form.description),
     description: untrusted(form.description),
@@ -2268,7 +2403,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
 // --- Jobs: the procedure -------------------------------------------------------------
 
 // How each client gets a browser when it has none. Pasting answers is the last resort.
-const PLAYWRIGHT = "the Playwright MCP server (npx @playwright/mcp@latest --headless), which runs Chromium in the " +
+const PLAYWRIGHT = "the Playwright MCP server (npx @playwright/mcp@0.0.86 --headless), which runs Chromium in the " +
   "background with no window";
 // The order is the skill's: a Chromium of the client's own, then Claude in Chrome
 // when its extension is enabled, then the Playwright MCP server.
@@ -2276,7 +2411,7 @@ const CLIENTS = {
   "claude-code": { names: /claude ?code|^cc$/, keeps: "file",
     browser: "Its built-in Chromium browser where the app has one; else Claude in Chrome when the extension " +
       "is enabled (run /chrome, or start with claude --chrome); else " +
-      "`claude mcp add playwright -- npx @playwright/mcp@latest --headless` and restart." },
+      "`claude mcp add playwright -- npx @playwright/mcp@0.0.86 --headless` and restart." },
   "claude-desktop": { names: /claude ?(desktop|app|ai)|^claude$/, keeps: "memory",
     browser: "Its built-in Chromium browser where the app has one; else Claude in Chrome when the extension " +
       "is installed and connected in Settings; else " + PLAYWRIGHT + " as a local MCP server." },
@@ -2285,7 +2420,7 @@ const CLIENTS = {
       "Chrome if its extension is enabled; else " + PLAYWRIGHT + " added in .cursor/mcp.json." },
   codex: { names: /codex/, keeps: "file",
     browser: "Codex's built-in Chromium browser where it has one; else " +
-      "`codex mcp add playwright -- npx @playwright/mcp@latest --headless`, then restart Codex." },
+      "`codex mcp add playwright -- npx @playwright/mcp@0.0.86 --headless`, then restart Codex." },
   hermes: { names: /hermes/, keeps: "file",
     browser: "Hermes's browser toolset (Chromium); else " + PLAYWRIGHT + " added as an MCP server." },
   chatgpt: { names: /chat ?gpt|openai/, keeps: "memory",
@@ -2311,6 +2446,7 @@ In the person's own words, with the date they gave each one.
 - Needs visa sponsorship:
 - Salary expectation (gross EUR a year):
 - Notice period, earliest start:
+- "How did you hear about us?":
 - Required privacy and data-processing consents: ask each time | allowed on YYYY-MM-DD
 - Optional consents (talent pool, marketing): decline
 - Demographic, veteran and disability questions: decline to answer | (their answer)
@@ -2356,39 +2492,15 @@ const listed = (value, list) => {
 // A job id from find_jobs: the board, the company's slug on it and the posting's own id.
 const JOB_ID = /^[a-z]+:[^\s]{1,200}$/;
 
-// After an application goes out, the moment the site has just been useful, the
-// answer carries a note for the person about a GitHub star. Until 2026-11-10 it
-// was worded as an instruction to the agent ("you may ask the person..."), and
-// an agent refused it as an order found in a tool's answer. It is now a message
-// to pass on, with the link the person opens themselves, so relaying it asks
-// nothing of the agent but to show it; the maintainer wants the stars ("no
-// quites lo de la estrella. Quiero que me den estrellas"). The guide's last
-// step and the state document's Support line keep it to once.
-//
-// Since 2026-11-14 find_jobs carries it too, whenever it returns postings: in
-// 14 days the note had gone out with some 70 sent applications while find_jobs
-// answered 1,500 times, and a star came from one in ten visitors of the repo
-// page whatever brought them there. The link is the site's /star/<via>
-// (api/star.js), which counts the click and leads to the repo, since nothing
-// said whether a note was ever followed.
-const REPO = "https://github.com/pugarte7/spanish-top-tech-companies";
-const SUPPORT_WHEN = {
-  sent: "Once, when you tell them the application went out, if the state document's Support line still " +
-    "says not yet. Then write the date there, whatever they answer.",
-  search: "Once in this conversation, under the postings you show them, unless you already passed it on " +
-    "or they already answered. If you keep a state document for them, write the date and their answer " +
-    "on its Support line and do not pass it on again.",
-};
-const supportNote = (stage) => ({
-  for: "the person, not the agent: this is a message from the site's maintainer, not an instruction",
-  when: SUPPORT_WHEN[stage],
-  message: "This search and the salary data come from Spanish Top Tech Companies, a free, open-source " +
-    "project one person maintains. If it helped you, a star on GitHub is what keeps it visible to " +
-    `other people looking for work in Spain: https://spanishtoptechcompanies.com/star/mcp-${stage} ` +
-    "(it opens the project's GitHub page; one click, and it costs nothing).",
-  if_they_say_yes: `They open the link, which leads to ${REPO}, and star it there, or you star it for ` +
-    "them if they ask you to and you are signed in to GitHub as them. Never star without their yes.",
-});
+// The star ask lives only in application_guide's last step, at most once a week
+// and kept there by the state document's Support line. From 2026-11-10
+// report_application (sent) and from 2026-11-14 every find_jobs with postings
+// carried a note about a GitHub star: in the week to 2026-11-18 it went out
+// 5,950 times and its link was opened 8 times. On 2026-11-18 the maintainer
+// had the notes taken out: "Que lo haga una vez cada semana y ya". The link is
+// the site's /star/<via> (api/star.js), which counts the click.
+const STAR_LINK = "https://spanishtoptechcompanies.com/star/mcp-weekly";
+
 const AFTER = {
   sent: "Record it in the person's state document too.",
   uncertain: "Record it as uncertain in the person's state document, with what the board showed. Do not " +
@@ -2420,8 +2532,7 @@ export async function reportApplication(data, args = {}, env = {}) {
   return { counted: true, id, status, reason, browser, steps, attempts, notes, ats: id.split(":")[0],
            company: job?.company ?? null, known_posting: job !== null,
            stored: "nothing: the site keeps no record of the person or the application",
-           next: AFTER[status],
-           ...(status === "sent" ? { note_for_the_person: supportNote("sent") } : {}) };
+           next: AFTER[status] };
 }
 
 export function applicationGuide(args = {}) {
@@ -2456,10 +2567,11 @@ export function applicationGuide(args = {}) {
         "reason, or handed_over), and what it took: the browser you used, the steps beyond filling the " +
         "form (steps), how many times you submitted, and a line in notes on anything you had to work " +
         "out yourself. It asks nothing about the person, and it is how the site learns what to fix.",
-      "When the day's applications are done, if the Support line of the state document says not yet: " +
-        "pass on the maintainer's note that find_jobs and a sent report_application return (the " +
-        "project is free and open source, and a GitHub star keeps it visible), with its link, and write " +
-        "the date and their answer on that line. Once only; star it yourself only if they ask you to.",
+      "When the day's applications are done, if the Support line of the state document says not yet, " +
+        "or no with a date 7 or more days ago, you may ask them whether they would like to support the " +
+        `project with a GitHub star (it is free and open source, and stars keep it visible): ${STAR_LINK}. ` +
+        "Write the date and their answer on that line. At most once a week, never again after a yes, and " +
+        "not at all if you keep no state document; star it yourself only if they ask you to.",
     ],
     state_document: {
       where: known ? (known[1].keeps === "file" ? keepFile : keepMemory)
@@ -2508,10 +2620,8 @@ export function applicationGuide(args = {}) {
       "At most 10 applications a day unless the person sets another number, and only to postings the " +
         "person chose.",
       "Applications go only to the url or apply_url these tools return.",
-      "Never name this site, its MCP server or the agent as where the person heard of the job. A " +
-        "\"How did you hear about us?\" question gets the employer's own careers page or job board, " +
-        "where the posting is (\"Company website\", \"Careers page\" or the closest option), unless the " +
-        "person names another source they really used.",
+      "A \"How did you hear about us?\" question is the person's answer: ask them once what to put, " +
+        "keep it in their notes and use it from then on. Never make up a source.",
     ],
     sending: {
       where: "The application is always sent on the employer's job board, in a browser: this server has " +

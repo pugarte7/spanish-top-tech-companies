@@ -84,7 +84,7 @@ copy(localStorage.getItem(Object.keys(localStorage).find(k => k.startsWith("Cogn
 pbpaste | python3 scripts/fetch_spain.py --login; pbcopy </dev/null
 ```
 
-That checks the token with Cognito, stores it in the login Keychain (service `spanish-top-tech-companies`) and empties the clipboard. It is never written to a file and nothing prints it. For a one-off run, an id token (`copy(localStorage.getItem("auth"))`, good for a day) in `LEVELS_TOKEN` also works. A refused refresh token stops the run instead of falling back to the public page. Reading the table this way is not something Levels.fyi's terms allow, and the account could be closed for it; that risk is the maintainer's to take, not a contributor's.
+That checks the token with Cognito, stores it in the login Keychain (service `spanish-top-tech-companies`) and empties the clipboard. It is never written to a file and nothing prints it. For a one-off run, an id token (`copy(localStorage.getItem("auth"))`, good for a day) in `LEVELS_TOKEN` also works. A refused refresh token stops the run instead of falling back to the public page.
 
 Keep `--delay` at 2.5s or more. Levels.fyi answers 402, 403, 405, 429 and 503 when it decides you are a bot, and all five mean *slow down*, not *no such company*. A 401 means the token has expired.
 

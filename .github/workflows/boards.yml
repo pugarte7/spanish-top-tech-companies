@@ -1,0 +1,73 @@
+name: boards
+
+# Finds the job boards of listed companies that have none and commits
+# data/boards.json (scripts/boards.mjs --render). It runs after each weekly
+# refresh, so a company that arrives with the feed is probed the same day, and
+# by hand. Headless Chromium reads the careers pages whose HTML links no board.
+# It needs no secret and touches nothing private: it reads data/data.json.
+# The daily deploy crawls the new boards; a push with GITHUB_TOKEN starts no
+# workflow, and nothing here needs a deploy sooner.
+
+on:
+  workflow_run:
+    workflows: [refresh]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Names or Levels.fyi slugs, comma separated (empty: every company with no board)"
+        type: string
+        default: ""
+      all:
+        description: "Probe every listed company again (several hours)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: boards
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  boards:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Chromium
+        run: npm ci -q && npx playwright install --with-deps chromium
+
+      - name: Find boards
+        env:
+          ONLY: ${{ inputs.only }}
+          ALL: ${{ inputs.all }}
+        run: |
+          args=(--render)
+          [ -n "$ONLY" ] && args+=(--only "$ONLY")
+          [ "$ALL" = true ] && args+=(--all)
+          node scripts/boards.mjs "${args[@]}"
+
+      - name: Commit data/boards.json
+        run: |
+          if git diff --quiet -- data/boards.json data/boards-none.json; then
+            echo "No change."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/boards.json data/boards-none.json
+          git commit -q -m "Refresh job boards $(date -u +%F)"
+          git pull --rebase -q origin main
+          git push -q origin HEAD:main
+          git show --stat --format=%s HEAD

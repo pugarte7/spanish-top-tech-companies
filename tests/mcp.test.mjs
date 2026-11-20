@@ -183,7 +183,7 @@ const expected = [
     out(r).sending.get_a_browser.how.length > 2 && out(r).rules.some((x) => /How did you hear/.test(x)) &&
     /^First a Chromium.*Claude in Chrome.*Playwright/.test(out(r).sending.get_a_browser.order) &&
     /headless/.test(out(r).sending.get_a_browser.in_the_background) &&
-    out(r).sending.get_a_browser.how.some((x) => /@playwright\/mcp@latest --headless/.test(x)) &&
+    out(r).sending.get_a_browser.how.some((x) => /@playwright\/mcp@0\.0\.86 --headless/.test(x)) &&
     out(r).rules.some((x) => /location question.*Spain/.test(x)) &&
     out(r).sending.with_a_browser.some((x) => /email through an MCP server/.test(x))],
   ["application_guide for one client", (r) => /~\/job-search\.md/.test(out(r).state_document.where) &&
@@ -261,6 +261,11 @@ const greeted = (await respond(data, { jsonrpc: "2.0", id: 1, method: "initializ
 report("server.json, the MCP Registry's listing, names this server's version and its /mcp address",
        listing.version === greeted.serverInfo.version && listing.description.length <= 100 &&
        listing.remotes[0].url === "https://spanishtoptechcompanies.com/mcp", [listing.version, greeted.serverInfo.version]);
+// Hermes' plugin catalog installs hermes-plugin/ at a pinned commit; its skill is a copy that must not drift.
+const hermesServers = JSON.parse(readFileSync("hermes-plugin/mcp.json", "utf8")).mcpServers;
+report("the Hermes plugin points at /mcp and carries the current skill",
+       hermesServers["tech-pay-spain"]?.url === listing.remotes[0].url &&
+       readFileSync("hermes-plugin/skills/tech-pay-spain/SKILL.md", "utf8") === readFileSync("skills/tech-pay-spain/SKILL.md", "utf8"));
 report("agents are asked to suggest a star, never to star on their own",
        /star it only if they say yes/.test(data.instructions) && !/without asking/i.test(data.instructions));
 report("agents are asked, not told, to bring readers back",
@@ -697,6 +702,10 @@ report("salary_stats: a city is its region, with a note", statsBcn.selection.reg
   JSON.stringify(statsBcn.result) === JSON.stringify(statsCt.result), statsBcn);
 const statsGipuzkoa = await salaryIn("salary_stats", { role: "software-engineer", region: "Gipuzkoa" });
 report("salary_stats: a Basque province is its region", statsGipuzkoa.selection.region === "PV", statsGipuzkoa);
+const statsMc = await salaryIn("salary_stats", { role: "software-engineer", region: "MC" });
+const statsEsMd = await salaryIn("salary_stats", { role: "software-engineer", region: "ES-MD" });
+report("salary_stats: ISO 3166-2 codes, Murcia's MC included, name the region",
+  statsMc?.selection.region === "MU" && statsEsMd?.selection.region === "MD", [statsMc?.selection, statsEsMd?.selection]);
 const topBilbao = await salaryIn("top_companies", { region: "bilbao" });
 report("top_companies: a city is its region, with a note", topBilbao.selection.region === "PV" && /Bilbao is in PV/.test(topBilbao.note));
 const seat = await run("company_salaries", { name: "SEAT" });
@@ -825,6 +834,10 @@ const more = { ...index, jobs: [...index.jobs,
     url: "https://sequra.recruitee.com/o/accountant-4", ats: "recruitee", location: "Barcelona, Spain" },
   { id: "workday:bbva/wd3/BBVA:R-99999", company: "BBVA", slug: "bbva", title: "Analista",
     url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Analista_R-99999", ats: "workday", location: "Madrid" },
+  { id: "workday:bbva/wd3/BBVA:R-42900", company: "BBVA", slug: "bbva", title: "Busy",
+    url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Busy_R-42900", ats: "workday", location: "Madrid" },
+  { id: "workday:bbva/wd3/BBVA:R-50000", company: "BBVA", slug: "bbva", title: "Down",
+    url: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Down_R-50000", ats: "workday", location: "Madrid" },
   { id: "bendingspoons:jobs.bendingspoons.com:63c548b3521886004f3daec0", company: "Bending Spoons",
     slug: "bending-spoons", title: "Product manager", ats: "bendingspoons", location: "Madrid, Spain",
     url: "https://jobs.bendingspoons.com/positions/63c548b3521886004f3daec0" },
@@ -835,6 +848,9 @@ const more = { ...index, jobs: [...index.jobs,
     location: "Madrid, Spain" },
   { id: "phenom:careers.allianz.com/AISAIPGB:94498", company: "Allianz", slug: "allianz", title: "Security Risk Intern",
     url: "https://careers.allianz.com/job/94498", ats: "phenom", location: "Barcelona, Spain" },
+  { id: "phenom:careers.verisure.com/VERIGLOBAL/global/en:r2023020375", company: "Verisure", slug: "verisure",
+    title: "Asesor comercial", url: "https://careers.verisure.com/global/en/job/r2023020375", ats: "phenom",
+    location: "Pozuelo de Alarcon, Spain" },
   { id: "teamtailor:careers.vueling.com:8681660", company: "Vueling", slug: "vueling", title: "Training Specialist",
     url: "https://careers.vueling.com/jobs/8681660-training-specialist", ats: "teamtailor", location: "Viladecans, Spain" },
   { id: "teamtailor:careers.vueling.com:8681661", company: "Vueling", slug: "vueling", title: "Elsewhere",
@@ -922,6 +938,8 @@ const WD = "https://bbva.wd3.myworkdayjobs.com/wday/cxs/bbva/BBVA/job/Madrid";
 BOARDS[`${WD}/R-12345`] = json({ jobPostingInfo: { jobDescription: "<p>Java en BBVA</p>", canApply: true,
   externalUrl: "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/R-12345", questionnaireId: "abc123" } });
 BOARDS[`${WD}/Analista_R-99999`] = json({ jobPostingInfo: { canApply: false } });
+BOARDS[`${WD}/Busy_R-42900`] = () => new Response("Too Many Requests", { status: 429 });
+BOARDS[`${WD}/Down_R-50000`] = () => new Response("Internal Server Error", { status: 500 });
 BOARDS["https://wallbox.bamboohr.com/careers/123/detail"] = json({ result: {
   jobOpening: { description: "<p>Join People at Wallbox</p>", jobOpeningShareUrl: "https://wallbox.bamboohr.com/careers/123" },
   formFields: { firstName: { isRequired: true, label: "First Name" }, email: { isRequired: true, label: "Email" },
@@ -938,6 +956,12 @@ BOARDS["https://careers.roche.com/global/en/job/202602-104409"] = phenomPage({ d
 BOARDS["https://roche.wd3.myworkdayjobs.com/wday/cxs/roche/roche-ext/job/Madrid/Team-Lead_202602-104409-2"] = json({
   jobPostingInfo: { jobDescription: "<p>Reliability at Roche</p>", canApply: true,
     externalUrl: "https://roche.wd3.myworkdayjobs.com/roche-ext/job/Madrid/Team-Lead_202602-104409-2" } });
+// Verisure's Workday is on the shared host, with the tenant in the path.
+BOARDS["https://careers.verisure.com/global/en/job/r2023020375"] = phenomPage({ description: "<p>Verisure Pozuelo</p>",
+  applyUrl: "https://wd502.myworkdaysite.com/recruiting/verisure/eQuest/job/Pozuelo-de-Alarcon/Asesor_r2023020375-1/apply" });
+BOARDS["https://wd502.myworkdaysite.com/wday/cxs/verisure/eQuest/job/Pozuelo-de-Alarcon/Asesor_r2023020375-1"] = json({
+  jobPostingInfo: { jobDescription: "<p>Ventas en Verisure</p>", canApply: true, questionnaireId: "q1",
+    externalUrl: "https://wd502.myworkdaysite.com/recruiting/verisure/eQuest/job/Pozuelo-de-Alarcon/Asesor_r2023020375-1" } });
 BOARDS["https://careers.allianz.com/job/94498"] = phenomPage({ description: "<p>Allianz Barcelona</p>",
   applyUrl: "https://career5.successfactors.eu/careers?company=AZGROUPPROD&career_job_req_id=94498" });
 
@@ -1147,8 +1171,11 @@ BOARDS["https://api.smartrecruiters.com/v1/companies/Mirantis/postings/744000159
   location: { city: "Madrid", country: "es", fullLocation: "Madrid, Spain" },
   jobAd: { sections: { jobDescription: { title: "Job Description", text: "<p>Run Kubernetes for customers.</p>" } } } });
 const smart = await formOf("smartrecruiters:Mirantis:744000159424229");
-report("smartrecruiters: the posting and its apply URL; the form, not public, is read in the browser",
-  smart.questions.length === 1 && smart.questions[0].type === "unread" && /not public/.test(smart.form_source) &&
+report("smartrecruiters: the posting, its apply URL, the board's standard steps and what agents found there",
+  /not public/.test(smart.form_source) && smart.standard_steps === true && !smart.account_required &&
+  byLabel(smart, /^Resume/).who === "agent" && byLabel(smart, /screening questions/).type === "unread" &&
+  byLabel(smart, /Privacy/).who === "person" && smart.board_notes.notes.some((n) => /shadow/.test(n)) &&
+  formAccess(smart).form_access === "standard" && formAccess(smart).form_read === false &&
   /Run Kubernetes/.test(smart.description.text) &&
   smart.apply_url === "https://jobs.smartrecruiters.com/Mirantis/744000159424229-platform-engineer?oga=true", smart);
 const viaPhenom =await formIn("phenom:careers.roche.com/ROCHGLOBAL/global/en:202602-104409");
@@ -1158,13 +1185,32 @@ report("phenom: a posting applied to on Workday reads as Workday, through the Ph
   viaPhenom.apply_url === "https://roche.wd3.myworkdayjobs.com/roche-ext/job/Madrid/Team-Lead_202602-104409-2/apply",
   viaPhenom.questions);
 const otherAts = await formIn("phenom:careers.allianz.com/AISAIPGB:94498");
-report("phenom: on another ATS, the apply URL, the description and one unread form",
-  otherAts.questions.length === 1 && otherAts.questions[0].type === "unread" && /successfactors/.test(otherAts.questions[0].label) &&
+report("phenom: on SuccessFactors, the apply URL, the description and SuccessFactors' standard steps",
+  otherAts.account_required === true && otherAts.standard_steps === true &&
+  byLabel(otherAts, /account on career5\.successfactors\.eu/).who === "person" &&
+  byLabel(otherAts, /own application questions/).type === "unread" && otherAts.board_notes.notes.length > 0 &&
   /Allianz Barcelona/.test(otherAts.description.text) && otherAts.apply_url.startsWith("https://career5.successfactors.eu/"),
   otherAts.questions);
+const sharedWorkday = await formIn("phenom:careers.verisure.com/VERIGLOBAL/global/en:r2023020375");
+report("phenom: a posting on Workday's shared host reads as Workday",
+  sharedWorkday.account_required === true && sharedWorkday.employer_questions === "after sign-in" &&
+  byLabel(sharedWorkday, /account with Verisure/).who === "person" && /Ventas en Verisure/.test(sharedWorkday.description.text) &&
+  sharedWorkday.apply_url === "https://wd502.myworkdaysite.com/recruiting/verisure/eQuest/job/Pozuelo-de-Alarcon/Asesor_r2023020375-1/apply",
+  sharedWorkday);
 const wdClosed = await run("job_questions", { id: "workday:bbva/wd3/BBVA:R-99999" }, { jobs: more });
 report("workday: a posting that takes no more applications is a tool error", wdClosed.isError === true &&
   /no longer takes applications/.test(wdClosed.content[0].text));
+const wdBusy = await run("job_questions", { id: "workday:bbva/wd3/BBVA:R-42900" }, { jobs: more });
+const busy = wdBusy.structuredContent;
+report("workday: a board that turns the server away still answers with the standard steps, unread posting",
+  wdBusy.isError !== true && busy.board_refused === 429 && busy.description === null && busy.conditions === null &&
+  busy.employer_questions === "unknown" && busy.account_required === true && /refused this server \(429\)/.test(busy.form_source) &&
+  byLabel(busy, /account with BBVA/).who === "person" && byLabel(busy, /own application questions/).type === "unread" &&
+  busy.apply_url === "https://bbva.wd3.myworkdayjobs.com/BBVA/job/Madrid/Busy_R-42900/apply" &&
+  formAccess(busy).form_access === "refused" && formAccess(busy).form_read === false, busy);
+const wdDown = await run("job_questions", { id: "workday:bbva/wd3/BBVA:R-50000" }, { jobs: more });
+report("workday: any other board failure is still a tool error", wdDown.isError === true &&
+  /answered 500/.test(wdDown.content[0].text));
 const closed = await run("job_questions", { id: "greenhouse:cabify:7000003" });
 report("a posting the board no longer has is a tool error with the URL", closed.isError === true &&
   /may have closed/.test(closed.content[0].text) && closed.content[0].text.includes("https://job-boards.greenhouse.io/cabify/jobs/7000003"));
@@ -1250,7 +1296,9 @@ BOARDS["https://careers.ey.com/ey/job/Valencia-Closed/1402220799/"] = (init) => 
 const ey = await formOf("successfactors:careers.ey.com:1402220733");
 report("successfactors: the posting page gives the description and place, and the form needs an account",
   ey.form_source.startsWith("SuccessFactors") && ey.account_required === true && ey.employer_questions === "after sign-in" &&
-  ey.questions.length === 1 && ey.questions[0].key === "application_form" && ey.questions[0].type === "unread" &&
+  ey.standard_steps === true && byLabel(ey, /account on careers\.ey\.com/).category === "account" &&
+  byLabel(ey, /privacy statement/).who === "person" && byLabel(ey, /own application questions/).type === "unread" &&
+  ey.board_notes.notes.some((n) => /Apply button/.test(n)) && formAccess(ey).form_access === "standard" &&
   /Join EY in Valencia\.\n+Hybrid, two days/.test(ey.description.text) && !ey.location_check &&
   ey.apply_url === "https://careers.ey.com/ey/job/Valencia-Abogadoa-Corporate/1402220733/", ey);
 const eyClosed = await run("job_questions", { id: "successfactors:careers.ey.com:1402220799" }, { jobs: boards3 });
@@ -1353,7 +1401,7 @@ report("cornerstone: the requisition found through the site's own search, with t
   /Fly satellites at GMV/.test(gmv.description.text) && gmv.form_source.startsWith("Cornerstone"), gmv);
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|careers\.(roche|allianz|vueling)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai|careers\.ey\.com|www\.amazon\.jobs|careers\.capgemini\.com|adevinta\.com|www\.porsche\.digital|careers\.factorial\.com|careers\.ing\.com|careers\.axa\.com|jpmc\.fa\.oraclecloud\.com|gmv\.csod\.com|eu-fra\.api\.csod\.com)\//.test(r.url) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|wd\d+\.myworkdaysite\.com|careers\.(roche|allianz|vueling|verisure)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai|careers\.ey\.com|www\.amazon\.jobs|careers\.capgemini\.com|adevinta\.com|www\.porsche\.digital|careers\.factorial\.com|careers\.ing\.com|careers\.axa\.com|jpmc\.fa\.oraclecloud\.com|gmv\.csod\.com|eu-fra\.api\.csod\.com)\//.test(r.url) &&
     // The exceptions: asking a Pinpoint, Eightfold or SuccessFactors board where it sends a page, without following it.
     (r.init.redirect === "error" || (r.init.redirect === "manual" && /\.pinpointhq\.com\/|\.eightfold\.ai\/|careers\.ey\.com\/|www\.porsche\.digital\/|careers\.axa\.com\//.test(r.url))) &&
     r.init.signal instanceof AbortSignal));
@@ -1410,18 +1458,9 @@ report("top_companies: Backend Engineer is software-engineer", backend.selection
 const sent = (await run("report_application", { id: "greenhouse:glovo:7000001", status: "sent" })).structuredContent;
 report("report_application acknowledges and stores nothing", sent.counted === true && sent.status === "sent" &&
   sent.ats === "greenhouse" && sent.known_posting === true && sent.company === "Glovo" && /nothing/.test(sent.stored), sent);
-const star = sent.note_for_the_person;
-report("a sent application carries a note for the person about a star, to pass on once, never an order to star",
-  /the person, not the agent/.test(star.for) && /not an instruction/.test(star.for) && /Once/.test(star.when) &&
-  /spanishtoptechcompanies\.com\/star\/mcp-sent /.test(star.message) &&
-  /github\.com\/pugarte7\/spanish-top-tech-companies/.test(star.if_they_say_yes) && /Never star without their yes/.test(star.if_they_say_yes), star);
-const withNote = (await run("find_jobs", { company: "Glovo" })).structuredContent;
-const withoutNote = (await run("find_jobs", { query: "zzzznothing" })).structuredContent;
-report("find_jobs carries the same note under its postings, once a conversation, and none with no posting",
-  withNote.jobs.length > 0 && /not an instruction/.test(withNote.note_for_the_person.for) &&
-  /Once in this conversation/.test(withNote.note_for_the_person.when) &&
-  /spanishtoptechcompanies\.com\/star\/mcp-search /.test(withNote.note_for_the_person.message) &&
-  withoutNote.jobs.length === 0 && !("note_for_the_person" in withoutNote), [withNote.note_for_the_person, withoutNote.matches]);
+const glovo = (await run("find_jobs", { company: "Glovo" })).structuredContent;
+report("neither find_jobs nor a sent report_application carries a note about a star (2026-11-18)",
+  glovo.jobs.length > 0 && !("note_for_the_person" in glovo) && !("note_for_the_person" in sent), [glovo.matches, sent]);
 const unsure = (await run("report_application", { id: "lever:prima:x", status: "uncertain", reason: "submit_error" })).structuredContent;
 report("an uncertain application is its own status, and says not to submit again unasked",
   unsure.status === "uncertain" && unsure.reason === "submit_error" && /Do not submit it again/.test(unsure.next) &&
@@ -1430,8 +1469,7 @@ report("report_application takes the reasons a board gives for an upload or a su
   (await Promise.all(["upload_refused", "no_confirmation"].map((reason) =>
     run("report_application", { id: "bamboohr:parser:267", status: "uncertain", reason })))).every((r) => !r.isError));
 const failedReport = (await run("report_application", { id: "lever:dlocal:x", status: "failed", reason: "captcha" })).structuredContent;
-report("a failed or uncertain application carries no note about a star",
-  !("note_for_the_person" in failedReport) && !("note_for_the_person" in unsure) && /reason/.test(failedReport.next));
+report("a failed or uncertain report says what to do next", /reason/.test(failedReport.next));
 report("report_application takes a reason", failedReport.reason === "captcha" && failedReport.known_posting === false);
 report("report_application refuses an unknown status or reason",
   (await run("report_application", { id: "greenhouse:glovo:7000001", status: "maybe" })).isError === true &&
@@ -1447,7 +1485,7 @@ report("report_application's event keeps the job id whole, with the posting's bo
   outcome.properties.$mcp_parameters.request.params.arguments.id === "greenhouse:glovo:7000001" &&
   outcome.properties.application_status === "failed" && outcome.properties.application_reason === "blocked" &&
   outcome.properties.ats === "greenhouse" && outcome.properties.company === "Glovo" &&
-  outcome.properties.known_posting === true && outcome.properties.support_note === false, outcome?.properties);
+  outcome.properties.known_posting === true && !("support_note" in outcome.properties), outcome?.properties);
 const took = { jsonrpc: "2.0", id: 8, ...tool("report_application", { id: "greenhouse:glovo:7000001", status: "sent",
   browser: "Playwright MCP", steps: ["reattached_cv", "email_code", "reattached_cv", "danced"], attempts: 2,
   notes: "The upload took the file only through the file chooser. Wrote to jane@example.com and +34 612 345 678." }) };
@@ -1468,7 +1506,9 @@ report("an id that is not a job id is still redacted",
     .$mcp_parameters.request.params.arguments.id === "call me on [redacted]");
 const steps = (await run("application_guide", {})).structuredContent.steps.join(" ");
 report("application_guide says to report each outcome", /report_application/.test(steps));
-report("application_guide ends by passing on the star note, once", /Support line/.test(steps) && /GitHub star/.test(steps) && /Once only/.test(steps));
+report("application_guide asks about a star at most once a week, kept by the Support line",
+  /Support line/.test(steps) && /GitHub star/.test(steps) && /At most once a week/.test(steps) &&
+  /never again after a yes/.test(steps) && /star\/mcp-weekly/.test(steps));
 report("the state document template keeps whether the star was asked about",
   /## Support\n- Asked about a GitHub star/.test((await run("application_guide", {})).structuredContent.state_document.template));
 
@@ -1488,6 +1528,17 @@ const frontMadrid = await jobsOut({ role: "frontend", region: "MD" });
 report("dropping one filter suggests the postings it finds, and says which filter they miss",
   frontMadrid.matches === 0 && frontMadrid.no_match.suggestions?.[0]?.company === "Abacum" &&
   /^without region/.test(frontMadrid.no_match.suggestions_are), frontMadrid.no_match);
+const juniorBackend = await jobsOut({ role: "backend", seniority: "junior" });
+report("a level that finds nothing is widened one step, never to senior postings",
+  juniorBackend.matches === 0 && juniorBackend.no_match.suggestions.length > 0 &&
+  juniorBackend.no_match.without_each_filter.find((w) => w.drop === "seniority").matches >
+    juniorBackend.no_match.suggestions.length &&
+  juniorBackend.no_match.suggestions.every((j) => j.seniority !== "senior" && !/^Senior/.test(j.title)) &&
+  /^at a level next to junior \(intern, junior, mid/.test(juniorBackend.no_match.suggestions_are), juniorBackend.no_match);
+const juniorRemote = await jobsOut({ seniority: "junior", workplace: "remote" });
+report("with no company, role or query asked, the nearest postings are still suggested",
+  juniorRemote.matches === 0 && juniorRemote.no_match.suggestions.length > 0 &&
+  juniorRemote.no_match.suggestions.every((j) => j.workplace === "remote"), juniorRemote.no_match);
 const rich = await jobsOut({ role: "backend", min_salary_eur: 900000 });
 report("a salary floor nobody reaches is the filter to drop",
   rich.no_match.without_each_filter[0].drop === "min_salary_eur" && rich.no_match.suggestions.length > 0 &&
@@ -1534,6 +1585,8 @@ const q = (key) => ({ key });
 report("form_access tells a form behind a sign-in or off the API from one read",
   formAccess({ form_source: "x", questions: [q("first_name")] }).form_access === "read" &&
   formAccess({ form_source: "x", account_required: true, questions: [q("resume")] }).form_access === "read" &&
+  formAccess({ form_source: "x", standard_steps: true, questions: [q("resume")] }).form_access === "standard" &&
+  formAccess({ form_source: "x", standard_steps: true, board_refused: 429, questions: [q("resume")] }).form_access === "refused" &&
   formAccess({ form_source: "x", account_required: true, questions: [q("application_form")] }).form_access === "sign_in" &&
   formAccess({ form_source: "x", questions: [q("application_form")] }).form_access === "not_public" &&
   formAccess({ form_source: "x", questions: [q("find_posting")] }).form_access === "posting_moved" &&

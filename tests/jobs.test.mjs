@@ -556,6 +556,13 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
           { identifier: "location_SIT-ES_Barcelona" }, { identifier: "location_SIT-BG_Sofia" }] }] } }
       : { jobs: [{ id: "48", title: "SOC Analyst", location: "Barcelona", url: "https://schwarz-digits.de/en/jobsearch/soc-48" }],
           pagination: { totalCount: 1 } },
+    "https://careers.epam.com/api/jobs/v2/search/careers-i18n": { data: { total: 2, jobs: [
+      { uid: "blt1", name: "Senior Java Engineer", vacancy_type: "Hybrid", description: "<p>Java</p>",
+        seo: { url: "/en/vacancy/senior-java-engineer-blt1_en" }, created_at: "2026-11-01T10:00:00Z",
+        city: [{ name: "Madrid", country: { name: "Spain" } }, { name: "Warsaw", country: { name: "Poland" } }],
+        category: { requirements: ["5+ years of Java"] } },
+      { uid: "blt2", name: "Data Engineer", vacancy_type: "Remote", seo: { url: "/en/vacancy/data-engineer-blt2_en" },
+        city: null, country: [{ name: "Spain" }] }] } },
     "https://api.rippling.com/platform/api/ats/v2/board/chess/jobs": { page: 0, pageSize: 100, totalItems: 2, totalPages: 1, items: [
       { id: "a1", name: "Site Reliability Engineer", url: "https://ats.rippling.com/chess/jobs/a1",
         locations: [{ name: "Remote", country: "Spain", countryCode: "ES", workplaceType: "REMOTE" }] },
@@ -583,6 +590,12 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
   const sd = await read("Schwarz Digits", "jsonapi", "schwarz-digits");
   assert.deepEqual(sd.map((j) => j.locationsRaw), [["Barcelona, Spain"]]);
   assert.deepEqual(posted.at(-1).filters.location_city, ["location_SIT-ES_Barcelona"], "only the Spanish offices are asked for");
+  const epam = await read("EPAM Systems", "jsonapi", "epam-es");
+  assert.deepEqual(epam.map((j) => [j.title, j.locationsRaw, j.url]), [
+    ["Senior Java Engineer", ["Madrid, Spain"], "https://careers.epam.com/en/vacancy/senior-java-engineer-blt1_en"],
+    ["Data Engineer", ["Remote, Spain"], "https://careers.epam.com/en/vacancy/data-engineer-blt2_en"]]);
+  assert.equal(inSpain(epam).length, 2);
+  assert.match(epam[0].descriptionText, /5\+ years of Java/);
   await assert.rejects(read("X", "jsonapi", "nobody"), /no jsonapi mapping/);
   const chess = await read("Chess.com", "rippling", "chess");
   assert.deepEqual(inSpain(chess).map((j) => [j.title, j.workplaceType]), [["Site Reliability Engineer", "remote"]]);
@@ -828,5 +841,43 @@ const { pageLinks } = await import("../lib/ats/sources/jsonld.js");
 assert.deepEqual(pageLinks('<a href="/jobs/page/2/">2</a><a href="/jobs/?page=3">3</a><a href="/blog/page/2/">x</a>' +
                            '<a href="/jobs/page/99/">99</a>', new URL("https://acme.example/jobs/")),
                  ["https://acme.example/jobs/page/2/", "https://acme.example/jobs/?page=3"], "listing pages, capped at 10");
+
+// --- Boards behind a page built with JavaScript ---------------------------------
+
+{
+  const { boardFromRequest, probeCompany } = await import("../lib/ats/presets/spain.js");
+  assert.deepEqual(boardFromRequest("https://boards-api.greenhouse.io/v1/boards/acme/jobs?content=true"), { ats: "greenhouse", board: "acme", region: "global" });
+  assert.deepEqual(boardFromRequest("https://api.eu.lever.co/v0/postings/acme?mode=json"), { ats: "lever", board: "acme", region: "eu" });
+  assert.deepEqual(boardFromRequest("https://api.ashbyhq.com/posting-api/job-board/acme"), { ats: "ashby", board: "acme", region: "global" });
+  assert.deepEqual(boardFromRequest("https://api.smartrecruiters.com/v1/companies/Acme/postings"), { ats: "smartrecruiters", board: "Acme", region: "global" });
+  assert.deepEqual(boardFromRequest("https://apply.workable.com/api/v3/accounts/acme/jobs"), { ats: "workable", board: "acme", region: "global" });
+  assert.deepEqual(boardFromRequest("https://acme.wd3.myworkdayjobs.com/wday/cxs/acme/External/jobs"), { ats: "workday", board: "acme/wd3/External", region: "global" });
+  assert.deepEqual(boardFromRequest("https://jobs.ashbyhq.com/acme/embed"), { ats: "ashby", board: "acme", region: "global" }, "links still count");
+  assert.equal(boardFromRequest("https://www.googletagmanager.com/gtm.js?id=X"), null);
+
+  const company = { name: "Acme", levelsSlug: "acme", website: "https://acme.example", careers: "https://acme.example/careers", cities: [], engineerMedian: null, engineerCount: 0 };
+  const rules = { threshold: 60_000, companyFloor: 45_000, minRanked: 3, dataAsOf: "" };
+  const rendered = [];
+  const deps = {
+    resolve: async () => [],
+    listJobs: async () => [],
+    fetchPage: async () => "<div id=root></div>",
+    renderPage: async (url) => {
+      rendered.push(url);
+      return url === "https://acme.example/careers"
+        ? { url, html: "<div id=root>Jobs</div>", requests: ["https://boards-api.greenhouse.io/v1/boards/acme/jobs"] }
+        : null;
+    },
+  };
+  const report = await probeCompany(company, rules, deps);
+  assert.deepEqual(rendered, ["https://acme.example/careers"], "rendered once, after the HTML gave nothing");
+  assert.equal(report.kept?.board, "acme", "the board the page called is the company's own");
+  assert.equal(report.dormant, true);
+
+  rendered.length = 0;
+  deps.fetchPage = async () => '<a href="https://jobs.lever.co/acme">Jobs</a>';
+  await probeCompany(company, rules, deps);
+  assert.deepEqual(rendered, [], "no browser when the HTML links a board");
+}
 
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);
