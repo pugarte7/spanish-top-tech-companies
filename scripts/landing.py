@@ -57,7 +57,7 @@ TEXT = {
         "connect": ("Conéctalo", "Un minuto, con el agente que ya usas.",
                     "Pégalo en el chat de tu agente, o añádelo como servidor MCP. **Sin registro ni claves.**"),
         "copy": "Copiar", "copied": "Copiado",
-        "how": ("Cómo funciona", "Tu agente hace el trabajo; tú decides."),
+        "how": ("Cómo funciona", "Tu agente hace el trabajo, tú decides."),
         "steps": (("Conéctalo", "Un enlace en tu agente. **Sin registro, sin claves y sin instalar nada.**"),
                   ("Pídele ofertas", "«Backend en remoto por encima de 60k»: busca entre las ofertas de hoy y te "
                                      "dice **lo que paga cada empresa**."),
@@ -71,10 +71,10 @@ TEXT = {
                  "Levels.fyi, o que publican el salario en la oferta."),
                 ("¿Envía candidaturas sin preguntarme?", "No. Te enseña la candidatura completa y solo la envía "
                  "cuando dices que sí."),
-                ("¿Se inventa respuestas?", "No. Rellena con lo que dice tu CV y te pregunta lo que falta; las "
+                ("¿Se inventa respuestas?", "No. Rellena con lo que dice tu CV y te pregunta lo que falta, las "
                  "preguntas de opinión son tuyas."),
                 ("¿Qué datos míos se guardan?", "Ninguno. Tu CV, tus respuestas y tus candidaturas se quedan en tu "
-                 "agente; de cada llamada solo se cuenta una estadística anónima."),
+                 "agente, de cada llamada solo se cuenta una estadística anónima."),
                 ("¿De dónde salen las ofertas?", "De los portales de empleo de las propias empresas, más de 400, "
                  "leídos cada día: puestos en España o en remoto abiertos a España o Europa."),
                 ("¿Con qué agentes funciona?", "Con cualquiera que admita MCP: Claude Code, Codex, Cursor, Hermes, "
@@ -96,7 +96,7 @@ TEXT = {
         "connect": ("Connect it", "One minute, with the agent you already use.",
                     "Paste it into your agent's chat, or add it as an MCP server. **No sign-up, no keys.**"),
         "copy": "Copy", "copied": "Copied",
-        "how": ("How it works", "Your agent does the work; you decide."),
+        "how": ("How it works", "Your agent does the work, you decide."),
         "steps": (("Connect it", "One link in your agent. **No sign-up, no keys, nothing to install.**"),
                   ("Ask it for jobs", "“Remote backend above 60k”: it searches today's postings and tells you **what "
                                       "each company pays**."),
@@ -110,10 +110,10 @@ TEXT = {
                  "or that state the salary in the posting."),
                 ("Does it send applications without asking me?", "No. It shows you the whole application and sends "
                  "it only when you say yes."),
-                ("Does it make up answers?", "No. It fills in what your CV says and asks you for the rest; opinion "
+                ("Does it make up answers?", "No. It fills in what your CV says and asks you for the rest, opinion "
                  "questions are yours to answer."),
                 ("What data of mine is stored?", "None. Your CV, your answers and your applications stay with your "
-                 "agent; each call is only counted as an anonymous statistic."),
+                 "agent, each call is only counted as an anonymous statistic."),
                 ("Where do the postings come from?", "From the companies' own job boards, more than 400, read "
                  "every day: roles in Spain or remote ones open to Spain or Europe."),
                 ("Which agents does it work with?", "Any that supports MCP: Claude Code, Codex, Cursor, Hermes, "
