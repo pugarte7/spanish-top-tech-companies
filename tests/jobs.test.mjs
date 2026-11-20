@@ -880,7 +880,7 @@ assert.deepEqual(pageLinks('<a href="/jobs/page/2/">2</a><a href="/jobs/?page=3"
   assert.deepEqual(rendered, [], "no browser when the HTML links a board");
 }
 // --- Remote boards: employers with no salary in Spain on file ---------------
-const { boardOf, hostsIn, judge, REMOTE_CLASSES } = await import("../scripts/remote_boards.mjs");
+const { boardOf, hostsIn, judge, rotated, REMOTE_CLASSES } = await import("../scripts/remote_boards.mjs");
 const { openToSpain: open } = await import("../scripts/jobs.mjs");
 const remoteBoard = { name: "Far", ats: "ashby", board: "far", remote: true, tags: ["remote"] };
 const { normalizeJob } = await import("../lib/ats/sources/normalize.js");
@@ -904,6 +904,9 @@ assert.equal(boardOf("com,ashbyhq,jobs)/linear/abc 2026", "com,ashbyhq,jobs)/", 
 assert.equal(boardOf("com,ashbyhq,jobs)/api/x", "com,ashbyhq,jobs)/", "path"), null);
 assert.equal(boardOf("com,teamtailor,acme)/jobs", "com,teamtailor,", "host"), "acme");
 assert.equal(boardOf("com,teamtailor,www)/", "com,teamtailor,", "host"), null);
+assert.equal(boardOf("com,workable,apply)/j/ABC123", "com,workable,apply)/", "path"), null, "a posting's short link");
+assert.deepEqual(rotated(["a", "b", "c"], 1), ["c", "a", "b"]);
+assert.deepEqual([rotated([], 5), rotated(["a", "b", "c"], 3)], [[], ["a", "b", "c"]]);
 assert.equal(boardOf("com,ashbyhq,jobs)/%zz", "com,ashbyhq,jobs)/", "path"), null);
 
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);

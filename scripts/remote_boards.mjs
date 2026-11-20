@@ -15,10 +15,11 @@
 // blocks hold a host); its search API times out. Each board is then read
 // through the adapters and the polite client the daily crawl uses.
 //
-// Only an ATS whose URL carries the board is here. Workable is left out: it
-// refused the Mac for hours after 3,800 boards, and of its 70 with remote
-// postings none stated pay. Recruitee, BambooHR and Rippling had none in 120
-// boards each (2026-11-20).
+// Only an ATS whose URL carries the board is here. Workable refused the Mac
+// for a day after 3,800 boards at the others' pace, so its boards are read
+// 2.5s apart. Each run starts somewhere else in an ATS's list: one that is
+// cut short by refusals reaches other boards the next time. Recruitee,
+// BambooHR and Rippling had no remote posting in 120 boards each (2026-11-20).
 
 import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -40,8 +41,9 @@ export const SOURCES = {
   ashby: { prefixes: ["com,ashbyhq,jobs)/"], in: "path" },
   lever: { prefixes: ["co,lever,jobs)/"], in: "path" },
   teamtailor: { prefixes: ["com,teamtailor,"], in: "host", board: (slug) => `${slug}.teamtailor.com` },
+  workable: { prefixes: ["com,workable,apply)/"], in: "path", gapMs: 2500 },
 };
-const NOT_A_BOARD = new Set(["embed", "api", "v1", "jobs", "job_app", "job_board", "boards", "careers", "www",
+const NOT_A_BOARD = new Set(["embed", "api", "v1", "jobs", "job_app", "job_board", "boards", "careers", "www", "j",
                              "robots.txt", "favicon.ico", "sitemap.xml", "app", "assets", "static"]);
 /** Classes that make a posting remote from Spain: an office here is not it. */
 export const REMOTE_CLASSES = new Set(["remote-spain", "remote-europe"]);
@@ -122,6 +124,13 @@ async function boardsIn(collection, kinds, cache) {
   return out;
 }
 
+/** `list` from another place each day, so a run cut short is not always
+ * cut before the same boards. */
+export function rotated(list, day = Math.floor(Date.now() / 86_400_000)) {
+  const start = list.length ? (day * 7919) % list.length : 0;
+  return [...list.slice(start), ...list.slice(0, start)];
+}
+
 /** One board's verdict: its postings, how many are remote from Spain or
  * Europe, how many of those state pay, and the hosts they mention. */
 export function judge(jobs, openToSpain, analyzeLocation) {
@@ -138,6 +147,7 @@ async function probe(kind, boards, ats, openToSpain, log) {
   let strikes = 0;
   let read = 0;
   for (const board of boards) {
+    if (SOURCES[kind].gapMs) await new Promise((resolve) => setTimeout(resolve, SOURCES[kind].gapMs));
     try {
       const company = ats.CompanySchema.parse({ name: board, ats: kind, board, active: true });
       const jobs = await Promise.race([
@@ -195,7 +205,7 @@ async function main() {
   const { loadAts, openToSpain } = await import(pathToFileURL(join(ROOT, "scripts/jobs.mjs")).href);
   const ats = await loadAts();
   const results = await Promise.all(kinds.map(async (kind) => {
-    let list = [...boards[kind]].filter((board) => !listed.has(key({ ats: kind, board }))).sort();
+    let list = rotated([...boards[kind]].filter((board) => !listed.has(key({ ats: kind, board }))).sort());
     if (values.limit) list = list.slice(0, Number(values.limit));
     const result = await probe(kind, list, ats, openToSpain, log);
     log(`${kind}: ${result.read} of ${list.length} boards read, ${result.found.length} with remote postings`);

@@ -324,8 +324,8 @@ the MCP alone as the product: a company gets in when it posts remote work
 naming Spain or Europe on a board the crawl reads, and either Levels.fyi
 knows it (`lib.MIN_GLOBAL` submissions anywhere) or the posting states pay.
 `.github/workflows/remote.yml` runs twice a month: `scripts/remote_boards.mjs`
-reads every Greenhouse, Ashby, Lever and Teamtailor board Common Crawl's
-index names, and `scripts/remote_levels.py` writes the ones that pass to
+reads every Greenhouse, Ashby, Lever, Teamtailor and Workable board Common
+Crawl's index names, and `scripts/remote_levels.py` writes the ones that pass to
 `data/remote-boards.json` and the rest to `data/remote-boards-none.json`
 (asked again after 90 days). Levels.fyi's slug is guessed from the board's
 name, so a match counts only when the postings mention Levels.fyi's domain
