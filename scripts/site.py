@@ -936,7 +936,8 @@ def job_boards(data: dict, tables: dict) -> dict:
     in the companies.json format lib/ats reads (scripts/jobs.mjs crawls it daily).
 
     data/boards.json maps a Levels.fyi slug to its board; scripts/boards.mjs
-    finds them. The tier is the site's
+    finds them. data/remote-boards.json adds the boards of employers with no
+    board there that post remote work, marked `remote`. The tier is the site's
     own ranking, today's: A when the engineers' median reaches the bar over
     min_ranked salaries, B at the bar on fewer or above BOARD_TIER_FLOOR_EUR,
     C below it or with no engineers."""
@@ -959,6 +960,20 @@ def job_boards(data: dict, tables: dict) -> dict:
         out.append({"name": company["name"], "ats": board["ats"], "board": board["board"],
                     "tier": tier, "tags": list(dict.fromkeys(["spain", *cities])),
                     **{k: board[k] for k in ("region", "query", "country") if board.get(k)}})
+    # Employers with no board above that post remote work open to Spain or
+    # Europe (scripts/remote_levels.py), most of them with no salary in Spain
+    # on file. No tier: the site ranks nobody it has no salaries for.
+    remote_path = AGGREGATES / "remote-boards.json"
+    remote = json.loads(remote_path.read_text(encoding="utf-8")) if remote_path.exists() else {}
+    boards_taken = {(e["ats"], e["board"].lower()) for e in out}
+    names_taken = {e["name"].casefold() for e in out}
+    by_levels = {c.get("levels"): c["name"] for c in data["companies"] if c.get("levels")}
+    for entry in remote.values():
+        name = by_levels.get(entry.get("levels"), entry["name"])
+        if (entry["ats"], entry["board"].lower()) in boards_taken or name.casefold() in names_taken:
+            continue
+        out.append({"name": name, "ats": entry["ats"], "board": entry["board"],
+                    "remote": True, "tags": ["remote"]})
     return {"version": 1, "data_as_of": data["data_as_of"],
             "companies": sorted(out, key=lambda e: e["name"].casefold())}
 

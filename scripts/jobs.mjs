@@ -154,6 +154,11 @@ function salary(comp) {
 export function entry(job, board, slug, location, known = new Set()) {
   const classes = openToSpain(job, location.analyzeLocation);
   if (!classes) return null;
+  // A board that is here for its remote postings (data/remote-boards.json)
+  // mostly belongs to an employer nobody reported a salary in Spain for: a
+  // bare "Remote" there is usually remote in the United States, so the
+  // posting has to name Spain or Europe.
+  if (board.remote && !classes.some((c) => SPAIN_CLASSES.has(c))) return null;
   const row = {
     id: `${job.ats}:${job.board}:${job.externalId}`,
     company: board.name,

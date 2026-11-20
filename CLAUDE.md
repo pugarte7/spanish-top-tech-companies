@@ -318,6 +318,26 @@ leads to Bending Spoons'). Of the 305 then without a board it found 8: most
 of the rest run an ATS the repo has no adapter for (SuccessFactors, iCIMS,
 Avature, EPAM's own) or a site of their own, and 24 refuse the client.
 
+**Remote boards.** Since 2026-11-20 `find_jobs` also covers employers with
+no salary in Spain on file, because the maintainer wants more companies and
+the MCP alone as the product: a company gets in when it posts remote work
+naming Spain or Europe on a board the crawl reads, and either Levels.fyi
+knows it (`lib.MIN_GLOBAL` submissions anywhere) or the posting states pay.
+`.github/workflows/remote.yml` runs twice a month: `scripts/remote_boards.mjs`
+reads every Greenhouse, Ashby, Lever and Teamtailor board Common Crawl's
+index names, and `scripts/remote_levels.py` writes the ones that pass to
+`data/remote-boards.json` and the rest to `data/remote-boards-none.json`
+(asked again after 90 days). Levels.fyi's slug is guessed from the board's
+name, so a match counts only when the postings mention Levels.fyi's domain
+for the company or the board is named after it: do not loosen that to the
+name, which let a French Paradox pass as the American one. Set an entry's
+`via` to `hand` to keep a board whatever a run finds, or its value in the
+none file to `no` to strike it off. These boards carry `remote: true` in
+`boards-list.json` and no tier, their postings count only when they name
+Spain or Europe, and nothing of them reaches `data.json`, the ranking or a
+median: a Levels.fyi count from abroad says the company is real, never what
+it pays here.
+
 **Listings follow main.** Since 2026-11-19 `.github/workflows/listings.yml`
 keeps the two places that hold a copy in step, because the maintainer wanted
 every change to the MCP to reach "todos los sitios donde lo hemos publicado"
