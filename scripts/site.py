@@ -1271,15 +1271,19 @@ def noscript_companies(e: dict, data: dict) -> str:
             f'<ul class="noscript-companies">{rows}</ul></noscript>')
 
 
-ICON_LINKS = ('<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'
-              '<link rel="icon" href="/favicon.ico" sizes="32x32">\n'
-              '<link rel="apple-touch-icon" href="/apple-touch-icon.png">')
+# Each with its hash, so a browser holding the icon of before fetches the new one.
+ICON_LINKS = "\n".join(
+    f'<link rel="{rel}" href="/{name}?v={asset_version(name)}"{extra}>' for rel, name, extra in (
+        ("icon", "favicon.svg", ' type="image/svg+xml"'), ("icon", "favicon.ico", ' sizes="32x32"'),
+        ("apple-touch-icon", "apple-touch-icon.png", "")))
 
 
 def share_meta(lang: str, title: str) -> str:
     """What Slack, WhatsApp, LinkedIn and X show for a pasted link: a large
     image needs an absolute URL, so it is written against PUBLIC."""
-    image = f"{PUBLIC}/og-{lang}.png"
+    # The image's hash is in its URL: X, WhatsApp and the rest keep a preview by
+    # the image's address for days, and would go on showing the one of before.
+    image = f"{PUBLIC}/og-{lang}.png?v={asset_version(f'og-{lang}.png')}"
     return (f'<meta property="og:url" content="{PUBLIC}/{lang}/">\n'
             f'<meta property="og:image" content="{image}">\n'
             '<meta property="og:image:width" content="1200">\n'
