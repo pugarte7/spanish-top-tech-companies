@@ -128,6 +128,9 @@ pauses the refresh until its "Refresh paused" issue is closed.
   would go stale. `vercel.json` sends the old salary and company URLs to it.
   `data/`, `/api/v1/` and the llms files are still published: the MCP reads
   them.
+- Anything new on the site (a page, a section, an image, a line of copy)
+  follows [docs/STYLE.md](docs/STYLE.md): colours, type, components, the
+  mascot, motion and how the copy is written.
 - The agent calls on the home page come from `/api/calls`, PostHog's count of
   `$mcp_tool_call` without `internal` ones, about a minute late, so there is
   no counter of our own to run. It needs `POSTHOG_PERSONAL_API_KEY` on the
