@@ -26,7 +26,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.24.1" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.25.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -128,7 +128,9 @@ const TOOLS = {
                    "read from the description), and " +
                    "the company's median base for the posting's role in Spain, as the " +
                    "site's companies table shows it, with how many people it comes from " +
-                   `(few: true under ${data.min_group}). Pass the ids already applied to or turned ` +
+                   `(few: true under ${data.min_group}); where nobody reports that role there, the ` +
+                   "company's median over its other roles, marked for_this_role: false: what the " +
+                   "company pays, not what the job pays. Pass the ids already applied to or turned " +
                    "down in exclude. When nothing matches, no_match says how many results each " +
                    "filter costs and suggests the closest postings, marked with the filter they miss. " +
                    "The starting point when asked to find jobs or apply for " +
@@ -851,23 +853,44 @@ const LOOKUPS = new WeakMap();
 function lookups(data, table) {
   if (!LOOKUPS.has(table)) {
     const bySlug = new Map(data.companies.map((c, i) => [c.levels, i]).filter(([s]) => s));
-    const cells = new Map();
+    const cells = new Map(), rolesAt = new Map();
     for (const [key, found] of Object.entries(table.cells)) {
       const [role, region, years] = key.split("|");
-      if (!role || region || years) continue;
-      cells.set(role, new Map(found.map((r) => [r[0], rowOf(table, r)])));
+      if (region || years) continue;
+      const rows = new Map(found.map((r) => [r[0], rowOf(table, r)]));
+      cells.set(role, rows);
+      if (role) for (const [c, a] of rows) rolesAt.set(c, [...(rolesAt.get(c) ?? []), { role, people: a.n }]);
     }
-    LOOKUPS.set(table, { bySlug, cells });
+    for (const list of rolesAt.values()) list.sort((a, b) => b.people - a.people || a.role.localeCompare(b.role));
+    LOOKUPS.set(table, { bySlug, cells, rolesAt });
   }
   return LOOKUPS.get(table);
 }
 
+// The company's figure for the posting's role, or else its figure over every
+// role people report there, which says what the company pays, not what this
+// job pays: for_this_role tells them apart, and only the role's figure is
+// checked against min_salary_eur or ranks a posting. On 2026-11-21 the role's
+// figure covered 31% of the postings, the company's 94%: 42% name no role
+// the data knows, and most companies have salaries for engineers only.
 function salaryContext(data, table, job, role) {
-  if (!role || !table) return null;
-  const { bySlug, cells } = lookups(data, table);
-  const a = cells.get(role)?.get(bySlug.get(job.slug));
-  return a ? { role, company_median_base_eur: a.median, people: a.n, few: a.n < data.min_group,
-               scope: "this company's salaries for the role in Spain, every region and experience" } : null;
+  if (!table) return null;
+  const { bySlug, cells, rolesAt } = lookups(data, table);
+  const at = bySlug.get(job.slug);
+  if (at === undefined) return null;
+  const a = role ? cells.get(role)?.get(at) : null;
+  if (a) return { role, for_this_role: true, company_median_base_eur: a.median, people: a.n,
+                  few: a.n < data.min_group,
+                  scope: "this company's salaries for the role in Spain, every region and experience" };
+  const all = cells.get("")?.get(at);
+  if (!all) return null;
+  const from = rolesAt.get(at) ?? [];
+  return { role: null, for_this_role: false, company_median_base_eur: all.median, people: all.n,
+           few: all.n < data.min_group, roles_counted: from,
+           scope: `this company's salaries in Spain over the roles people report there ` +
+             `(${from.map((r) => r.role).join(", ")}), every region and experience. None is for ` +
+             `${role ? `the role ${role}` : "this posting's role"}: it says what the company pays, not what ` +
+             "this job pays." };
 }
 
 // The posting's own pay when it can stand beside euros a year: [low, high].
@@ -1164,11 +1187,11 @@ export async function findJobs(data, args = {}, env = {}) {
       let basis;
       if (g.minSalary !== null) {
         if (own) { if (own[1] < g.minSalary) continue; basis = "posting"; }
-        else if (context) { if (context.company_median_base_eur < g.minSalary) continue; basis = "company_median"; }
+        else if (context?.for_this_role) { if (context.company_median_base_eur < g.minSalary) continue; basis = "company_median"; }
         else { unknownPay++; continue; }
       }
       if (g.years && !p.years) yearsUnstated++;
-      const figure = own ? (own[0] + own[1]) / 2 : context?.company_median_base_eur ?? null;
+      const figure = own ? (own[0] + own[1]) / 2 : context?.for_this_role ? context.company_median_base_eur : null;
       found.push({ figure, posted: job.posted_at ?? "", p, role: jobRole, context, basis, matched, viaKeywords, score, distinct,
                    size, contact: contactsFor(env, job).length > 0 });
     }
@@ -1238,21 +1261,28 @@ export async function findJobs(data, args = {}, env = {}) {
         "filters, or call again with the ids shown so far (also_posted_as included) added to exclude." } : {}),
     order: ORDER,
     classification_note: "roles, seniority, years_asked and keywords are read from each posting when the index " +
-      "is built: roles from the title, best first (the first is the one salary_context uses); seniority " +
+      "is built: roles from the title, best first (the first is the one salary_context looks up); seniority " +
       "from the title, null when it names no level; years_asked from the description as [min, max], max " +
       "null when open-ended, null when it names no figure; keywords from the title and description, " +
       "from a fixed list of skills, tools, industries and spoken languages (a skill named as nice to have " +
       "counts too). They are guesses from text, not the employer's fields.",
     salary_note: "salary is what the posting states in its board's pay fields, as published; null " +
       "there does not mean the posting names no pay: its text may give a range, which job_questions " +
-      "quotes in conditions.pay. min_salary_eur is checked against salary when it is in EUR a year, " +
-      "else against the company's median (min_salary_checked_against says which), so a posting whose " +
-      "range is only in its text is judged by the median. salary_context is the company's " +
-      "median base for the posting's role in Spain as the site's companies table shows it (Levels.fyi " +
-      "data), with how many people it comes from; few: true marks fewer than " +
-      `${data.min_group}, and from one person it is that person's salary, rounded. null when nobody ` +
-      "at the company reports the role" + (table ? "" : ", and this time for every posting: the " +
-      "companies table could not be read") + ". It describes the company, not this posting.",
+      "quotes in conditions.pay. A salary in another currency, or on a posting open to several " +
+      "countries, is often another country's range (US dollars for San Francisco, zloty for Poland): " +
+      "quote it as published, with its currency and period, never as pay in Spain. min_salary_eur is " +
+      "checked against salary when it is in EUR a year, else against the company's median for the " +
+      "role (min_salary_checked_against says which), so a posting whose range is only in its text is " +
+      "judged by the median, and a posting with neither is left out. salary_context is the company's " +
+      "median base in Spain as the site's companies table shows it (Levels.fyi data), with how many " +
+      `people it comes from; few: true marks fewer than ${data.min_group}, and from one person it is ` +
+      "that person's salary, rounded. for_this_role: true when it is the median for the posting's " +
+      "role. for_this_role: false when nobody at the company reports that role, or the posting names " +
+      "none the data knows: then it is the company's median over the roles in roles_counted, which " +
+      "says what the company pays, not what this job pays; say so whenever you quote it, and never " +
+      "present it as the job's pay. null when the site has no salaries for the company" +
+      (table ? "" : ", and this time for every posting: the companies table could not be read") +
+      ". It describes the company, not this posting.",
     jobs,
   };
 }
