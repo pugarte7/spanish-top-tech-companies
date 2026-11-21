@@ -984,3 +984,49 @@ assert.deepEqual([rotated([], 5), rotated(["a", "b", "c"], 3)], [[], ["a", "b", 
 assert.equal(boardOf("com,ashbyhq,jobs)/%zz", "com,ashbyhq,jobs)/", "path"), null);
 
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);
+
+// --- Classic iCIMS and Jobvite parsers ----------------------------------------
+{
+  const { parseIcimsCards } = await import("../lib/ats/sources/icimsclassic.js");
+  const cards = parseIcimsCards(`<ul class="container-fluid iCIMS_JobsTable"><li class="iCIMS_JobCardItem"><div class="row">
+<div class="col-xs-6 header right"><span class="sr-only field-label">Posted Date</span><span title="11/20/2026 6:16 AM">24 hours ago</span></div>
+<div class="col-xs-12 title"><a href="https://expleo-jobs-es-en.icims.com/jobs/58722/ingeniero-a-rams/job?in_iframe=1" class="iCIMS_Anchor" title="58722 - Ingeniero/a RAMS"><span class="sr-only field-label">Title</span><h3 >Ingeniero/a RAMS &ndash; Sistemas Embarcados</h3></a></div>
+<div class="col-xs-12 additionalFields"><dl class="iCIMS_JobHeaderGroup">
+<div class="iCIMS_JobHeaderTag"><dt class="iCIMS_JobHeaderField"><span class="sr-only field-label">Job Locations</span></dt><dd class="iCIMS_JobHeaderData"><span >ES-CL-Le&oacute;n, Castilla y Le&oacute;n ,</span></dd></div>
+<div class="iCIMS_JobHeaderTag"><dt class="iCIMS_JobHeaderField">Salary minimum</dt><dd class="iCIMS_JobHeaderData"><span >EUR &euro;25,000.00/Yr.</span></dd></div>
+<div class="iCIMS_JobHeaderTag"><dt class="iCIMS_JobHeaderField">Salary maximum</dt><dd class="iCIMS_JobHeaderData"><span >EUR &euro;48,000.00/Yr.</span></dd></div>
+</dl></div></div></li>
+<li class="iCIMS_JobCardItem"><div class="row"><div class="col-xs-6 header left"><span class="sr-only field-label">Job Locations</span><span >ES-Rivas-Vaciamadrid | ES-Remote | PL</span></div>
+<div class="col-xs-12 title"><a href="https://internationalcareers-bruker.icims.com/jobs/20395/team-leader/job?hub=12&amp;in_iframe=1" class="iCIMS_Anchor" title="20395 - Team Leader"><h3 >Team Leader Commercial, IBERIA (m/f/d)</h3></a></div></div></li></ul>`, "worldwidecareers-bruker.icims.com");
+  assert.deepEqual(cards.map((c) => c.id), ["58722", "20395"]);
+  assert.match(JSON.stringify(cards[0]), /Le[oó]n, Castilla y Le[oó]n, Spain/);
+  assert.match(JSON.stringify(cards[1]), /Rivas-Vaciamadrid, Spain.*Remote, Spain.*Poland/);
+  assert.ok(cards[1].url.startsWith("https://worldwidecareers-bruker.icims.com/jobs/20395/"), "postings are read on the board's own host");
+  const { parseJobviteList, parseJobviteDetail } = await import("../lib/ats/sources/jobvite.js");
+  const rows = parseJobviteList(`<table class="jv-job-list"><tbody><tr><td class="jv-job-list-name"><a href="/nutanix/job/omDAAfwT">Senior Support Engineer</a></td><td class="jv-job-list-location">
+    Barcelona,
+    Spain
+</td></tr>
+<tr><td class="jv-job-list-name"><a href="/telemedicine-clinic/job/oB94Afw8">Consultant Radiologist</a></td><td class="jv-job-list-location"><div class="jv-meta">
+    2 Locations
+</div></td></tr></tbody></table>
+<div class="jv-job-item card"><div class="jv-job-list-name"><a href="/drillinginfo/job/oy9CAfwD">Business Development Representative</a></div><div class="jv-job-list-location">
+    Madrid,
+    Spain
+</div></div>`, "x");
+  assert.equal(rows.length, 3);
+  assert.match(JSON.stringify(rows), /Barcelona, Spain.*2.*Madrid, Spain/s);
+  const detail = parseJobviteDetail(`<p class="jv-job-detail-meta">
+    Marketing<span class='jv-inline-separator'></span>
+    Madrid,
+    Spain
+    <span class="jv-inline-separator"></span>
+    Remote,
+    Spain
+<span class='jv-inline-separator'></span>Req.Num.: 32252
+</p>
+<div class="jv-job-detail-description" ng-non-bindable><h3>Description</h3><p>Sell.</p></div>
+<script type="application/ld+json">{"@context":"http://schema.org","@type":"JobPosting","datePosted":"2026-11-06","identifier":"ojK3Afwq"}</script>`, 2);
+  assert.match(JSON.stringify(detail), /Madrid, Spain.*Remote, Spain/);
+  assert.match(JSON.stringify(detail), /2026-11-06/);
+}
