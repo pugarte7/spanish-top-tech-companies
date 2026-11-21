@@ -1088,3 +1088,23 @@ console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs
   assert.equal(ms.length, 2);
   assert.match(JSON.stringify(ms), /Spain.*Bilbao/);
 }
+
+// --- Cloudflare's challenge and the cloud browser ---------------------------------
+{
+  const { isChallenge, browserbaseEnabled } = await import("../lib/ats/sources/browserbase.js");
+  const res = (status, headers) => new Response("", { status, headers });
+  assert.ok(isChallenge(res(403, { "cf-mitigated": "challenge" })));
+  assert.ok(isChallenge(res(403, { server: "cloudflare", "server-timing": 'chlray;desc="a5dfefc7393b013e"' })));
+  assert.ok(!isChallenge(res(403, { server: "cloudflare" })), "a plain Cloudflare 403 is a refusal, not a challenge");
+  assert.ok(!isChallenge(res(429, { "cf-mitigated": "challenge" })));
+  // Without the key a challenge stays the HTTP 403 it always was.
+  const key = process.env.BROWSERBASE_API_KEY;
+  delete process.env.BROWSERBASE_API_KEY;
+  assert.ok(!browserbaseEnabled());
+  const saved = globalThis.fetch;
+  globalThis.fetch = async () => new Response("<title>Just a moment...</title>", { status: 403, headers: { "cf-mitigated": "challenge" } });
+  const { fetchText } = await import("../lib/ats/sources/http.js");
+  await assert.rejects(fetchText("https://www.revolut.com/careers/", { allowedHosts: ["www.revolut.com"], retries: 0 }), /HTTP 403/);
+  globalThis.fetch = saved;
+  if (key !== undefined) process.env.BROWSERBASE_API_KEY = key;
+}
