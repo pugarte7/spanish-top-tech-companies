@@ -69,7 +69,7 @@
   "aviasales": "https://www.aviasales.ru/about/vacancies",
   "axa": "https://careers.axa.com/careers-home/?lang=en-US",
   "axpo": "https://careers.axpo.com/jobs?country=United+States&split_view=true&query=",
-  "ayesa": "https://www.ayesa.com/en/careers/",
+  "ayesa": {"ats":"jsonapi","board":"ayesa-es"},
   "babel": "https://babelgroup.wd103.myworkdayjobs.com/es/REC_External_Career_Site",
   "back-market": "https://jobs.ashbyhq.com/backmarket",
   "bain": "https://careers.bain.com/",
