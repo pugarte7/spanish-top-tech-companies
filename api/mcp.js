@@ -26,7 +26,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.24.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.24.1" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -205,7 +205,8 @@ const TOOLS = {
                   "captcha, login_required, form_error (a field was refused), upload_refused (the " +
                   "board would not take the CV file), submit_error (the board answered the submit " +
                   "with an error), no_confirmation (submitted, nothing confirmed it), posting_closed, " +
-                  "blocked (the board refused the browser), no_browser, person_declined, other." },
+                  "blocked (the board refused the browser), no_browser, person_declined, other (say what " +
+                  "in notes)." },
         browser: { type: "string", enum: REPORT_BROWSERS, description: "What you sent it with: built_in " +
                    "(your client's own browser), claude_in_chrome, playwright_mcp, other, or none." },
         steps: { type: "array", items: { type: "string", enum: REPORT_STEPS }, description: "What it took " +
@@ -2594,16 +2595,19 @@ export async function reportApplication(data, args = {}, env = {}) {
   const status = String(args.status ?? "").trim().toLowerCase();
   if (!REPORT_STATUS.includes(status))
     throw new QueryError(`status must be one of ${REPORT_STATUS.join(", ")}`);
-  const reason = blank(args.reason) ? null : String(args.reason).trim().toLowerCase();
-  if (reason !== null && !REPORT_REASONS.includes(reason))
-    throw new QueryError(`reason must be one of ${REPORT_REASONS.join(", ")}`);
+  // A reason outside the list is other, its words kept in the notes: in the week
+  // to 2026-11-21 agents wrote a sentence there 16 times and the report was refused.
+  const said = blank(args.reason) ? null : String(args.reason).replace(/\s+/g, " ").trim();
+  const reason = said === null ? null : listed(said, REPORT_REASONS);
+  const own = reason === "other" && said.toLowerCase() !== "other" ? `Reason given: ${said}.` : "";
   const browser = blank(args.browser) ? null : listed(args.browser, REPORT_BROWSERS);
   const given = blank(args.steps) ? [] : typeof args.steps === "string" ? args.steps.split(/[\s,]+/) : args.steps;
   if (!Array.isArray(given)) throw new QueryError(`steps is a list of ${REPORT_STEPS.join(", ")}`);
   const steps = [...new Set(given.filter((x) => !blank(x)).map((x) => listed(x, REPORT_STEPS)))];
   const tries = blank(args.attempts) ? null : whole(args.attempts);
   const attempts = tries === null ? null : Math.max(1, Math.min(tries, 20));
-  const notes = blank(args.notes) ? null : redact(String(args.notes).replace(/\s+/g, " ").trim(), REPORT_NOTES);
+  const written = `${own} ${blank(args.notes) ? "" : String(args.notes)}`.replace(/\s+/g, " ").trim();
+  const notes = written ? redact(written, REPORT_NOTES) : null;
   let job = null;
   try { job = (await jobIndex(env)).jobs.find((j) => j?.id === id) ?? null; } catch { /* still counted */ }
   return { counted: true, id, status, reason, browser, steps, attempts, notes, ats: id.split(":")[0],
@@ -2897,6 +2901,26 @@ async function answer(data, id, method, params, version, env) {
 // Why a tool call failed, kept beside the reply for analytics() and never sent.
 const ERROR_KIND = new WeakMap();
 
+// Agents send a required value under a name of their own: in the week to
+// 2026-11-21, 49 calls to job_questions and company_salaries were refused with
+// the id or the name there under another key. A missing required string is
+// taken from the one string argument the schema does not declare, an id only
+// from one shaped like a job id.
+function filled(schema, args) {
+  const missing = (schema.required ?? []).filter((k) => blank(args[k]));
+  if (!missing.length) return args;
+  let stray = Object.keys(args).filter((k) => !Object.hasOwn(schema.properties, k) &&
+    typeof args[k] === "string" && !blank(args[k]));
+  const out = { ...args };
+  for (const key of missing) {
+    const fits = stray.filter((k) => key !== "id" || (JOB_ID.test(args[k].trim()) && !/^https?:/i.test(args[k].trim())));
+    if (fits.length !== 1) continue;
+    out[key] = args[fits[0]];
+    stray = stray.filter((k) => k !== fits[0]);
+  }
+  return out;
+}
+
 async function callTool(data, id, params, extra, env) {
   const name = params.name;
   const sent = params.arguments ?? {};
@@ -2907,7 +2931,7 @@ async function callTool(data, id, params, extra, env) {
   if (!tool) return error(id, INVALID_PARAMS, `unknown tool '${name}'`);
   let result, kind;
   try {
-    const out = await tool.run(data, args, env);
+    const out = await tool.run(data, filled(tool.define(data).inputSchema, args), env);
     result = { content: [{ type: "text", text: JSON.stringify(out) }], structuredContent: out };
   } catch (e) {
     if (!(e instanceof QueryError)) throw e;

@@ -1471,10 +1471,27 @@ report("report_application takes the reasons a board gives for an upload or a su
 const failedReport = (await run("report_application", { id: "lever:dlocal:x", status: "failed", reason: "captcha" })).structuredContent;
 report("a failed or uncertain report says what to do next", /reason/.test(failedReport.next));
 report("report_application takes a reason", failedReport.reason === "captcha" && failedReport.known_posting === false);
-report("report_application refuses an unknown status or reason",
+report("report_application refuses an unknown status or id",
   (await run("report_application", { id: "greenhouse:glovo:7000001", status: "maybe" })).isError === true &&
-  (await run("report_application", { id: "greenhouse:glovo:7000001", status: "failed", reason: "tired" })).isError === true &&
   (await run("report_application", { id: "not an id", status: "sent" })).isError === true);
+const ownReason = (await run("report_application", { id: "greenhouse:glovo:7000001", status: "failed",
+  reason: "Board refused: applied within the last 30 days", notes: "Ashby limit per company." })).structuredContent;
+const spaced = (await run("report_application", { id: "greenhouse:glovo:7000001", status: "failed",
+  reason: "Login required" })).structuredContent;
+report("report_application takes a reason of its own as other, its words in the notes",
+  ownReason.reason === "other" &&
+  ownReason.notes === "Reason given: Board refused: applied within the last 30 days. Ashby limit per company." &&
+  spaced.reason === "login_required" && spaced.notes === null, [ownReason, spaced]);
+const renamedId = await run("job_questions", { job_id: "greenhouse:glovo:7000001" });
+const renamedName = (await run("company_salaries", { company_name: "Glovo", role: "software-engineer" })).structuredContent;
+const renamedReport = (await run("report_application", { job_id: "greenhouse:glovo:7000001", outcome: "sent" })).structuredContent;
+report("a required id or name sent under another key is used",
+  !/id is required/.test(renamedId.content[0].text) && renamedName.company === "Glovo" &&
+  renamedReport.id === "greenhouse:glovo:7000001" && renamedReport.status === "sent",
+  [renamedId.content[0].text.slice(0, 120), renamedName.company, renamedReport]);
+report("an id is not taken from a URL or from two candidates",
+  (await run("job_questions", { url: "https://job-boards.greenhouse.io/glovo/jobs/7000001" })).isError === true &&
+  (await run("job_questions", { a: "greenhouse:glovo:1", b: "lever:prima:x" })).isError === true);
 const reported = { jsonrpc: "2.0", id: 8, ...tool("report_application", { id: "greenhouse:glovo:7000001", status: "failed", reason: "blocked" }) };
 const [outcome] = analytics(data, {}, reported, await respond(data, reported), Date.now());
 report("report_application is counted with its status and reason",
