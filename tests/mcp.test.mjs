@@ -448,13 +448,23 @@ const quietly = async (fn) => {
 // down to one person, and carries no more than top_companies shows (median, people).
 const everything = (await run("find_jobs", {})).structuredContent.jobs;
 const slugIndex = new Map(data.companies.map((c, i) => [c.levels, i]));
-report("salary context is the table's row for the role, or null", everything.every((j) => {
+report("salary context is the table's row for the role, else the company's over every role, or null", everything.every((j) => {
   const cell = rowsAt(`${j.role}||`).find((a) => a.c === slugIndex.get(j.slug));
-  if (!cell) return j.salary_context === null;
-  return j.salary_context.company_median_base_eur === cell.median && j.salary_context.people === cell.n &&
-    j.salary_context.few === cell.n < data.min_group &&
-    Object.keys(j.salary_context).sort().join() === "company_median_base_eur,few,people,role,scope";
-}) && everything.some((j) => j.salary_context) && everything.some((j) => !j.salary_context));
+  const whole = rowsAt("||").find((a) => a.c === slugIndex.get(j.slug));
+  const c = j.salary_context;
+  if (cell) return c.for_this_role === true && c.role === j.role && c.company_median_base_eur === cell.median &&
+    c.people === cell.n && c.few === cell.n < data.min_group &&
+    Object.keys(c).sort().join() === "company_median_base_eur,few,for_this_role,people,role,scope";
+  if (whole) return c.for_this_role === false && c.role === null && c.company_median_base_eur === whole.median &&
+    c.people === whole.n && c.roles_counted.length > 0 && !c.roles_counted.some((r) => r.role === j.role) &&
+    /not what this job pays/.test(c.scope);
+  return c === null;
+}) && everything.some((j) => j.salary_context?.for_this_role) &&
+  everything.some((j) => j.salary_context?.for_this_role === false));
+const general = (await run("find_jobs", { min_salary_eur: 1 })).structuredContent;
+report("min_salary_eur and the order never use the company's figure over other roles",
+  general.jobs.every((j) => j.min_salary_checked_against === "posting" || j.salary_context?.for_this_role) &&
+  general.left_out_without_salary_figure > 0, general.left_out_without_salary_figure);
 const fewContext = everything.find((j) => j.salary_context?.few);
 report("a company with fewer than five for the role gets its figure, flagged", Boolean(fewContext) &&
   fewContext.salary_context.people < data.min_group, fewContext?.salary_context);
@@ -467,7 +477,7 @@ const noTop = await quietly(() => run("top_companies", {}, { companies: async ()
 report("without it the company tools say so", noTop.isError === true && /company-cells\.json/.test(noTop.content[0].text));
 report("best salary figure first, then the newest", (() => {
   const figure = (j) => j.salary?.currency === "EUR" ? (j.salary.min + j.salary.max) / 2
-    : j.salary_context?.company_median_base_eur ?? -1;
+    : j.salary_context?.for_this_role ? j.salary_context.company_median_base_eur : -1;
   return everything.every((j, k) => k === 0 || figure(everything[k - 1]) > figure(j) ||
     (figure(everything[k - 1]) === figure(j) && String(everything[k - 1].posted_at ?? "") >= String(j.posted_at ?? "")));
 })());
