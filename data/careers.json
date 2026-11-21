@@ -514,7 +514,7 @@
   "sequra": "https://sequra.recruitee.com/",
   "shopify": "https://www.shopify.com/careers",
   "sicpa": {"ats":"successfactors","board":"jobs.sicpa.com"},
-  "siemens": "https://www.siemens.com/en-us/company/jobs/",
+  "siemens": {"ats":"avature","board":"jobs.siemens.com/en_US/externaljobs"},
   "siemens-energy": "https://jobs.siemens-energy.com/en_US/jobs",
   "signicat": "https://www.signicat.com/about/careers",
   "sii-services": "https://careers.smartrecruiters.com/sii",

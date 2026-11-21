@@ -485,6 +485,7 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
       description: "<p>Go.</p>", datePosted: "2026-10-28", location: { addressCountry: "Spain" } } } }),
     "https://acme.bamboohr.com/careers/6/detail": JSON.stringify({ result: { jobOpening: {
       description: "<p>Sell.</p>", location: { addressCountry: "Argentina" } } } }),
+    "https://jobs.acme.com/en_US/careers/SearchJobs/": (url) => new URL(url).searchParams.get("jobOffset") === "2" ? `<p>3 results</p><article class="article article--result 1"><h3><a class="link" href="https://jobs.acme.com/en_US/careers/JobDetail/3">Analyst</a></h3><div class="article__header__text__subtitle"><span>Lisbon, Portugal</span> &nbsp;&#8226;&nbsp; <span>Job ID: 3</span></div></article>` : `<p>3 results</p><article class="article article--result 1"><h3><a class="link" href="https://jobs.acme.com/en_US/careers/JobDetail/1">Data Engineer</a></h3><div class="article__header__text__subtitle"><span>Tres Cantos , Madrid , Spain</span> &nbsp;&#8226;&nbsp; <span>Job ID: 1</span></div></article><article class="article article--result 1"><h3><a class="link" href="https://jobs.acme.com/en_US/careers/JobDetail/2">Sales</a></h3><div class="article__header__text__subtitle"><span>Multiple Locations</span> &nbsp;&#8226;&nbsp; <span>Job ID: 2</span></div></article><a href="https://jobs.acme.com/en_US/careers/SearchJobs/?jobRecordsPerPage=2&amp;jobOffset=2">2</a>`,
     "https://acme.jobs.personio.de/xml": `<?xml version="1.0" encoding="UTF-8"?>
 <workzag-jobs>
 <position><id>11</id><office>Spain - Barcelona</office><name>Backend Engineer</name>
@@ -499,7 +500,8 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
   globalThis.fetch = async (url, init = {}) => {
     const key = String(url).split("?")[0];
     seen.push({ key, auth: init.headers?.authorization ?? init.headers?.Authorization ?? null, body: init.body ?? null });
-    return key in pages ? new Response(pages[key], { status: 200 }) : new Response("not found", { status: 404 });
+    const page = typeof pages[key] === "function" ? pages[key](String(url)) : pages[key];
+    return key in pages ? new Response(page, { status: 200 }) : new Response("not found", { status: 404 });
   };
   const list = async (ats, board, query = "") =>
     adapterFor(ats).listJobs(CompanySchema.parse({ name: "Acme", ats, board, query }), "2026-11-09T00:00:00Z");
@@ -531,6 +533,12 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
                    "the country after the hash wins over the address country");
   assert.deepEqual(spainPostings(bamboo).map((j) => j.externalId), ["5"]);
   assert.equal(bamboo[0].postedAt, "2026-10-28");
+  const avature = await list("avature", "jobs.acme.com/en_US/careers");
+  assert.deepEqual(avature.map((j) => [j.externalId, j.locationsRaw[0]]),
+                   [["1", "Tres Cantos, Madrid, Spain"], ["2", "Spain"], ["3", "Lisbon, Portugal"]],
+                   "pages with the portal's own offset; a search for Spain places an unplaced posting there");
+  assert.ok(seen.some((s) => s.key === "https://jobs.acme.com/en_US/careers/SearchJobs/"));
+  assert.deepEqual(spainPostings(avature).map((j) => j.externalId), ["1", "2"]);
   const personio = await list("personio", "acme");
   assert.deepEqual(personio.map((j) => j.locationsRaw), [["Barcelona, Spain"], ["Munich", "Madrid"], ["Berlin, Germany"]],
                    "\"Country - City\" is turned round; additional offices are kept");
@@ -551,6 +559,8 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
   assert.equal(from("bamboohr", "https://staticfe.bamboohr.com/careers/x.js"), null);
   assert.equal(from("personio", "https://tado.jobs.personio.com/job/123?language=en")?.board, "tado");
   assert.equal(from("personio", "https://www.personio.com/careers/"), null);
+  assert.equal(from("avature", "https://mercadona.avature.net/es_ES/Careers/JobDetail/M-dico-a/308814")?.board, "mercadona.avature.net/es_ES/Careers");
+  assert.equal(from("avature", "https://jobs.siemens.com/en_US/externaljobs/JobDetail/1"), null);
   assert.deepEqual(adapterFor("radancy").boardFromPage("https://careers.ing.com/en/search-jobs",
                    '<link href="https://tbcdn.talentbrew.com/x.css"><a href="/en/search-jobs">'),
                    { ats: "radancy", board: "careers.ing.com/en", region: "global" });
