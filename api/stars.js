@@ -1,7 +1,7 @@
-// The repo's star count for the topbar. The build writes the count into the
-// page, but the site is built once a day, so a reader who starred it saw the
-// old number until the next morning. The CDN keeps the answer ten minutes,
-// which keeps GitHub's limit of 60 calls an hour without a token far away.
+// The repo's star count for the home page's GitHub button. The build writes
+// the count into the page, but the site is built once a day; the page asks
+// here once a minute. The CDN keeps the answer two minutes, so GitHub is asked
+// at most 30 times an hour per region, under its limit of 60 without a token.
 const REPO = "https://api.github.com/repos/pugarte7/spanish-top-tech-companies";
 
 export default {
@@ -14,12 +14,14 @@ export default {
       const stars = (await r.json()).stargazers_count;
       if (!Number.isInteger(stars)) throw new Error("no stargazers_count");
       return Response.json({ stars }, {
-        headers: { "Cache-Control": "public, max-age=60, s-maxage=600, stale-while-revalidate=3600" },
+        headers: { "Cache-Control": "public, max-age=30, s-maxage=120, stale-while-revalidate=3600" },
       });
     } catch (e) {
       console.error("stars:", e?.message ?? e);
-      // The page keeps the count it was built with.
-      return Response.json({ stars: null }, { status: 502, headers: { "Cache-Control": "no-store" } });
+      // The page keeps the count it shows. 200, since an error status would put a
+      // failed request in every reader's console each minute, and kept a minute
+      // so a GitHub that refuses is not asked again by every reader.
+      return Response.json({ stars: null }, { headers: { "Cache-Control": "public, max-age=30, s-maxage=60" } });
     }
   },
 };
