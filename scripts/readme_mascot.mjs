@@ -1,5 +1,5 @@
 // Draws the mascot at the top of the READMEs, docs/img/mascot.gif: one loop of
-// the scene web/mascot.js paints on the home page, on its own white card so it
+// the scene web/mascot.js paints on the home page, white on its own black card so it
 // reads on GitHub's light and dark pages alike. Needs ffmpeg and Playwright's
 // Chromium.
 //
@@ -21,10 +21,10 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: WIDTH, height: WIDTH * 5 / 8 }, deviceScaleFactor: 1 });
 await page.setContent(`<!doctype html><meta charset="utf-8"><style>
 @font-face { font-family: "Antonio"; font-weight: 100 700; src: url(data:font/woff2;base64,${antonio}) format("woff2"); }
-html, body { margin: 0; background: #fff; }
+html, body { margin: 0; background: #000; }
 canvas { display: block; width: 100%; }
 </style><div id="scene"></div><script>${mascot}
-const paint = mountMascot(document.getElementById("scene"), TRAZOS, "");
+const paint = mountMascot(document.getElementById("scene"), { ...TRAZOS, ink: "#fff", solid: "#fff", paper: "#000" }, "");
 window.frame = (t) => paint(stateAt(t), gaze(t), SETTLED, t);
 window.total = TOTAL;
 </script>`);

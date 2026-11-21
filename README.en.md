@@ -134,10 +134,6 @@ Pull requests are welcome, and so is an [issue](../../issues/new/choose) if you 
 - [SECURITY.md](SECURITY.md): how to report a security problem.
 - [METHODOLOGY.md](METHODOLOGY.md) explains the rules and [docs/CONTEXT.md](docs/CONTEXT.md) why the code is the way it is.
 
-## If it is useful to you
-
-Give it a ⭐ with the **Star** button, top right of this page. It is what gets it found by more people looking for work in Spain.
-
 ## Licence and disclaimer
 
 The code is [MIT](LICENSE) and the data in `data/` is [CC BY-SA 4.0](LICENSE-DATA). Salaries are read from [Levels.fyi](https://www.levels.fyi) and remain subject to its terms.

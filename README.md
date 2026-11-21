@@ -134,10 +134,6 @@ Los pull requests son bienvenidos, y un [issue](../../issues/new/choose) tambié
 - [SECURITY.md](SECURITY.md): cómo avisar de un fallo de seguridad.
 - [METHODOLOGY.md](METHODOLOGY.md) explica las reglas y [docs/CONTEXT.md](docs/CONTEXT.md) por qué el código es como es.
 
-## Si te sirve
-
-Dale una ⭐ con el botón **Star**, arriba a la derecha de esta página. Es lo que hace que lo encuentre más gente que busca trabajo en España.
-
 ## Licencia y aviso
 
 El código es [MIT](LICENSE) y los datos de `data/` [CC BY-SA 4.0](LICENSE-DATA). Los salarios se leen de [Levels.fyi](https://www.levels.fyi) y siguen sujetos a sus condiciones.
