@@ -201,6 +201,15 @@ assert.deepEqual([ttJob["teamtailor:careers.vueling.com:8681660"].location, ttJo
                   ttJob["teamtailor:careers.vueling.com:8681660"].posted_at],
                  ["Viladecans, Spain", "hybrid", "https://careers.vueling.com/jobs/8681660-data-engineer", "vueling", "2026-11-06T14:14:31.000Z"]);
 assert.equal(ttJob["teamtailor:careers.vueling.com:8681661"].workplace, "remote");
+// A board two listed companies share (careers.json "shared"): each posting is
+// listed under both, the second narrowed by its title filter.
+const shared = await crawl({ companies: [
+  { name: "Vueling", ats: "teamtailor", board: "careers.vueling.com", tier: "B", tags: ["spain"] },
+  { name: "Vueling Data", ats: "teamtailor", board: "careers.vueling.com", tier: "B", tags: ["spain"], title: "^data" },
+] }, { ...ttData, companies: [...ttData.companies, { name: "Vueling Data", levels: "vueling-data" }] }, await loadAts(), { minutes: 1 });
+assert.deepEqual(shared.index.jobs.map((j) => [j.id, j.slug]).sort(),
+                 [["teamtailor:careers.vueling.com:8681660#vueling-data", "vueling-data"], ["teamtailor:careers.vueling.com:8681660", "vueling"],
+                  ["teamtailor:careers.vueling.com:8681661", "vueling"]]);
 const { teamtailorAdapter } = await import("../lib/ats/sources/teamtailor.js");
 assert.deepEqual(teamtailorAdapter.boardFromUrl("https://ironhackers.teamtailor.com/jobs/123-x"),
                  { ats: "teamtailor", board: "ironhackers.teamtailor.com", region: "global" });
@@ -726,6 +735,8 @@ assert.deepEqual(sf.successfactorsAdapter.boardFromPage("https://careers.acme.ex
                  { ats: "successfactors", board: "careers.acme.example", region: "global" });
 assert.equal(sf.successfactorsAdapter.boardFromPage("https://acme.example/", "<html>no board</html>"), null);
 assert.throws(() => sf.searchUrl({ board: "https://x.example/search" }), /career site's host/);
+assert.equal(sf.searchUrl({ board: "careers.indragroup.com", query: "locationsearch=Spain&optionsFacetsDD_customfield5=Minsait" }),
+             "https://careers.indragroup.com/search/?q=&locationsearch=Spain&optionsFacetsDD_customfield5=Minsait", "a query with = is the search's own parameters");
 
 // Phenom and iCIMS career sites live on the employer's own domain.
 const careerSite = (ats, board) => ({ name: ats === "phenom" ? "Roche" : "Keysight", ats, board, tier: "B", tags: [],
@@ -984,6 +995,12 @@ assert.deepEqual([rotated([], 5), rotated(["a", "b", "c"], 3)], [[], ["a", "b", 
 assert.equal(boardOf("com,ashbyhq,jobs)/%zz", "com,ashbyhq,jobs)/", "path"), null);
 
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);
+
+{
+  const { titlePlace } = await import("../lib/ats/sources/avature.js");
+  assert.deepEqual(["Operador de Loja - Braga", "Médico/a - Lugo", "Médico/a"].map(titlePlace),
+                   ["Braga, Portugal", "Lugo, Spain", ""], "a place read off the title's end");
+}
 
 // --- Classic iCIMS and Jobvite parsers ----------------------------------------
 {

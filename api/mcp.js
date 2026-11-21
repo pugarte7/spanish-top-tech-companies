@@ -2350,8 +2350,10 @@ const FORMS = { greenhouse: greenhouseForm, ashby: ashbyForm, lever: leverForm, 
                 jsonld: jsonldForm, radancy: jsonldForm, icims: jsonldForm, oracle: oracleForm,
                 cornerstone: cornerstoneForm };
 
-// "ats:board:id"; the board may hold slashes (Workday), never a colon.
+// "ats:board:id"; the board may hold slashes (Workday), never a colon. A
+// posting on a board two companies share carries "#<slug>" after its id.
 function splitId(id) {
+  id = id.replace(/#[^:#]*$/, "");
   const first = id.indexOf(":"), last = id.lastIndexOf(":");
   return first > 0 && last > first ? [id.slice(0, first), id.slice(first + 1, last), id.slice(last + 1)] : null;
 }

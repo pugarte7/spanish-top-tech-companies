@@ -978,7 +978,7 @@ def job_boards(data: dict, tables: dict) -> dict:
         cities = [t for t in map(board_tag, company.get("cities", [])[:3]) if t]
         out.append({"name": company["name"], "ats": board["ats"], "board": board["board"],
                     "tier": tier, "tags": list(dict.fromkeys(["spain", *cities])),
-                    **{k: board[k] for k in ("region", "query", "country") if board.get(k)}})
+                    **{k: board[k] for k in ("region", "query", "country", "title") if board.get(k)}})
     # Employers with no board above that post remote work open to Spain or
     # Europe (scripts/remote_levels.py), most of them with no salary in Spain
     # on file. No tier: the site ranks nobody it has no salaries for.

@@ -178,16 +178,20 @@ for (const report of reports) {
     continue;
   }
   // A board another company already holds is theirs: Eventbrite's careers page
-  // has led to Bending Spoons' since Bending Spoons bought it.
+  // has led to Bending Spoons' since Bending Spoons bought it. A careers.json
+  // entry marked `shared` takes it anyway: a subsidiary that posts on its
+  // parent's board (Minsait on Indra's), its postings listed under both.
   const key = spain.boardKey({ ats: entry.ats, board: entry.board, region: entry.region ?? "global" });
-  const holder = Object.keys(boards).find((other) => other !== slug && spain.boardKey({ region: "global", ...boards[other] }) === key);
+  const shared = careers[slug]?.shared === true;
+  const holder = !shared && Object.keys(boards).find((other) => other !== slug && spain.boardKey({ region: "global", ...boards[other] }) === key);
   if (holder) {
     delete boards[slug];
     none[slug] = today;
     continue;
   }
   delete none[slug];
-  boards[slug] = { ats: entry.ats, board: entry.board, ...(entry.region ? { region: entry.region } : {}), ...(entry.query ? { query: entry.query } : {}), ...(entry.country ? { country: entry.country } : {}) };
+  boards[slug] = { ats: entry.ats, board: entry.board, ...(entry.region ? { region: entry.region } : {}), ...(entry.query ? { query: entry.query } : {}), ...(entry.country ? { country: entry.country } : {}),
+    ...(shared ? { shared: true } : {}), ...(careers[slug]?.title ? { title: careers[slug].title } : {}) };
 }
 // One company per line, sorted by slug, so the diff shows what changed.
 const lines = Object.keys(boards)
