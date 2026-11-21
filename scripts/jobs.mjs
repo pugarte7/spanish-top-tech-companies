@@ -211,9 +211,16 @@ export async function crawl(boardsList, data, ats, opts = {}) {
   };
 
   // One queue per host: lib/ats's client spaces requests to a host, but only
-  // for requests made one after another.
+  // for requests made one after another. A board several companies share
+  // (careers.json "shared") is read once and its postings handed to each.
   const queues = new Map();
+  const byBoard = new Map();
   for (const board of boardsList.companies ?? []) {
+    const key = [board.ats, board.board, board.query ?? "", board.country ?? "", board.region ?? ""].join("|");
+    if (byBoard.has(key)) {
+      byBoard.get(key).holders.push(board);
+      continue;
+    }
     let company;
     let host;
     try {
@@ -224,8 +231,11 @@ export async function crawl(boardsList, data, ats, opts = {}) {
       continue;
     }
     if (!queues.has(host)) queues.set(host, []);
-    queues.get(host).push({ board, company, tries: 1 });
+    const item = { board, company, tries: 1, holders: [board] };
+    byBoard.set(key, item);
+    queues.get(host).push(item);
   }
+  const failAll = (item, code, message) => { for (const holder of item.holders) fail(holder, code, message); };
 
   // A host that refuses (403 and the like) is backing off, not saying the board
   // is gone: the board goes to the back of its host's queue, the host waits
@@ -240,14 +250,14 @@ export async function crawl(boardsList, data, ats, opts = {}) {
     let strikes = 0;
     while (queue.length) {
       const item = queue.shift();
-      if (Date.now() > deadline) { fail(item.board, "timeout", "crawl time limit reached"); continue; }
+      if (Date.now() > deadline) { failAll(item, "timeout", "crawl time limit reached"); continue; }
       const result = await discoverJobs([item.company]);
       const issue = result.issues[0];
       if (issue && throttled(issue) && strikes + 1 >= HOST_STRIKES) {
         // Refused that many times running: the host is not letting this run
         // in today, so its boards are left to the previous index.
         log(`  ${host} refused ${HOST_STRIKES} times in a row; skipping its other ${queue.length} boards`);
-        for (const rest of [item, ...queue.splice(0)]) fail(rest.board, issue.code, issue.message);
+        for (const rest of [item, ...queue.splice(0)]) failAll(rest, issue.code, issue.message);
         break;
       }
       if (issue && throttled(issue) && item.tries < MAX_TRIES && Date.now() < deadline) {
@@ -264,20 +274,25 @@ export async function crawl(boardsList, data, ats, opts = {}) {
       // Any answer, a 404 included, means the host is serving again.
       if (!issue || !throttled(issue)) strikes = 0;
       if (issue) {
-        for (const each of result.issues) fail(item.board, each.code, each.message);
+        for (const each of result.issues) failAll(item, each.code, each.message);
       } else {
-        done.add(item.board);
-        // data/careers.json may narrow a shared board to some titles (Telefónica Tech's start "Tech").
-        const titled = item.board.title ? new RegExp(item.board.title, "i") : null;
-        for (const job of result.jobs) {
-          if (titled && !titled.test(job.title)) continue;
-          const owner = ownerOf(job, item.board, slugOf);
-          const row = entry(job, owner, slugOf(owner), location, known);
-          if (!row) continue;
-          // A board two companies share lists the posting under each.
-          const held = jobs.get(row.id);
-          if (held && held.slug !== row.slug) row.id = `${row.id}#${row.slug ?? norm(row.company)}`;
-          jobs.set(row.id, row);
+        for (const holder of item.holders) {
+          done.add(holder);
+          // data/careers.json may narrow a shared board to some titles (Telefónica Tech's start "Tech").
+          const titled = holder.title ? new RegExp(holder.title, "i") : null;
+          for (const job of result.jobs) {
+            if (titled && !titled.test(job.title)) continue;
+            let owner = ownerOf(job, holder, slugOf);
+            // A brand naming another company that shares this board is that
+            // company's own copy: T-Systems keeps the postings branded T-Systems Iberia.
+            if (owner !== holder && item.holders.some((other) => other !== holder && norm(other.name) === norm(owner.name))) owner = holder;
+            const row = entry(job, owner, slugOf(owner), location, known);
+            if (!row) continue;
+            // A board two companies share lists the posting under each.
+            const held = jobs.get(row.id);
+            if (held && held.slug !== row.slug) row.id = `${row.id}#${row.slug ?? norm(row.company)}`;
+            jobs.set(row.id, row);
+          }
         }
       }
       if (queue.length && gap) await sleep(gap);
