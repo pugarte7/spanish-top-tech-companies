@@ -485,6 +485,24 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
       description: "<p>Go.</p>", datePosted: "2026-10-28", location: { addressCountry: "Spain" } } } }),
     "https://acme.bamboohr.com/careers/6/detail": JSON.stringify({ result: { jobOpening: {
       description: "<p>Sell.</p>", location: { addressCountry: "Argentina" } } } }),
+    "https://career2.successfactors.eu/career": `<?xml version="1.0" encoding="UTF-8"?>
+<Job-Listing>
+<Job><JobTitle><![CDATA[Arquitecto/a .NET]]></JobTitle><Job-Description><![CDATA[<p>Buscamos.</p>]]></Job-Description><ReqId>10112</ReqId>
+<filter1><label>Ubicación/provincia</label><value>Vizcaya</value></filter1></Job>
+<Job><JobTitle><![CDATA[Sales &amp; Spend]]></JobTitle><ReqId>459001</ReqId><Posted-Date>09/07/2026</Posted-Date>
+<filter7><label>Country</label><value>Germany</value></filter7><filter8><label>Internal Posting Location</label><value>Walldorf</value></filter8>
+<filter10><label>Additional Locations</label><value>Virtual - Germany</value></filter10></Job>
+</Job-Listing>`,
+    "https://jobs.acme.es/jobs": (url) => new URL(url).searchParams.get("page") === "2" ? `<a class="job-card card-grid-image" href="https://jobs.acme.es/jobs/dev-2"><div class="title">Developer</div><div class="details"><span>Teletrabajo/Remoto</span></div></a>` : `<a class="job-card card-grid-image" href="https://jobs.acme.es/jobs/qa-1"><div class="title">QA Senior</div><div class="details"><span>Madrid</span><span>Híbrido</span></div></a><a class="job-card card-grid-image" href="https://jobs.acme.es/jobs/trabaja-con-nosotros"><div class="title">Trabaja con nosotros</div><div class="details"><span>Presencial</span></div></a><a rel="next" class="next" href="/jobs?page=2">Siguiente</a>`,
+    "https://api-prod.letsdeel.com/deelapi/guest/ats/organizations/11111111-1111-4111-8111-111111111111/job_boards/22222222-2222-4222-8222-222222222222/job_postings": JSON.stringify([
+      { id: "33333333-3333-4333-8333-333333333333", title: "Product Manager", richtextDescription: "<p>Ship.</p>", createdAt: "2026-10-22T15:37:26.054Z",
+        isCompensationVisible: true, job: { workArrangementEnum: "REMOTE",
+          jobLocations: [{ location: { name: "Spain", country: { code: "ES", name: "Spain" } } }],
+          currentCompensation: { currencyIsoCode: "EUR", minAmount: 41000, maxAmount: 55000, periodSlug: "annually" } } },
+      { id: "44444444-4444-4444-8444-444444444444", title: "Sales", isCompensationVisible: false, job: { workArrangementEnum: "ONSITE",
+          jobLocations: [{ location: { name: "Berlin", country: { code: "DE", name: "Germany" } } }] } },
+    ]),
+    "https://jobs.acme.com/en_US/careers/SearchJobs/": (url) => new URL(url).searchParams.get("jobOffset") === "2" ? `<p>3 results</p><article class="article article--result 1"><h3><a class="link" href="https://jobs.acme.com/en_US/careers/JobDetail/3">Analyst</a></h3><div class="article__header__text__subtitle"><span>Lisbon, Portugal</span> &nbsp;&#8226;&nbsp; <span>Job ID: 3</span></div></article>` : `<p>3 results</p><article class="article article--result 1"><h3><a class="link" href="https://jobs.acme.com/en_US/careers/JobDetail/1">Data Engineer</a></h3><div class="article__header__text__subtitle"><span>Tres Cantos , Madrid , Spain</span> &nbsp;&#8226;&nbsp; <span>Job ID: 1</span></div></article><article class="article article--result 1"><h3><a class="link" href="https://jobs.acme.com/en_US/careers/JobDetail/2">Sales</a></h3><div class="article__header__text__subtitle"><span>Multiple Locations</span> &nbsp;&#8226;&nbsp; <span>Job ID: 2</span></div></article><a href="https://jobs.acme.com/en_US/careers/SearchJobs/?jobRecordsPerPage=2&amp;jobOffset=2">2</a>`,
     "https://acme.jobs.personio.de/xml": `<?xml version="1.0" encoding="UTF-8"?>
 <workzag-jobs>
 <position><id>11</id><office>Spain - Barcelona</office><name>Backend Engineer</name>
@@ -499,7 +517,8 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
   globalThis.fetch = async (url, init = {}) => {
     const key = String(url).split("?")[0];
     seen.push({ key, auth: init.headers?.authorization ?? init.headers?.Authorization ?? null, body: init.body ?? null });
-    return key in pages ? new Response(pages[key], { status: 200 }) : new Response("not found", { status: 404 });
+    const page = typeof pages[key] === "function" ? pages[key](String(url)) : pages[key];
+    return key in pages ? new Response(page, { status: 200 }) : new Response("not found", { status: 404 });
   };
   const list = async (ats, board, query = "") =>
     adapterFor(ats).listJobs(CompanySchema.parse({ name: "Acme", ats, board, query }), "2026-11-09T00:00:00Z");
@@ -531,6 +550,37 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
                    "the country after the hash wins over the address country");
   assert.deepEqual(spainPostings(bamboo).map((j) => j.externalId), ["5"]);
   assert.equal(bamboo[0].postedAt, "2026-10-28");
+  const avature = await list("avature", "jobs.acme.com/en_US/careers");
+  assert.deepEqual(avature.map((j) => [j.externalId, j.locationsRaw[0]]),
+                   [["1", "Tres Cantos, Madrid, Spain"], ["2", "Spain"], ["3", "Lisbon, Portugal"]],
+                   "pages with the portal's own offset; a search for Spain places an unplaced posting there");
+  assert.ok(seen.some((s) => s.key === "https://jobs.acme.com/en_US/careers/SearchJobs/"));
+  assert.deepEqual(spainPostings(avature).map((j) => j.externalId), ["1", "2"]);
+  const sfc = await list("sfclassic", "career2.successfactors.eu/acme", "Spain");
+  assert.deepEqual(sfc.map((j) => [j.title, j.locationsRaw]),
+                   [["Arquitecto/a .NET", ["Vizcaya, Spain"]], ["Sales & Spend", ["Walldorf, Germany", "Remote, Germany"]]],
+                   "the query's country only for postings that name none");
+  assert.match(sfc[1].postedAt, /^2026-09-07/);
+  assert.deepEqual(spainPostings(sfc).map((j) => j.externalId), ["10112"]);
+  {
+    const { allLocationClasses } = await import("../lib/ats/ranking/location.js");
+    assert.deepEqual(allLocationClasses(["La Jonquera, Catalunya, Spain", "Remote, La Rioja, Spain", "New Orleans, LA"]),
+                     ["spain", "remote-spain", "us-other"], "a place ending in Spain is in Spain, whatever word spells a state");
+  }
+  const bizneo = await list("bizneo", "jobs.acme.es");
+  assert.deepEqual(bizneo.map((j) => [j.externalId, j.locationsRaw[0], j.workplaceType]),
+                   [["qa-1", "Madrid, Spain", "hybrid"], ["dev-2", "Remote, Spain", "remote"]],
+                   "pages until no next link; the open application is not a posting");
+  assert.ok(seen.some((s) => s.key === "https://jobs.acme.es/jobs"));
+  const deel = await list("deel", "acme/11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222");
+  assert.deepEqual(deel.map((j) => [j.locationsRaw[0], j.url]),
+                   [["Remote, Spain", "https://jobs.deel.com/acme/job-details/33333333-3333-4333-8333-333333333333"],
+                    ["Berlin, Germany", "https://jobs.deel.com/acme/job-details/44444444-4444-4444-8444-444444444444"]]);
+  assert.deepEqual(spainPostings(deel).map((j) => j.title), ["Product Manager"]);
+  assert.deepEqual([deel[0].compensation?.min, deel[0].compensation?.currency], [41000, "EUR"]);
+  assert.equal(deel[1].compensation, null, "pay the employer hides is not read");
+  const avatureFiltered = await list("avature", "jobs.acme.com/en_US/careers", "3183=[8010]&listFilterMode=1");
+  assert.ok(seen.some((s) => s.key === "https://jobs.acme.com/en_US/careers/SearchJobs/") && avatureFiltered.length === 3);
   const personio = await list("personio", "acme");
   assert.deepEqual(personio.map((j) => j.locationsRaw), [["Barcelona, Spain"], ["Munich", "Madrid"], ["Berlin, Germany"]],
                    "\"Country - City\" is turned round; additional offices are kept");
@@ -551,6 +601,8 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
   assert.equal(from("bamboohr", "https://staticfe.bamboohr.com/careers/x.js"), null);
   assert.equal(from("personio", "https://tado.jobs.personio.com/job/123?language=en")?.board, "tado");
   assert.equal(from("personio", "https://www.personio.com/careers/"), null);
+  assert.equal(from("avature", "https://mercadona.avature.net/es_ES/Careers/JobDetail/M-dico-a/308814")?.board, "mercadona.avature.net/es_ES/Careers");
+  assert.equal(from("avature", "https://jobs.siemens.com/en_US/externaljobs/JobDetail/1"), null);
   assert.deepEqual(adapterFor("radancy").boardFromPage("https://careers.ing.com/en/search-jobs",
                    '<link href="https://tbcdn.talentbrew.com/x.css"><a href="/en/search-jobs">'),
                    { ats: "radancy", board: "careers.ing.com/en", region: "global" });
@@ -932,3 +984,90 @@ assert.deepEqual([rotated([], 5), rotated(["a", "b", "c"], 3)], [[], ["a", "b", 
 assert.equal(boardOf("com,ashbyhq,jobs)/%zz", "com,ashbyhq,jobs)/", "path"), null);
 
 console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs.length}, fallbacks ok`);
+
+// --- Classic iCIMS and Jobvite parsers ----------------------------------------
+{
+  const { parseIcimsCards } = await import("../lib/ats/sources/icimsclassic.js");
+  const cards = parseIcimsCards(`<ul class="container-fluid iCIMS_JobsTable"><li class="iCIMS_JobCardItem"><div class="row">
+<div class="col-xs-6 header right"><span class="sr-only field-label">Posted Date</span><span title="11/20/2026 6:16 AM">24 hours ago</span></div>
+<div class="col-xs-12 title"><a href="https://expleo-jobs-es-en.icims.com/jobs/58722/ingeniero-a-rams/job?in_iframe=1" class="iCIMS_Anchor" title="58722 - Ingeniero/a RAMS"><span class="sr-only field-label">Title</span><h3 >Ingeniero/a RAMS &ndash; Sistemas Embarcados</h3></a></div>
+<div class="col-xs-12 additionalFields"><dl class="iCIMS_JobHeaderGroup">
+<div class="iCIMS_JobHeaderTag"><dt class="iCIMS_JobHeaderField"><span class="sr-only field-label">Job Locations</span></dt><dd class="iCIMS_JobHeaderData"><span >ES-CL-Le&oacute;n, Castilla y Le&oacute;n ,</span></dd></div>
+<div class="iCIMS_JobHeaderTag"><dt class="iCIMS_JobHeaderField">Salary minimum</dt><dd class="iCIMS_JobHeaderData"><span >EUR &euro;25,000.00/Yr.</span></dd></div>
+<div class="iCIMS_JobHeaderTag"><dt class="iCIMS_JobHeaderField">Salary maximum</dt><dd class="iCIMS_JobHeaderData"><span >EUR &euro;48,000.00/Yr.</span></dd></div>
+</dl></div></div></li>
+<li class="iCIMS_JobCardItem"><div class="row"><div class="col-xs-6 header left"><span class="sr-only field-label">Job Locations</span><span >ES-Rivas-Vaciamadrid | ES-Remote | PL</span></div>
+<div class="col-xs-12 title"><a href="https://internationalcareers-bruker.icims.com/jobs/20395/team-leader/job?hub=12&amp;in_iframe=1" class="iCIMS_Anchor" title="20395 - Team Leader"><h3 >Team Leader Commercial, IBERIA (m/f/d)</h3></a></div></div></li></ul>`, "worldwidecareers-bruker.icims.com");
+  assert.deepEqual(cards.map((c) => c.id), ["58722", "20395"]);
+  assert.match(JSON.stringify(cards[0]), /Le[oó]n, Castilla y Le[oó]n, Spain/);
+  assert.match(JSON.stringify(cards[1]), /Rivas-Vaciamadrid, Spain.*Remote, Spain.*Poland/);
+  assert.ok(cards[1].url.startsWith("https://worldwidecareers-bruker.icims.com/jobs/20395/"), "postings are read on the board's own host");
+  const { parseJobviteList, parseJobviteDetail } = await import("../lib/ats/sources/jobvite.js");
+  const rows = parseJobviteList(`<table class="jv-job-list"><tbody><tr><td class="jv-job-list-name"><a href="/nutanix/job/omDAAfwT">Senior Support Engineer</a></td><td class="jv-job-list-location">
+    Barcelona,
+    Spain
+</td></tr>
+<tr><td class="jv-job-list-name"><a href="/telemedicine-clinic/job/oB94Afw8">Consultant Radiologist</a></td><td class="jv-job-list-location"><div class="jv-meta">
+    2 Locations
+</div></td></tr></tbody></table>
+<div class="jv-job-item card"><div class="jv-job-list-name"><a href="/drillinginfo/job/oy9CAfwD">Business Development Representative</a></div><div class="jv-job-list-location">
+    Madrid,
+    Spain
+</div></div>`, "x");
+  assert.equal(rows.length, 3);
+  assert.match(JSON.stringify(rows), /Barcelona, Spain.*2.*Madrid, Spain/s);
+  const detail = parseJobviteDetail(`<p class="jv-job-detail-meta">
+    Marketing<span class='jv-inline-separator'></span>
+    Madrid,
+    Spain
+    <span class="jv-inline-separator"></span>
+    Remote,
+    Spain
+<span class='jv-inline-separator'></span>Req.Num.: 32252
+</p>
+<div class="jv-job-detail-description" ng-non-bindable><h3>Description</h3><p>Sell.</p></div>
+<script type="application/ld+json">{"@context":"http://schema.org","@type":"JobPosting","datePosted":"2026-11-06","identifier":"ojK3Afwq"}</script>`, 2);
+  assert.match(JSON.stringify(detail), /Madrid, Spain.*Remote, Spain/);
+  assert.match(JSON.stringify(detail), /2026-11-06/);
+}
+
+// --- Factorial, Njoyn and BeeSite parsers -------------------------------------
+{
+  const { parseFactorialList, parseFactorialPosting } = await import("../lib/ats/sources/factorial.js");
+  const offers = parseFactorialList(`<option value='city:barcelona'>Barcelona</option>
+<li class='job-offer-item w-full' data-is-remote='false' data-job-postings-url='https://mvst.factorial.com/job_posting/full-stack-developer-senior-292895' data-location-key='city:barcelona' role='button'>
+<span class='md:w-3/6'><div class="text-sm sm:text-base font-bold factorial__headingFontFamily">Full Stack Developer (Senior)
+</div></span><div class='flex-grow'><div class="text-sm leading-sm text-left">Development
+</div></div><div class='flex-grow'><div class="text-sm leading-sm text-left">Hybrid
+</div></div></li>
+<li class='job-offer-item w-full' data-controller='job-postings' role='button'><span><div class="text-sm font-bold">Candidatura espontània</div></span></li>`);
+  assert.deepEqual(offers.map((o) => [o.id, o.city, o.mode]), [["292895", "Barcelona", "Hybrid"]], "the open application is not a posting");
+  const post = parseFactorialPosting(`<li><span class='self-start m-1'><svg></svg></span>
+<span class='inline-block align-middle mr-2 ml-2'>Gurb, Barcelona, Espanya
+</span></li>
+<div class='styledText'><h2>Què esperem de tu?</h2><div><p>Text</p></div></div><div>after</div>`);
+  assert.equal(post.place, "Gurb, Barcelona, Spain", "the country is read in the site's language");
+  assert.match(post.descriptionHtml, /Què esperem de tu/);
+  const { parseNjoynListing, parseNjoynPosting } = await import("../lib/ats/sources/njoyn.js");
+  const listing = parseNjoynListing(`<header>Search Results (51)</header><table><tr HasMultipleLocations='0' RemoteWork='False' CountryIDs=''><td><a href='xweb.asp?NTKN=c&amp;clid=21001&amp;Page=JobDetails&amp;Jobid=J1026-2018&amp;BRID=1342822&amp;lang=1'>J1026-2018</a></td><td>DevOps Engineer con francés</td><td>Project Management</td><td>Madrid</td><td name='CountryCell'>Spain</td></tr>
+<tr HasMultipleLocations='0' RemoteWork='True' CountryIDs=''><td><a href='xweb.asp?NTKN=c&amp;clid=21001&amp;Page=JobDetails&amp;Jobid=J0321-3585&amp;BRID=804338&amp;lang=1'>J0321-3585</a></td><td>Multilingual Service Desk Analyst</td><td>Service Desk</td><td>Eschborn</td><td name='CountryCell'>Germany</td></tr></table>`, "https://cgi.njoyn.com/CORP/xweb/");
+  assert.match(JSON.stringify(listing), /51/);
+  assert.match(JSON.stringify(listing), /Madrid.*Spain.*Eschborn.*Germany/s);
+  assert.match(JSON.stringify(parseNjoynPosting(`<script type="application/ld+json">{"@context":"http://schema.org/","@type":"JobPosting","title":"DevOps Engineer","description":"Da el siguiente paso<br />","datePosted":"2026-11-18","validThrough":"2026-12-31","jobLocation":{"@type":"Place","address":{"addressLocality":"Madrid","addressCountry":"ES "}}}</script>`)), /2026-11-18/);
+  const { beesitePostingUrl } = await import("../lib/ats/sources/beesite.js");
+  assert.equal(beesitePostingUrl({ id: "76098", PositionURI: "/index.php?ac=jobad&id=76098" },
+                                 { board: "api-deutschebank.beesite.de", query: "job=https://careers.db.com/professionals/search-roles/#/professional/job/{id}" }),
+               "https://careers.db.com/professionals/search-roles/#/professional/job/76098");
+}
+
+// --- Own-site parsers in jsonapi ------------------------------------------------
+{
+  const j = await import("../lib/ats/sources/jsonapi.js");
+  const bnp = j.parseBnpParibasCards('<ul class="jobs__list"><li class="block-job"><div class="crd crd--jobs"><div class="wrapper-job"><div class="crd__content"><p class="crd__type">Beca</p><h2 class="crd__title"><a class="crd__link" href="https://www.bnpparibas.es/es/jobs/department-office-pmo-swift-2/">Department Office &#8211; PMO Swift</a></h2><p class="crd__location"><svg class="icon icon-pin"><use href="#icon-pin"></use></svg>ES-Madrid-Madrid</p></div></div></div></li></ul>');
+  assert.deepEqual([bnp[0].id, bnp[0].city, bnp[0].country], ["department-office-pmo-swift-2", "Madrid", "ES"]);
+  const bsc = j.parseBscRows('<table class="views-table cols-4"><tbody><tr class="odd views-row-first"><td class="views-field views-field-title" ><a href="/join-us/job-opportunities/23126aiimtre1">231_26_AII_MT_RE1</a></td><td class="views-field views-field-field-jobref" >NLP Engineer (RE1)</td></tr></tbody></table>');
+  assert.deepEqual([bsc[0].reference, bsc[0].title], ["231_26_AII_MT_RE1", "NLP Engineer (RE1)"]);
+  const ms = j.parseManagementSolutionsOffers('<div id="MainContent_div1"><hr /><span id="MainContent_pais0"><font>United States <br /></font></span><a id="MainContent_1" href="VerOfertas.aspx?num=1"><b><font>BUSINESS CONSULTANT BOSTON<br /></font></b></a><span id="MainContent_provincia0"><font>Boston &nbsp;/ &nbsp;</font></span><br /><hr /><span id="MainContent_pais1"><font>Spain <br /></font></span><a id="MainContent_12" href="VerOfertas.aspx?num=12"><b><font>DATA SCIENCE CONSULTANT BILBAO<br /></font></b></a><span id="MainContent_provincia1"><font>Bilbao &nbsp;/ &nbsp;</font></span><br /></div>');
+  assert.equal(ms.length, 2);
+  assert.match(JSON.stringify(ms), /Spain.*Bilbao/);
+}
