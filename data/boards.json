@@ -324,7 +324,7 @@
   "medallia": {"ats":"icims","board":"jobs.medallia.com"},
   "mediamarktsaturn": {"ats":"successfactors","board":"careers.mediamarktsaturn.com","query":"Spain"},
   "medtronic": {"ats":"workday","board":"medtronic/wd1/MedtronicCareers","query":"Spain"},
-  "mercadona": {"ats":"avature","board":"mercadona.avature.net/es_ES/Careers","query":"title"},
+  "mercadona": {"ats":"teamtailor","board":"www.mercadonatech.com","shared":true},
   "mercadona-tech": {"ats":"teamtailor","board":"www.mercadonatech.com"},
   "mercedes-benz": {"ats":"beesite","board":"jobs.api.mercedes-benz.com","query":"country=508"},
   "metlife": {"ats":"lever","board":"metlife"},
