@@ -82,30 +82,74 @@ async function fetchPage(url) {
 
 // One browser for the run, one context per page. Images, fonts and media are
 // never loaded: the board shows in the DOM and in the page's API calls.
+// A page the local browser cannot load (a bot challenge, a 403) is tried once
+// more in a Browserbase cloud browser when BROWSERBASE_API_KEY is set: one
+// session for the run, opened at the first such page.
+const CHALLENGE_TITLE = /just a moment|un momento|attention required|checking your browser/i;
 async function openBrowser() {
   const { chromium } = await import("@playwright/test");
-  const browser = await chromium.launch();
+  const bb = await import("../lib/ats/sources/browserbase.js");
+  const local = await chromium.launch();
+  let remote = null;
   const SKIP = new Set(["image", "media", "font"]);
+  const render = async (page, url) => {
+    await page.route("**/*", (route) => (SKIP.has(route.request().resourceType()) ? route.abort() : route.continue()));
+    const requests = [];
+    page.on("request", (request) => requests.push(request.url()));
+    const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20_000 });
+    if (!response) return null;
+    if (response.status() >= 400) {
+      // A challenge page gives way to the site by itself once the browser passes;
+      // any other refusal is final.
+      if (!CHALLENGE_TITLE.test(await page.title())) return null;
+      await page.waitForFunction((re) => !new RegExp(re, "i").test(document.title), CHALLENGE_TITLE.source, { timeout: 25_000 })
+        .catch(() => {});
+      if (CHALLENGE_TITLE.test(await page.title())) return null;
+    }
+    await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
+    return { url: page.url(), html: await page.content(), requests: [...requests, ...page.frames().map((frame) => frame.url())] };
+  };
+  const inCloud = async (url) => {
+    remote ??= bb.createSession(3600).then((session) => chromium.connectOverCDP(session.connectUrl).then(
+      (browser) => ({ session, browser }),
+      async (error) => { await bb.releaseSession(session.id); throw error; }));
+    let page;
+    try {
+      const { browser } = await remote;
+      const context = browser.contexts()[0];
+      page = await context.newPage();
+      const cdp = await context.newCDPSession(page);
+      const agent = await page.evaluate(() => navigator.userAgent);
+      await cdp.send("Network.setUserAgentOverride", { userAgent: `${agent} ${process.env.ATS_USER_AGENT}` });
+      return await render(page, url);
+    } catch {
+      return null;
+    } finally {
+      await page?.close().catch(() => {});
+    }
+  };
   return {
     async renderPage(url) {
       let context;
+      let rendered = null;
       try {
-        context = await browser.newContext({ userAgent: process.env.ATS_USER_AGENT, locale: "es-ES" });
-        const page = await context.newPage();
-        await page.route("**/*", (route) => (SKIP.has(route.request().resourceType()) ? route.abort() : route.continue()));
-        const requests = [];
-        page.on("request", (request) => requests.push(request.url()));
-        const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20_000 });
-        if (!response || response.status() >= 400) return null;
-        await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
-        return { url: page.url(), html: await page.content(), requests: [...requests, ...page.frames().map((frame) => frame.url())] };
+        context = await local.newContext({ userAgent: process.env.ATS_USER_AGENT, locale: "es-ES" });
+        rendered = await render(await context.newPage(), url);
       } catch {
-        return null;
+        rendered = null;
       } finally {
         await context?.close().catch(() => {});
       }
+      if (rendered || !bb.browserbaseEnabled()) return rendered;
+      return inCloud(url);
     },
-    close: () => browser.close(),
+    async close() {
+      await local.close();
+      if (!remote) return;
+      const { session, browser } = await remote.catch(() => ({}));
+      await browser?.close().catch(() => {});
+      if (session) await bb.releaseSession(session.id);
+    },
   };
 }
 

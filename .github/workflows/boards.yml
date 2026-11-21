@@ -49,10 +49,14 @@ jobs:
       - name: Install Chromium
         run: npm ci -q && npx playwright install --with-deps chromium
 
+      # A careers page whose bot challenge stops the runner's Chromium is
+      # tried again in a Browserbase cloud browser; without the secret it is
+      # left boardless, as before.
       - name: Find boards
         env:
           ONLY: ${{ inputs.only }}
           ALL: ${{ inputs.all }}
+          BROWSERBASE_API_KEY: ${{ secrets.BROWSERBASE_API_KEY }}
         run: |
           args=(--render)
           [ -n "$ONLY" ] && args+=(--only "$ONLY")

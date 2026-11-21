@@ -22,7 +22,9 @@
 // code change ships in minutes instead of waiting on every board (since
 // 2026-11-05: "porque tenemos que hacer el rastreo de ofertas cada vez que
 // hacemos un deploy?"). An older or unreadable index means a crawl. It never
-// fails the build. A host that refuses is retried with growing waits and slowed down.
+// fails the build. A host that refuses is retried with growing waits and slowed down;
+// one whose refusal is Cloudflare's challenge is read through a Browserbase
+// browser when BROWSERBASE_API_KEY is set (lib/ats/sources/browserbase.js).
 // A board that still fails is counted under boards.issues, and its postings
 // in production's previous jobs.json are carried over unchanged for up to a
 // week (boards.stale, boards.stale_since); a board that answers 404 or with
@@ -506,8 +508,11 @@ async function main() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   // Never fail the build over postings, and do not wait on requests abandoned
   // at the deadline.
-  main().then(() => process.exit(0), (error) => {
+  // A Browserbase session (sites that challenge the build's address) is
+  // released before leaving: its minutes are billed.
+  const release = () => import("../lib/ats/sources/browserbase.js").then((m) => m.closeBrowser()).catch(() => {});
+  main().then(() => release().then(() => process.exit(0)), (error) => {
     log(`error: ${error?.stack ?? error}`);
-    process.exit(0);
+    release().then(() => process.exit(0));
   });
 }

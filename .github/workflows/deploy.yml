@@ -7,7 +7,8 @@ name: deploy
 # in a private repo; refresh.yml fetches from Levels.fyi and commits data/.
 #
 # Needs repository secrets VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID
-# (the last two from .vercel/project.json after `vercel link`), and
+# (the last two from .vercel/project.json after `vercel link`), optionally
+# BROWSERBASE_API_KEY (career sites that challenge the runner), and
 # optionally the variable SITE_URL (e.g. https://tech-pay-spain.vercel.app)
 # for absolute links in llms.txt. Without the token it builds and tests but
 # does not deploy.
@@ -105,10 +106,15 @@ jobs:
             echo "::warning::Contacts not read: hiring_contact is off."
           fi
 
+      # Cloudflare challenges the runner's address on some career sites
+      # (Revolut, Capitole, Prosegur, Tracasa); with BROWSERBASE_API_KEY the
+      # crawl reads those through a Browserbase cloud browser, and without it
+      # they fail and keep their last postings for up to a week, as before.
       - name: Build for Vercel
         if: env.VERCEL_TOKEN != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          BROWSERBASE_API_KEY: ${{ secrets.BROWSERBASE_API_KEY }}
         run: |
           npm install --global vercel@latest
           vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
