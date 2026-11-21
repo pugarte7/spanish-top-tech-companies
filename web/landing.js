@@ -109,9 +109,10 @@ async function calls() {
   if (el) el.hidden = !el.querySelector("b").dataset.shown;
 }
 
-async function figures() {
-  calls();
-  setInterval(() => { if (!document.hidden) calls(); }, 1000);
+// The postings and the companies change when the job boards are read again,
+// the stars when someone gives one: asked once a minute, so a page left open
+// keeps up with all three.
+async function slow() {
   try {
     const jobs = await read("/api/v1/jobs-summary.json");
     show("postings", jobs.postings); show("companies", jobs.companies);
@@ -120,11 +121,19 @@ async function figures() {
     const el = document.querySelector(`[data-stat="${key}"]`);
     if (el) el.hidden = !el.querySelector("b").dataset.shown;
   }
-  // The star count is the build's, once a day; this brings it up to date.
+  // Until it answers the page shows the count it was built with.
   try {
     const { stars } = await read("/api/stars"), el = document.querySelector("[data-stars]");
     if (el && Number.isInteger(stars)) el.textContent = grouped(stars);
-  } catch { /* keep the built count */ }
+  } catch { /* keep the count shown */ }
+}
+
+function figures() {
+  calls(); slow();
+  setInterval(() => { if (!document.hidden) calls(); }, 1000);
+  setInterval(() => { if (!document.hidden) slow(); }, 60000);
+  // Back on the tab after a while away: up to date at once.
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) slow(); });
 }
 
 // --- copy, theme, clicks ----------------------------------------------------------
