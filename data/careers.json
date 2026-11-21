@@ -360,7 +360,7 @@
   "medallia": "https://jobs.medallia.com/",
   "mediamarktsaturn": {"ats":"successfactors","board":"careers.mediamarktsaturn.com","query":"Spain"},
   "medtronic": "https://jobs.medtronic.com/careers",
-  "mercadona": {"ats":"avature","board":"mercadona.avature.net/es_ES/Careers","query":"title"},
+  "mercadona": {"ats":"teamtailor","board":"www.mercadonatech.com","shared":true},
   "mercadona-tech": "https://mercadonatech.teamtailor.com/",
   "mercedes-benz": {"ats":"beesite","board":"jobs.api.mercedes-benz.com","query":"country=508"},
   "merkle": "https://www.merkle.com/en/careers.html",
