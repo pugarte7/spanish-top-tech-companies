@@ -1,5 +1,3 @@
-<p align="right"><a href="https://github.com/pugarte7/spanish-top-tech-companies"><img alt="Star it on GitHub" src="https://img.shields.io/github/stars/pugarte7/spanish-top-tech-companies?style=for-the-badge&logo=github&label=Star&color=0000f2"></a></p>
-
 <p align="center"><img alt="The mascot: Spain with two eyes and six arms sending CVs" src="docs/img/mascot.gif" width="420"></p>
 
 <h1 align="center">Apply to thousands of tech jobs with your agent</h1>
@@ -7,6 +5,8 @@
 <p align="center">Have your agent apply for you. Free.</p>
 
 <p align="center"><a href="https://spanishtoptechcompanies.com/en/">spanishtoptechcompanies.com</a> · <a href="./README.md">🇪🇸</a> / <b>🇬🇧</b></p>
+
+<p align="center"><a href="https://github.com/pugarte7/spanish-top-tech-companies/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/pugarte7/spanish-top-tech-companies?style=flat&logo=github&label=stars&color=0000f2"></a> <a href="https://github.com/pugarte7/spanish-top-tech-companies/actions/workflows/ci.yml"><img alt="Tests" src="https://github.com/pugarte7/spanish-top-tech-companies/actions/workflows/ci.yml/badge.svg?branch=main"></a> <a href="LICENSE"><img alt="MIT licence" src="https://img.shields.io/badge/license-MIT-0000f2?style=flat"></a> <a href="https://github.com/pugarte7/spanish-top-tech-companies/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/pugarte7/spanish-top-tech-companies?style=flat&color=0000f2"></a></p>
 
 <h3 align="center">⭐ Useful to you? Give it a star: the <b>Star</b> button, top right of this page</h3>
 
@@ -133,6 +133,10 @@ Pull requests are welcome, and so is an [issue](../../issues/new/choose) if you 
 - [Code of conduct](CODE_OF_CONDUCT.md): what is expected of everyone taking part.
 - [SECURITY.md](SECURITY.md): how to report a security problem.
 - [METHODOLOGY.md](METHODOLOGY.md) explains the rules and [docs/CONTEXT.md](docs/CONTEXT.md) why the code is the way it is.
+
+## If it is useful to you
+
+Give it a ⭐ with the **Star** button, top right of this page. It is what gets it found by more people looking for work in Spain.
 
 ## Licence and disclaimer
 

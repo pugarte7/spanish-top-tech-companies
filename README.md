@@ -1,5 +1,3 @@
-<p align="right"><a href="https://github.com/pugarte7/spanish-top-tech-companies"><img alt="Dale una estrella en GitHub" src="https://img.shields.io/github/stars/pugarte7/spanish-top-tech-companies?style=for-the-badge&logo=github&label=Star&color=0000f2"></a></p>
-
 <p align="center"><img alt="La mascota: España con dos ojos y seis brazos que envían CVs" src="docs/img/mascot.gif" width="420"></p>
 
 <h1 align="center">Aplica a miles de trabajos en tech con tu agente</h1>
@@ -7,6 +5,8 @@
 <p align="center">Haz que tu agente aplique por ti. Gratis.</p>
 
 <p align="center"><a href="https://spanishtoptechcompanies.com/es/">spanishtoptechcompanies.com</a> · <b>🇪🇸</b> / <a href="./README.en.md">🇬🇧</a></p>
+
+<p align="center"><a href="https://github.com/pugarte7/spanish-top-tech-companies/stargazers"><img alt="Estrellas en GitHub" src="https://img.shields.io/github/stars/pugarte7/spanish-top-tech-companies?style=flat&logo=github&label=stars&color=0000f2"></a> <a href="https://github.com/pugarte7/spanish-top-tech-companies/actions/workflows/ci.yml"><img alt="Tests" src="https://github.com/pugarte7/spanish-top-tech-companies/actions/workflows/ci.yml/badge.svg?branch=main"></a> <a href="LICENSE"><img alt="Licencia MIT" src="https://img.shields.io/badge/license-MIT-0000f2?style=flat"></a> <a href="https://github.com/pugarte7/spanish-top-tech-companies/commits/main"><img alt="Último cambio" src="https://img.shields.io/github/last-commit/pugarte7/spanish-top-tech-companies?style=flat&color=0000f2"></a></p>
 
 <h3 align="center">⭐ ¿Te sirve? Dale una estrella: botón <b>Star</b>, arriba a la derecha de esta página</h3>
 
@@ -133,6 +133,10 @@ Los pull requests son bienvenidos, y un [issue](../../issues/new/choose) tambié
 - [Código de conducta](CODE_OF_CONDUCT.md): lo que se espera de quien participa.
 - [SECURITY.md](SECURITY.md): cómo avisar de un fallo de seguridad.
 - [METHODOLOGY.md](METHODOLOGY.md) explica las reglas y [docs/CONTEXT.md](docs/CONTEXT.md) por qué el código es como es.
+
+## Si te sirve
+
+Dale una ⭐ con el botón **Star**, arriba a la derecha de esta página. Es lo que hace que lo encuentre más gente que busca trabajo en España.
 
 ## Licencia y aviso
 
