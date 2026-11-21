@@ -1059,3 +1059,15 @@ console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs
                                  { board: "api-deutschebank.beesite.de", query: "job=https://careers.db.com/professionals/search-roles/#/professional/job/{id}" }),
                "https://careers.db.com/professionals/search-roles/#/professional/job/76098");
 }
+
+// --- Own-site parsers in jsonapi ------------------------------------------------
+{
+  const j = await import("../lib/ats/sources/jsonapi.js");
+  const bnp = j.parseBnpParibasCards('<ul class="jobs__list"><li class="block-job"><div class="crd crd--jobs"><div class="wrapper-job"><div class="crd__content"><p class="crd__type">Beca</p><h2 class="crd__title"><a class="crd__link" href="https://www.bnpparibas.es/es/jobs/department-office-pmo-swift-2/">Department Office &#8211; PMO Swift</a></h2><p class="crd__location"><svg class="icon icon-pin"><use href="#icon-pin"></use></svg>ES-Madrid-Madrid</p></div></div></div></li></ul>');
+  assert.deepEqual([bnp[0].id, bnp[0].city, bnp[0].country], ["department-office-pmo-swift-2", "Madrid", "ES"]);
+  const bsc = j.parseBscRows('<table class="views-table cols-4"><tbody><tr class="odd views-row-first"><td class="views-field views-field-title" ><a href="/join-us/job-opportunities/23126aiimtre1">231_26_AII_MT_RE1</a></td><td class="views-field views-field-field-jobref" >NLP Engineer (RE1)</td></tr></tbody></table>');
+  assert.deepEqual([bsc[0].reference, bsc[0].title], ["231_26_AII_MT_RE1", "NLP Engineer (RE1)"]);
+  const ms = j.parseManagementSolutionsOffers('<div id="MainContent_div1"><hr /><span id="MainContent_pais0"><font>United States <br /></font></span><a id="MainContent_1" href="VerOfertas.aspx?num=1"><b><font>BUSINESS CONSULTANT BOSTON<br /></font></b></a><span id="MainContent_provincia0"><font>Boston &nbsp;/ &nbsp;</font></span><br /><hr /><span id="MainContent_pais1"><font>Spain <br /></font></span><a id="MainContent_12" href="VerOfertas.aspx?num=12"><b><font>DATA SCIENCE CONSULTANT BILBAO<br /></font></b></a><span id="MainContent_provincia1"><font>Bilbao &nbsp;/ &nbsp;</font></span><br /></div>');
+  assert.equal(ms.length, 2);
+  assert.match(JSON.stringify(ms), /Spain.*Bilbao/);
+}
