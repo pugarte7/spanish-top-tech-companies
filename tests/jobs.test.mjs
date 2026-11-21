@@ -1030,3 +1030,32 @@ console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs
   assert.match(JSON.stringify(detail), /Madrid, Spain.*Remote, Spain/);
   assert.match(JSON.stringify(detail), /2026-11-06/);
 }
+
+// --- Factorial, Njoyn and BeeSite parsers -------------------------------------
+{
+  const { parseFactorialList, parseFactorialPosting } = await import("../lib/ats/sources/factorial.js");
+  const offers = parseFactorialList(`<option value='city:barcelona'>Barcelona</option>
+<li class='job-offer-item w-full' data-is-remote='false' data-job-postings-url='https://mvst.factorial.com/job_posting/full-stack-developer-senior-292895' data-location-key='city:barcelona' role='button'>
+<span class='md:w-3/6'><div class="text-sm sm:text-base font-bold factorial__headingFontFamily">Full Stack Developer (Senior)
+</div></span><div class='flex-grow'><div class="text-sm leading-sm text-left">Development
+</div></div><div class='flex-grow'><div class="text-sm leading-sm text-left">Hybrid
+</div></div></li>
+<li class='job-offer-item w-full' data-controller='job-postings' role='button'><span><div class="text-sm font-bold">Candidatura espontània</div></span></li>`);
+  assert.deepEqual(offers.map((o) => [o.id, o.city, o.mode]), [["292895", "Barcelona", "Hybrid"]], "the open application is not a posting");
+  const post = parseFactorialPosting(`<li><span class='self-start m-1'><svg></svg></span>
+<span class='inline-block align-middle mr-2 ml-2'>Gurb, Barcelona, Espanya
+</span></li>
+<div class='styledText'><h2>Què esperem de tu?</h2><div><p>Text</p></div></div><div>after</div>`);
+  assert.equal(post.place, "Gurb, Barcelona, Spain", "the country is read in the site's language");
+  assert.match(post.descriptionHtml, /Què esperem de tu/);
+  const { parseNjoynListing, parseNjoynPosting } = await import("../lib/ats/sources/njoyn.js");
+  const listing = parseNjoynListing(`<header>Search Results (51)</header><table><tr HasMultipleLocations='0' RemoteWork='False' CountryIDs=''><td><a href='xweb.asp?NTKN=c&amp;clid=21001&amp;Page=JobDetails&amp;Jobid=J1026-2018&amp;BRID=1342822&amp;lang=1'>J1026-2018</a></td><td>DevOps Engineer con francés</td><td>Project Management</td><td>Madrid</td><td name='CountryCell'>Spain</td></tr>
+<tr HasMultipleLocations='0' RemoteWork='True' CountryIDs=''><td><a href='xweb.asp?NTKN=c&amp;clid=21001&amp;Page=JobDetails&amp;Jobid=J0321-3585&amp;BRID=804338&amp;lang=1'>J0321-3585</a></td><td>Multilingual Service Desk Analyst</td><td>Service Desk</td><td>Eschborn</td><td name='CountryCell'>Germany</td></tr></table>`, "https://cgi.njoyn.com/CORP/xweb/");
+  assert.match(JSON.stringify(listing), /51/);
+  assert.match(JSON.stringify(listing), /Madrid.*Spain.*Eschborn.*Germany/s);
+  assert.match(JSON.stringify(parseNjoynPosting(`<script type="application/ld+json">{"@context":"http://schema.org/","@type":"JobPosting","title":"DevOps Engineer","description":"Da el siguiente paso<br />","datePosted":"2026-11-18","validThrough":"2026-12-31","jobLocation":{"@type":"Place","address":{"addressLocality":"Madrid","addressCountry":"ES "}}}</script>`)), /2026-11-18/);
+  const { beesitePostingUrl } = await import("../lib/ats/sources/beesite.js");
+  assert.equal(beesitePostingUrl({ id: "76098", PositionURI: "/index.php?ac=jobad&id=76098" },
+                                 { board: "api-deutschebank.beesite.de", query: "job=https://careers.db.com/professionals/search-roles/#/professional/job/{id}" }),
+               "https://careers.db.com/professionals/search-roles/#/professional/job/76098");
+}
