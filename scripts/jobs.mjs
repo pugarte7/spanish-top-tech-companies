@@ -267,10 +267,17 @@ export async function crawl(boardsList, data, ats, opts = {}) {
         for (const each of result.issues) fail(item.board, each.code, each.message);
       } else {
         done.add(item.board);
+        // data/careers.json may narrow a shared board to some titles (Telefónica Tech's start "Tech").
+        const titled = item.board.title ? new RegExp(item.board.title, "i") : null;
         for (const job of result.jobs) {
+          if (titled && !titled.test(job.title)) continue;
           const owner = ownerOf(job, item.board, slugOf);
           const row = entry(job, owner, slugOf(owner), location, known);
-          if (row) jobs.set(row.id, row);
+          if (!row) continue;
+          // A board two companies share lists the posting under each.
+          const held = jobs.get(row.id);
+          if (held && held.slug !== row.slug) row.id = `${row.id}#${row.slug ?? norm(row.company)}`;
+          jobs.set(row.id, row);
         }
       }
       if (queue.length && gap) await sleep(gap);

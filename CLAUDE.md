@@ -129,9 +129,12 @@ pauses the refresh until its "Refresh paused" issue is closed.
   fetcher overwrites a filled field, and `-` means "checked, there is none".
 - `data/careers.json` (slug to careers page) is where a company's board is
   set by hand; `data/boards.json` is written by `node scripts/boards.mjs` and
-  a hand edit there is undone by the next `--all`. Santander UK, Santander
-  Bank, Juniper and NTT Data are left out of careers.json on purpose. A board
-  another listed company holds is not given to a second one.
+  a hand edit there is undone by the next `--all`. Santander UK and Juniper
+  are left out of careers.json on purpose. A board another listed company
+  holds is not given to a second one, unless the careers.json entry says
+  `"shared": true` (a subsidiary on its parent's board, optionally narrowed
+  by a `title` regex or a facet in `query`): its postings are then listed
+  under both companies.
 - ATS adapters live in `lib/ats/`; `scripts/jobs.mjs` crawls every board
   daily into `/api/v1/jobs.json`, which the MCP's job tools search.
 - `data/remote-boards.json` adds employers with no salary in Spain to that
