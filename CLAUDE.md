@@ -137,11 +137,14 @@ pauses the refresh until its "Refresh paused" issue is closed.
   under both companies.
 - ATS adapters live in `lib/ats/`; `scripts/jobs.mjs` crawls every board
   daily into `/api/v1/jobs.json`, which the MCP's job tools search.
-- A host that answers with Cloudflare's challenge is read through a
-  Browserbase cloud browser (`lib/ats/sources/browserbase.js`) when
-  `BROWSERBASE_API_KEY` is set: an Actions secret for `deploy.yml` and
-  `boards.yml`, the Keychain (service `browserbase`) locally. Never commit,
-  print or log it. Test a "blocked" site with Node's fetch, not macOS curl.
+- With `BROWSERBASE_API_KEY`, a host that still refuses after the retries
+  (403, 405, 429, 503, a challenge, a dropped connection) gets one more try
+  in a Browserbase cloud browser (`lib/ats/sources/browserbase.js`), and the
+  hosts in `data/browser-hosts.json` go there from the first request. The
+  daily crawl logs the hosts that needed it; `boards.mjs` adds them to the
+  file. Slug guesses never use the browser. The key is an Actions secret and
+  in the Keychain (service `browserbase`); never commit, print or log it.
+  Test a "blocked" site with Node's fetch, not macOS curl.
 - `data/remote-boards.json` adds employers with no salary in Spain to that
   crawl: a board with remote postings naming Spain or Europe, kept when
   Levels.fyi knows the employer (`MIN_GLOBAL` anywhere) or a posting states

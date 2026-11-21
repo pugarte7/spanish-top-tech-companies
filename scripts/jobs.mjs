@@ -23,8 +23,10 @@
 // 2026-11-05: "porque tenemos que hacer el rastreo de ofertas cada vez que
 // hacemos un deploy?"). An older or unreadable index means a crawl. It never
 // fails the build. A host that refuses is retried with growing waits and slowed down;
-// one whose refusal is Cloudflare's challenge is read through a Browserbase
-// browser when BROWSERBASE_API_KEY is set (lib/ats/sources/browserbase.js).
+// with BROWSERBASE_API_KEY, one still refusing (a bot wall, a rate limit,
+// Cloudflare's challenge) gets one more try in a Browserbase cloud browser,
+// and the hosts in data/browser-hosts.json are read there from the start
+// (lib/ats/sources/browserbase.js). The log names the hosts that needed it.
 // A board that still fails is counted under boards.issues, and its postings
 // in production's previous jobs.json are carried over unchanged for up to a
 // week (boards.stale, boards.stale_since); a board that answers 404 or with
@@ -32,7 +34,7 @@
 // previous jobs.json unchanged (its generated_at says how old), and with no
 // board read and nothing to carry over there is no file.
 
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { classify } from "../api/_classify.js";
@@ -68,6 +70,9 @@ const DEFAULTS = {
   reuse: Number(process.env.JOBS_REUSE_HOURS) || 0,
   // Hosts read side by side; each host still gets one request at a time.
   concurrency: 16,
+  // Hosts that refuse the build's address, read through the cloud browser
+  // from the first request when BROWSERBASE_API_KEY is set.
+  browser: "data/browser-hosts.json",
 };
 
 const THROTTLE_STATUS = new Set([402, 403, 405, 429, 503]);
@@ -479,7 +484,15 @@ async function main() {
     // Says who is asking: this crawl is the site's.
     process.env.ATS_USER_AGENT ??= `spanishtoptechcompanies-jobs/${VERSION} (+${SITE}; daily job index)`;
     process.env.ATS_LOG_LEVEL ??= "error";
+    const bb = await import("../lib/ats/sources/browserbase.js");
+    const direct = existsSync(opts.browser) ? JSON.parse(readFileSync(opts.browser, "utf8")) : [];
+    bb.readDirectly(direct);
+    log(bb.browserbaseEnabled()
+      ? `cloud browser on: ${direct.length} hosts read through it, any other that refuses tried there`
+      : "cloud browser off (no BROWSERBASE_API_KEY): hosts that refuse fail as before");
     const result = await crawl(boardsList, data, await loadAts(), opts);
+    const learned = bb.learnedBrowserHosts();
+    if (learned.length) log(`  refused plain requests, answered the browser (for ${opts.browser}): ${learned.join(", ")}`);
     const { boards } = result.index;
     const seconds = Math.round((Date.now() - started) / 1000);
     log(`${boards.queried} boards queried, ${boards.failed} failed, ${result.retries} retries, ` +

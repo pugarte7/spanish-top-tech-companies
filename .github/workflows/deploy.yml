@@ -106,9 +106,9 @@ jobs:
             echo "::warning::Contacts not read: hiring_contact is off."
           fi
 
-      # Cloudflare challenges the runner's address on some career sites
-      # (Revolut, Capitole, Prosegur, Tracasa); with BROWSERBASE_API_KEY the
-      # crawl reads those through a Browserbase cloud browser, and without it
+      # Some career sites refuse the runner's address. With BROWSERBASE_API_KEY
+      # the crawl reads data/browser-hosts.json through a Browserbase cloud
+      # browser and tries there any other host still refusing; without it
       # they fail and keep their last postings for up to a week, as before.
       - name: Build for Vercel
         if: env.VERCEL_TOKEN != ''

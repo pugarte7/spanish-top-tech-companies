@@ -59,6 +59,7 @@ const { values } = parseArgs({
     boards: { type: "string", default: "data/boards.json" },
     none: { type: "string", default: "data/boards-none.json" },
     careers: { type: "string", default: "data/careers.json" },
+    browser: { type: "string", default: "data/browser-hosts.json" },
     timeout: { type: "string", default: "300" },
     report: { type: "string", default: join(tmpdir(), "stc-boards-report.json") },
     all: { type: "boolean", default: false },
@@ -83,8 +84,9 @@ async function fetchPage(url) {
 // One browser for the run, one context per page. Images, fonts and media are
 // never loaded: the board shows in the DOM and in the page's API calls.
 // A page the local browser cannot load (a bot challenge, a 403) is tried once
-// more in a Browserbase cloud browser when BROWSERBASE_API_KEY is set: one
-// session for the run, opened at the first such page.
+// more in a Browserbase cloud browser when BROWSERBASE_API_KEY is set, and a
+// page on a host in data/browser-hosts.json goes there at once: one session
+// for the run, opened at the first such page.
 const CHALLENGE_TITLE = /just a moment|un momento|attention required|checking your browser/i;
 async function openBrowser() {
   const { chromium } = await import("@playwright/test");
@@ -130,6 +132,7 @@ async function openBrowser() {
   };
   return {
     async renderPage(url) {
+      if (bb.browserbaseEnabled() && bb.readsDirectly(new URL(url).hostname)) return inCloud(url);
       let context;
       let rendered = null;
       try {
@@ -141,7 +144,9 @@ async function openBrowser() {
         await context?.close().catch(() => {});
       }
       if (rendered || !bb.browserbaseEnabled()) return rendered;
-      return inCloud(url);
+      const cloud = await inCloud(url);
+      if (cloud) bb.noteReadThroughBrowser(new URL(url).hostname);
+      return cloud;
     },
     async close() {
       await local.close();
@@ -177,6 +182,13 @@ if (values.limit) companies = companies.slice(0, Number.parseInt(values.limit, 1
 const previous = values.resume && existsSync(values.report) ? readJson(values.report) : null;
 const reports = previous?.companies ?? [];
 const done = new Set(reports.map((report) => report.name));
+
+// Hosts known to refuse plain clients are read through the cloud browser at
+// once; any other that refuses gets one more try there (lib/ats/sources/http.js),
+// and the ones that answered it are added to the list at the end.
+const bb = await import("../lib/ats/sources/browserbase.js");
+const browserHosts = existsSync(values.browser) ? readJson(values.browser) : [];
+bb.readDirectly(browserHosts);
 
 const capturedAt = nowIso();
 const deps = {
@@ -244,4 +256,9 @@ const lines = Object.keys(boards)
 writeFileSync(values.boards, `{\n${lines.join(",\n")}\n}\n`);
 const noneLines = Object.keys(none).sort().map((slug) => `  ${JSON.stringify(slug)}: ${JSON.stringify(none[slug])}`);
 writeFileSync(values.none, `{\n${noneLines.join(",\n")}\n}\n`);
+const learned = bb.learnedBrowserHosts();
+if (learned.length) {
+  writeFileSync(values.browser, `${JSON.stringify([...new Set([...browserHosts, ...learned])].sort(), null, 2)}\n`);
+  process.stderr.write(`Hosts that needed the cloud browser, added to ${values.browser}: ${learned.join(", ")}\n`);
+}
 console.log(JSON.stringify({ dataAsOf: snapshot.rules.dataAsOf, probed: reports.length, boards: lines.length, ...spain.summarize(reports, preset) }, null, 2));
