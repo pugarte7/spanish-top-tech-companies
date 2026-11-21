@@ -9,7 +9,7 @@
 
 :root { --blue: #0000f2; --accent: #0000f2; --ink: #0a0a0a; --paper: #ffffff; --grey: #6b6b6b; --line: #e6e6e6;
         --ease: cubic-bezier(0.23, 1, 0.32, 1); color-scheme: light; }
-:root[data-theme="dark"] { --blue: #2222ff; --accent: #8a8aff; --ink: #f4f4f4; --paper: #0a0a0a; --grey: #9a9a9a;
+:root[data-theme="dark"] { --blue: #6060ff; --accent: #6060ff; --ink: #f4f4f4; --paper: #0a0a0a; --grey: #9a9a9a;
                            --line: #262626; color-scheme: dark; }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }

@@ -19,8 +19,8 @@ tinted backgrounds.
 | --- | --- | --- | --- |
 | `--paper` | `#ffffff` | `#0a0a0a` | The page |
 | `--ink` | `#0a0a0a` | `#f4f4f4` | Text, dark buttons, step numbers |
-| `--blue` | `#0000f2` | `#2222ff` | The main button's fill |
-| `--accent` | `#0000f2` | `#8a8aff` | Blue text: key words, links |
+| `--blue` | `#0000f2` | `#6060ff` | The main button's fill |
+| `--accent` | `#0000f2` | `#6060ff` | Blue text: key words, links |
 | `--grey` | `#6b6b6b` | `#9a9a9a` | Secondary text |
 | `--line` | `#e6e6e6` | `#262626` | Hairlines and borders |
 
