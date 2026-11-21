@@ -485,6 +485,15 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
       description: "<p>Go.</p>", datePosted: "2026-10-28", location: { addressCountry: "Spain" } } } }),
     "https://acme.bamboohr.com/careers/6/detail": JSON.stringify({ result: { jobOpening: {
       description: "<p>Sell.</p>", location: { addressCountry: "Argentina" } } } }),
+    "https://jobs.acme.es/jobs": (url) => new URL(url).searchParams.get("page") === "2" ? `<a class="job-card card-grid-image" href="https://jobs.acme.es/jobs/dev-2"><div class="title">Developer</div><div class="details"><span>Teletrabajo/Remoto</span></div></a>` : `<a class="job-card card-grid-image" href="https://jobs.acme.es/jobs/qa-1"><div class="title">QA Senior</div><div class="details"><span>Madrid</span><span>Híbrido</span></div></a><a class="job-card card-grid-image" href="https://jobs.acme.es/jobs/trabaja-con-nosotros"><div class="title">Trabaja con nosotros</div><div class="details"><span>Presencial</span></div></a><a rel="next" class="next" href="/jobs?page=2">Siguiente</a>`,
+    "https://api-prod.letsdeel.com/deelapi/guest/ats/organizations/11111111-1111-4111-8111-111111111111/job_boards/22222222-2222-4222-8222-222222222222/job_postings": JSON.stringify([
+      { id: "33333333-3333-4333-8333-333333333333", title: "Product Manager", richtextDescription: "<p>Ship.</p>", createdAt: "2026-10-22T15:37:26.054Z",
+        isCompensationVisible: true, job: { workArrangementEnum: "REMOTE",
+          jobLocations: [{ location: { name: "Spain", country: { code: "ES", name: "Spain" } } }],
+          currentCompensation: { currencyIsoCode: "EUR", minAmount: 41000, maxAmount: 55000, periodSlug: "annually" } } },
+      { id: "44444444-4444-4444-8444-444444444444", title: "Sales", isCompensationVisible: false, job: { workArrangementEnum: "ONSITE",
+          jobLocations: [{ location: { name: "Berlin", country: { code: "DE", name: "Germany" } } }] } },
+    ]),
     "https://jobs.acme.com/en_US/careers/SearchJobs/": (url) => new URL(url).searchParams.get("jobOffset") === "2" ? `<p>3 results</p><article class="article article--result 1"><h3><a class="link" href="https://jobs.acme.com/en_US/careers/JobDetail/3">Analyst</a></h3><div class="article__header__text__subtitle"><span>Lisbon, Portugal</span> &nbsp;&#8226;&nbsp; <span>Job ID: 3</span></div></article>` : `<p>3 results</p><article class="article article--result 1"><h3><a class="link" href="https://jobs.acme.com/en_US/careers/JobDetail/1">Data Engineer</a></h3><div class="article__header__text__subtitle"><span>Tres Cantos , Madrid , Spain</span> &nbsp;&#8226;&nbsp; <span>Job ID: 1</span></div></article><article class="article article--result 1"><h3><a class="link" href="https://jobs.acme.com/en_US/careers/JobDetail/2">Sales</a></h3><div class="article__header__text__subtitle"><span>Multiple Locations</span> &nbsp;&#8226;&nbsp; <span>Job ID: 2</span></div></article><a href="https://jobs.acme.com/en_US/careers/SearchJobs/?jobRecordsPerPage=2&amp;jobOffset=2">2</a>`,
     "https://acme.jobs.personio.de/xml": `<?xml version="1.0" encoding="UTF-8"?>
 <workzag-jobs>
@@ -539,6 +548,20 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
                    "pages with the portal's own offset; a search for Spain places an unplaced posting there");
   assert.ok(seen.some((s) => s.key === "https://jobs.acme.com/en_US/careers/SearchJobs/"));
   assert.deepEqual(spainPostings(avature).map((j) => j.externalId), ["1", "2"]);
+  const bizneo = await list("bizneo", "jobs.acme.es");
+  assert.deepEqual(bizneo.map((j) => [j.externalId, j.locationsRaw[0], j.workplaceType]),
+                   [["qa-1", "Madrid, Spain", "hybrid"], ["dev-2", "Remote, Spain", "remote"]],
+                   "pages until no next link; the open application is not a posting");
+  assert.ok(seen.some((s) => s.key === "https://jobs.acme.es/jobs"));
+  const deel = await list("deel", "acme/11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222");
+  assert.deepEqual(deel.map((j) => [j.locationsRaw[0], j.url]),
+                   [["Remote, Spain", "https://jobs.deel.com/acme/job-details/33333333-3333-4333-8333-333333333333"],
+                    ["Berlin, Germany", "https://jobs.deel.com/acme/job-details/44444444-4444-4444-8444-444444444444"]]);
+  assert.deepEqual(spainPostings(deel).map((j) => j.title), ["Product Manager"]);
+  assert.deepEqual([deel[0].compensation?.min, deel[0].compensation?.currency], [41000, "EUR"]);
+  assert.equal(deel[1].compensation, null, "pay the employer hides is not read");
+  const avatureFiltered = await list("avature", "jobs.acme.com/en_US/careers", "3183=[8010]&listFilterMode=1");
+  assert.ok(seen.some((s) => s.key === "https://jobs.acme.com/en_US/careers/SearchJobs/") && avatureFiltered.length === 3);
   const personio = await list("personio", "acme");
   assert.deepEqual(personio.map((j) => j.locationsRaw), [["Barcelona, Spain"], ["Munich", "Madrid"], ["Berlin, Germany"]],
                    "\"Country - City\" is turned round; additional offices are kept");
