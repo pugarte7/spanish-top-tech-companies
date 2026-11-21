@@ -1,4 +1,4 @@
-<p align="center"><img alt="The mascot: Spain with two eyes and six arms sending CVs" src="docs/img/mascot.gif" width="420"></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/mascot-dark.gif"><img alt="The mascot: Spain with two eyes and six arms sending CVs" src="docs/img/mascot.gif" width="420"></picture></p>
 
 <h1 align="center">Apply to thousands of tech jobs with your agent</h1>
 

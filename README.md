@@ -1,4 +1,4 @@
-<p align="center"><img alt="La mascota: España con dos ojos y seis brazos que envían CVs" src="docs/img/mascot.gif" width="420"></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/mascot-dark.gif"><img alt="La mascota: España con dos ojos y seis brazos que envían CVs" src="docs/img/mascot.gif" width="420"></picture></p>
 
 <h1 align="center">Aplica a miles de trabajos en tech con tu agente</h1>
 
