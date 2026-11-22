@@ -80,7 +80,8 @@ jobs:
           GIT_AUTHOR_NAME: github-actions[bot]
           GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: |
-          if sha256sum -c --quiet "$RUNNER_TEMP/contacts.sum" > /dev/null 2>&1; then
+          contacts="$(dirname "$STC_DATA")/contacts.json"
+          if [ ! -f "$contacts" ] || sha256sum -c --quiet "$RUNNER_TEMP/contacts.sum" > /dev/null 2>&1; then
             echo "No new contacts."
             exit 0
           fi
