@@ -42,7 +42,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { pathToFileURL } from "node:url";
-import { classify } from "../api/_classify.js";
+import { classify, frontline, payAsked } from "../api/_classify.js";
 
 export const VERSION = 1;
 /** lib/ats location classes for an office in Spain, or remote from it.
@@ -149,9 +149,10 @@ export function openToSpain(job, analyzeLocation) {
   return open ? classes : null;
 }
 
-/** Pay the board publishes in its own fields. Pay read out of the description
- * is left out: lib/ats's parser reads Affirm's equity grant as a salary, and
- * a multi-country posting's text often gives another country's range. */
+/** Pay the board publishes in its own fields. lib/ats's own reading of the
+ * description is left out: it read Affirm's equity grant as a salary, and a
+ * multi-country posting's text often gives another country's range. The
+ * stricter payAsked (api/_classify.js) reads it instead. */
 function salary(comp) {
   if (!comp || comp.source !== "ats-structured" || !PERIODS.has(comp.period)) return null;
   const min = Number.isFinite(comp.min) ? Math.round(comp.min) : null;
@@ -189,10 +190,16 @@ export function entry(job, board, slug, location, known = new Set()) {
     // lib/ats's normalized Job does not carry the board's department.
     department: null,
     posted_at: job.postedAt ?? null,
-    salary: salary(job.compensation),
+    // The board's pay fields, else a yearly euro figure the description gives,
+    // on a posting with an office in Spain or remote from it.
+    salary: salary(job.compensation)
+      ?? (classes.some((c) => c === "spain" || c === "remote-spain") ? payAsked(job.descriptionText) : null),
   };
   // Read here because the description is: it is not stored.
-  return { ...row, ...classify(row, job.descriptionText, known) };
+  const read = classify(row, job.descriptionText, known);
+  // Shop, warehouse and hospitality postings are not listed.
+  if (frontline(row.title, read.roles)) return null;
+  return { ...row, ...read };
 }
 
 const sortJobs = (jobs) => jobs.sort((a, b) =>

@@ -900,6 +900,8 @@ function postingEur(job) {
   const s = job.salary;
   if (!isObject(s) || String(s.currency ?? "").toUpperCase() !== "EUR") return null;
   if (s.period != null && s.period !== "year") return null;
+  // On-target earnings mix base and variable: not a base to check min_salary_eur against.
+  if (s.variable_included) return null;
   const low = typeof s.min === "number" ? s.min : null, high = typeof s.max === "number" ? s.max : null;
   return low === null && high === null ? null : [low ?? high, high ?? low];
 }
@@ -1282,9 +1284,11 @@ export async function findJobs(data, args = {}, env = {}) {
       "null when open-ended, null when it names no figure; keywords from the title and description, " +
       "from a fixed list of skills, tools, industries and spoken languages (a skill named as nice to have " +
       "counts too). They are guesses from text, not the employer's fields.",
-    salary_note: "salary is what the posting states in its board's pay fields, as published; null " +
-      "there does not mean the posting names no pay: its text may give a range, which job_questions " +
-      "quotes in conditions.pay. A salary in another currency, or on a posting open to several " +
+    salary_note: "salary is what the posting states in its board's pay fields, as published, or, with " +
+      "source: description, a yearly euro figure or range its text states as the role's pay (min or max null for " +
+      "\"up to\" or \"from\"; variable_included: true for on-target earnings, base plus variable, which " +
+      "min_salary_eur does not check against). null does not mean the posting names no pay: its text may give " +
+      "a range, which job_questions quotes in conditions.pay. A salary in another currency, or on a posting open to several " +
       "countries, is often another country's range (US dollars for San Francisco, zloty for Poland): " +
       "quote it as published, with its currency and period, never as pay in Spain. min_salary_eur is " +
       "checked against salary when it is in EUR a year, else against the company's median for the " +

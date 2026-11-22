@@ -283,6 +283,74 @@ export function workplaceAsked(text) {
   return found.length === 1 ? found[0] : null;
 }
 
+// --- Pay stated in the description -----------------------------------------------------
+
+// A yearly euro figure or range a description states as the role's pay, as
+// {min, max, currency: "EUR", period: "year", source: "description"}, or null:
+// "Banda salarial: 25.000€ - 30.000€ (brutos/anuales)", "La retribución
+// inicial ... es de 35.000€ brutos anuales", "salary grids from 34.000€ to
+// 48.000€ OTE" (variable_included). Only euros, only next to a pay word, only
+// from 12,000 to 400,000 a year, and only one distinct figure: a text giving
+// two (one per country or level) gives none. Revenue ("500 M€ de ingresos"),
+// project sizes ("500K€ y 5M€"), monthly or hourly pay and dollars are left out.
+const EUR_AMOUNT = String.raw`(\d{1,3}(?:[.,\s]\d{3})+|\d{2,3}(?:[.,]\d)?\s?k|\d{5,6})`;
+const EUR_SIGN = String.raw`(?:€|eur\b|euros?\b)`;
+const PAY_WORD = /\b(?:salario|salarial|salary|salaries|sueldo|retribucion|retribuzione|remuneracion|remuneration|compensation|pay|brutos?|bruts?|gross|lorda|ral|ote|banda|range|rango)\b/;
+const NOT_PAY = /\b(?:ingresos|revenue|revenues|facturacion|turnover|proyectos?|projects?|presupuesto|budget|million|millones|billion|inversion|funding|ronda)\b/;
+const PER_PERIOD = /^\s*(?:brutos?\s*|gross\s*)?(?:\/|al?|per|por|each|cada)\s*(?:mes|month|hora|hour|dia|day|semana|week)\b|^\s*(?:mensual|monthly|hourly|\/h\b)/;
+const PAY_RANGE = new RegExp(String.raw`(?:${EUR_SIGN}\s?)?${EUR_AMOUNT}\s?(${EUR_SIGN})?\s*(?:-|–|—|to|a|y|hasta|and)\s*(?:${EUR_SIGN}\s?)?${EUR_AMOUNT}\s?(${EUR_SIGN})?`, "gi");
+const PAY_ONE = new RegExp(String.raw`(${EUR_SIGN}\s?)${EUR_AMOUNT}|${EUR_AMOUNT}\s?(${EUR_SIGN})`, "gi");
+function euros(raw) {
+  const t = raw.toLowerCase().replace(/\s/g, "");
+  if (t.endsWith("k")) return Math.round(Number(t.slice(0, -1).replace(",", ".")) * 1000);
+  return Number(t.replace(/[.,]/g, ""));
+}
+export function payAsked(text) {
+  const t = String(text ?? "").replace(/\s+/g, " ");
+  if (!t) return null;
+  const found = new Map();
+  const take = (match, min, max, signed) => {
+    if (!signed) return;
+    const before = norm(t.slice(Math.max(0, match.index - 120), match.index));
+    const after = t.slice(match.index + match[0].length, match.index + match[0].length + 60);
+    const near = `${before} ${norm(after.slice(0, 40))}`;
+    if (!PAY_WORD.test(near) || NOT_PAY.test(near) || PER_PERIOD.test(norm(after)) || /^\s*(?:m|mm|mil|millones|bn)\b/i.test(after)) return;
+    if (!(min >= 12_000 && max <= 400_000 && min <= max)) return;
+    const variable = /\b(?:ote|on target)\b/.test(norm(after.slice(0, 30)) + " " + before.slice(-30));
+    // "up to 75K€" is a ceiling, "desde 30.000€" a floor.
+    const bound = min === max ? (/\b(?:up to|hasta|maximo|max|max of)$/.test(before) ? "max"
+      : /\b(?:from|desde|a partir de|starting at|min|minimo)$/.test(before) ? "min" : null) : null;
+    const low = bound === "max" ? null : min, high = bound === "min" ? null : max;
+    found.set(`${low}-${high}`, { min: low, max: high, variable });
+  };
+  const ranges = [];
+  for (const m of t.matchAll(PAY_RANGE)) {
+    const signed = /€|eur/i.test(m[0]);
+    ranges.push([m.index, m.index + m[0].length]);
+    take(m, euros(m[1]), euros(m[3]), signed);
+  }
+  for (const m of t.matchAll(PAY_ONE)) {
+    if (ranges.some(([a, b]) => m.index >= a && m.index < b)) continue;
+    const value = euros(m[2] ?? m[3]);
+    take(m, value, value, true);
+  }
+  if (found.size !== 1) return null;
+  const [{ min, max, variable }] = found.values();
+  return { min, max, currency: "EUR", period: "year", source: "description", ...(variable ? { variable_included: true } : {}) };
+}
+
+// --- Postings that are not office work -------------------------------------------------
+
+// Shop, warehouse, hospitality, guarding, driving and site trades: postings a
+// directory of tech employers does not list (Mango's shops, Prosegur's guards).
+// Only a title that reads as no role: an engineer on a building site has one.
+const FRONTLINE = /\b(vendedor|vendedora|dependient[ea]|store (manager|associate|assistant)|shop assistant|sales assistant|tienda|almacen|warehouse|mozo|carretiller[oa]|conductor|chofer|driver|camarer[oa]|cociner[oa]|chef|runner|housekeeping|recepcionista|limpieza|cleaner|vigilante|security guard|guarda|operari[oa]|operaris|peon|repartidor|cajer[oa]|soldador|electricista|fontaner[oa]|encargad[oa] de obra|jefe de obra|azafat[oa]|teleoperador|agente de alquiler|rental agent|socorrista|reponedor)\b/;
+const NOT_FRONTLINE = /\b(engineer|ingenier[oa]|developer|desarrollador|analyst|analista|data|software|it|sistemas|systems|digital|ecommerce|e commerce|supply chain|logistica|logistics)\b/;
+export function frontline(title, roles = []) {
+  const t = words(title);
+  return roles.length === 0 && FRONTLINE.test(t) && !NOT_FRONTLINE.test(t);
+}
+
 // --- Skills and topics ---------------------------------------------------------------
 
 // What a posting asks for or is about, from a fixed vocabulary: languages,

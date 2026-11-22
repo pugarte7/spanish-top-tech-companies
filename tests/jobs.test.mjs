@@ -1157,3 +1157,29 @@ console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs
   };
   assert.deepEqual(Object.keys(roles).map((t) => titleRoles(t, known)[0]), Object.values(roles));
 }
+
+// --- Pay in the description, and postings that are not office work -----------------
+{
+  const { payAsked, frontline } = await import("../api/_classify.js");
+  const eur = (min, max, extra = {}) => ({ min, max, currency: "EUR", period: "year", source: "description", ...extra });
+  const pay = [
+    ["Banda salarial: 25.000€ -27.000€ (brutos/anuales) + variable", eur(25000, 27000)],
+    ["La retribución inicial anual de referencia asociada al puesto es de 78.000 € brutos anuales.", eur(78000, 78000)],
+    ["Transparent salary grids from 34.000€ to 48.000€ OTE, with a 70/30 split", eur(34000, 48000, { variable_included: true })],
+    ["Excellent Salary conditions: L4 [up to 75K€]", eur(null, 75000)],
+    ["Salary range: €45k - €60k", eur(45000, 60000)],
+    ["Gestionará una cuenta de resultados que supere los 500 M€ de ingresos anuales", null],
+    ["Experiencia en proyectos de gran envergadura (entre 500K€ y 5M€)", null],
+    ["Salario 1.500€ brutos al mes", null],
+    ["The anticipated base salary range is $123,500 - $145,000 per year.", null],
+    ["Spain 40.000€-50.000€ gross; Portugal 30.000€ - 35.000€ gross", null],
+    ["Vigilante en comercio con plus 650 euros al mes", null],
+  ];
+  assert.deepEqual(pay.map(([text]) => payAsked(text)), pay.map(([, want]) => want));
+  const front = { "VENDEDOR/A - MÁLAGA CAMPAÑA BLACK FRIDAY": true, "STORE MANAGER - ALMERÍA": true,
+    "Vigilante de Seguridad - León": true, "Carretillero/a - Mozo/a Almacén - Palencia": true, "Housekeeping Manager": true,
+    "Ingeniero/a junior Obra Civil": false, "Supply Chain Manager - Driver & Carrier Experience": false,
+    "Data Analyst - Retail stores": false };
+  assert.deepEqual(Object.keys(front).map((t) => frontline(t)), Object.values(front));
+  assert.equal(frontline("Store Manager", ["sales"]), false, "a title with a role is kept");
+}
