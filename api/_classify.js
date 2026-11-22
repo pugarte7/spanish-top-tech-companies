@@ -285,24 +285,38 @@ export function workplaceAsked(text) {
 
 // --- Pay stated in the description -----------------------------------------------------
 
-// A yearly euro figure or range a description states as the role's pay, as
-// {min, max, currency: "EUR", period: "year", source: "description"}, or null:
+// A euro figure or range a description states as the role's pay, as
+// {min, max, currency: "EUR", period, source: "description"}, or null:
 // "Banda salarial: 25.000€ - 30.000€ (brutos/anuales)", "La retribución
 // inicial ... es de 35.000€ brutos anuales", "salary grids from 34.000€ to
-// 48.000€ OTE" (variable_included). Only euros, only next to a pay word, only
-// from 12,000 to 400,000 a year, and only one distinct figure: a text giving
-// two (one per country or level) gives none. Revenue ("500 M€ de ingresos"),
-// project sizes ("500K€ y 5M€"), monthly or hourly pay and dollars are left out.
-const EUR_AMOUNT = String.raw`(\d{1,3}(?:[.,\s]\d{3})+|\d{2,3}(?:[.,]\d)?\s?k|\d{5,6})`;
+// 48.000€ OTE" (variable_included), "Salario: 1.400€ brutos al mes" (month),
+// "12,50 €/hora" (hour). The period is the one the text gives, a year when it
+// gives none; a monthly figure is not made yearly, since Spain pays 12 or 14
+// times a year. Only euros, only next to a pay word, only within a plausible
+// band for the period, gross, and only one distinct figure: a text giving two
+// (one per country or level) gives none. Revenue ("500 M€ de ingresos"),
+// project sizes ("500K€ y 5M€"), net pay, perks and bonuses ("plus 650 euros
+// al mes") and dollars are left out.
+const EUR_AMOUNT = String.raw`(\d{1,3}(?:[.,\s]\d{3})+|\d{2,3}(?:[.,]\d)?\s?k|\d{5,6}|\d{1,4}(?:[.,]\d{1,2})?)`;
 const EUR_SIGN = String.raw`(?:€|eur\b|euros?\b)`;
 const PAY_WORD = /\b(?:salario|salarial|salary|salaries|sueldo|retribucion|retribuzione|remuneracion|remuneration|compensation|pay|brutos?|bruts?|gross|lorda|ral|ote|banda|range|rango)\b/;
 const NOT_PAY = /\b(?:ingresos|revenue|revenues|facturacion|turnover|proyectos?|projects?|presupuesto|budget|million|millones|billion|inversion|funding|ronda)\b/;
-const PER_PERIOD = /^\s*(?:brutos?\s*|gross\s*)?(?:\/|al?|per|por|each|cada)\s*(?:mes|month|hora|hour|dia|day|semana|week)\b|^\s*(?:mensual|monthly|hourly|\/h\b)/;
+// Words just before a figure that make it something besides the pay.
+const EXTRA = /\b(?:plus|bonus|bono|prima|ayuda|cheque|ticket|tickets|dietas?|incentivos?|comision(?:es)?|commission|allowance|stipend)\s*(?:de\s*)?$/;
+const SPAN = String.raw`^\s*(?:(?:brutos?|bruts?|gross)\s*)?(?:\/\s*|(?:al|a la|a|per|por|each|cada|an|un|una)\s+)?`;
+const PERIOD_OF = [
+  ["month", new RegExp(`${SPAN}(?:mes|month|mensual(?:es)?|monthly|mensuales)\\b`)],
+  ["hour", new RegExp(`${SPAN}(?:hora|hour|h)\\b|^\\s*(?:hourly)\\b`)],
+  ["skip", new RegExp(`${SPAN}(?:dia|day|semana|week|daily|weekly)\\b|^\\s*(?:netos?|net|neto)\\b`)],
+];
+const BAND = { year: [12_000, 400_000], month: [600, 30_000], hour: [6, 300] };
 const PAY_RANGE = new RegExp(String.raw`(?:${EUR_SIGN}\s?)?${EUR_AMOUNT}\s?(${EUR_SIGN})?\s*(?:-|–|—|to|a|y|hasta|and)\s*(?:${EUR_SIGN}\s?)?${EUR_AMOUNT}\s?(${EUR_SIGN})?`, "gi");
 const PAY_ONE = new RegExp(String.raw`(${EUR_SIGN}\s?)${EUR_AMOUNT}|${EUR_AMOUNT}\s?(${EUR_SIGN})`, "gi");
 function euros(raw) {
   const t = raw.toLowerCase().replace(/\s/g, "");
   if (t.endsWith("k")) return Math.round(Number(t.slice(0, -1).replace(",", ".")) * 1000);
+  // "12,50" is cents; "1.500" and "35,000" are thousands.
+  if (/^\d+[.,]\d{1,2}$/.test(t)) return Number(t.replace(",", "."));
   return Number(t.replace(/[.,]/g, ""));
 }
 export function payAsked(text) {
@@ -313,15 +327,19 @@ export function payAsked(text) {
     if (!signed) return;
     const before = norm(t.slice(Math.max(0, match.index - 120), match.index));
     const after = t.slice(match.index + match[0].length, match.index + match[0].length + 60);
+    const next = norm(after);
     const near = `${before} ${norm(after.slice(0, 40))}`;
-    if (!PAY_WORD.test(near) || NOT_PAY.test(near) || PER_PERIOD.test(norm(after)) || /^\s*(?:m|mm|mil|millones|bn)\b/i.test(after)) return;
-    if (!(min >= 12_000 && max <= 400_000 && min <= max)) return;
+    if (!PAY_WORD.test(near) || NOT_PAY.test(near) || EXTRA.test(before) || /^\s*(?:m|mm|mil|millones|bn)\b/i.test(after)) return;
+    const period = PERIOD_OF.find(([, pattern]) => pattern.test(next))?.[0] ?? "year";
+    if (period === "skip") return;
+    const [floor, ceiling] = BAND[period];
+    if (!(min >= floor && max <= ceiling && min <= max)) return;
     const variable = /\b(?:ote|on target)\b/.test(norm(after.slice(0, 30)) + " " + before.slice(-30));
     // "up to 75K€" is a ceiling, "desde 30.000€" a floor.
     const bound = min === max ? (/\b(?:up to|hasta|maximo|max|max of)$/.test(before) ? "max"
       : /\b(?:from|desde|a partir de|starting at|min|minimo)$/.test(before) ? "min" : null) : null;
     const low = bound === "max" ? null : min, high = bound === "min" ? null : max;
-    found.set(`${low}-${high}`, { min: low, max: high, variable });
+    found.set(`${low}-${high}-${period}`, { min: low, max: high, period, variable });
   };
   const ranges = [];
   for (const m of t.matchAll(PAY_RANGE)) {
@@ -334,9 +352,12 @@ export function payAsked(text) {
     const value = euros(m[2] ?? m[3]);
     take(m, value, value, true);
   }
-  if (found.size !== 1) return null;
-  const [{ min, max, variable }] = found.values();
-  return { min, max, currency: "EUR", period: "year", source: "description", ...(variable ? { variable_included: true } : {}) };
+  // A yearly figure beside its monthly split ("21.000€ anuales, 1.500€ al mes en 14 pagas") is the yearly one.
+  const yearly = [...found.values()].filter((f) => f.period === "year");
+  const picked = found.size === 1 ? [...found.values()] : yearly.length === 1 ? yearly : [];
+  if (picked.length !== 1) return null;
+  const [{ min, max, period, variable }] = picked;
+  return { min, max, currency: "EUR", period, source: "description", ...(variable ? { variable_included: true } : {}) };
 }
 
 // --- Postings that are not office work -------------------------------------------------

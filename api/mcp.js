@@ -1285,7 +1285,9 @@ export async function findJobs(data, args = {}, env = {}) {
       "from a fixed list of skills, tools, industries and spoken languages (a skill named as nice to have " +
       "counts too). They are guesses from text, not the employer's fields.",
     salary_note: "salary is what the posting states in its board's pay fields, as published, or, with " +
-      "source: description, a yearly euro figure or range its text states as the role's pay (min or max null for " +
+      "source: description, a euro figure or range its text states as the role's pay, gross, with the period " +
+      "it gives (year, month or hour; a month is not made a year, since Spain pays 12 or 14 times; quote it as " +
+      "published, and min_salary_eur checks only a year) (min or max null for " +
       "\"up to\" or \"from\"; variable_included: true for on-target earnings, base plus variable, which " +
       "min_salary_eur does not check against). null does not mean the posting names no pay: its text may give " +
       "a range, which job_questions quotes in conditions.pay. A salary in another currency, or on a posting open to several " +

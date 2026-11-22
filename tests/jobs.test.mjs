@@ -1162,6 +1162,7 @@ console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs
 {
   const { payAsked, frontline } = await import("../api/_classify.js");
   const eur = (min, max, extra = {}) => ({ min, max, currency: "EUR", period: "year", source: "description", ...extra });
+  const month = (min, max) => eur(min, max, { period: "month" }), hour = (min, max) => eur(min, max, { period: "hour" });
   const pay = [
     ["Banda salarial: 25.000€ -27.000€ (brutos/anuales) + variable", eur(25000, 27000)],
     ["La retribución inicial anual de referencia asociada al puesto es de 78.000 € brutos anuales.", eur(78000, 78000)],
@@ -1170,7 +1171,12 @@ console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs
     ["Salary range: €45k - €60k", eur(45000, 60000)],
     ["Gestionará una cuenta de resultados que supere los 500 M€ de ingresos anuales", null],
     ["Experiencia en proyectos de gran envergadura (entre 500K€ y 5M€)", null],
-    ["Salario 1.500€ brutos al mes", null],
+    ["Salario 1.500€ brutos al mes", month(1500, 1500)],
+    ["Salario 1.200€ - 1.500€ brutos/mes", month(1200, 1500)],
+    ["Retribución: 12,50 €/hora", hour(12.5, 12.5)],
+    ["Salario 1.200€ netos al mes", null],
+    ["Salario: 21.000€ brutos anuales (1.500€ al mes en 14 pagas)", eur(21000, 21000)],
+    ["Ticket restaurante de 11 € al día. Salario 28.000€ brutos", eur(28000, 28000)],
     ["The anticipated base salary range is $123,500 - $145,000 per year.", null],
     ["Spain 40.000€-50.000€ gross; Portugal 30.000€ - 35.000€ gross", null],
     ["Vigilante en comercio con plus 650 euros al mes", null],
