@@ -25,11 +25,8 @@ holds the rules; this file holds why, and the details of the API.
   Bankinter. Dropping a Spanish base above what the company pays abroad took
   real seniors at companies with a few salaries from cheaper countries, and
   was removed.
-- **First-hand is the standard.** A row should mean the maintainer knows
-  someone in Spain earning it, or was offered it. Every salary today is
-  crowdsourced. To record one: add a row with `base`, `years_experience`,
-  `source` (`community` or `offer-letter`) and `date`, the contract type in
-  `notes`, no `source_url`.
+- **Only checkable sources.** Every figure comes from a source anyone can
+  open; salaries told to the maintainer directly are not taken.
 
 ## Levels.fyi traps
 
@@ -129,8 +126,8 @@ replace every table entry with the page's handful.
 ### Whole and incremental reads
 
 A whole read replaces the role's stored Levels.fyi rows per company, which is
-also how deleted and corrected submissions leave; first-hand rows and other
-roles are never touched, and a company left with no rows is dropped. An
+also how deleted and corrected submissions leave; rows from other sources and
+other roles are never touched, and a company left with no rows is dropped. An
 incremental read asks for the rows after the role's cursor (`after()`:
 `sinceDate` one second past the newest `offerDate` seen) and
 `write_role(append=True)` adds them: about 60 calls a run against 315.
@@ -155,7 +152,7 @@ hours late).
 
 - The private files live as one AES-256 tarball in the private repo.
   `private_data.sh pull` writes them beside `lib.DATA` (backing up what was
-  there) and refuses to finish without `private-sources.txt`; `push` refuses
+  there); `push` refuses
   when the repo moved since that machine's last pull.
 - The workflow pulls, fetches, pushes the private files back before anything
   public moves (the cursors are past this week's rows by then), commits
@@ -165,8 +162,7 @@ hours late).
 - Secrets: `LEVELS_EMAIL`, `LEVELS_PASSWORD`, `DATA_KEY` (also in the Keychain
   as account `data-key`), `DATA_DEPLOY_KEY`.
 - It stops with nothing pushed on pulled data that does not validate, on any
-  failed step, and on `scripts/guard.py`: `private-sources.txt` present, none
-  of its names in `data/`, Levels.fyi rows down at most 5%, listed companies
+  failed step, and on `scripts/guard.py`: Levels.fyi rows down at most 5%, listed companies
   down at most 10%. A failure opens "Refresh failed" with the run's link
   only. Exit 3 from `fetch_spain.py` opens "Refresh paused: ..." and every
   run is skipped while it is open; the repository variable
@@ -272,7 +268,6 @@ gets a page only with `MIN_GROUP` salaries.
 
 ## Known gaps
 
-- **No first-hand data yet.** Every salary is crowdsourced.
 - **One-person medians** are listed in the companies table, with the count
   beside them.
 - **Titles and specializations** are only as good as the taxonomy match:

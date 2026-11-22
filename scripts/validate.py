@@ -59,13 +59,6 @@ def check_entry(where: str, entry: dict) -> None:
     base, total = entry.get("base"), entry.get("total")
     if base is None and total is None:
         errors.append(f"{where}: no base or total salary")
-    # Levels.fyi rows are whatever was reported. A first-hand row about a
-    # software engineer is the maintainer saying "I know they pay that", and
-    # "that" means the bar.
-    elif (base is not None and base < lib.THRESHOLD_EUR
-          and entry.get("source") in lib.VOUCHED and role == lib.SWE):
-        errors.append(f"{where}: a first-hand entry under {lib.fmt_eur(lib.THRESHOLD_EUR)} "
-                      "vouches for nothing this list is about")
     for column, amount in (("base", base), ("total", total)):
         if amount is not None and amount > MAX_EUR:
             errors.append(f"{where}: {column} {amount} is not a salary")
@@ -118,8 +111,8 @@ def check_company(where: str, company: dict) -> None:
     # so a company with none at all is either a hand-added row the fetcher
     # has not reached or a leftover to delete.
     if not company.get("entries"):
-        errors.append(f"{where}: no salaries on file. Add a first-hand entry, let "
-                      "fetch_spain.py reach it, or remove the row")
+        errors.append(f"{where}: no salaries on file. Let fetch_spain.py "
+                      "reach it, or remove the row")
 
     for column, known in (("company_type", lib.COMPANY_TYPES),
                           ("remote_policy", lib.REMOTE_POLICIES)):

@@ -158,7 +158,7 @@ def ours(entry: dict) -> bool:
 
     Those are replaced wholesale per role, because the feed's contents change
     as new submissions arrive. Anything with a source this script does not
-    write - a first-hand figure, a job ad - is left exactly where it is.
+    write - a company's published figure, a job ad - is left exactly where it is.
     """
     url = entry.get("source_url") or ""
     return (entry.get("source") == "levels.fyi"
@@ -647,7 +647,7 @@ def prune_unproven(cache: dict, today: str, only: set | None = None) -> dict:
     mechanical engineer was the only DEKA submission on Levels.fyi. Summed
     over roles, not judged per role, because three engineers and three
     product managers in Spain are six people at a real company (Repsol,
-    Endesa and Bankinter went that way on 2026-11-02). First-hand rows stay;
+    Endesa and Bankinter went that way on 2026-11-02). Rows from other sources stay;
     a company left with nothing goes, as on any other write.
     """
     companies = lib.load_companies()
@@ -921,7 +921,7 @@ def write_role(role: str, by_slug: dict, only: set | None = None, append: bool =
     With `append` the rows are an incremental read's, newer than anything on
     file: they are added and nothing is taken away.
 
-    Only the role's own rows are touched: first-hand entries and other roles
+    Only the role's own Levels.fyi rows are touched: other sources and other roles
     stay exactly where they are. A company left with no rows at all is
     removed - on file means having salaries - but a hand-added row that never
     had any survives, because the fetcher may not have reached it yet. A slug

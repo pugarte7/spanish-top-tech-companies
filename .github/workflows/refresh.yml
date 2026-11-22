@@ -5,8 +5,8 @@ name: refresh
 # GitHub's runners no data. Since fetch_spain.py reads only the API, which
 # answers a runner like it answers the Mac, it runs here.
 #
-# The private files (companies.csv, global.json, feed.json, usage.csv,
-# private-sources.txt) come encrypted from the private repo
+# The private files (companies.csv, global.json, feed.json, usage.csv)
+# come encrypted from the private repo
 # pugarte7/spanish-top-tech-companies-data (scripts/private_data.sh) and go
 # back there before anything public moves. fetch_spain.py reads only what was
 # submitted since each role's cursor in feed.json, a quarter of the roles
@@ -14,8 +14,7 @@ name: refresh
 #
 # This repo is public and so is this log. The scripts' output goes to a file
 # that is kept encrypted in the private repo (private_data.sh log reads it);
-# here only the steps' verdicts show. On 2026-11-19 a validate.py error named
-# an unpublished source in this log on every row it rejected.
+# here only the steps' verdicts show: the output names companies and counts.
 #
 # It stops, and nothing is pushed, at the first thing that fails: data that
 # does not validate before any request, a refusal from Levels.fyi, a failed
@@ -105,10 +104,6 @@ jobs:
           echo "GIT_SSH_COMMAND=$GIT_SSH_COMMAND" >> "$GITHUB_ENV"
           bash scripts/private_data.sh pull >> "$RUN_LOG" 2>&1 \
             || { echo "Could not pull the private data."; exit 1; }
-          # Whatever still reaches this log, the unpublished sources show as ***.
-          { grep -v '^#' "$(dirname "$STC_DATA")/private-sources.txt" || true; } | while IFS= read -r name; do
-            [ -n "$name" ] && echo "::add-mask::$name"
-          done
           cp "$STC_DATA" "$RUNNER_TEMP/before.csv"
           # Bad data on file stops the run before a single request to Levels.fyi.
           python3 scripts/validate.py >> "$RUN_LOG" 2>&1 \
