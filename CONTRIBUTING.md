@@ -8,9 +8,7 @@ The easiest way, and anonymous. Add it at [levels.fyi/salaries/add](https://www.
 
 ## 1. Open an issue
 
-Use [**Add a company**](../../issues/new?template=add-company.yml) or [**Add or update a salary**](../../issues/new?template=update-band.yml). Fill the form and the maintainer adds it to the data. This is the right route if you're sharing your own numbers and would rather not use Levels.fyi.
-
-**On anonymity:** anything you put in a public issue is public and tied to your GitHub account forever. If you're sharing your own salary, consider a throwaway account, or check whether your employer would care. We'd rather have the data than have you regret posting it.
+Use [**Add a company**](../../issues/new?template=add-company.yml). Fill the form and the maintainer adds it to the data. Salaries come only from Levels.fyi: to share yours, [submit it there](https://www.levels.fyi/salaries/add).
 
 ## 2. Open a pull request
 
@@ -27,7 +25,7 @@ cd spanish-top-tech-companies
 
 Nothing to install. The scripts use plain Python 3.9 or newer.
 
-**A new salary for a company already listed:** copy one of its rows and change the entry columns below — `role` (required; `software-engineer`, `data-scientist`… the taxonomy's slug), `base`, `total`, `years_experience`, `city`, `reported`, `source`, `source_url`, `date` — and any of `title`, `specialization`, `level`, `work_arrangement`, `employment_type`, `bonus`, `stock`, `currency`, `perspective` and `notes` you actually know. Someone telling you their own salary is `source` `community`; an offer you received is `offer-letter`. Neither needs a URL. A first-hand software-engineer row has to be at 60k+ — it is the maintainer vouching that the company pays that.
+**A new salary for a company already listed:** copy one of its rows and change the entry columns below — `role` (required; `software-engineer`, `data-scientist`… the taxonomy's slug), `base`, `total`, `years_experience`, `city`, `reported`, `source`, `source_url`, `date` — and any of `title`, `specialization`, `level`, `work_arrangement`, `employment_type`, `bonus`, `stock`, `currency`, `perspective` and `notes` you actually know.
 
 **A new company:** add a line at the end with its name and LinkedIn company id, `Acme,1234567`, and let the scripts fill in the rest:
 
@@ -47,7 +45,7 @@ The id is the `f_C` number in a LinkedIn job search filtered to that company. [`
 | `linkedin_url` | The company's LinkedIn page, if it has a vanity URL. |
 | `levels_slug`, `levels_status` | Its Levels.fyi page, and `resolved`, `review` or `unmatched` (not on Levels.fyi). Written by `resolve_slugs.py`. An employer with two Levels.fyi slugs keeps the canonical one here and the other in `lib.SLUG_ALIASES`; a slug nobody can put a company to goes in `lib.EXCLUDED_SLUGS`. |
 | `role` | The taxonomy's slug for the job family: `software-engineer`, `product-manager`, `data-scientist`… Never free text; `scripts/taxonomy.py` is the catalog. |
-| `base` | Gross annual base salary in euros. A first-hand software-engineer row must be 60000 or more; anything else is whatever was reported. |
+| `base` | Gross annual base salary in euros, as reported. |
 | `total`, `bonus`, `stock` | Total compensation, annual bonus and annualised equity in euros, if known. |
 | `currency` | The currency the person is actually paid in (`EUR`, `USD`…). Figures above are always euros; this marks, say, a remote job paid in dollars. |
 | `years_experience` | Years of experience: a number, or a bucket like `5-10` or `11+`. Any value. |
@@ -72,7 +70,7 @@ python3 scripts/fetch_spain.py --company glovo    # writes only that employer
 python3 scripts/fetch_spain.py --audit            # report only, writes nothing
 ```
 
-This is the only route for crowdsourced salaries. For each role it reads the country-wide feed — the same API that fills the "Latest Salary Submissions" table, with no company filter — paging until an empty answer rather than the reported total, and writes every submission naming a Spanish city, whatever the role, years or pay. See [METHODOLOGY.md](METHODOLOGY.md#an-entry-must-prove-it-is-spanish) for why the city check is not optional. A role's feed then replaces that role's stored Levels.fyi rows per company: first-hand rows and other roles are untouched, a feed that could not be read to the end changes nothing, and a company left with no rows at all is dropped. New companies arrive inside the feed — no separate discovery pass.
+This is the only route for crowdsourced salaries. For each role it reads the country-wide feed — the same API that fills the "Latest Salary Submissions" table, with no company filter — paging until an empty answer rather than the reported total, and writes every submission naming a Spanish city, whatever the role, years or pay. See [METHODOLOGY.md](METHODOLOGY.md#an-entry-must-prove-it-is-spanish) for why the city check is not optional. A role's feed then replaces that role's stored Levels.fyi rows per company: rows from other sources and other roles are untouched, a feed that could not be read to the end changes nothing, and a company left with no rows at all is dropped. New companies arrive inside the feed — no separate discovery pass.
 
 The feed only exists for a signed-in visitor who has added a salary. Without a session the script only runs with `--audit`: the public page alone is a single record for most companies, and writing it would replace the feed entries on file. To give it a session, use an account you can afford to lose and store its refresh token in the macOS Keychain; the script mints a fresh id token from it each run. Sign in on levels.fyi in a private window, run this in its console, then close the window without signing out, so that session stays its own and nothing revokes it:
 
@@ -122,7 +120,7 @@ Commit the regenerated `data/`, never `companies.csv`: it is private and git ign
 
 ## What makes a submission usable
 
-- **A source.** A link, or `offer-letter` / `community` if you're reporting your own. No source, no merge.
+- **A source.** A link. No source, no merge.
 - **A date.** `date` is when you actually checked, not today's date by reflex.
 - **One person, a role, and their years of experience.** Not an average for the whole team, and not a salary without the years.
 - **No people in it.** No names, no teams, no identifying detail — and the normalized fields (`title`, `specialization`) are the taxonomy's slugs or empty, never free text. See [METHODOLOGY.md](METHODOLOGY.md#sources).

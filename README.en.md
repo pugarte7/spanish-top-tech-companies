@@ -93,7 +93,7 @@ It sets one up when it is time to send and runs it in the background, with no wi
 <details>
 <summary>How do I add my salary?</summary>
 
-Submit it to [Levels.fyi](https://www.levels.fyi/salaries/add). It is anonymous and counts from the next refresh, every week. If you know first-hand what a company pays, or have a written offer, open an [issue](../../issues/new?template=update-band.yml).
+Submit it to [Levels.fyi](https://www.levels.fyi/salaries/add). It is anonymous and counts from the next refresh, every week.
 </details>
 
 ## For developers

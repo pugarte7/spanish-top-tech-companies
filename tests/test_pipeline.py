@@ -123,8 +123,8 @@ def test_location_guard() -> None:
         ("per-location software-engineer page is accepted", entry(PER_LOCATION)),
         ("a data-scientist row cites the data-scientist page",
          entry(DS_LOCATION, role="data-scientist")),
-        # Someone reporting their own salary has no Levels.fyi URL to name.
-        ("first-hand source needs no location", entry(None, source="offer-letter")),
+        # A row from another source has no Levels.fyi URL to name.
+        ("another source needs no location", entry(None, source="company-published")),
     ):
         validate.errors.clear()
         validate.check_entry("test", found)
@@ -166,10 +166,10 @@ def test_purge_runs_even_when_spain_data_exists() -> None:
               ["https://www.levels.fyi/companies/acme/salaries"
                "/software-engineer/locations/spain"])
 
-    with temp_data(acme(entry(None, source="community"))):
+    with temp_data(acme(entry(None, source="company-published"))):
         write_role("software-engineer", {})
-        check("a first-hand entry is left alone",
-              [e["source"] for e in stored()["entries"]], ["community"])
+        check("a row from another source is left alone",
+              [e["source"] for e in stored()["entries"]], ["company-published"])
 
 
 def test_figures_are_converted_to_euros() -> None:
@@ -257,12 +257,7 @@ def test_every_year_is_kept() -> None:
     for label, row_, bad in (
         ("under five years is data now", entry(PER_LOCATION, years_experience="4"), False),
         ("no years", entry(PER_LOCATION, years_experience=None), True),
-        ("a first-hand senior SWE under 60k", entry(None, source="community", base=55000), True),
-        ("a first-hand junior SWE under 60k",
-         entry(None, source="community", base=40000, years_experience="2"), True),
-        ("a first-hand junior PM under 60k",
-         entry(None, source="community", base=30000, years_experience="2",
-               role="product-manager"), False),
+        ("a source that is gone", entry(None, source="community"), True),
         ("a Levels.fyi entry under 60k", entry(PER_LOCATION, base=55000), False),
     ):
         validate.errors.clear()
@@ -312,7 +307,7 @@ def test_the_world_vouches_for_a_company() -> None:
             company("deka", entry(PER_LOCATION, base=300000)),
             company("repsol", *[entry(PER_LOCATION, base=60000 + i) for i in range(3)],
                     *[entry(DS_LOCATION, role="product-manager", base=70000 + i) for i in range(3)]),
-            company("hand", entry(None, source="community", base=90000), entry(PER_LOCATION)),
+            company("hand", entry(None, source="company-published", base=90000), entry(PER_LOCATION)),
             company("stale", entry(PER_LOCATION)),
             company("dark", entry(PER_LOCATION)),
             company("many", *[entry(PER_LOCATION, base=70000 + i) for i in range(5)])):
@@ -322,7 +317,7 @@ def test_the_world_vouches_for_a_company() -> None:
               (stats, "deka" in left), ({"unproven": 2, "companies": 1}, False))
         check("three engineers and three product managers are six people",
               left["repsol"], 6)
-        check("the first-hand row stays when the Levels.fyi one goes", left["hand"], 1)
+        check("the other source's row stays when the Levels.fyi one goes", left["hand"], 1)
         check("a stale or missing answer judges nothing",
               (left["stale"], left["dark"]), (1, 1))
         check("five Spanish rows are five submissions", left["many"], 5)
@@ -668,9 +663,9 @@ def test_companies_are_their_salaries() -> None:
         write_role("software-engineer", {})
         check("a company whose feed emptied is dropped", stored(), None)
 
-    with temp_data(acme(entry(None, source="community"))):
+    with temp_data(acme(entry(None, source="company-published"))):
         write_role("software-engineer", {})
-        check("a first-hand entry keeps it", stored() is not None, True)
+        check("a row from another source keeps it", stored() is not None, True)
 
     with temp_data():
         stats = write_role("software-engineer", {})
@@ -715,13 +710,13 @@ def test_companies_are_their_salaries() -> None:
         check(f"validate.py {'refuses' if refused else 'keeps'} {label}",
               any("no salaries on file" in e for e in validate.errors), refused)
 
-    with temp_data(acme(entry(None, source="community"))):
+    with temp_data(acme(entry(None, source="company-published"))):
         check("excluded rows never reach write_role", fed([row("abracadabra")])[0], {})
         stats = write_role("software-engineer", fed([row("abracadabra")])[0])
         check("a struck-off slug is never written or created",
               (stats["created"], stored("abracadabra")), (0, None))
-        check("and a first-hand row elsewhere is untouched",
-              [e["source"] for e in stored()["entries"]], ["community"])
+        check("and a row from another source is untouched",
+              [e["source"] for e in stored()["entries"]], ["company-published"])
 
 
 def test_median_over_every_engineer() -> None:

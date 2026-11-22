@@ -25,7 +25,7 @@ The README showed one row per company: the **median** base salary and median tot
 
 A company was on the main table while the median base of its software engineers on file was 60k or more. One whose median was between 50k and 60k was listed under **Need to improve**, so it was visible and visibly under the bar. Under 50k a company no longer leaves the file — the website needs every salary — but it stayed off the README. The order is: filter positions by role, compute the median, filter companies by the median. The bar is a property of a company, not of a salary, so it is applied after aggregating and never to the rows the median is of.
 
-Each table was sorted by median base first and At 60k+ second, after any first-hand rows. Share first was the rule for a day, when shares ran from 4% to 100%; with the median deciding the table, every main-table share was 50% or more and the median was the number that separated rows. At 60k+ still told one-person rows and lopsided companies apart.
+Each table was sorted by median base first and At 60k+ second. Share first was the rule for a day, when shares ran from 4% to 100%; with the median deciding the table, every main-table share was 50% or more and the median was the number that separated rows. At 60k+ still told one-person rows and lopsided companies apart.
 
 ### How the rule was reached
 
@@ -39,7 +39,7 @@ Excluded from the number: ticket restaurant, health insurance, remote stipends a
 
 ## Why contract type matters
 
-Three people can all be told "70k" and take home very different amounts, so say which one a first-hand entry is in its `notes`:
+Three people can all be told "70k" and take home very different amounts, and a figure means little without knowing which one it is:
 
 | Contract | What it means |
 | --- | --- |
@@ -54,13 +54,11 @@ A contractor rate and a payroll salary are different units. Don't compare them w
 
 Every entry needs a source. In rough order of how much we trust them:
 
-1. `offer-letter`: someone had it in writing
-2. `levels.fyi`, `company-published`: self-reported to an aggregator, or official
-3. `job-posting`: a published range
-4. `community`: reported directly to this repo
-5. `other`: treat with suspicion
+1. `levels.fyi`, `company-published`: self-reported to an aggregator, or official
+2. `job-posting`: a published range
+3. `other`: treat with suspicion
 
-A first-hand entry (`offer-letter`, `community`) sorts above any crowdsourced one, however large that one is.
+Salaries told to the maintainer directly are not taken: every figure has to be one anyone can check.
 
 ### Where a Levels.fyi entry comes from
 

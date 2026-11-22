@@ -93,7 +93,7 @@ Instala uno al ir a enviar y lo usa en segundo plano, sin ventana. Solo si no pu
 <details>
 <summary>¿Cómo añado mi sueldo?</summary>
 
-Súbelo a [Levels.fyi](https://www.levels.fyi/salaries/add). Es anónimo y cuenta desde la siguiente actualización, cada semana. Si sabes de primera mano lo que paga una empresa, o tienes una oferta por escrito, abre un [issue](../../issues/new?template=update-band.yml).
+Súbelo a [Levels.fyi](https://www.levels.fyi/salaries/add). Es anónimo y cuenta desde la siguiente actualización, cada semana.
 </details>
 
 ## Para desarrolladores

@@ -13,16 +13,14 @@ After any data change: `python3 scripts/validate.py && python3 scripts/site.py
 
 - `companies.csv` is one row per person and private. It lives at `lib.DATA`
   (`~/.local/share/spanish-top-tech-companies-data/website/companies.csv`, or
-  `STC_DATA`) beside `global.json`, `feed.json`, `usage.csv` and
-  `private-sources.txt`, all kept encrypted in the private repo
+  `STC_DATA`) beside `global.json`, `feed.json` and `usage.csv`,
+  all kept encrypted in the private repo
   `pugarte7/spanish-top-tech-companies-data`: `scripts/private_data.sh pull`
   before editing by hand, `push` after (passphrase `DATA_KEY`, in the Keychain
   and in Actions).
 - Never commit the CSV, link to it, or put one person's salary in anything
   public. Only aggregates are published, in `data/`; the digest and its issue
   carry company aggregates only.
-- Sources named in `private-sources.txt` stay off the site
-  (`lib.published()`). Never name them in the repo, commits, PRs or logs.
 - A row holds only `lib.ENTRY_COLUMNS`: role, specialization and title are
   taxonomy slugs or empty, never free text. No submission ids, exact days or
   teams. Keep the attribution, and remove anything someone asks to have
@@ -51,7 +49,7 @@ After any data change: `python3 scripts/validate.py && python3 scripts/site.py
   verify" issue.
 - A company with fewer than `MIN_GLOBAL` (5) submissions worldwide, summed
   over its roles, loses its Levels.fyi rows (`fetch_spain.prune_unproven()`).
-  First-hand rows are never screened. A missing or stale count judges nothing.
+  Rows from other sources are never screened. A missing or stale count judges nothing.
 - A company stays on file while it has any row. `validate.py` refuses a
   company with no entries, not a low median.
 - An unknown company gets close names offered and nothing about why.
@@ -89,9 +87,6 @@ Do not bring back: a mean, a mean over the 60k+ rows only, "any row at 60k+"
 as the listing rule, a years-of-experience filter, other roles in these
 medians, or dropping a Spanish base for being above what the company pays
 abroad. Each was tried and rejected.
-
-A first-hand software-engineer row (`community`, `offer-letter`) must itself
-be at 60k+; first-hand rows sort above crowdsourced ones.
 
 ## Levels.fyi, in short
 

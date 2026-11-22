@@ -1,6 +1,6 @@
 #!/bin/bash
 # The private files beside companies.csv (lib.DATA): the CSV itself,
-# global.json, feed.json, usage.csv, private-sources.txt and contacts.json. They live
+# global.json, feed.json, usage.csv and contacts.json. They live
 # encrypted in the private repo pugarte7/spanish-top-tech-companies-data so the Monday refresh can run
 # on GitHub Actions (refresh.yml) and the Mac can still edit them by hand.
 #
@@ -21,9 +21,7 @@
 set -Eeuo pipefail
 
 REPO="${STC_PRIVATE_REPO:-git@github.com:pugarte7/spanish-top-tech-companies-data.git}"
-# private-sources.txt names the sources lib.py keeps off everything public;
-# a run without it would publish them, so pull refuses to finish without it.
-FILES=(companies.csv global.json feed.json usage.csv private-sources.txt contacts.json)
+FILES=(companies.csv global.json feed.json usage.csv contacts.json)
 BLOB=data.tar.gz.enc
 # What a refresh on Actions printed: its public log shows only which steps
 # passed, since the scripts' output names companies, counts and sources.
@@ -79,8 +77,6 @@ pull() {
   tar -tzf "$tarball" > /dev/null
   tar -xzf "$tarball" -C "$dir"
   rm -f "$tarball"
-  [ -s "$dir/private-sources.txt" ] \
-    || { echo "The pulled data has no private-sources.txt: stopping before anything reads it." >&2; exit 1; }
   data_head > "$pulled"
   echo "Pulled $(git -C "$clone" log -1 --format='%h %s')"
 }
@@ -95,7 +91,6 @@ push() {
     exit 1
   fi
   [ -f "$csv" ] || { echo "No $csv to push." >&2; exit 1; }
-  [ -s "$dir/private-sources.txt" ] || { echo "No private-sources.txt beside the CSV: not pushing." >&2; exit 1; }
   local present=()
   for f in "${FILES[@]}"; do [ -f "$dir/$f" ] && present+=("$f"); done
   if [ -n "$head" ]; then git -C "$clone" checkout -q -B main "$head"; else git -C "$clone" checkout -q -B main; fi
