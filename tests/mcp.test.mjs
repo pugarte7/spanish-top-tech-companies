@@ -1676,8 +1676,10 @@ report("company_salaries: what the company does and its latest news, with the no
   withContext.about.en === "Payroll software for small companies." && withContext.latest_news.date === "2026-11-03" &&
   withContext.latest_news.url === "https://news.example/1" && /not a verified fact/.test(withContext.latest_news_note),
   withContext);
+const bare = { ...data, companies: data.companies.map(({ about, latest, ...c }) => c) };
+const withoutContext = await company(bare, branchCompany.name, {}, { jobs: index, companies: table });
 report("company_salaries: a company with neither carries no empty field",
-  !("about" in branchAnswer) && !("latest_news" in branchAnswer) && !("latest_news_note" in branchAnswer));
+  !("about" in withoutContext) && !("latest_news" in withoutContext) && !("latest_news_note" in withoutContext));
 
 const glovoIds = index.jobs.filter((j) => j.slug === "glovo").map((j) => j.id);
 const [glovoA, glovoB] = glovoIds;
