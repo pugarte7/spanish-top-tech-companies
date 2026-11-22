@@ -1,0 +1,87 @@
+{
+"as_of": "2026-11-22",
+"note": "What each company does, in one sentence, written by an outside agent from the company's own site and other public pages (instinct/about).",
+"companies": {
+"accenture": {
+"es": "Consultora de estrategia, tecnología y operaciones para grandes empresas y administraciones.",
+"en": "Strategy, technology and operations consultancy for large companies and public bodies."
+},
+"adevinta": {
+"es": "Grupo de portales de anuncios clasificados online, como Milanuncios e InfoJobs.",
+"en": "Online classifieds group running marketplaces such as Milanuncios and InfoJobs."
+},
+"amazon": {
+"es": "Tienda online de productos de todo tipo, con marketplace para vendedores, nube (AWS) y streaming.",
+"en": "Online store for all kinds of products, with a seller marketplace, AWS cloud and streaming."
+},
+"capgemini": {
+"es": "Consultora de tecnología e ingeniería: servicios de TI y transformación digital para empresas.",
+"en": "Technology and engineering consultancy: IT services and digital transformation for enterprises."
+},
+"datadog": {
+"es": "Monitorización de aplicaciones, infraestructura y logs en la nube para equipos técnicos.",
+"en": "Cloud monitoring of applications, infrastructure and logs for engineering teams."
+},
+"deloitte": {
+"es": "Firma de auditoría, consultoría, asesoría fiscal y gestión de riesgos para empresas.",
+"en": "Audit, consulting, tax advisory and risk management firm for organizations."
+},
+"edreams-odigeo": {
+"es": "Agencia de viajes online para reservar vuelos, hoteles y paquetes, con suscripción de descuentos.",
+"en": "Online travel agency for booking flights, hotels and packages, with a discount subscription."
+},
+"epam-systems": {
+"es": "Consultora de ingeniería de software y servicios digitales para grandes empresas.",
+"en": "Software engineering and digital services consultancy for large enterprises."
+},
+"glovo": {
+"es": "Reparto a domicilio de comida de restaurante, compras de supermercado y paquetería urbana.",
+"en": "On-demand delivery of restaurant food, groceries and urban parcels."
+},
+"hpe": {
+"es": "Servidores, almacenamiento y redes para empresas, con servicios de nube híbrida.",
+"en": "Enterprise servers, storage and networking, with hybrid cloud services."
+},
+"indra": {
+"es": "Grupo tecnológico de defensa, tráfico aéreo y servicios de TI para empresas y administraciones.",
+"en": "Technology group covering defence, air traffic and IT services for companies and governments."
+},
+"microsoft": {
+"es": "Software para usuarios y empresas (Windows, Office), nube Azure, dispositivos y videojuegos.",
+"en": "Software for consumers and businesses (Windows, Office), Azure cloud, devices and gaming."
+},
+"minsait": {
+"es": "Consultora tecnológica del grupo Indra: transformación digital y servicios de TI para empresas.",
+"en": "Technology consultancy of the Indra group: digital transformation and IT services for companies."
+},
+"n26": {
+"es": "Banco digital sin oficinas: cuenta y tarjeta gestionadas por completo desde el móvil.",
+"en": "Branch-free digital bank: accounts and cards managed entirely from a mobile app."
+},
+"new-relic": {
+"es": "Observabilidad de aplicaciones y sistemas en tiempo real para equipos de desarrollo.",
+"en": "Real-time observability of applications and systems for development teams."
+},
+"ntt-data": {
+"es": "Consultora de servicios de TI: integración de sistemas, aplicaciones y outsourcing para empresas.",
+"en": "IT services consultancy: systems integration, applications and outsourcing for enterprises."
+},
+"oracle": {
+"es": "Bases de datos, aplicaciones de gestión empresarial y servicios de nube para empresas.",
+"en": "Databases, enterprise management applications and cloud services for businesses."
+},
+"revolut": {
+"es": "Banco digital con cuenta, tarjeta, cambio de divisa e inversión desde la app.",
+"en": "Digital bank with accounts, cards, currency exchange and investing in one app."
+},
+"semrush": {
+"es": "Plataforma de SEO y marketing online para analizar buscadores, contenidos y publicidad.",
+"en": "SEO and online marketing platform for analyzing search, content and advertising."
+},
+"travelperk": {
+"es": "Plataforma para gestionar viajes de empresa: reservas, gastos y políticas de viaje.",
+"en": "Business travel management platform for bookings, expenses and travel policies."
+}
+},
+"none": {}
+}
