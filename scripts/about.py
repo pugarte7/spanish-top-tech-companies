@@ -43,6 +43,9 @@ LIMIT = 10           # issues opened in one run
 RECHECK_DAYS = 180
 # A full stop after a word, then a capital: "RR. HH." and "S.A." are not that.
 SECOND_SENTENCE = re.compile(r"[a-záéíóúñ]{3}[.!?] [A-ZÁÉÍÓÚÑ]")
+# "Acme is a...", "Acme, la plataforma...": the name as the subject. A sentence
+# may still open with a word that is also a name ("Remote work platform").
+NAME_THEN = r"(,| (es|son|is|are|ofrece|offers|provides|desarrolla|develops|fabrica|makes|builds|vende|sells)\b)"
 # Words that sell instead of describing; the brief forbids them.
 PRAISE = ("leading", "innovative", "world-class", "cutting-edge", "best-in-class", "revolutionary",
           "líder", "innovador", "puntera", "pionera", "pionero", "revolucionari")
@@ -67,7 +70,7 @@ def item_errors(item: dict, asked: dict[str, dict]) -> list[str]:
         errors.append("no source_url")
     for lang, text in about.items():
         low = text.lower()
-        if low.startswith(asked[slug]["name"].lower()):
+        if re.match(re.escape(asked[slug]["name"].lower()) + NAME_THEN, low):
             errors.append(f"{lang}: starts with the company's name")
         errors += [f"{lang}: '{word}'" for word in PRAISE if word in low]
         if SECOND_SENTENCE.search(text):
