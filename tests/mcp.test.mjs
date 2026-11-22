@@ -445,7 +445,7 @@ const quietly = async (fn) => {
 };
 
 // salary_context is the company's row for the role in the site's companies table,
-// down to one person, and carries no more than top_companies shows (median, people).
+// down to one person, and carries no more than top_companies shows (median base and total, people).
 const everything = (await run("find_jobs", {})).structuredContent.jobs;
 const slugIndex = new Map(data.companies.map((c, i) => [c.levels, i]));
 report("salary context is the table's row for the role, else the company's over every role, or null", everything.every((j) => {
@@ -453,9 +453,10 @@ report("salary context is the table's row for the role, else the company's over 
   const whole = rowsAt("||").find((a) => a.c === slugIndex.get(j.slug));
   const c = j.salary_context;
   if (cell) return c.for_this_role === true && c.role === j.role && c.company_median_base_eur === cell.median &&
-    c.people === cell.n && c.few === cell.n < data.min_group &&
-    Object.keys(c).sort().join() === "company_median_base_eur,few,for_this_role,people,role,scope";
+    c.company_median_total_eur === cell.total && c.people === cell.n && c.few === cell.n < data.min_group &&
+    Object.keys(c).sort().join() === "company_median_base_eur,company_median_total_eur,few,for_this_role,people,role,scope";
   if (whole) return c.for_this_role === false && c.role === null && c.company_median_base_eur === whole.median &&
+    c.company_median_total_eur === whole.total &&
     c.people === whole.n && c.roles_counted.length > 0 && !c.roles_counted.some((r) => r.role === j.role) &&
     /not what this job pays/.test(c.scope);
   return c === null;

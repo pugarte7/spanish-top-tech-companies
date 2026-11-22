@@ -254,18 +254,6 @@ landed.
   Beamery. Most companies still without a board run one of those or a site of
   their own.
 
-## Search traffic
-
-The home page draws its figures with JavaScript, so `seo.py` writes static
-pages for the shapes people search: role, region, role in a region, company
-(`/es/salarios/`, `/es/empresas/`, `/en/salaries/`, `/en/companies/`). The
-head terms, from Google Trends and autocomplete: "salario programador",
-"cuanto cobra un programador", "software engineer salary spain", "developer
-salary spain", "tech jobs spain", and for a company, company + role + city.
-Each page answers in its first line, with the yearly median and no monthly
-figure. Figures are in the HTML, each from a `data.json` cell, so a company
-gets a page only with `MIN_GROUP` salaries.
-
 ## Known gaps
 
 - **One-person medians** are listed in the companies table, with the count

@@ -55,7 +55,7 @@ const spain = await import("../lib/ats/presets/spain.js");
 const { values } = parseArgs({
   options: {
     data: { type: "string", default: "data/data.json" },
-    tables: { type: "string", default: "data/companies/software-engineer.json" },
+    cells: { type: "string", default: "data/company-cells.json" },
     boards: { type: "string", default: "data/boards.json" },
     none: { type: "string", default: "data/boards-none.json" },
     careers: { type: "string", default: "data/careers.json" },
@@ -158,7 +158,10 @@ async function openBrowser() {
   };
 }
 
-const snapshot = spain.readSiteSnapshot(readJson(values.data), { "software-engineer": readJson(values.tables) });
+// The engineers' row of each company, in the table shape readSiteSnapshot reads.
+const cells = readJson(values.cells);
+const snapshot = spain.readSiteSnapshot(readJson(values.data),
+  { "software-engineer": { fields: cells.fields, cells: { "|": cells.cells["software-engineer||"] ?? [] } } });
 const careers = existsSync(values.careers) ? readJson(values.careers) : {};
 for (const company of snapshot.companies) {
   if (careers[company.levelsSlug]) company.careers = careers[company.levelsSlug];

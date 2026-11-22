@@ -995,13 +995,13 @@ def test_job_boards_follow_the_ranking() -> None:
             "acme": {"ats": "greenhouse", "board": "acme"},
             "beta": {"ats": "lever", "board": "beta", "region": "eu"}}))
         try:
-            boards = site_build.job_boards(data, tables)
+            boards = site_build.job_boards(data, site_build.company_cells(tables))
             (site_build.AGGREGATES / "remote-boards.json").write_text(json.dumps({
                 "ashby:delta": {"name": "Delta", "ats": "ashby", "board": "delta", "via": "pay"},
                 "ashby:gamma-hq": {"name": "GAMMA Inc", "ats": "ashby", "board": "gamma-hq", "levels": "gamma"},
                 "ashby:beta": {"name": "Beta", "ats": "ashby", "board": "beta", "levels": "beta"},
                 "greenhouse:acme": {"name": "Acme Corp", "ats": "greenhouse", "board": "acme"}}))
-            with_remote = site_build.job_boards(data, tables)
+            with_remote = site_build.job_boards(data, site_build.company_cells(tables))
         finally:
             site_build.AGGREGATES = original
     check("remote boards join untiered, under the site's name, behind a company's own board",
@@ -1015,6 +1015,30 @@ def test_job_boards_follow_the_ranking() -> None:
         {"name": "Beta", "ats": "lever", "board": "beta", "tier": "B",
          "tags": ["spain", "a-coruna", "madrid"], "region": "eu"}])
     check("in its list format", (boards["version"], boards["data_as_of"]), (1, data["data_as_of"]))
+
+
+def test_refresh_writes_what_a_deploy_reads() -> None:
+    """--refresh writes data.json and company-cells.json to data/, and a build
+    without the CSV reads the same two files back: no table per selection."""
+    print("a refresh writes data.json and company-cells.json, read back as written")
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("site_build", ROOT / "scripts" / "site.py")
+    site_build = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(site_build)
+    madrid = dict(region="MD", city="Madrid")
+    with temp_data(acme(*[entry(PER_LOCATION, base=b, **madrid) for b in (70000, 80000, 90000)],
+                        website="https://acme.example")):
+        with tempfile.TemporaryDirectory() as directory:
+            original, site_build.AGGREGATES = site_build.AGGREGATES, pathlib.Path(directory)
+            try:
+                written = site_build.aggregates(True)
+                files = sorted(p.name for p in site_build.AGGREGATES.iterdir())
+                read = site_build.aggregates(False)
+            finally:
+                site_build.AGGREGATES = original
+    check("only the two files", files, ["company-cells.json", "data.json"])
+    check("read back as written", read, written)
+    check("the engineers' row is there", [r[2] for r in read[1]["cells"]["software-engineer||"]], [80000])
 
 
 def test_companies_table_shows_any_data() -> None:
@@ -1222,6 +1246,7 @@ def main() -> int:
                  test_companies_table_shows_any_data,
                  test_location_files_list_companies_all_there,
                  test_job_boards_follow_the_ranking,
+                 test_refresh_writes_what_a_deploy_reads,
                  test_remote_boards_need_levels_or_pay,
                  test_site_dates_and_minimum_base,
                  test_floor_aliases_and_exclusions,
