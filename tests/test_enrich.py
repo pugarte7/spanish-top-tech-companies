@@ -92,5 +92,26 @@ check("a check older than RECHECK_DAYS is asked again", "acme" in [t["slug"] for
 
 check("the last JSON block of a comment is read", enrich.json_block("x\n```json\n{\"a\": 1}\n```\n```json\n{\"a\": 2}\n```") == {"a": 2})
 
+def said(login: str, body: str) -> dict:
+    return {"author": {"login": login}, "body": body}
+
+
+good = "Here:\n```json\n" + json.dumps(example) + "\n```"
+me, other = enrich.ANSWERER, "someone-else"
+check("no answer yet leaves the issue pending", enrich.reply([said(other, "hi"), said(me, "looking")]) == ("pending", None))
+check("the answerer's last JSON is read", enrich.reply([said(me, good)]) == ("answer", example))
+check("another account's JSON is ignored and does not hide the answer",
+      enrich.reply([said(me, good), said(other, good.replace("acme", "evil"))]) == ("answer", example))
+check("a comment without JSON after the answer does not hide it",
+      enrich.reply([said(me, good), said(me, "thanks")]) == ("answer", example))
+check("NEEDS_HUMAN is read as such", enrich.reply([said(me, "NEEDS_HUMAN: two companies share the name")])
+      == ("needs-human", None))
+check("an answer this script already replied to is handled",
+      enrich.reply([said(me, good), said(me, enrich.MARK + "\nNot stored")]) == ("handled", None))
+check("a new answer after a rejection is read again",
+      enrich.reply([said(me, enrich.MARK + "\nNot stored"), said(me, good)]) == ("answer", example))
+check("a JSON block that does not parse is an answer to send back",
+      enrich.reply([said(me, "```json\n{oops\n```")]) == ("answer", None))
+
 print(f"{len(failures)} failed" if failures else "enrich.py checks answers as expected")
 sys.exit(1 if failures else 0)
