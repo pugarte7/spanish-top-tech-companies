@@ -55,6 +55,9 @@ check("an abbreviation is not a second sentence",
       not broken(set_about("es", "Software de nóminas y RR. HH. para pymes y autónomos.")))
 check("praise is refused", broken(set_about("en", "Leading delivery platform for food and groceries.")))
 check("the company's name first is refused", broken(set_about("es", "Acme es una plataforma de reparto.")))
+check("a word that is also the name may open the sentence",
+      not broken(set_about("en", "Acme-style delivery platform for food and groceries.")))
+check("the name with a comma first is refused", broken(set_about("en", "Acme, a delivery platform for food.")))
 check("a sentence with no source is refused", broken(lambda item: item.__setitem__("source_url", None)))
 check("a company the issue did not ask about is refused",
       broken(lambda item: item.__setitem__("slug", "other")))
@@ -79,6 +82,83 @@ check("companies without a sentence are asked, most salaries first, and a recent
       [c["slug"] for c in about.wanted(data, book, today)] == ["big", "acme", "old"])
 check("the issue's body reads back", set(about.asked_in({"body": about.issue_body(
       about.wanted(data, book, today))})) == {"big", "acme", "old"})
+
+
+
+# --- collect, against issues that never leave this file --------------------------
+
+import tempfile  # noqa: E402
+
+import enrich  # noqa: E402
+
+ME, BOT = {"login": enrich.ANSWERER}, {"login": "someone-else"}
+fenced = lambda value: "```json\n" + json.dumps(value, ensure_ascii=False) + "\n```"
+body = about.issue_body(list(asked.values()))
+half = {"companies": [example["companies"][0]]}
+praise = copy.deepcopy(example)
+praise["companies"][0]["about"]["en"] = "Leading delivery platform for food and groceries."
+
+
+def run_collect(comments: list[dict], on_file: dict | None = None):
+    """collect() over one issue with these comments: (file written, issues to close, notes left)."""
+    notes: list[tuple] = []
+    with tempfile.TemporaryDirectory() as tmp:
+        path, closing = pathlib.Path(tmp) / "about.json", pathlib.Path(tmp) / "closing.json"
+        if on_file:
+            path.write_text(json.dumps(on_file), encoding="utf-8")
+        saved = about.ABOUT, enrich.issues, enrich.gh, enrich.note
+        about.ABOUT = path
+        enrich.issues = lambda label: [{"number": 7, "title": "t", "body": body}]
+        enrich.gh = lambda *args, **kw: json.dumps({"comments": comments})
+        enrich.note = lambda number, text, label=None: notes.append((number, text, label))
+        try:
+            about.collect(False, str(closing))
+        finally:
+            about.ABOUT, enrich.issues, enrich.gh, enrich.note = saved
+        book = json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+        return book, json.loads(closing.read_text(encoding="utf-8")), notes
+
+
+book, closing, notes = run_collect([{"author": ME, "body": "Here it is.\n\n" + fenced(example)}])
+check("a whole answer is stored and its issue closed",
+      book and set(book["companies"]) == {"acme"} and set(book["none"]) == {"initech"}
+      and [c["number"] for c in closing] == [7] and not notes, (book, closing, notes))
+
+book, closing, notes = run_collect([])
+check("no answer yet: nothing written, nothing closed, nothing said", book is None and not closing and not notes)
+
+book, closing, notes = run_collect([{"author": BOT, "body": fenced(example)}])
+check("another account's answer is ignored", book is None and not closing and not notes)
+
+book, closing, notes = run_collect([{"author": ME, "body": fenced(half)}])
+check("half an answer is stored, and the issue stays open naming what is missing",
+      book and set(book["companies"]) == {"acme"} and not closing
+      and notes and "initech: no answer" in notes[0][1] and notes[0][2] == "needs-human", (book, notes))
+
+book, closing, notes = run_collect([{"author": ME, "body": fenced(praise)}])
+check("a refused sentence is sent back and the rest stored",
+      book and not book["companies"] and set(book["none"]) == {"initech"} and not closing
+      and "acme: en: 'leading'" in notes[0][1], (book, notes))
+
+book, closing, notes = run_collect([{"author": ME, "body": "```json\n{not json\n```"}])
+check("a block that does not parse is sent back", book is None and not closing and "does not parse" in notes[0][1])
+
+book, closing, notes = run_collect([{"author": ME, "body": fenced(praise)},
+                                    {"author": ME, "body": enrich.MARK + "\nNot stored"}])
+check("an answer already sent back is not read twice", book is None and not closing and not notes)
+
+book, closing, notes = run_collect([{"author": ME, "body": fenced(praise)},
+                                    {"author": ME, "body": enrich.MARK + "\nNot stored"},
+                                    {"author": ME, "body": fenced(example)}])
+check("a corrected answer below it is read", book and set(book["companies"]) == {"acme"} and len(closing) == 1)
+
+book, closing, notes = run_collect([{"author": ME, "body": "NEEDS_HUMAN the list is ambiguous"}])
+check("NEEDS_HUMAN is left for a human", book is None and not closing and notes[0][2] == "needs-human")
+
+mine = {"companies": {"acme": {"es": "A mano.", "en": "By hand."}}, "none": {}}
+book, closing, notes = run_collect([{"author": ME, "body": fenced(example)}], mine)
+check("a sentence on file is never overwritten", book["companies"]["acme"]["en"] == "By hand."
+      and set(book["none"]) == {"initech"} and len(closing) == 1, book)
 
 print()
 print("FAILED: " + ", ".join(failures) if failures else "all passed")
