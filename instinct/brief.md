@@ -3,9 +3,11 @@
 Each issue labelled `enrich` names one company with open roles in Spain or
 remote open to Spain. Find two things: how many people it employs, and who at
 it a candidate for one of its openings can reach. Answer with one comment
-holding one JSON block that follows `schema.json`, then label the issue
-`enriched`, or `needs-human` if the company is ambiguous. Never guess: a field
-you cannot source is null, and an empty `contacts` is a valid answer.
+holding one JSON block that follows `schema.json`, from the account
+`pugarte7`; comments by other accounts are ignored. If the company is
+ambiguous, comment a line starting `NEEDS_HUMAN` and why, with no JSON. Do not
+change labels. Never guess: a field you cannot source is null, and an empty
+`contacts` is a valid answer.
 
 ## Input (issue body)
 
@@ -24,8 +26,8 @@ you cannot source is null, and an empty `contacts` is a valid answer.
 ```
 
 `website` and `linkedin` fix the identity. If they disagree, or the name
-belongs to several companies and you cannot tell which, stop and label
-`needs-human`.
+belongs to several companies and you cannot tell which, stop and comment
+`NEEDS_HUMAN`.
 
 ## Output (comment)
 

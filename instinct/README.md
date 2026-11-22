@@ -9,9 +9,10 @@ the contract with it; change the brief and the schema together.
 
 ## Flow
 
-`.github/workflows/enrich.yml` runs `scripts/enrich.py` daily and after the
-weekly boards run. It needs the secret `DATA_ISSUES_TOKEN`: a fine-grained
-token with Issues read and write on the private repo only.
+`.github/workflows/enrich.yml` runs `scripts/enrich.py` by hand, and daily
+and after the weekly boards run once the repo variable `ENRICH_DAILY` is `on`.
+It needs the secret `DATA_ISSUES_TOKEN`: a fine-grained token with Issues read
+and write on the private repo only.
 
 1. It lists companies of `data.json` missing from `data/sizes.json` or whose
    contacts were not checked in the last 120 days, those with open postings
@@ -19,12 +20,20 @@ token with Issues read and write on the private repo only.
 2. It opens one issue per company, labelled `enrich`, in the private repo
    `pugarte7/spanish-top-tech-companies-data`, unless one is already open.
    The body holds the input block of `brief.md`.
-3. The agent answers with one comment holding one JSON block that follows
-   `schema.json`, and labels the issue `enriched` or `needs-human`.
-4. The next run validates the comment and writes: the size to
-   `data/sizes.json` on main, the contacts to `contacts.json` in the
-   private repo (`scripts/private_data.sh push`) with the date of the check,
-   so a company with nobody found is not asked again for 120 days.
+3. The agent answers with one comment, as `pugarte7`, holding one JSON block
+   that follows `schema.json`, or a line starting `NEEDS_HUMAN` and why. It
+   cannot label issues, so it does not.
+4. The next run reads every open `enrich` issue. Only the newest answer by
+   `pugarte7` counts: other accounts are ignored, and so are its comments
+   without a JSON block. No answer yet: the issue is left as it is. The run's
+   own comments are `pugarte7`'s too (the token's owner) and carry
+   `<!-- enrich.py -->`; an answer older than one of them was already handled.
+5. A valid answer writes the size to `data/sizes.json` on main and the
+   contacts to `contacts.json` in the private repo
+   (`scripts/private_data.sh push`) with the date of the check, so a company
+   with nobody found is not asked again for 120 days. The issue is closed only
+   after both are saved. A bad answer or `NEEDS_HUMAN` gets a comment and
+   `needs-human` and stays open; a new answer below it is read again.
 
 ## Why the private repo
 
@@ -34,8 +43,8 @@ removal request could be honoured. Sizes are not personal and are public.
 
 ## What we check, without trusting the agent
 
-- The comment parses and follows `schema.json`; otherwise `needs-human` and
-  nothing is written.
+- The comment is `pugarte7`'s, parses and follows `schema.json`; otherwise
+  `needs-human` and nothing is written.
 - Each email appears at its `evidence_url` (fetched by us); otherwise the
   email is dropped, and the contact with it unless it has a profile.
 - Job ids are the ones the issue listed, and the answer is about the

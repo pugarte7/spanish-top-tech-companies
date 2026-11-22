@@ -2,17 +2,22 @@
 """Company size and contacts from an outside agent, through issues.
 
     python3 scripts/enrich.py open [--limit N] [--dry-run]
-    python3 scripts/enrich.py collect [--dry-run]
+    python3 scripts/enrich.py collect [--dry-run] [--closing FILE]
+    python3 scripts/enrich.py close FILE
     python3 scripts/enrich.py check ANSWER.json
 
 The contract with the agent is instinct/: brief.md (what it is told) and
 schema.json (what it answers). `open` files one issue per company that has no
 size in data/sizes.json or no contact check in contacts.json, labelled
 `enrich`, in the private repo: the answers name people, and a public issue
-would publish them. `collect` reads the issues the agent labelled `enriched`,
-checks the answer and writes the size to data/sizes.json and the contacts to
-contacts.json beside lib.DATA (private_data.sh push keeps it). A bad answer
-goes back labelled `needs-human` and nothing is written.
+would publish them. The agent can comment but not label, so `collect` reads
+every open `enrich` issue for the last answer by ANSWERER: a JSON block, or a
+NEEDS_HUMAN line. No answer yet leaves the issue as it is. A good answer
+writes the size to data/sizes.json and the contacts to contacts.json beside
+lib.DATA (private_data.sh push keeps it); a bad one, or NEEDS_HUMAN, gets a
+comment and `needs-human` and nothing is written. Its issues are closed by
+`close` once the files are saved (enrich.yml runs it after the push), so a
+failed push leaves them open to be stored again.
 
 Never overwrites: a size on file stays, and a contact on file stays beside
 the new ones. An email is kept only if it appears at its evidence_url.
@@ -24,6 +29,7 @@ from __future__ import annotations
 import datetime as dt
 import html
 import json
+import pathlib
 import re
 import subprocess
 import sys
@@ -43,7 +49,12 @@ CONTACTS = headcount.CONTACTS
 RECHECK_DAYS = 120
 # Issues opened in one run, so the agent gets a queue it can keep up with.
 LIMIT = 25
-LABELS = {"enrich": "0e8a16", "enriched": "1d76db", "needs-human": "d93f0b"}
+LABELS = {"enrich": "0e8a16", "needs-human": "d93f0b"}
+# The account the agent comments with. enrich.yml's token is this account's
+# too, so this script's own comments carry MARK to tell them apart.
+ANSWERER = "pugarte7"
+MARK = "<!-- enrich.py -->"
+NEEDS_HUMAN = re.compile(r"^\s*NEEDS_HUMAN\b", re.M)
 UA = "Mozilla/5.0 (compatible; spanish-top-tech-companies enrich)"
 
 
@@ -124,6 +135,25 @@ def json_block(text: str):
         except json.JSONDecodeError:
             continue
     return None
+
+
+def reply(comments: list[dict]) -> tuple[str, object]:
+    """What an issue's comments hold, read from the newest by ANSWERER:
+    ("handled", None) when this script spoke after the last answer,
+    ("needs-human", None), ("answer", the JSON or None if it does not parse),
+    or ("pending", None) with no answer yet. Other accounts' comments, and
+    ANSWERER's without a JSON block, are passed over."""
+    for c in reversed(comments):
+        if (c.get("author") or {}).get("login") != ANSWERER:
+            continue
+        body = c.get("body") or ""
+        if MARK in body:
+            return "handled", None
+        if NEEDS_HUMAN.search(body):
+            return "needs-human", None
+        if "```json" in body:
+            return "answer", json_block(body)
+    return "pending", None
 
 
 # --- What is stored ----------------------------------------------------------------
@@ -227,8 +257,8 @@ def wanted(data: dict, jobs: list[dict], sizes: dict, contacts: dict, today: dt.
 
 
 def issue_body(asked: dict) -> str:
-    return (f"Instructions: {BRIEF}\n\nAnswer with one comment holding one JSON block that follows "
-            f"instinct/schema.json, then label this issue `enriched` (or `needs-human`).\n\n"
+    return (f"Instructions: {BRIEF}\n\nAnswer with one comment by {ANSWERER} holding one JSON block that "
+            f"follows instinct/schema.json, or a line starting NEEDS_HUMAN and why.\n\n"
             f"```json\n{json.dumps(asked, ensure_ascii=False, indent=2)}\n```\n")
 
 
@@ -261,25 +291,37 @@ def open_issues(limit: int, dry: bool) -> int:
     return 0
 
 
-def collect(dry: bool) -> int:
+def note(number: int, text: str, label: str | None = None) -> None:
+    gh("issue", "comment", str(number), "-R", PRIVATE_REPO, "--body-file", "-", input=f"{MARK}\n{text}")
+    if label:
+        gh("issue", "edit", str(number), "-R", PRIVATE_REPO, "--add-label", label)
+
+
+def collect(dry: bool, closing: str | None) -> int:
     sizes = read_json(SIZES, {"companies": {}})
     contacts = read_json(CONTACTS, {"as_of": None, "companies": {}, "checked": {}})
     contacts.setdefault("checked", {})
     today = dt.date.today().isoformat()
-    stored = rejected = sized = people = dropped = 0
-    for issue in issues("enriched"):
+    stored = rejected = flagged = pending = sized = people = dropped = 0
+    to_close = []
+    for issue in issues("enrich"):
         asked = json_block(issue["body"])
         comments = json.loads(gh("issue", "view", str(issue["number"]), "-R", PRIVATE_REPO,
                                  "--json", "comments"))["comments"]
-        answer = next((b for b in (json_block(c["body"]) for c in reversed(comments)) if isinstance(b, dict)), None)
-        errors = ["no JSON block in the comments"] if answer is None else answer_errors(answer, asked or {})
+        state, answer = reply(comments)
+        if state in ("pending", "handled"):
+            pending += state == "pending"
+            continue
+        if state == "needs-human":
+            flagged += 1
+            if not dry:
+                note(issue["number"], "Left for a human.", "needs-human")
+            continue
+        errors = ["the JSON block does not parse"] if answer is None else answer_errors(answer, asked or {})
         if errors:
             rejected += 1
             if not dry:
-                gh("issue", "comment", str(issue["number"]), "-R", PRIVATE_REPO, "--body-file", "-",
-                   input="Not stored:\n\n" + "\n".join(f"- {e}" for e in errors[:30]))
-                gh("issue", "edit", str(issue["number"]), "-R", PRIVATE_REPO,
-                   "--remove-label", "enriched", "--add-label", "needs-human")
+                note(issue["number"], "Not stored:\n\n" + "\n".join(f"- {e}" for e in errors[:30]), "needs-human")
             continue
         slug = answer["slug"]
         entry = size_entry(answer["size"])
@@ -301,17 +343,28 @@ def collect(dry: bool) -> int:
             contacts["companies"][slug] = merged
         contacts["checked"][slug] = today
         stored += 1
-        if not dry:
-            gh("issue", "close", str(issue["number"]), "-R", PRIVATE_REPO, "--comment",
-               f"Stored: size {'added' if added else 'unchanged'}, {len(merged) - len(before)} new contacts.")
+        to_close.append({"number": issue["number"],
+                         "text": f"Stored: size {'added' if added else 'unchanged'}, "
+                                 f"{len(merged) - len(before)} new contacts."})
     if stored and not dry:
         sizes["companies"] = dict(sorted(sizes["companies"].items()))
         contacts["companies"] = dict(sorted(contacts["companies"].items()))
         contacts["as_of"] = today
         write_json(SIZES, sizes, 0)
         write_json(CONTACTS, contacts, 1)
+    if closing and not dry:
+        write_json(pathlib.Path(closing), to_close, 0)
     print(f"{stored} answers stored ({sized} sizes, {people} contacts, {dropped} emails not found at their "
-          f"source), {rejected} sent back")
+          f"source), {rejected} sent back, {flagged} left for a human, {pending} not answered yet")
+    return 0
+
+
+def close(path: str) -> int:
+    """Closes the issues collect stored, once enrich.yml has saved the files."""
+    done = read_json(pathlib.Path(path), [])
+    for item in done:
+        gh("issue", "close", str(item["number"]), "-R", PRIVATE_REPO, "--comment", f"{MARK}\n{item['text']}")
+    print(f"{len(done)} issues closed")
     return 0
 
 
@@ -326,7 +379,9 @@ def main(argv: list[str]) -> int:
         limit = int(argv[argv.index("--limit") + 1]) if "--limit" in argv else LIMIT
         return open_issues(limit, dry)
     if argv[:1] == ["collect"]:
-        return collect(dry)
+        return collect(dry, argv[argv.index("--closing") + 1] if "--closing" in argv else None)
+    if len(argv) >= 2 and argv[0] == "close":
+        return close(argv[1])
     print(__doc__, file=sys.stderr)
     return 2
 

@@ -1,10 +1,10 @@
 name: enrich
 
-# Company size and contacts from an outside agent (instinct/). Every day it
-# stores the answers the agent left in the private repo's issues (labelled
-# `enriched`), then opens issues for the next companies missing a size or a
-# contact check (scripts/enrich.py). After the weekly boards run too, so a
-# company that arrives with the feed is asked about that day.
+# Company size and contacts from an outside agent (instinct/). It stores the
+# answers the agent left in the private repo's issues, closes those issues once
+# the files are saved, then opens issues for the next companies missing a size
+# or a contact check (scripts/enrich.py). Daily and after the weekly boards run
+# only while the repo variable ENRICH_DAILY is `on`; by hand otherwise.
 #
 # Contacts are people: the issues live in the private repo, contacts.json is
 # kept encrypted there (private_data.sh) and nothing here prints them. This
@@ -25,7 +25,7 @@ on:
       limit:
         description: "Issues to open in this run"
         type: string
-        default: "25"
+        default: "1"
 
 concurrency:
   group: enrich
@@ -36,7 +36,9 @@ permissions:
 
 jobs:
   enrich:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    if: >-
+      (github.event_name == 'workflow_dispatch' || vars.ENRICH_DAILY == 'on') &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -70,7 +72,7 @@ jobs:
           echo "Private data pulled."
 
       - name: Store the agent's answers
-        run: python3 scripts/enrich.py collect
+        run: python3 scripts/enrich.py collect --closing "$RUNNER_TEMP/closing.json"
 
       - name: Push the contacts
         env:
@@ -99,6 +101,9 @@ jobs:
           git pull --rebase -q origin main
           git push -q origin HEAD:main
           echo "data/sizes.json pushed."
+
+      - name: Close the stored issues
+        run: python3 scripts/enrich.py close "$RUNNER_TEMP/closing.json"
 
       - name: Ask about the next companies
         env:
