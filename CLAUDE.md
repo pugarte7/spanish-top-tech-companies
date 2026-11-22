@@ -146,7 +146,10 @@ pauses the refresh until its "Refresh paused" issue is closed.
   pay. `remote.yml` writes it twice a month (`scripts/remote_boards.mjs`,
   `scripts/remote_levels.py`). A Levels.fyi match needs its domain in the
   postings or in the board's name, never the name alone. `"via": "hand"`
-  keeps an entry whatever a run finds; `"no"` in
+  keeps an entry whatever a run finds, and so does `"via": "radar"`: an
+  employer with an office in Spain from Spain Tech Radar's list that passed
+  the same check (Levels.fyi or stated pay), whose board Common Crawl never
+  names. Radar alone never adds a company; `"no"` in
   `data/remote-boards-none.json` strikes a board off. Nothing of these
   employers reaches `data.json` or a median.
 

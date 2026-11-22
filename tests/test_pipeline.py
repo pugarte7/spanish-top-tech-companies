@@ -1099,6 +1099,7 @@ def test_remote_boards_need_levels_or_pay() -> None:
 
     kept = {"ashby:old": board("old", name="Old", via="levels", seen="2026-09-01"),
             "ashby:mine": board("mine", name="Mine", via="hand", seen="2026-09-01"),
+            "ashby:office": board("office", name="Office", via="radar", seen="2026-09-01"),
             "lever:quiet": {"ats": "lever", "board": "quiet", "name": "Quiet", "via": "pay", "seen": "2026-09-01"},
             "ashby:here": board("here", name="Here", via="pay", seen="2026-11-01")}
     none = {"ashby:struck": "no", "ashby:lately": "2026-11-01", "ashby:long-ago": "2026-06-01",
@@ -1112,9 +1113,10 @@ def test_remote_boards_need_levels_or_pay() -> None:
           {k: (v["via"], v["seen"]) for k, v in sorted(kept.items())},
           {"ashby:after": ("pay", "2026-11-20"), "ashby:here": ("pay", "2026-11-20"),
            "ashby:known": ("levels", "2026-11-20"), "ashby:mine": ("hand", "2026-09-01"),
+           "ashby:office": ("radar", "2026-09-01"),
            "ashby:paid": ("pay", "2026-11-20"), "ashby:paid-now": ("pay", "2026-11-20"),
            "lever:quiet": ("pay", "2026-09-01")})
-    check("a board unseen for DROP_DAYS leaves, unless hand-kept or its ATS was cut short",
+    check("a board unseen for DROP_DAYS leaves, unless kept by hand or its ATS was cut short",
           report["dropped"], ["Old"])
     check("the rest wait, an unread or refused answer judging nothing", none,
           {"ashby:struck": "no", "ashby:lately": "2026-11-01", "ashby:long-ago": "2026-11-20",

@@ -18,7 +18,10 @@ or the board is named after that domain.
 
 Both files take hand edits, which no run undoes: an entry with "via": "hand"
 in remote-boards.json stays whatever Levels.fyi says, and "no" instead of a
-day in remote-boards-none.json strikes a board off for good.
+day in remote-boards-none.json strikes a board off for good. "via": "radar"
+is an employer with an office in Spain found from Spain Tech Radar's list and
+put through the same check by hand; Common Crawl never names its board, so no
+run drops it either.
 """
 from __future__ import annotations
 
@@ -39,6 +42,8 @@ NONE = ROOT / "data" / "remote-boards-none.json"
 CANDIDATES = ROOT / ".cache" / "remote" / "candidates.json"
 
 RECHECK_DAYS = 90
+# Entries no run found, so none ages them out.
+KEPT_BY_HAND = ("hand", "radar")
 # A board that has shown no remote posting for this long leaves the crawl.
 DROP_DAYS = 45
 # Asked about when engineers alone do not reach MIN_GLOBAL: the site sums
@@ -175,7 +180,7 @@ def decide(candidates: dict, kept: dict, none: dict, today: str, lookup) -> dict
     incomplete = set(candidates.get("incomplete", []))
     for k, entry in list(kept.items()):
         seen = lib.parse_date(entry.get("seen"))
-        if (entry.get("via") != "hand" and entry["ats"] not in incomplete
+        if (entry.get("via") not in KEPT_BY_HAND and entry["ats"] not in incomplete
                 and seen and (day - seen).days > DROP_DAYS):
             report["dropped"].append(entry["name"])
             del kept[k]
