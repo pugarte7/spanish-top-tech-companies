@@ -71,7 +71,9 @@ or remote open to Spain or Europe), and helps apply to them. See "Applying" belo
   filters (an architect under role software-engineer). `role` also takes
   specializations such as DevOps, SRE, backend or frontend. `region` takes a
   city or remote too; `seniority` (intern, junior, mid, senior, staff, lead,
-  head) is the level the title names; `years` is the person's experience and
+  head) is the level the title names, else the one the years asked imply
+  (0 intern, 1-2 junior, 3-4 mid, 5-9 senior, 10+ staff); `workplace` comes
+  from the board, the location or the description; `years` is the person's experience and
   leaves out postings asking more; `exclude` takes the ids already applied to.
   With no match, `no_match` says how many results each filter costs and
   suggests the closest postings with the filter they miss: tell the person

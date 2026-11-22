@@ -92,41 +92,53 @@ export const ROLE_TITLES = [
     /\b(sales|solutions?|pre ?sales|customer|field|manufacturing|process|quality) engineering\b/],
   ["data-science-manager", /\b(data science|machine learning|ml|analytics) (manager|director|head)\b|\b(head|director) of (data science|machine learning|analytics)\b/],
   ["technical-program-manager", /\btechnical program(me)? manager\b|\btpm\b/],
-  ["program-manager", /\bprogram(me)? manager\b/],
-  ["project-manager", /\bproject (manager|lead|coordinator)\b|\bscrum master\b|\bdelivery (manager|lead)\b|\bjefe de proyecto/],
+  ["program-manager", /\bprogram(me)? (manager|lead|specialist|management)\b/],
+  ["project-manager", /\bproject (manager|lead|coordinator)\b|\bscrum master\b|\bdelivery (manager|lead)\b|\bjefe de proyecto|\bproject (management|specialist|officer|controller|leader)\b|\bpmo\b|\b(gestor|responsable|director) de proyecto/],
   ["product-manager", /\bproduct (manager|owner|lead)\b|\b(head|director|vp) (of )?product\b/],
   ["ux-researcher", /\b(ux|user) research/],
   ["product-designer", /\bdesigner\b|\bdisenador/, NOT_SOFTWARE],
   ["sales-engineer", /\b(sales|solutions?|pre ?sales) engineer\b|\bsolutions? consultant\b/],
   ["solution-architect", /\barchitect\b|\barquitect[oa]\b/, NOT_SOFTWARE],
   ["security-analyst", /\bsecurity (analyst|specialist|operations)\b|\bsoc analyst\b|\bcyber ?security\b|\bcyber\b|\bciberseguridad\b/, /\b(marketing|sales|account|recruit\w*)\b/],
+  ["security-analyst", /\b(information|it|cloud|application|offensive|ot) security\b|\bseguridad (de la informacion|informatica|it|ot)\b|\bpentest|\bpenetration test|\bred team\b|\bgrc\b|\bvulnerabilit/,
+    /\b(engineer|ingenier[oa]|marketing|sales|account|recruit\w*)\b/],
   ["data-scientist", /\bdata scien|\b(research|applied|applied ai|ai|machine learning|ml) scientist\b|\bcientifico de datos\b/],
   ["data-analyst", /\b(data|bi|business intelligence|analytics|product|marketing) analyst\b|\banalista de datos\b/],
   ["business-analyst", /\bbusiness analyst\b|\banalista de negocio/],
   ["financial-analyst", /\b(financial|finance|fp a) analyst\b/],
   ["legal", /\blegal\b|\bcounsel\b|\blawyer\b|\battorney\b|\bparalegal\b|\babogad[oa]\b|\bjurist/],
+  ["legal", /\bcompliance\b|\bcumplimiento normativo\b/, /\b(engineer|ingenier[oa]|sales|ventas)\b/],
   ["aerospace-engineer", /\b(aerospace|aeronautic(al)?|aerodynamics?|aircraft|airframe|landing gear|propulsion|avionics|flight physics|flight test|stress|structures|airworthiness)\b.*\b(engineer|ingenier[oa])\b|\bingenier[oa] aeronautic/],
   ["civil-engineer", /\b(civil|structural|construction) engineer\b|\bingenier[oa] (civil|de caminos)/],
   ["electrical-engineer", /\belectrical (design )?engineer\b|\bingenier[oa] electric/],
   ["mechanical-engineer", /\bmechanical (design )?engineer|\bingenier[oa] mecanic/],
   ["hardware-engineer", /\b(hardware|electronics?|asic|fpga|rf)( design| test| validation| verification)? engineer\b|\bingenier[oa] electronic/],
-  ["information-technologist", /\bit (support|specialist|technician|administrator|manager)\b|\bsys ?admin\b|\b(systems?|sap basis|database|db|network|linux|windows|openshift|salesforce|cloud) administrator\b|\badministrador\b|\bhelp ?desk\b|\btecnico (de )?(sistemas|soporte|it|helpdesk)\b/],
+  ["hardware-engineer", /\b(telecom\w*|radio ?frecuencia|radiofrequency|rf|electronic\w*|electronica)\b.*\b(engineer|ingenier[oa])\b|\b(engineer|ingenier[oa])\b.*\b(telecom\w*|radio ?frecuencia|radiofrequency|rf|electronic\w*)\b/,
+    /\b(software|redes|network\w*)\b/],
+  ["information-technologist", /\bit (support|specialist|technician|administrator|manager|operations|service|services|analyst|consultant)\b|\bservice desk\b|\bsoporte (it|informatico|tecnico)\b|\bmicroinformatica\b|\bdata center (technician|operator|engineer)\b|\btecnico( \w+)?( de)? (sistemas|soporte|it|helpdesk|redes|microinformatica)\b|\bsys ?admin\b|\b(systems?|sap basis|database|db|network|linux|windows|openshift|salesforce|cloud) administrator\b|\badministrador\b|\bhelp ?desk\b|\btecnico (de )?(sistemas|soporte|it|helpdesk)\b/],
   ["customer-success", /\bcustomer success\b/],
-  ["recruiter", /\brecruit(er|ing|ment)\b|\btalent (acquisition|partner|sourcer)\b|\bsourcer\b/],
-  ["human-resources", /\bhr\b|\bhrbp\b|\bhuman resources\b|\bpeople (partner|operations|ops|business partner|manager|specialist)\b|\brecursos humanos\b|\bpayroll\b/],
+  ["recruiter", /\brecruit(er|ing|ment)\b|\btalent (acquisition|partner|sourcer)\b|\bsourcer\b|\bseleccion\b/],
+  ["human-resources", /\bhr\b|\bhrbp\b|\bhuman resources\b|\bpeople (partner|operations|ops|business partner|manager|specialist)\b|\brecursos humanos\b|\bpayroll\b|\btalent (management|development|organization|analytics|culture)\b|\bnominas?\b/],
   ["marketing-operations", /\bmarketing (operations|ops|automation)\b/],
   ["marketing", /\bmarketing\b|\bseo\b|\bcontent (manager|writer|strategist)\b|\bbrand (manager|designer|lead)\b|\bcommunications? (manager|lead|specialist)\b/],
   ["business-development", /\bbusiness development\b|\bpartnerships? (manager|lead|director)\b|\bbdr\b/],
   ["bizops-manager", /\b(business|biz) ?operations\b|\bbizops\b|\bstrategy (and |& )?operations\b/],
-  ["accountant", /\baccount(ant|ing)\b|\bcontable\b|\bbookkeeper\b/],
-  ["customer-service", /\bsupport (agent|specialist|engineer|associate|representative)\b|\bcustomer (service|care|support)\b/],
+  ["accountant", /\baccount(ant|ing)\b|\bcontab\w*|\bbookkeeper\b|\bauditor\b|\baudit\b|\bauditoria\b|\btax\b|\bfiscal\b|\bcontroller\b|\bcontrolling\b|\btreasury\b|\btesoreria\b/,
+    /\b(it|security|cyber|quality|calidad|clinical|document|consult\w*|sap|engineer|ingenier[oa])\b/],
+  ["customer-service", /\bsupport (agent|specialist|engineer|associate|representative)\b|\bcustomer (service|care|support)\b|\btechnical support\b|\batencion al cliente\b/],
   // Catch-alls, counted only when nothing above matched.
-  ["software-engineer", /\b(developer|programmer|sre|devops)\b|\bdesarrollador|\bprogramador|\bingenier[oa] (de )?(software|datos|sistemas|backend|frontend|devops|cloud|qa|ia)\b/],
-  ["software-engineer", /\bengineer\b|\bingenier[oa]\b/, NOT_SOFTWARE],
-  ["sales", /\bsales\b|\baccount (executive|manager|director)\b|\bsdr\b|\bventas\b|\bcomercial\b/],
-  ["management-consultant", /\bconsultant\b|\bconsultor/],
+  ["software-engineer", /\b(developer|programmer|sre|devops|tester|qa|sdet)\b|\btech(nical)? lead\b|\btest (automation|analyst|engineer|manager)\b|\bquality assurance (engineer|analyst|lead|manager)\b|\b(software|data|platform|backend|frontend|ml|machine learning|ai) engineering\b|\bdesarrollador|\bprogramador|\bingenier[oa] (de )?(software|datos|sistemas|backend|frontend|devops|cloud|qa|ia)\b/],
+  ["software-engineer", /\bengineer\b|\bingenier[oa]\b|\bengineering (intern|internship|graduate|trainee)\b/, NOT_SOFTWARE],
+  ["sales", /\bsales\b|\baccount (executive|manager|director)\b|\bkey account\b|\bsdr\b|\bventas\b|\bcomercial\b/],
+  ["management-consultant", /\bconsult(ant|ing|or\w*)\b|\bsap\b|\bstrategy\b|\bestrategia\b/],
+  ["financial-analyst", /\b(risk|credit|pricing|investment|m a|valuation|inversiones|finance|financial|financ\w*)\b/, /\bfinancial services\b/],
+  ["bizops-manager", /\boperations (manager|analyst|specialist|lead|associate|coordinator)\b|\boperaciones\b/],
+  ["business-analyst", /\banalyst\b|\banalista\b/, /\b(laboratorio|laboratory|lab)\b/],
+  ["marketing", /\bgrowth\b|\bcomunicacion\b/],
+  ["product-designer", /\b(ux|ui)\b/],
 ];
-const CATCH_ALL = new Set(["software-engineer", "sales", "management-consultant"]);
+// Entries from the first catch-all on count only when nothing before them did.
+const CATCH_FROM = ROLE_TITLES.findIndex(([slug, pattern]) => slug === "software-engineer" && /developer/.test(pattern.source));
 // The roles a title can be classified as, whatever data.json holds.
 export const CLASSIFIED = new Set(ROLE_TITLES.map(([slug]) => slug));
 export const MAX_ROLES = 3;
@@ -136,8 +148,8 @@ export const MAX_ROLES = 3;
 export function titleRoles(title, known) {
   const t = words(title);
   const out = [];
-  for (const [slug, pattern, unless] of ROLE_TITLES) {
-    if (out.includes(slug) || !known.has(slug) || (out.length && CATCH_ALL.has(slug))) continue;
+  for (const [i, [slug, pattern, unless]] of ROLE_TITLES.entries()) {
+    if (out.includes(slug) || !known.has(slug) || (out.length && i >= CATCH_FROM)) continue;
     if (pattern.test(t) && !unless?.test(t)) out.push(slug);
   }
   return out.slice(0, MAX_ROLES);
@@ -159,6 +171,16 @@ const LEVEL_TITLES = [
   ["junior", /\b(junior|jr|graduate|grad|entry level|new grad)\b/],
   ["mid", /\b(mid|mid level|intermediate|ii)\b/],
 ];
+
+// The level the years a posting asks imply, for a title that names none:
+// 0 intern, 1-2 junior, 3-4 mid, 5-9 senior, 10 or more staff. "0-2 years"
+// is junior: an internship asks for none past one.
+export function levelOfYears(years) {
+  if (!Array.isArray(years) || !Number.isFinite(years[0])) return null;
+  const [min, max] = years;
+  if (min === 0) return max !== null && max > 1 ? "junior" : "intern";
+  return min <= 2 ? "junior" : min <= 4 ? "mid" : min <= 9 ? "senior" : "staff";
+}
 
 export function seniorityOf(title) {
   const t = words(title);
@@ -221,6 +243,44 @@ export function workplaceOf(job) {
   const where = words(job.location);
   if (/\b(hybrid|hibrido)\b/.test(where)) return "hybrid";
   return REMOTE.test(where) ? "remote" : null;
+}
+
+// The way of working a description states, or null: "hybrid model", "2 days
+// a week in the office", "100% remoto", "modalidad presencial". Only phrases
+// that say how the role works: "hybrid cloud", "remote monitoring" and the
+// perks ("work from anywhere four weeks a year") say nothing. A description
+// that names two ways ("remote or hybrid") gives none.
+const FEW = "(?:[1-4]|one|two|three|four|uno|dos|tres|cuatro)";
+const WAYS = {
+  hybrid: [
+    /\bhybrid (?:work|working|model|role|position|policy|schedule|setup|set up|arrangement|mode|format|environment|basis|way of working|opportunity|job|scheme|contract)\b/,
+    /\b(?:modelo|modalidad|trabajo|regimen|esquema|formato|jornada|posicion|puesto|sistema)(?: de trabajo)? (?:hibrid[oa]|mixt[oa])\b/,
+    /\(hybrid\)|\(hibrido\)|\bworkplace type ?: hybrid\b/,
+    new RegExp(`\\b${FEW} (?:days?|dias?) (?:a week |per week |a la semana |por semana |semanales |weekly )?(?:in|at|from|en|de) (?:the |la |our |nuestras? )?(?:office|oficinas?)\\b`),
+    new RegExp(`\\b${FEW} (?:days?|dias?) (?:a week |per week |a la semana |por semana |semanales )?(?:de teletrabajo|remote|from home|of remote work|remotely)\\b`),
+  ],
+  remote: [
+    // Not the perk: "semanas full remote", "full remote weeks".
+    /(?<!(?:weeks?|semanas?|days?|dias?|months?|meses) )\b(?:fully|100 ?%|completely|entirely|totally|full) remote\b(?! (?:weeks?|semanas?|days?|dias?|months?|meses)\b)/,
+    /\bremote (?:first|only)\b/,
+    /\bthis (?:is a |role is |position is )(?:fully )?remote\b/,
+    /\b(?:100 ?%|totalmente|completamente|full) (?:en )?(?:remoto|teletrabajo)\b/,
+    /\bteletrabajo (?:100 ?%|completo|total)\b|\bremoto 100 ?%/,
+    /\b(?:modalidad|posicion|puesto)(?: de trabajo)? (?:en )?remot[oa]\b/,
+  ],
+  onsite: [
+    /\b(?:fully|100 ?%) (?:on ?site|in office|office based)\b/,
+    /\b(?:on ?site|office based|in office) (?:role|position|job|work|working|basis|model)\b/,
+    /\b(?:100 ?%|totalmente) presencial\b/,
+    /\b(?:modalidad|trabajo|puesto|jornada|posicion|regimen|formato)(?: de trabajo)? presencial\b/,
+    /\b(?:5|five|cinco) (?:days?|dias?) (?:a week |per week |a la semana |por semana )?(?:in|at|en) (?:the |la |our |nuestras? )?(?:office|oficinas?)\b/,
+  ],
+};
+export function workplaceAsked(text) {
+  const t = norm(text);
+  if (!t) return null;
+  const found = Object.keys(WAYS).filter((way) => WAYS[way].some((pattern) => pattern.test(t)));
+  return found.length === 1 ? found[0] : null;
 }
 
 // --- Skills and topics ---------------------------------------------------------------
@@ -490,7 +550,9 @@ export function keywordsOf(title, description = "") {
 // Everything above for one posting, as jobs.mjs stores it. The description is
 // read and left behind.
 export function classify(job, description, known) {
-  return { roles: titleRoles(job.title, known), seniority: seniorityOf(job.title),
-           years: yearsAsked(description), regions: regionsOf(job.location),
+  const years = yearsAsked(description);
+  return { roles: titleRoles(job.title, known), seniority: seniorityOf(job.title) ?? levelOfYears(years),
+           years, regions: regionsOf(job.location),
+           workplace: workplaceOf(job) ?? workplaceAsked(description),
            keywords: keywordsOf(job.title, description) };
 }
