@@ -183,8 +183,6 @@ pauses the refresh until its "Refresh paused" issue is closed.
   deployment; without it the page leaves the figure out.
 - The tab icon and the link previews are drawn by `tests/site/og-image.mjs`
   (`npm run og`); run it after a change to the headline or the mascot.
-- The salary page's code (`page()` and what it calls in `site.py`, `seo.py`,
-  `web/app.js`, `web/style.css`) is unused and still to be removed.
 - `api/mcp.js` is the only MCP implementation. `server.json`'s version must
   equal `SERVER.version` there.
 

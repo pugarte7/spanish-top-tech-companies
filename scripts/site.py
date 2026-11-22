@@ -6,10 +6,8 @@
     python3 -m http.server -d _site    # then open http://localhost:8000/es/
 
 companies.csv is private (lib.DATA), so the repository carries what the site
-publishes instead: data/data.json and one file per companies table under
-data/companies/, the same files served at /api/v1/. --refresh rewrites them;
-anything else only reads them. The tables were one 23 MB file until
-2026-11-08, over the 16 MiB a file the HOL plugin scanner reads.
+publishes instead: data/data.json and data/company-cells.json, the same files
+served at /api/v1/. --refresh rewrites them; anything else only reads them.
 data/boards.json (each company's job board, crawled daily by scripts/jobs.mjs)
 is written by scripts/boards.mjs, not by --refresh: see job_boards().
 
@@ -22,9 +20,9 @@ which shows whatever there is, down to one person: see company_filters().
 Since 2026-11-04 the MCP server's company tools show it too, from the
 table's own rows (company_cells()).
 
-Pages come in English and Spanish under /en/ and /es/. The page's look lives
-in web/ (app.js, style.css); this script renders the HTML shell, the map of
-Spain and /api/v1/data.json, which serves both the page and agents. Agents
+Pages come in English and Spanish under /en/ and /es/: landing.py's page,
+which leads to the MCP, and the legal page. This script renders them and
+/api/v1/data.json, which serves agents. Agents
 that only read URLs get /llms.txt and /llms-full.txt (markdown, from the same
 aggregates); agents that speak MCP get /mcp (api/mcp.js), which reads data.json
 and, for its company tools, /api/v1/company-cells.json.
@@ -49,13 +47,11 @@ import urllib.request
 
 import landing
 import lib
-import seo
 import taxonomy
 
 OUT = lib.ROOT / "_site"
 # The aggregates the site is built from, committed: nothing in them is row-level.
 AGGREGATES = lib.ROOT / "data"
-TABLES = AGGREGATES / "companies"
 WEB = lib.ROOT / "web"
 REPO = "https://github.com/pugarte7/spanish-top-tech-companies"
 # Who answers for the site, on the legal page and in
@@ -65,7 +61,7 @@ CONTACT = "ugartep117@gmail.com"
 # The branch the site, the MCP server and the skill live on, for links to the repository.
 BRANCH = "main"
 SITE = os.environ.get("SITE_URL", "").rstrip("/")
-# PostHog, for what readers use (web/app.js's track()): its project token is
+# PostHog, for what readers use: its project token is
 # public, every page carries it. Same Vercel-only rule, so local builds and the
 # site tests send nothing. It goes through /ingest on our own domain
 # (vercel.json), which ad blockers leave alone, to the EU region. Cookieless:
@@ -106,41 +102,6 @@ VERCEL_SCRIPTS = ('<script defer src="/_vercel/insights/script.js"></script>\n'
 # are the public address whatever host built the page.
 PUBLIC = "https://spanishtoptechcompanies.com"
 MCP_URL = f"{PUBLIC}/mcp"
-# The agents section and its prompt: (name, maker, logo in web/agents/, how
-# the logo fills its tile, tile colour, where to get it). The first is the one
-# shown before the page's script runs. Since 2026-11-02 Instinct leads and
-# Claude Code follows: the maintainer finds them the best at applying.
-# Logos are the ones the maintainer picked. Grok's link is the repository because x.ai/cli refuses non-browsers;
-# Instinct has no CLI, only its own sign-up.
-AGENTS = [
-    ("Instinct", "Instinct", "instinct.jpg", "cover", "#ffffff", "https://instinct.com/"),
-    ("Claude Code", "Anthropic", "claude-code.png", "mark", "#ffffff", "https://code.claude.com/docs/en/setup"),
-    ("Codex", "OpenAI", "codex.png", "cover", "#ffffff", "https://developers.openai.com/codex/cli"),
-    ("Cursor", "Anysphere", "cursor.png", "mark", "#ffffff", "https://cursor.com/cli"),
-    ("Hermes", "Nous Research", "hermes.png", "cover", "#ffffff", "https://hermes-agent.nousresearch.com/"),
-    ("Grok CLI", "xAI", "grok.jpg", "mark", "#ffffff", "https://github.com/xai-org/grok-build#installing-the-released-binary"),
-]
-
-# Region outlines, fetched once into .cache/ (gitignored is fine: it is
-# rebuilt from the pinned URL).
-TOPO_URL = "https://unpkg.com/es-atlas@0.6.0/es/autonomous_regions.json"
-TOPO = lib.ROOT / ".cache" / "es_autonomous_regions.json"
-# Keyed by the atlas's own names, bilingual ones included: "Cataluña" alone
-# matched nothing, and the map shipped without Cataluña and País Vasco.
-ES_ATLAS = {
-    "Andalucía": "AN", "Aragón": "AR", "Principado de Asturias": "AS",
-    "Cantabria": "CB", "Castilla y León": "CL", "Castilla-La Mancha": "CM",
-    "Cataluña/Catalunya": "CT", "Comunidad de Madrid": "MD", "Comunitat Valenciana": "VC",
-    "Comunidad Valenciana": "VC", "Extremadura": "EX", "Galicia": "GA",
-    "Illes Balears": "IB", "Islas Baleares": "IB", "Canarias": "CN",
-    "La Rioja": "RI", "Región de Murcia": "MU", "Comunidad Foral de Navarra": "NC",
-    "País Vasco/Euskadi": "PV", "Ciudad Autónoma de Ceuta": "CE",
-    "Ciudad Autónoma de Melilla": "ML",
-}
-# The Canaries sit far southwest; slide them into the usual inset corner.
-CANARY_SHIFT = (5.5, 7.6)
-MAP_W, MAP_H = 600, 470
-
 REGIONS_ES = {
     "AN": "Andalucía", "AR": "Aragón", "AS": "Asturias", "CB": "Cantabria",
     "CE": "Ceuta", "CL": "Castilla y León", "CM": "Castilla-La Mancha",
@@ -208,283 +169,6 @@ MESSAGES_A_DAY = 3
 YEAR_BUCKETS = [(0, 2), (2, 5), (5, 8), (8, 12), (12, 20), (20, None)]
 # Histogram bins of 10k; the ends are open so a lone outlier joins a crowd.
 HIST_LOW, HIST_HIGH, HIST_STEP = 20_000, 150_000, 10_000
-
-# Four corners pointing out: the demo's full-screen button.
-EXPAND_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" '
-               'stroke-linecap="round" stroke-linejoin="round"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>')
-# GitHub's outline star (octicon star-16), the one on its Star button.
-STAR_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .25a.75.75 0 0 1 '
-             '.673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791'
-             'L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611'
-             'L7.327.668A.75.75 0 0 1 8 .25Zm0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 '
-             '0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664'
-             'l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41L8 2.694Z"/></svg>')
-GITHUB_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8'
-               'c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94'
-               '-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66'
-               '.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12'
-               ' 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16'
-               ' 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01'
-               ' 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>')
-# Both glyphs ship; the stylesheet shows the moon in light mode and the sun in dark.
-# Drawn, not the ↗ character: iOS paints that as a blue emoji tile.
-OUT_ICON = ('<svg class="out" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.5 8.5l5-5M4.5 3.5h4v4" '
-            'fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>')
-THEME_ICON = ('<svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" '
-              'd="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
-              '<svg class="sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" '
-              'stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2'
-              'M12 20.5v2M1.5 12h2M20.5 12h2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>')
-DOWN_ICON = ('<svg class="down" viewBox="0 0 12 12" aria-hidden="true" fill="none" stroke="currentColor" '
-             'stroke-width="1.5"><path d="M6 1v9M2 6.5 6 10.5l4-4"/></svg>')
-# The brand's mark: the eight-point star of the lacería behind the header, drawn in the bar's colour.
-LINK_ICON = ('<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" '
-             'stroke-linecap="round"><path d="M6.8 9.2a3 3 0 0 0 4.2 0l2.2-2.2a3 3 0 0 0-4.2-4.2l-.9.9"/>'
-             '<path d="M9.2 6.8a3 3 0 0 0-4.2 0L2.8 9a3 3 0 0 0 4.2 4.2l.9-.9"/></svg>')
-# Two sheets, the one in front being the copy; a tick once copied.
-COPY_ICON = ('<svg class="copy" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" '
-             'stroke-width="1.4" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/>'
-             '<path d="M10.5 3.5v-.5A1.5 1.5 0 0 0 9 1.5H4A1.5 1.5 0 0 0 2.5 3v5A1.5 1.5 0 0 0 4 9.5h.5"/></svg>'
-             '<svg class="ok" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" '
-             'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>')
-
-EMBLEM = ('<svg class="emblem" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" '
-          'stroke-width="1" stroke-linejoin="round"><path d="M23,12L19.78,15.22L19.78,19.78L15.22,19.78L12,23'
-          'L8.78,19.78L4.22,19.78L4.22,15.22L1,12L4.22,8.78L4.22,4.22L8.78,4.22L12,1L15.22,4.22L19.78,4.22'
-          'L19.78,8.78ZM19.6,12L17.37,14.23L17.37,17.37L14.23,17.37L12,19.6L9.77,17.37L6.63,17.37L6.63,14.23'
-          'L4.4,12L6.63,9.77L6.63,6.63L9.77,6.63L12,4.4L14.23,6.63L17.37,6.63L17.37,9.77Z"/>'
-          '<circle cx="12" cy="12" r="2.2"/></svg>')
-# The map hatches every shade with lines of the card's own colour, as if cut
-# through the ink: lines a darker step of their shade vanished into the deepest
-# blue. Pay fills --sN (#hpN), counts --cN (#hcN). (Line spacing, line width).
-MAP_HATCH = (3.2, .8)
-
-STRINGS = {
-    "en": {
-        "title": "Spanish Top Tech Companies", "theme": "Light or dark mode",
-        "page_title": "Software Engineer Salary in Spain ({year}): Best-Paying Tech Companies",
-        "h1": "Every day, the top tech openings in Spain, in your agent",
-        "source": "Data: Levels.fyi",
-        "hero_lede": "With **what each company really pays**, so you only apply where it is worth it. "
-                     "Your agent does the rest.",
-        "hero_mcp": "Add this link to your agent", "hero_start": "How to start",
-        "today_title": "Open positions today", "today_read": "Read on {date}",
-        "today_remote": "remote", "today_in_roles": "in {n} roles", "today_more": "and {n} more: {list}…",
-        "today_companies": "companies hiring", "today_boards": "job boards read today",
-        "demo_alt": "Your agent, connected to the MCP, finds remote backend openings at companies paying "
-                    "over 80,000 €, fills in the form from your CV, asks you for the three answers it "
-                    "lacks and sends the application when you say yes.",
-        "hero_see": "See the companies",
-        "how_title": "How salaries are calculated",
-        "how_source_t": "Source.",
-        "how_source": "Individual salaries from Levels.fyi, each kept only if its own location is in Spain. "
-                      "A base under {minbase} a year is left out.",
-        "how_when_t": "When.",
-        "how_when": "Reported from {from} to {to}, half of them since {since}. Older salaries stay in, "
-                    "so figures can trail what companies offer today.",
-        "how_floor_t": "Which companies.",
-        "how_floor": "For each company, the median base salary over all its salaries, any role and "
-                     "experience, which orders the table. Every company is shown, whatever it pays; "
-                     "it has to exist beyond Levels.fyi, with a LinkedIn page or a "
-                     "website, and have {global} or more salaries there from anywhere in the world, "
-                     "counting every role. With fewer than {ranked} salaries in Spain a company is listed "
-                     "after the rest, whichever column is sorted.",
-        "how_groups_t": "At least {min} salaries.",
-        "how_groups": "The map, the role by experience table and the "
-                      "middle half (p25–p75) only come from groups of {min} salaries or more. "
-                      "Every amount is rounded to the nearest {round}. The companies table is "
-                      "the exception: a company is listed even with a single salary, and under "
-                      "{ranked} it carries a note.",
-        "how_figures_t": "What you see.",
-        "how_figures": "Median base, the middle half (p25–p75), median total pay (base + bonus + stock) "
-                       "and the share with a base of {bar} or more.",
-        "all_roles": "All roles", "all_years": "Any",
-        "years_label": "Experience", "years_unit": "yrs", "years_axis": "Years of experience",
-        "salaries_title": "Tech salaries in Spain",
-        "map_title": "By region",
-        "map_pay": "Median base", "map_count": "No. of salaries",
-        "map_pay_sub": "Median gross yearly base salary of everyone reported in each region.",
-        "map_count_sub": "How many salaries were reported in each region.",
-        "map_empty": "Fewer than {min} salaries",
-        "matrix_title": "Pay by role and experience",
-        "matrix_sub": "Median gross yearly base salary for the roles with most data. "
-                      "Click a cell to see which companies pay most there.",
-        "sum_range": "Middle half earns",
-        "sum_scope": "Only {filters}: {n} of the {all} salaries in Spain above.",
-        "companies_title": "Companies",
-        "search": "Search",
-        "col_company": "Company", "col_median": "Median base salary",
-        "col_n": "Salaries reported",
-        "col_share": "Earning 60k+",
-        "tip_median": "Gross yearly base salary: half earn more, half earn less",
-        "tip_share": "Share of salaries with a base of 60,000 € or more",
-        "col_total": "Median total pay", "col_share_total": "Total of 60k+",
-        "tip_total": "Gross yearly base + bonus + stock: half earn more, half earn less",
-        "tip_share_total": "Share of salaries with a total of 60,000 € or more",
-        "pay_note": "Sort by base or by total in the header: the summary, the 60k+ share and "
-                    "each company's bars follow that column.",
-        "tip_n": "How many salaries this company has under the filters chosen. "
-                 f"Under {lib.MIN_RANKED}, the company is listed after the rest",
-        "few_note": "Companies with fewer than {ranked} salaries in Spain. They are real ({global} "
-                    "or more salaries on Levels.fyi worldwide and their own website or LinkedIn "
-                    "page), but their figure comes from so few people that it may not be fully "
-                    "reliable.",
-        "ast_label": "Why the asterisk",
-        "ast_title_1": "1 salary in Spain", "ast_title_n": "{n} salaries in Spain",
-        "ast_body_1": "{name} is real: it has {global} or more salaries on Levels.fyi worldwide and "
-                      "its own website or LinkedIn page. But this is the only salary we found in "
-                      "Spain, so the figure may not be fully reliable.",
-        "ast_body_n": "{name} is real: it has {global} or more salaries on Levels.fyi worldwide and "
-                      "its own website or LinkedIn page. But we found only {n} in Spain, so the "
-                      "figure may not be fully reliable.",
-        "split_base": "Base", "split_bonus": "Bonus", "split_stock": "Stock",
-        "split_total": "Median total pay", "split_tip": "How much of these salaries' pay is base, bonus and stock",
-        "show_all": "Show all {n}", "show_less": "Show less",
-        "none": "No group of {min} or more salaries.",
-        "empty_title": "No luck this time.",
-        "empty_text": "There are no salaries with these filters. Try another role or region, or lift a filter:",
-        "empty_search": "No company matches “{q}” with these filters.",
-        "clear_role": "All roles", "clear_loc": "All of Spain", "clear_years": "Any experience",
-        "clear_modes": "Any work arrangement", "clear_search": "Clear the search",
-        "people": "salaries", "median": "Median", "range": "p25–p75",
-        "data": "JSON", "repo": "GitHub", "web": "Website", "legal": "Legal and privacy",
-        "stars_label": "GitHub, {n} stars",
-        "under": "Under", "over": "Over",
-        "role_label": "Role", "mode_label": "Work", "loc_label": "Location", "all_spain": "All of Spain",
-        "mode_remote": "Remote", "mode_hybrid": "Hybrid", "mode_office": "Office",
-        "any": "Any", "loading": "Loading…", "load_failed": "The table could not load.", "retry": "Retry", "from": "From", "to": "To",
-        "agents_title": "How it works",
-        "how1_t": "Connect your agent",
-        "how1": "Paste this link into the chat or add it as an MCP server.",
-        "how2_t": "Give it your profile",
-        "how2": "Your CV and whatever else you want to tell it. It asks for anything it needs to apply.",
-        "how3_t": "Start applying",
-        "how3": "Tell it what you are looking for and it offers you the openings that fit you best.",
-        "agents_pick": "Agents it works with", "agents_get": "Download",
-        "agents_any": "Any agent that supports MCP will do. A few of them:",
-        "demo_zoom": "Watch the demo full screen",
-        "copy": "Copy", "copied": "Copied",
-        "description": "What software engineers earn in Spain and which tech companies pay most: "
-                       "median base salary by company, role, experience and city, from real salaries.",
-        "noscript_agents": "Without JavaScript the charts and filters do not load. These are "
-                           "the companies; the medians are at /llms-full.txt and /api/v1/data.json, "
-                           "their open positions at /api/v1/jobs.json, the MCP server at /mcp and "
-                           "the code at "
-                           "github.com/pugarte7/spanish-top-tech-companies.",
-    },
-    "es": {
-        "title": "Spanish Top Tech Companies", "theme": "Modo claro u oscuro",
-        "page_title": "Salario programador en España ({year}): las empresas tech que más pagan",
-        "h1": "Cada día, las ofertas top de tech en España, en tu agente",
-        "source": "Datos: Levels.fyi",
-        "hero_lede": "Con **el sueldo real de cada empresa**, para que solo apliques donde te interesa. "
-                     "Tu agente hace el resto.",
-        "hero_mcp": "Añade este enlace a tu agente", "hero_start": "Cómo empezar",
-        "today_title": "Ofertas abiertas hoy", "today_read": "Leídas el {date}",
-        "today_remote": "en remoto", "today_in_roles": "en {n} roles", "today_more": "y {n} más: {list}…",
-        "today_companies": "empresas contratando", "today_boards": "portales leídos hoy",
-        "demo_alt": "Tu agente, conectado al MCP, busca ofertas de backend en remoto de empresas que "
-                    "pagan más de 80.000 €, rellena el formulario con tu CV, te pregunta las tres "
-                    "respuestas que le faltan y envía la solicitud cuando le dices que sí.",
-        "hero_see": "Ver las empresas",
-        "how_title": "Cómo se calculan los salarios",
-        "how_source_t": "Fuente.",
-        "how_source": "Salarios individuales de Levels.fyi. Cada uno se acepta solo si su propia "
-                      "ubicación está en España. Un sueldo base de menos de {minbase} al año se "
-                      "descarta.",
-        "how_when_t": "Cuándo.",
-        "how_when": "Publicados entre {from} y {to}, la mitad desde {since}. Los antiguos se "
-                    "mantienen, así que las cifras pueden ir por detrás de lo que se ofrece hoy.",
-        "how_floor_t": "Qué empresas entran.",
-        "how_floor": "Por empresa, la mediana del sueldo base de todos sus salarios, de cualquier rol "
-                     "y experiencia, que ordena la tabla. Entran todas, paguen lo que paguen; la "
-                     "empresa tiene que existir fuera de Levels.fyi, con página de LinkedIn o web, y tener "
-                     "allí {global} salarios o más de cualquier país, sumando todos los roles. Con "
-                     "menos de {ranked} salarios en España, la empresa se lista después de las demás, se "
-                     "ordene por la columna que se ordene.",
-        "how_groups_t": "Mínimo de {min} salarios.",
-        "how_groups": "El mapa, la tabla de rol por experiencia y el rango "
-                      "p25–p75 solo salen de grupos de {min} salarios o más. Todos los importes "
-                      "se redondean a {round}. La tabla de empresas es la excepción: una empresa "
-                      "sale aunque tenga un solo salario, y con menos de {ranked} lleva un aviso.",
-        "how_figures_t": "Qué se muestra.",
-        "how_figures": "Sueldo base mediano, la mitad central (p25–p75), el total mediano (base + bonus "
-                       "+ acciones) y el porcentaje con una base de {bar} o más.",
-        "all_roles": "Todos los roles", "all_years": "Todas",
-        "years_label": "Experiencia", "years_unit": "años", "years_axis": "Años de experiencia",
-        "salaries_title": "Salarios tech en España",
-        "map_title": "Por comunidad",
-        "map_pay": "Base mediana", "map_count": "N. Salarios",
-        "map_pay_sub": "Salario base bruto anual mediano de todos los salarios de cada comunidad.",
-        "map_count_sub": "Cuántos salarios se han recogido en cada comunidad.",
-        "map_empty": "Menos de {min} salarios",
-        "matrix_title": "Sueldo según rol y experiencia",
-        "matrix_sub": "Sueldo base bruto anual mediano de los roles con más datos. "
-                      "Pulsa una celda para ver qué empresas pagan más en ese caso.",
-        "sum_range": "La mitad cobra entre",
-        "sum_scope": "Solo {filters}: {n} de los {all} salarios de España de arriba.",
-        "companies_title": "Empresas",
-        "search": "Buscar",
-        "col_company": "Empresa", "col_median": "Sueldo base mediano",
-        "col_n": "Nº de salarios",
-        "col_share": "Cobran 60k o más",
-        "tip_median": "Salario base bruto anual: la mitad cobra más y la mitad menos",
-        "tip_share": "Porcentaje de salarios con una base de 60.000 € o más",
-        "col_total": "Total mediano", "col_share_total": "Total de 60k o más",
-        "tip_total": "Base + bonus + acciones, bruto anual: la mitad cobra más y la mitad menos",
-        "tip_share_total": "Porcentaje de salarios con un total de 60.000 € o más",
-        "pay_note": "Ordena por sueldo base o por total en la cabecera: el resumen, el 60k+ y "
-                    "las barras de cada empresa siguen a esa columna.",
-        "tip_n": "Cuántos salarios de esta empresa hay con los filtros elegidos. "
-                 f"Con menos de {lib.MIN_RANKED}, la empresa va después del resto",
-        "few_note": "Empresas con menos de {ranked} salarios en España. Existen ({global} o más "
-                    "salarios en Levels.fyi en todo el mundo y web o LinkedIn propios), pero su "
-                    "cifra sale de tan pocas personas que puede no ser del todo fiable.",
-        "ast_label": "Por qué el asterisco",
-        "ast_title_1": "1 salario en España", "ast_title_n": "{n} salarios en España",
-        "ast_body_1": "{name} existe: tiene {global} o más salarios en Levels.fyi en todo el mundo y "
-                      "web o LinkedIn propios. Pero en España solo hemos encontrado este salario, "
-                      "así que la cifra puede no ser del todo fiable.",
-        "ast_body_n": "{name} existe: tiene {global} o más salarios en Levels.fyi en todo el mundo y "
-                      "web o LinkedIn propios. Pero en España solo hemos encontrado {n}, así que la "
-                      "cifra puede no ser del todo fiable.",
-        "split_base": "Base", "split_bonus": "Bonus", "split_stock": "Acciones",
-        "split_total": "Sueldo total mediano", "split_tip": "Qué parte del pago de estos salarios es base, bonus y acciones",
-        "show_all": "Ver los {n}", "show_less": "Ver menos",
-        "none": "Ningún grupo de {min} o más salarios.",
-        "empty_title": "Vaya, no ha habido suerte.",
-        "empty_text": "No hay sueldos con estos filtros. Prueba con otro rol u otra región, o quita algún filtro:",
-        "empty_search": "Ninguna empresa coincide con «{q}» con estos filtros.",
-        "clear_role": "Todos los roles", "clear_loc": "Toda España", "clear_years": "Cualquier experiencia",
-        "clear_modes": "Cualquier modalidad", "clear_search": "Borrar la búsqueda",
-        "people": "salarios", "median": "Mediana", "range": "p25–p75",
-        "data": "JSON", "repo": "GitHub", "web": "Web", "legal": "Aviso legal y privacidad",
-        "stars_label": "GitHub, {n} estrellas",
-        "under": "Menos de", "over": "Más de",
-        "role_label": "Rol", "mode_label": "Modalidad", "loc_label": "Ubicación", "all_spain": "Toda España",
-        "mode_remote": "Remoto", "mode_hybrid": "Híbrido", "mode_office": "Presencial",
-        "any": "Cualquiera", "loading": "Cargando…", "load_failed": "No se pudo cargar la tabla.", "retry": "Reintentar", "from": "Desde", "to": "Hasta",
-        "agents_title": "Así funciona",
-        "how1_t": "Conecta tu agente",
-        "how1": "Pégale este enlace en el chat o añádelo como servidor MCP.",
-        "how2_t": "Pásale tu perfil",
-        "how2": "Tu CV y lo que quieras contarle. Te preguntará los datos que necesite para aplicar.",
-        "how3_t": "Ponte a aplicar",
-        "how3": "Dile qué buscas y te ofrecerá las ofertas que mejor encajan contigo.",
-        "agents_pick": "Agentes con los que funciona", "agents_get": "Descargar",
-        "agents_any": "Vale cualquier agente que admita MCP. Algunos de ellos:",
-        "demo_zoom": "Ver la demo a pantalla completa",
-        "copy": "Copiar", "copied": "Copiado",
-        "description": "Cuánto cobra un programador en España y qué empresas tecnológicas pagan más: "
-                       "sueldo base mediano por empresa, rol, experiencia y comunidad, con salarios reales.",
-        "noscript_agents": "Sin JavaScript no cargan los gráficos ni los filtros. Estas son "
-                           "las empresas; las medianas están en /llms-full.txt y /api/v1/data.json, "
-                           "sus ofertas abiertas en /api/v1/jobs.json, el servidor MCP en /mcp y el "
-                           "código en "
-                           "github.com/pugarte7/spanish-top-tech-companies.",
-    },
-}
-
 
 def asset_version(name: str) -> str:
     """A short hash of a file in web/, put in its URL so a browser fetches it
@@ -950,7 +634,7 @@ def board_tag(city: str) -> str:
     return re.sub(r"\s+", "-", text.strip())
 
 
-def job_boards(data: dict, tables: dict) -> dict:
+def job_boards(data: dict, cells: dict) -> dict:
     """/api/v1/boards.json: the companies listed here whose job board is known,
     in the companies.json format lib/ats reads (scripts/jobs.mjs crawls it daily).
 
@@ -961,10 +645,8 @@ def job_boards(data: dict, tables: dict) -> dict:
     min_ranked salaries, B at the bar on fewer or above BOARD_TIER_FLOOR_EUR,
     C below it or with no engineers."""
     known = json.loads((AGGREGATES / "boards.json").read_text(encoding="utf-8"))
-    engineers = tables.get("software-engineer") or {"fields": [], "cells": {}}
-    col = {f: i for i, f in enumerate(engineers["fields"])}
-    rows = engineers["cells"].get("|") or []
-    rows = engineers["cells"][rows] if isinstance(rows, str) else rows
+    col = {f: i for i, f in enumerate(cells["fields"])}
+    rows = cells["cells"].get("software-engineer||") or []
     medians = {r[col["c"]]: (r[col["median"]], r[col["n"]]) for r in rows}
     out = []
     for i, company in enumerate(data["companies"]):
@@ -997,293 +679,10 @@ def job_boards(data: dict, tables: dict) -> dict:
             "companies": sorted(out, key=lambda e: e["name"].casefold())}
 
 
-# --- Map ---------------------------------------------------------------------
-
-def topojson() -> dict:
-    if not TOPO.exists():
-        TOPO.parent.mkdir(exist_ok=True)
-        with urllib.request.urlopen(TOPO_URL, timeout=30) as r:
-            TOPO.write_bytes(r.read())
-    return json.loads(TOPO.read_text())
-
-
-def decoded_regions(topo: dict) -> list[tuple[str, list]]:
-    """[(code, polygons)], each polygon a list of rings of (lon, lat)."""
-    sx, sy = topo["transform"]["scale"]
-    tx, ty = topo["transform"]["translate"]
-    arcs = []
-    for arc in topo["arcs"]:
-        x = y = 0
-        points = []
-        for dx, dy in arc:
-            x, y = x + dx, y + dy
-            points.append((x * sx + tx, y * sy + ty))
-        arcs.append(points)
-
-    def stitch(indices):
-        ring = []
-        for i in indices:
-            arc = arcs[i] if i >= 0 else arcs[~i][::-1]
-            ring += arc[1:] if ring else arc
-        return ring
-
-    out, unmatched = [], []
-    for g in topo["objects"]["autonomous_regions"]["geometries"]:
-        code = ES_ATLAS.get(g["properties"].get("name"))
-        if not code:
-            unmatched.append(g["properties"].get("name"))
-            continue
-        polys = g["arcs"] if g["type"] == "MultiPolygon" else [g["arcs"]]
-        out.append((code, [[stitch(part) for part in poly] for poly in polys]))
-    # A region left off the map looks like a region with no data, so stop the build.
-    missing = sorted(set(lib.REGIONS) - {code for code, _ in out})
-    if missing:
-        raise SystemExit(f"No map outline for {', '.join(missing)}; "
-                         f"atlas names not in ES_ATLAS: {unmatched}")
-    return out
-
-
-def project(lon: float, lat: float, code: str) -> tuple[float, float]:
-    if code == "CN":
-        lon, lat = lon + CANARY_SHIFT[0], lat + CANARY_SHIFT[1]
-    return (lon + 4.0) * math.cos(math.radians(39.5)), -lat
-
-
-def spain_svg() -> str:
-    regions = [(code, [[[project(lon, lat, code) for lon, lat in ring] for ring in poly]
-                       for poly in polys]) for code, polys in decoded_regions(topojson())]
-    xy = [p for _, polys in regions for poly in polys for ring in poly for p in ring]
-    minx, maxx = min(p[0] for p in xy), max(p[0] for p in xy)
-    miny, maxy = min(p[1] for p in xy), max(p[1] for p in xy)
-    pad = 8
-    scale = min((MAP_W - 2 * pad) / (maxx - minx), (MAP_H - 2 * pad) / (maxy - miny))
-    ox = (minx + maxx) / 2 - MAP_W / (2 * scale)
-    oy = (miny + maxy) / 2 - MAP_H / (2 * scale)
-
-    def pt(p):
-        return (p[0] - ox) * scale, (p[1] - oy) * scale
-
-    paths = []
-    for code, polys in regions:
-        d = "".join("M" + "L".join(f"{x:.1f},{y:.1f}" for x, y in map(pt, ring)) + "Z"
-                    for poly in polys for ring in poly)
-        paths.append(f'<path class="region" data-code="{code}" d="{d}"/>')
-    gap, line = MAP_HATCH
-    hatches = "".join(
-        f'<pattern id="hc{n}" patternUnits="userSpaceOnUse" width="8" height="{gap}" patternTransform="rotate(-35)">'
-        f'<rect width="8" height="{gap}" style="fill:var(--c{n})"/><rect width="8" height="{line}" style="fill:var(--surface)"/></pattern>'
-        for n in range(1, 6))
-    return (f'<svg id="map" viewBox="0 0 {MAP_W} {MAP_H}" role="img"><defs>{hatches}</defs>'
-            f'{"".join(paths)}</svg>')
-
-
 # --- Page --------------------------------------------------------------------
 
 def euros(n: int, lang: str) -> str:
     return f"{n:,}\u00a0€".replace(",", ".") if lang == "es" else f"€{n:,}"
-
-
-MONTHS = {"en": "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(),
-          "es": "ene feb mar abr may jun jul ago sep oct nov dic".split()}
-
-
-def hankin(poly: list, angle: float) -> list:
-    """Hankin's polygons in contact: from each edge's midpoint, two rays at
-    `angle` to the edge cross inside the polygon. Returns the star they draw,
-    midpoint and crossing in turn. `poly` runs clockwise on screen (y down),
-    as angles that grow do."""
-    th, n, out = math.radians(angle), len(poly), []
-    mids, dirs = [], []
-    for i in range(n):
-        (ax, ay), (bx, by) = poly[i], poly[(i + 1) % n]
-        size = math.hypot(bx - ax, by - ay)
-        mids.append(((ax + bx) / 2, (ay + by) / 2))
-        dirs.append(((bx - ax) / size, (by - ay) / size))
-    for i in range(n):
-        j = (i + 1) % n
-        (mx, my), (dx, dy) = mids[i], dirs[i]
-        (nx, ny), (ex, ey) = mids[j], dirs[j]
-        # inward is the edge direction turned a quarter: (-dy, dx)
-        r1 = (math.cos(th) * dx - math.sin(th) * dy, math.cos(th) * dy + math.sin(th) * dx)
-        r2 = (-math.cos(th) * ex - math.sin(th) * ey, -math.cos(th) * ey + math.sin(th) * ex)
-        t = ((nx - mx) * r2[1] - (ny - my) * r2[0]) / (r1[0] * r2[1] - r1[1] * r2[0])
-        out += [(mx, my), (mx + t * r1[0], my + t * r1[1])]
-    return out
-
-
-def lazo_de_seis(size: float = 40, band: float = 5) -> str:
-    """The site's tile: a "lazo de seis", six-point stars and hexagons in a
-    double band, drawn by Hankin's method on hexagons at 60 degrees. An SVG
-    pattern of one period, defined once per page and filled into every blue
-    field's WALL; the band's inside takes --tile-band, so it follows the theme,
-    and a star's fill --tile-tint."""
-    w, h = math.sqrt(3) * size, 3 * size
-    stars = []
-    for i in range(-2, 4):
-        for j in range(-2, 4):
-            cx, cy = i * w + (j % 2) * w / 2, j * 1.5 * size
-            if -size * 1.2 <= cx <= w + size * 1.2 and -size * 1.2 <= cy <= h + size * 1.2:
-                hexagon = [(cx + size * math.cos(math.pi / 6 + k * math.pi / 3),
-                            cy + size * math.sin(math.pi / 6 + k * math.pi / 3)) for k in range(6)]
-                stars.append(hankin(hexagon, 60))
-    num = lambda v: f"{v:.2f}".rstrip("0").rstrip(".")
-    shapes = "".join(f'<polygon points="{" ".join(f"{num(x)},{num(y)}" for x, y in st)}"/>' for st in stars)
-    return (f'<svg class="tile-defs" aria-hidden="true" focusable="false"><defs><pattern id="lazo" patternUnits="userSpaceOnUse" '
-            f'width="{num(w)}" height="{num(h)}"><g class="tint">{shapes}</g>'
-            f'<g class="edge" style="stroke-width:{num(band + 1.4)}">{shapes}</g>'
-            f'<g class="band" style="stroke-width:{num(band)}">{shapes}</g></pattern></defs></svg>')
-
-
-# The tiles of a blue field, behind whatever it holds.
-WALL = ('<div class="wall" aria-hidden="true"><svg class="tiles">'
-        '<rect width="100%" height="100%" fill="url(#lazo)"/></svg></div>')
-
-
-def month(ym: str, lang: str) -> str:
-    """"2024-11" as "Nov 2024" or "nov 2024"."""
-    year, number = ym.split("-")
-    return f"{MONTHS[lang][int(number) - 1]} {year}"
-
-
-def strings(lang: str, data: dict) -> dict:
-    reported = data.get("reported") or {"from": "", "to": "", "median": ""}
-    fill = {"{min}": str(lib.MIN_GROUP),
-            "{round}": euros(lib.ROUND_EUR, lang),
-            "{bar}": euros(lib.THRESHOLD_EUR, lang), "{minbase}": euros(MIN_BASE_EUR, lang),
-            "{companies}": str(len(data["companies"])),
-            "{ranked}": str(lib.MIN_RANKED), "{global}": str(lib.MIN_GLOBAL),
-            "{year}": (data.get("data_as_of") or lib.today_utc().isoformat())[:4],
-            **{f"{{{k}}}": month(v, lang) if v else "" for k, v in
-               (("from", reported["from"]), ("to", reported["to"]), ("since", reported["median"]))}}
-    out = {}
-    for k, v in STRINGS[lang].items():
-        for mark, value in fill.items():
-            v = v.replace(mark, value)
-        out[k] = v
-    return out
-
-
-# The header card's names for the roles postings are read as (scripts/jobs.mjs),
-# as areas of work: (English, Spanish). A role missing here shows its slug.
-JOB_ROLES = {
-    "software-engineer": ("Software engineering", "Ingeniería de software"),
-    "software-engineering-manager": ("Engineering management", "Mánager de ingeniería"),
-    "sales": ("Sales", "Ventas"),
-    "sales-engineer": ("Sales engineering", "Preventa"),
-    "business-development": ("Business development", "Desarrollo de negocio"),
-    "customer-success": ("Customer success", "Customer success"),
-    "customer-service": ("Customer service", "Atención al cliente"),
-    "product-manager": ("Product", "Producto"),
-    "product-designer": ("Product design", "Diseño de producto"),
-    "ux-researcher": ("UX research", "UX research"),
-    "marketing": ("Marketing", "Marketing"),
-    "marketing-operations": ("Marketing operations", "Marketing operations"),
-    "management-consultant": ("Consulting", "Consultoría"),
-    "project-manager": ("Project management", "Gestión de proyectos"),
-    "program-manager": ("Program management", "Program management"),
-    "technical-program-manager": ("Technical program management", "Technical program management"),
-    "solution-architect": ("Solution architecture", "Arquitectura de soluciones"),
-    "data-scientist": ("Data science", "Ciencia de datos"),
-    "data-science-manager": ("Data science management", "Mánager de datos"),
-    "data-analyst": ("Data analysis", "Análisis de datos"),
-    "business-analyst": ("Business analysis", "Análisis de negocio"),
-    "financial-analyst": ("Finance", "Finanzas"),
-    "accountant": ("Accounting", "Contabilidad"),
-    "bizops-manager": ("Business operations", "Operaciones de negocio"),
-    "security-analyst": ("Security", "Ciberseguridad"),
-    "information-technologist": ("IT", "Sistemas"),
-    "hardware-engineer": ("Hardware", "Hardware"),
-    "electrical-engineer": ("Electrical engineering", "Ingeniería eléctrica"),
-    "mechanical-engineer": ("Mechanical engineering", "Ingeniería mecánica"),
-    "aerospace-engineer": ("Aerospace engineering", "Ingeniería aeroespacial"),
-    "legal": ("Legal", "Legal"),
-    "recruiter": ("Recruiting", "Selección"),
-    "human-resources": ("People", "Recursos humanos"),
-}
-
-
-def copy_box(e: dict, target: str) -> str:
-    """The /mcp link in a box with its copy button inside. The scheme is
-    copied but not shown, so the address fits one line."""
-    url = MCP_URL.replace("https://", '<span class="scheme">https://</span>').replace("/mcp", "<wbr>/mcp")
-    return (f'<div class="copy-box"><code id="{target}">{url}</code>'
-            f'<button class="copy-btn" type="button" data-copy="{target}" aria-label="{e["copy"]}" '
-            f'title="{e["copy"]}">{COPY_ICON}</button></div>')
-
-
-def agent_tile(i: int, cls: str = "agent-tile") -> str:
-    logo, fit, bg = AGENTS[i][2:5]
-    return (f'<span class="{cls}" style="background:{bg}">'
-            f'<img class="fit-{fit}" src="/agents/{logo}" alt="" decoding="async"></span>')
-
-
-def agents_section(e: dict, lang: str) -> str:
-    """How it works: the recorded demo beside three short steps, then the
-    agents it works with: a click on one shows its name and where to get it.
-    The demo comes in two cuts, 16:10 and, for a phone's width, 4:5 with larger
-    type; style.css shows one of them. The line over the logos says any MCP
-    agent will do: with the logos alone, readers took them for a choice to make
-    before starting."""
-    alt = e["demo_alt"]
-    video = lambda cut, name, w, h: (
-        f'<video class="demo demo-{cut}" muted loop playsinline preload="none" width="{w}" height="{h}" '
-        f'poster="/{name}.{lang}.jpg" aria-label="{alt}">'
-        f'<source src="/{name}.{lang}.mp4" type="video/mp4">'
-        f'<source src="/{name}.{lang}.webm" type="video/webm"></video>')
-    step = lambda n, body: (f'<li><span class="step-n" aria-hidden="true">{n}</span><div>'
-                            f'<h3>{e[f"how{n}_t"]}</h3><p>{e[f"how{n}"]}</p>{body}</div></li>')
-    logos = "".join(
-        f'<button class="agent-link" type="button" data-name="{html.escape(n)}" data-by="{html.escape(by)}" '
-        f'data-url="{html.escape(url)}" aria-label="{html.escape(n)}" aria-expanded="false" '
-        f'aria-controls="agent-bubble">{agent_tile(i, "agent-tile on")}</button>'
-        for i, (n, by, *_, url) in enumerate(AGENTS))
-    return f"""
-  <section class="tile wide agents" id="agents" aria-labelledby="agents-title">
-    <h2 id="agents-title" tabindex="-1">{e['agents_title']}</h2>
-    <div class="agents-grid">
-      <figure class="agents-demo">
-        {video("wide", "mcp-demo", 1920, 1200)}
-        {video("tall", "mcp-demo-m", 1200, 1500)}
-        <button class="demo-zoom" id="demo-zoom" type="button" aria-label="{e['demo_zoom']}"
-                title="{e['demo_zoom']}">{EXPAND_ICON}</button>
-      </figure>
-      <ol class="agent-steps">
-        {step(1, copy_box(e, "agent-mcp"))}
-        {step(2, "")}
-        {step(3, "")}
-      </ol>
-    </div>
-    <div class="agents-with"><p class="agents-any">{e['agents_any']}</p>
-      <div class="agent-logos" role="group" aria-label="{e['agents_pick']}">{logos}</div>
-      <div class="agent-bubble" id="agent-bubble" hidden><p><b id="ab-name"></b><span id="ab-by"></span></p>
-        <a id="ab-get" target="_blank" rel="noopener" aria-label="{e['agents_get']}" title="{e['agents_get']}">{LINK_ICON}</a></div></div>
-  </section>"""
-
-
-def today_card(e: dict, lang: str) -> str:
-    """The header's card: today's open postings, from /api/v1/jobs-summary.json,
-    which scripts/jobs.mjs writes after this build; app.js fills it in."""
-    stat = lambda k, n: f'<div><dt>{e[k]}</dt><dd id="{n}">—</dd></div>'
-    names = html.escape(json.dumps({k: v[lang == "es"] for k, v in JOB_ROLES.items()}, ensure_ascii=False))
-    return f"""<article class="hero-card today-card" aria-labelledby="today-title">
-    <div class="hero-card-head"><span id="today-title">{e['today_title']}</span>
-      <span id="t-date" data-tpl="{e['today_read']}"></span></div>
-    <div class="t-top"><p class="hero-median" id="t-postings">—</p><span id="t-roles" data-tpl="{e['today_in_roles']}"></span></div>
-    <ol class="t-bars" id="t-bars" data-names="{names}"></ol>
-    <p class="t-more" id="t-more" data-tpl="{e['today_more']}"></p>
-    <dl class="hero-stats">{stat('today_companies', 't-companies')}{stat('today_remote', 't-remote')}{stat('today_boards', 't-boards')}</dl>
-  </article>"""
-
-
-def noscript_companies(e: dict, data: dict) -> str:
-    # The table is drawn by app.js from data.json, so a reader without
-    # JavaScript (an agent fetching the HTML) saw no company at all.
-    rows = "".join(
-        f'<li><a href="{html.escape(c["url"])}">{html.escape(c["name"])}</a>'
-        + (f' · {html.escape(", ".join(c["cities"]))}' if c.get("cities") else "") + "</li>"
-        for c in data["companies"])
-    return (f'<noscript><p class="lede">{e["noscript_agents"]}</p>'
-            f'<ul class="noscript-companies">{rows}</ul></noscript>')
 
 
 # Each with its hash, so a browser holding the icon of before fetches the new one.
@@ -1321,7 +720,7 @@ def head_links(lang: str, path: str, alternates: dict[str, str]) -> str:
 
 @functools.cache
 def repo_stars() -> int | None:
-    """The repo's stars, read once per build for the topbar. None offline or
+    """The repo's stars, read once per build for the home page. None offline or
     when GitHub refuses (60 calls an hour without a token): the link then
     shows the logo alone, as it did before the count."""
     req = urllib.request.Request(REPO.replace("https://github.com/", "https://api.github.com/repos/"),
@@ -1334,37 +733,6 @@ def repo_stars() -> int | None:
             return int(json.load(r)["stargazers_count"])
     except (OSError, ValueError, KeyError, TypeError):
         return None
-
-
-def github_link(lang: str, e: dict) -> str:
-    """The topbar's GitHub link with the star count beside the logo: on
-    2026-11-09 desktop readers reached the repo from the bare logo more than
-    from the star card, and a count says what the link is for."""
-    n = repo_stars()
-    if not n:
-        return (f'<a class="icon-btn gh-link" href="{REPO}" target="_blank" rel="noopener" title="GitHub" '
-                f'aria-label="GitHub">{GITHUB_ICON}</a>')
-    count = f"{n:,}".replace(",", "." if lang == "es" else ",")
-    label = e["stars_label"].replace("{n}", count)
-    return (f'<a class="gh-stars" href="{REPO}" target="_blank" rel="noopener" title="{label}" '
-            f'aria-label="{label}">{GITHUB_ICON}{STAR_ICON}<span>{count}</span></a>')
-
-
-def topbar(lang: str, e: dict, alternates: dict[str, str]) -> str:
-    lang_links = "".join(
-        f'<a class="on" aria-current="page">{code.upper()}</a>' if code == lang
-        else f'<a href="{alternates[code]}" hreflang="{code}">{code.upper()}</a>'
-        for code in ("es", "en"))
-    return f"""<nav class="topbar">
-  <div class="topbar-in">
-    <a class="brand" href="/{lang}/">{EMBLEM}<span>{e['title']}</span></a>
-    <div class="topbar-end">
-      {github_link(lang, e)}
-      <div class="seg" role="group">{lang_links}</div>
-      <button class="icon-btn" id="theme" type="button" title="{e['theme']}" aria-label="{e['theme']}">{THEME_ICON}</button>
-    </div>
-  </div>
-</nav>"""
 
 
 def root_page(data: dict) -> str:
@@ -1414,183 +782,6 @@ def home_page(lang: str, data: dict) -> str:
         ICON_LINKS, VERCEL_SCRIPTS.rstrip("\n")])
     version = hashlib.sha256("".join(asset_version(name) for name in LANDING_ASSETS).encode()).hexdigest()[:10]
     return landing.page(lang, head=head, stars=repo_stars(), version=version)
-
-
-# The salary home page of before 2026-11-20 and the search pages' shell, no
-# longer called from main(): kept until the old page code is removed in one go.
-def page(lang: str, svg: str, data_version: str, data: dict) -> str:
-    s = strings(lang, data)
-    e = {k: html.escape(v) for k, v in s.items()}
-    levels = '<a href="https://www.levels.fyi" target="_blank" rel="noopener">Levels.fyi</a>'
-    steps = "".join(f"\n          <li><b>{e[f'how_{k}_t']}</b> {e[f'how_{k}']}</li>"
-                    for k in ("source", "when", "floor", "groups", "figures"))
-    # **bold** in the copy; the salary count is filled in by app.js.
-    lede = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", e["hero_lede"])
-    foot = seo.footer_links(data, lang)
-    return f"""<!doctype html>
-<html lang="{lang}">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{e['page_title']}</title>
-<meta name="description" content="{e['description']}">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="{e['title']}">
-<meta property="og:title" content="{e['page_title']}">
-<meta property="og:description" content="{e['description']}">
-{share_meta(lang, e['page_title'])}
-<meta name="color-scheme" content="light">
-<meta name="theme-color" content="#0000f2">
-<script>try {{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }} catch (_) {{}}</script>
-{head_links(lang, f"/{lang}/", {"es": "/es/", "en": "/en/"})}
-<link rel="alternate" type="application/json" href="/api/v1/data.json" title="Salary aggregates">
-<link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Salary aggregates for agents">
-<script type="application/ld+json">{json_ld(lang, data)}</script>
-{ICON_LINKS}
-<link rel="preload" href="/fonts/Antonio-Variable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/Barlow-Regular.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
-{VERCEL_SCRIPTS}</head>
-<body data-lang="{lang}">
-{lazo_de_seis()}
-{topbar(lang, e, {"es": "/es/", "en": "/en/"})}
-
-<header class="field tiled head-field">
-{WALL}
-<div class="head">
-  <div class="pitch veil">
-    <h1>{e['h1']}</h1>
-    <p class="hero-lede">{lede}</p>
-    <nav class="cta" aria-label="{e['hero_start']}">
-      <div class="hero-mcp wide">
-        <p>{e['hero_mcp']}</p>
-        {copy_box(e, "hero-mcp")}
-      </div>
-      <a class="btn main" href="#agents">{e['hero_start']} {DOWN_ICON}</a>
-      <a class="btn alt" href="#companies-card">{e['hero_see']}</a>
-      <details class="how wide">
-        <summary>{e['how_title']}</summary>
-        <ol class="steps">{steps}
-        </ol>
-      </details>
-    </nav>
-  </div>
-  {today_card(e, lang)}
-</div></header>
-
-<main class="bento">
-{agents_section(e, lang)}
-  <h2 class="bento-title">{e['salaries_title']}</h2>
-  <section class="tile wide map-tile" id="map-card">
-    <div class="tile-head">
-      <div><h2>{e['map_title']}</h2><p class="lede" id="map-sub"></p></div>
-      <div class="seg" id="map-metric" role="group" aria-label="{e['map_title']}">
-        <button data-m="pay">{e['map_pay']}</button><button data-m="count">{e['map_count']}</button>
-      </div>
-    </div>
-    <div class="map-grid">
-      <div class="map-box">{svg}<div class="legend" id="legend"></div></div>
-      <ol class="ranking" id="ranking"></ol>
-    </div>
-  </section>
-
-  <section class="tile wide" id="matrix-card">
-    <h2>{e['matrix_title']}</h2>
-    <p class="lede">{e['matrix_sub']}</p>
-    <div class="matrix-wrap"><table class="matrix" id="matrix"></table></div>
-    <div class="legend" id="matrix-legend"></div>
-  </section>
-
-  <section class="tile wide" id="companies-card">
-    <h2>{e['companies_title']}</h2>
-    <div class="filter-row">
-      <div class="filters" id="filters"></div>
-      <input id="search" type="search" placeholder="{e['search']}" aria-label="{e['search']}" autocomplete="off">
-    </div>
-    <div class="summary" id="summary" aria-live="polite"></div>
-    <div class="table-wrap"><table id="companies"></table></div>
-    <p class="pay-note" id="pay-note" hidden>{e['pay_note']}</p>
-    <p class="few-note" id="few-note" hidden><sup>*</sup>{e['few_note']}</p>
-    <button class="more" id="more" hidden></button>
-    {noscript_companies(e, data)}
-  </section>
-</main>
-
-<footer class="field tiled">{WALL}<div class="foot">
-  {foot}
-  <p class="veil">{e['source'].replace('Levels.fyi', levels)} ·
-     <a href="/api/v1/data.json" target="_blank" rel="noopener">{e['data']}</a> ·
-     <a href="{REPO}" target="_blank" rel="noopener">{e['repo']}</a> ·
-     <a href="/{lang}/legal/" target="_blank" rel="noopener">{e['legal']}</a></p>
-</div></footer>
-<div id="tip" role="tooltip" hidden></div>
-<div id="asterisk-tip" class="asterisk-tip" hidden></div>
-<script>window.S={json.dumps(s, ensure_ascii=False)};window.DATA_V="{data_version}";</script>
-<script src="/app.js?v={asset_version("app.js")}"></script>
-</body>
-</html>
-"""
-
-
-# --- Search pages ----------------------------------------------------------------
-
-def guide_shell(data: dict):
-    """The page around seo.py's content: the home page's head, top bar,
-    blue header and footer, without its script."""
-    foots = {lang: seo.footer_links(data, lang) for lang in ("es", "en")}
-
-    def shell(*, lang, path, alternates, title, description, header, main, ld) -> str:
-        e = {k: html.escape(v) for k, v in strings(lang, data).items()}
-        levels = '<a href="https://www.levels.fyi" target="_blank" rel="noopener">Levels.fyi</a>'
-        scripts = "".join(f'\n<script type="application/ld+json">'
-                          f'{json.dumps(x, ensure_ascii=False).replace("</", "<\\/")}</script>' for x in ld)
-        title, description = html.escape(title), html.escape(description)
-        return f"""<!doctype html>
-<html lang="{lang}">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title}</title>
-<meta name="description" content="{description}">
-<meta property="og:type" content="article">
-<meta property="og:site_name" content="{e['title']}">
-<meta property="og:title" content="{title}">
-<meta property="og:description" content="{description}">
-{share_meta(lang, title).replace(f'content="{PUBLIC}/{lang}/"', f'content="{PUBLIC}{path}"', 1)}
-<meta name="color-scheme" content="light">
-<meta name="theme-color" content="#0000f2">
-<script>try {{ const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; }} catch (_) {{}}</script>
-{head_links(lang, path, alternates)}{scripts}
-{ICON_LINKS}
-<link rel="preload" href="/fonts/Antonio-Variable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/Barlow-Regular.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/style.css?v={asset_version("style.css")}">
-{VERCEL_SCRIPTS}</head>
-<body data-lang="{lang}" class="guide">
-{lazo_de_seis()}
-{topbar(lang, e, alternates)}
-<header class="field tiled head-field guide-head">{WALL}
-<div class="head">
-  {header}
-</div></header>
-<main class="bento">
-{main}
-</main>
-<footer class="field tiled">{WALL}<div class="foot">
-  {foots[lang]}
-  <p class="veil">{e['source'].replace('Levels.fyi', levels)} ·
-     <a href="/{lang}/">{e['title']}</a> ·
-     <a href="/api/v1/data.json" target="_blank" rel="noopener">{e['data']}</a> ·
-     <a href="{REPO}" target="_blank" rel="noopener">{e['repo']}</a> ·
-     <a href="/{lang}/legal/">{e['legal']}</a></p>
-</div></footer>
-<script>document.getElementById("theme").onclick = () => {{ const r = document.documentElement;
-  const t = r.dataset.theme === "dark" ? "light" : "dark"; r.dataset.theme = t;
-  try {{ localStorage.setItem("theme", t); }} catch (_) {{}} }};</script>
-</body>
-</html>
-"""
-    return shell
 
 
 def sitemap(groups: list[dict[str, str]], date: str) -> str:
@@ -1815,50 +1006,35 @@ def dump(value) -> str:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
 
 
-def aggregates(refresh: bool) -> tuple[dict, dict[str, dict]]:
-    """data.json and the per-role tables: from the private CSV when refreshing,
-    which also rewrites data/, else from data/ as last committed."""
+def aggregates(refresh: bool) -> tuple[dict, dict]:
+    """data.json and company-cells.json: from the private CSV when refreshing,
+    which also rewrites them in data/, else from data/ as last committed. The
+    companies tables they come from stay in memory: only the old salary page
+    read them whole."""
     if refresh:
         data, tables = build_site(lib.load_companies())
+        cells = company_cells(tables)
         AGGREGATES.mkdir(exist_ok=True)
         (AGGREGATES / "data.json").write_text(dump(data) + "\n", encoding="utf-8")
-        shutil.rmtree(TABLES, ignore_errors=True)
-        for name, table in tables.items():
-            path = TABLES / f"{name or 'all'}.json"
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(dump(table) + "\n", encoding="utf-8")
-        return data, tables
+        (AGGREGATES / "company-cells.json").write_text(dump(cells) + "\n", encoding="utf-8")
+        return data, cells
     read = lambda path: json.loads(path.read_text(encoding="utf-8"))
-    tables = {}
-    for path in sorted(TABLES.rglob("*.json")):
-        name = path.relative_to(TABLES).with_suffix("").as_posix()
-        tables["" if name == "all" else name] = read(path)
-    return read(AGGREGATES / "data.json"), tables
+    return read(AGGREGATES / "data.json"), read(AGGREGATES / "company-cells.json")
 
 
 def main(argv: list[str]) -> int:
-    data, tables = aggregates(refresh="--refresh" in argv)
+    data, cells = aggregates(refresh="--refresh" in argv)
     if OUT.exists():
         shutil.rmtree(OUT)
     (OUT / "api" / "v1").mkdir(parents=True)
     company_sizes(data)
     data["instructions"] = mcp_instructions(data)
-    # The tables number companies by their place in data.json's list. A tab
-    # opened before a deploy keeps the old list and fetches today's tables:
-    # list_v in both lets the page notice and reload.
-    data["list_v"] = hashlib.sha256(dump(data["companies"]).encode()).hexdigest()[:10]
     # boards.json is api/boards.js, which serves this file and counts the download.
-    files = {"data.json": dump(data), "boards-list.json": dump(job_boards(data, tables)),
-             "company-cells.json": dump(company_cells(tables))}
-    files.update({f"companies/{name or 'all'}.json": dump({**t, "list_v": data["list_v"]})
-                  for name, t in tables.items()})
-    # Like asset_version, for the JSON the page fetches: a browser holding
-    # yesterday's tables under the same URL would run new code on old fields.
-    data_version = hashlib.sha256("".join(files.values()).encode()).hexdigest()[:10]
-    # Since 2026-11-20 the site is one page per language that leads to the MCP
-    # (landing.py) and the legal page: the salary home page and seo.py's search
-    # pages are no longer written, and vercel.json sends their URLs to the home
-    # page. The aggregates below are still published, for the MCP and for agents.
+    files = {"data.json": dump(data), "boards-list.json": dump(job_boards(data, cells)),
+             "company-cells.json": dump(cells)}
+    # The site is one page per language that leads to the MCP (landing.py) and
+    # the legal page; vercel.json sends the old salary and search URLs to the
+    # home page. The aggregates below are published for the MCP and for agents.
     for lang in ("en", "es"):
         (OUT / lang).mkdir()
         (OUT / lang / "index.html").write_text(home_page(lang, data), encoding="utf-8")
@@ -1917,7 +1093,7 @@ def main(argv: list[str]) -> int:
 # --- Agents ------------------------------------------------------------------
 
 def json_ld(lang: str, data: dict) -> str:
-    # Its own wording, not STRINGS: the page copy changes without the dataset changing.
+    # Its own wording, not the page's: the page copy changes without the dataset changing.
     description = {
         "en": "Median yearly gross salaries in euros of people working in Spain, by role, "
               f"region and years of experience, each from {lib.MIN_GROUP} or more people.",

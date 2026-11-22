@@ -26,7 +26,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.25.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.26.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -881,13 +881,15 @@ function salaryContext(data, table, job, role) {
   const at = bySlug.get(job.slug);
   if (at === undefined) return null;
   const a = role ? cells.get(role)?.get(at) : null;
-  if (a) return { role, for_this_role: true, company_median_base_eur: a.median, people: a.n,
+  if (a) return { role, for_this_role: true, company_median_base_eur: a.median,
+                  company_median_total_eur: a.total, people: a.n,
                   few: a.n < data.min_group,
                   scope: "this company's salaries for the role in Spain, every region and experience" };
   const all = cells.get("")?.get(at);
   if (!all) return null;
   const from = rolesAt.get(at) ?? [];
-  return { role: null, for_this_role: false, company_median_base_eur: all.median, people: all.n,
+  return { role: null, for_this_role: false, company_median_base_eur: all.median,
+           company_median_total_eur: all.total, people: all.n,
            few: all.n < data.min_group, roles_counted: from,
            scope: `this company's salaries in Spain over the roles people report there ` +
              `(${from.map((r) => r.role).join(", ")}), every region and experience. None is for ` +
@@ -1296,7 +1298,8 @@ export async function findJobs(data, args = {}, env = {}) {
       "checked against salary when it is in EUR a year, else against the company's median for the " +
       "role (min_salary_checked_against says which), so a posting whose range is only in its text is " +
       "judged by the median, and a posting with neither is left out. salary_context is the company's " +
-      "median base in Spain as the site's companies table shows it (Levels.fyi data), with how many " +
+      "median base in Spain as the site's companies table shows it (Levels.fyi data), its median total " +
+      "compensation (base plus bonus and stock, never checked against min_salary_eur), and how many " +
       `people it comes from; few: true marks fewer than ${data.min_group}, and from one person it is ` +
       "that person's salary, rounded. for_this_role: true when it is the median for the posting's " +
       "role. for_this_role: false when nobody at the company reports that role, or the posting names " +
