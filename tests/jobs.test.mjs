@@ -8,7 +8,7 @@ import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { carryOver, crawl, fresh, isIndex, loadAts, ownerOf, slugFinder, summary, summaryPath, throttled } from "../scripts/jobs.mjs";
+import { carryOver, crawl, stampSeen, fresh, isIndex, loadAts, ownerOf, slugFinder, summary, summaryPath, throttled } from "../scripts/jobs.mjs";
 import { KEYWORDS } from "../api/_classify.js";
 
 process.env.ATS_MIN_INTERVAL_MS = "0";
@@ -1111,4 +1111,17 @@ console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs
   await assert.rejects(fetchText("https://www.revolut.com/careers/", { allowedHosts: ["www.revolut.com"], retries: 0 }), /HTTP 403/);
   globalThis.fetch = saved;
   if (key !== undefined) process.env.BROWSERBASE_API_KEY = key;
+}
+
+// --- Undated postings keep the day the index first listed them --------------------
+{
+  const job = (id, posted_at, seen) => ({ id, posted_at, ...(seen ? { seen } : {}) });
+  const prior = { version: 1, generated_at: "2026-11-21T01:00:00Z", boards: {}, jobs: [
+    job("a:b:1", null, "2026-03-04"), job("a:b:2", null), job("a:b:3", "2026-01-01T00:00:00Z") ] };
+  const today = { version: 1, generated_at: "2026-11-22T01:00:00Z", boards: {}, jobs: [
+    job("a:b:1", null), job("a:b:2", null), job("a:b:3", "2026-01-01T00:00:00Z", "2026-02-02"), job("a:b:4", null) ] };
+  assert.deepEqual(stampSeen(today, prior).jobs.map((j) => j.seen ?? null), ["2026-03-04", "2026-11-22", null, "2026-11-22"],
+    "an undated posting keeps its first day, a new or unrecorded one starts today, a dated one has none");
+  assert.deepEqual(stampSeen(today, "HTTP 500").jobs.map((j) => j.seen ?? null), ["2026-11-22", "2026-11-22", null, "2026-11-22"],
+    "with no previous index every undated posting starts today");
 }

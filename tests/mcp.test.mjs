@@ -526,12 +526,15 @@ report("excluding every id of a group removes it", gone.jobs.every((j) => !/Gola
 const aged = (n, posted) => ({ ...index.jobs[0], id: `greenhouse:canonical:${n}`, company: "Canonical", slug: "canonical",
   title: `Ubuntu Engineer ${n}`, salary: null, posted_at: posted });
 const ages = { ...index, generated_at: "2026-11-22T00:00:00Z",
-  jobs: [aged(1, "2024-03-01T00:00:00Z"), aged(2, "2026-10-01T00:00:00Z"), aged(3, null)] };
+  jobs: [aged(1, "2024-03-01T00:00:00Z"), aged(2, "2026-10-01T00:00:00Z"), aged(3, null),
+         { ...aged(4, null), seen: "2025-06-01" }, { ...aged(5, null), seen: "2026-11-01" }] };
 const byAge = (await run("find_jobs", { company: "canonical" }, { jobs: ages })).structuredContent;
-report("a posting over a year old is marked long_open and ranked after the others",
-  byAge.jobs.map((j) => j.id).at(-1) === "greenhouse:canonical:1" && byAge.jobs.filter((j) => j.long_open).length === 1 &&
+report("a posting over a year old, by its date or else by first_seen, is marked long_open and ranked after the others",
+  byAge.jobs.slice(-2).every((j) => j.long_open) && byAge.jobs.filter((j) => j.long_open).length === 2 &&
+  byAge.jobs.find((j) => j.id.endsWith(":4")).first_seen === "2025-06-01" &&
+  byAge.jobs.find((j) => j.id.endsWith(":5")).first_seen === "2026-11-01" && !("first_seen" in byAge.jobs.find((j) => j.id.endsWith(":2"))) &&
   /long_open: true/.test(byAge.long_open_note), byAge.jobs.map((j) => [j.id, j.long_open]));
-const fresh = (await run("find_jobs", { company: "canonical", exclude: ["greenhouse:canonical:1"] }, { jobs: ages })).structuredContent;
+const fresh = (await run("find_jobs", { company: "canonical", exclude: ["greenhouse:canonical:1", "greenhouse:canonical:4"] }, { jobs: ages })).structuredContent;
 report("without one there is no long_open note", !("long_open_note" in fresh));
 
 // --- Cities: a region for the salary tools, a narrower filter for find_jobs ----------

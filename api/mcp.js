@@ -1011,7 +1011,8 @@ function prepared(data, index) {
       // One opening posted once per office or country is one result: same company, same
       // title once the places it names are left out.
       group: `${words(job.slug || job.company)}|${openingTitle(job)}`,
-      longOpen: asOf - Date.parse(job.posted_at ?? "") > LONG_OPEN_DAYS * 86_400_000,
+      // An undated posting's age is how long the index has listed it (jobs.mjs's seen).
+      longOpen: asOf - Date.parse(job.posted_at || job.seen || "") > LONG_OPEN_DAYS * 86_400_000,
     });
   }
   PREPARED.set(index, list);
@@ -1025,7 +1026,7 @@ function posting({ p, role, context, basis, matched, viaKeywords, size, contact 
     id: job.id, title: job.title, company: job.company, slug: job.slug, tier: job.tier ?? null,
     location: job.location ?? null, location_classes: job.location_classes ?? [],
     workplace: job.workplace ?? null, department: job.department ?? null,
-    posted_at: job.posted_at ?? null, url: job.url, ats: job.ats, salary: job.salary ?? null,
+    posted_at: job.posted_at ?? null, ...(!job.posted_at && job.seen ? { first_seen: job.seen } : {}), url: job.url, ats: job.ats, salary: job.salary ?? null,
     role, roles: p.roles, seniority: p.seniority, years_asked: p.years, keywords: [...p.keywords],
     salary_context: context, company_size: size ?? null,
     ...(contact ? { hiring_contact: true } : {}),
@@ -1258,7 +1259,7 @@ export async function findJobs(data, args = {}, env = {}) {
     ...(years ? { kept_without_years_figure: yearsUnstated } : {}),
     ...(sizes ? { left_out_without_company_size: unknownSize, company_size_note: SIZE_NOTE } : {}),
     ...(jobs.some((j) => j.long_open) ? { long_open_note: `long_open: true marks a posting first published over ${LONG_OPEN_DAYS} ` +
-      "days ago and still listed, ranked after the others that match as well: often an opening the company keeps " +
+      "days ago (or, when its board gives no date, first_seen in this index that long ago) and still listed, ranked after the others that match as well: often an opening the company keeps " +
       "open all year, sometimes one it never took down. Say so when you show it." } : {}),
     ...(jobs.some((j) => j.hiring_contact) ? { hiring_contact_note: "hiring_contact: true marks a posting whose " +
       "company has a recruiter, or a manager or lead tied to that posting, on file. Tell the person, as an option beside " +

@@ -33,6 +33,11 @@
 // no postings has none. A crawl that cannot run at all publishes production's
 // previous jobs.json unchanged (its generated_at says how old), and with no
 // board read and nothing to carry over there is no file.
+//
+// A posting whose board gives no date carries `seen`, the day it first appeared
+// in the index, taken from production's previous jobs.json, so the MCP can tell
+// one listed for over a year. Production's file is the only record: when it
+// cannot be read, every undated posting starts again from today.
 
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
@@ -373,6 +378,19 @@ export function carryOver(index, failures, previous, now = Date.now(), maxDays =
   };
 }
 
+/**
+ * Gives each undated posting `seen`: the day production's previous index first
+ * had it, else the index's own day. A dated posting needs none.
+ */
+export function stampSeen(index, previous) {
+  const today = index.generated_at.slice(0, 10);
+  const before = new Map((isIndex(previous) ? previous.jobs : []).filter((job) => job.seen).map((job) => [job.id, job.seen]));
+  return {
+    ...index,
+    jobs: index.jobs.map(({ seen: _, ...job }) => job.posted_at ? job : { ...job, seen: before.get(job.id) ?? today }),
+  };
+}
+
 /** The ATS modules in lib/ats. */
 export async function loadAts() {
   const [registry, location, campaign] = await Promise.all([
@@ -429,6 +447,18 @@ function write(path, index) {
   put(path, body);
   put(summaryPath(path), JSON.stringify(summary(index)));
   return Buffer.byteLength(body);
+}
+
+/** Production's index, asked up to `tries` times: the undated postings' `seen`
+ * days are lost if it cannot be read. */
+async function previousIndex(url, tries = 3) {
+  let prior;
+  for (let k = 1; k <= tries; k += 1) {
+    prior = await previous(url);
+    if (typeof prior === "object") return prior;
+    if (k < tries) await sleep(10_000 * k);
+  }
+  return prior;
 }
 
 async function previous(url) {
@@ -500,8 +530,9 @@ async function main() {
     for (const [code, n] of Object.entries(boards.issues)) log(`  ${code}: ${n}`);
     for (const f of result.failures) log(`  - ${f.company} (${f.ats}:${f.board}) ${f.code}: ${f.message.slice(0, 160)}`);
     index = result.index;
+    const prior = await previousIndex(opts.previous);
+    if (typeof prior !== "object") log(`previous ${opts.previous} unreadable (${prior}): undated postings seen from today`);
     if (result.failures.some((f) => f.code !== "not_found")) {
-      const prior = await previous(opts.previous);
       if (typeof prior === "object") {
         index = carryOver(index, result.failures, prior);
         log(`carried over ${index.jobs.length - result.index.jobs.length} postings of ${index.boards.stale} ` +
@@ -510,6 +541,7 @@ async function main() {
         log(`failed boards not carried over; previous ${opts.previous}: ${prior}`);
       }
     }
+    index = stampSeen(index, prior);
     // An index with no board read and nothing carried over would read as "no
     // openings anywhere"; no file says the truth.
     if (boards.queried > 0 && boards.failed === boards.queried && !index.boards.stale) {
