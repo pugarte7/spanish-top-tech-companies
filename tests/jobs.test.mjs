@@ -992,7 +992,12 @@ assert.deepEqual(kept(remoteBoard), ["1", "3", "4"], "a bare Remote on a remote 
 assert.deepEqual(kept({ ...remoteBoard, remote: undefined }), ["1", "2", "3", "4"], "as it is on a listed company's");
 assert.equal(entry(farJobs[0], remoteBoard, null, spoonsAts.location).tier, null, "and nobody without salaries is tiered");
 const verdict = judge(farJobs, open, spoonsAts.location.analyzeLocation);
-assert.deepEqual([verdict.postings, verdict.remote, verdict.paid], [4, 2, 1], "an office in Spain is not remote work");
+assert.deepEqual([verdict.postings, verdict.remote, verdict.office, verdict.paid], [4, 2, 0, 1], "an office in Spain is not remote work");
+const pay = { structuredCompensation: { min: 40000, max: 50000, currency: "EUR", period: "year", source: "ats-structured" } };
+const inOffice = judge([posting("5", ["Madrid, Spain"], pay), posting("6", ["Barcelona, Spain"]), posting("7", ["Berlin, Germany"], pay)],
+                     open, spoonsAts.location.analyzeLocation);
+assert.deepEqual([inOffice.remote, inOffice.office, inOffice.paid], [0, 1, 1], "but one that states pay makes the board a candidate");
+assert.ok(inOffice.hosts.includes("far.dev"));
 assert.ok(verdict.hosts.includes("far.dev") && verdict.hosts.includes("jobs.ashbyhq.com"));
 assert.deepEqual(hostsIn([{ descriptionText: "v1.2 and e.g. nothing", url: "https://www.acme.com/x" }]), ["acme.com"]);
 assert.ok(REMOTE_CLASSES.has("remote-europe") && !REMOTE_CLASSES.has("spain") && !REMOTE_CLASSES.has("remote-global"));

@@ -1130,20 +1130,20 @@ def test_remote_boards_need_levels_or_pay() -> None:
     candidates = {"incomplete": ["lever"], "boards": [
         board("here"), board("known"), board("paid", paid=1), board("nobody"), board("unread"),
         board("struck", paid=1), board("lately"), board("long-ago"), board("paid-now", paid=2),
-        board("refused"), board("after", paid=1), board("after-unpaid")]}
+        board("office", remote=0, paid=1), board("refused"), board("after", paid=1), board("after-unpaid")]}
     report = rl.decide(candidates, kept, none, "2026-11-20", lookup)
     check("kept: seen again, known to Levels.fyi, or stating pay",
           {k: (v["via"], v["seen"]) for k, v in sorted(kept.items())},
           {"ashby:after": ("pay", "2026-11-20"), "ashby:here": ("pay", "2026-11-20"),
            "ashby:known": ("levels", "2026-11-20"), "ashby:mine": ("hand", "2026-09-01"),
-           "ashby:paid": ("pay", "2026-11-20"), "ashby:paid-now": ("pay", "2026-11-20"),
+           "ashby:office": ("pay", "2026-11-20"), "ashby:paid": ("pay", "2026-11-20"), "ashby:paid-now": ("pay", "2026-11-20"),
            "lever:quiet": ("pay", "2026-09-01")})
     check("a board unseen for DROP_DAYS leaves, unless hand-kept or its ATS was cut short",
           report["dropped"], ["Old"])
     check("the rest wait, an unread or refused answer judging nothing", none,
           {"ashby:struck": "no", "ashby:lately": "2026-11-01", "ashby:long-ago": "2026-11-20",
            "ashby:nobody": "2026-11-20"})
-    check("nobody asked about lately is asked again, nor anyone after a refusal", asked,
+    check("nobody asked about lately is asked again, nor anyone after a refusal or for an office's pay", asked,
           ["known", "paid", "nobody", "unread", "long-ago", "refused"])
     check("and the run says it was refused", (report["blocked"], report["unread"]), (True, 3))
 

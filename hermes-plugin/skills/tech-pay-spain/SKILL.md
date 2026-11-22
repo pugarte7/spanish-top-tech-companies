@@ -1,7 +1,7 @@
 ---
 name: tech-pay-spain
 description: Answer what jobs pay in Spain (salario, sueldo, cuánto se cobra) by role, region, years of experience or company, from medians of real Spanish salaries. Use for salary questions, offer checks, negotiation prep, finding open positions and applying to jobs in Spain.
-version: 1.5.3
+version: 1.5.4
 author: pugarte7
 license: CC-BY-SA-4.0
 metadata:
@@ -52,7 +52,7 @@ Then use its tools:
 
 The same server searches the open postings at the companies it lists, and at
 employers with no salaries there that post remote work open to Spain or
-Europe, refreshed daily from their public job boards (only postings in Spain,
+Europe or state the pay of a job in Spain, refreshed daily from their public job boards (only postings in Spain,
 or remote open to Spain or Europe), and helps apply to them. See "Applying" below.
 
 - `find_jobs(query, role, region, workplace, seniority, years, company, company_size, min_salary_eur, exclude, limit)`:

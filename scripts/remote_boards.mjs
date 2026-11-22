@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// Finds job boards with remote postings open to Spain or Europe at employers
-// the site does not list, and writes the candidates scripts/remote_levels.py
-// judges. A company gets into the daily crawl without a salary in Spain when
-// it posts remote work on one of these boards and either Levels.fyi knows it
-// or the posting states its pay.
+// Finds job boards of employers the site does not list that someone in Spain
+// could work for, and writes the candidates scripts/remote_levels.py judges.
+// A company gets into the daily crawl without a salary in Spain on file when
+// it posts remote work open to Spain or Europe and either Levels.fyi knows it
+// or the posting states its pay, or when it posts an office or hybrid job in
+// Spain that states its pay.
 //
 //   node scripts/remote_boards.mjs                    # every ATS below
 //   node scripts/remote_boards.mjs --ats ashby,lever
@@ -132,13 +133,18 @@ export function rotated(list, day = Math.floor(Date.now() / 86_400_000)) {
 }
 
 /** One board's verdict: its postings, how many are remote from Spain or
- * Europe, how many of those state pay, and the hosts they mention. */
+ * Europe, how many are at an office in Spain and state pay (`office`), how
+ * many of both state pay, and the hosts they mention. */
 export function judge(jobs, openToSpain, analyzeLocation) {
-  const remote = jobs.filter((job) => (openToSpain(job, analyzeLocation) ?? []).some((c) => REMOTE_CLASSES.has(c)));
-  return { postings: jobs.length, remote: remote.length,
-           paid: remote.filter((job) => job.compensation?.source === "ats-structured").length,
-           sample: remote.slice(0, 2).map((job) => `${job.title} | ${job.locationsRaw.join("; ")}`.slice(0, 160)),
-           hosts: remote.length ? hostsIn(jobs) : [] };
+  const stated = (job) => job.compensation?.source === "ats-structured";
+  const classes = jobs.map((job) => openToSpain(job, analyzeLocation) ?? []);
+  const remote = jobs.filter((_, i) => classes[i].some((c) => REMOTE_CLASSES.has(c)));
+  const office = jobs.filter((job, i) => stated(job) && classes[i].includes("spain") && !remote.includes(job));
+  const wanted = [...remote, ...office];
+  return { postings: jobs.length, remote: remote.length, office: office.length,
+           paid: remote.filter(stated).length + office.length,
+           sample: wanted.slice(0, 2).map((job) => `${job.title} | ${job.locationsRaw.join("; ")}`.slice(0, 160)),
+           hosts: wanted.length ? hostsIn(jobs) : [] };
 }
 
 async function probe(kind, boards, ats, openToSpain, log) {
@@ -156,7 +162,7 @@ async function probe(kind, boards, ats, openToSpain, log) {
       strikes = 0;
       read += 1;
       const verdict = judge(jobs, openToSpain, ats.location.analyzeLocation);
-      if (verdict.remote) found.push({ ats: kind, board, ...verdict });
+      if (verdict.remote || verdict.office) found.push({ ats: kind, board, ...verdict });
     } catch (error) {
       strikes = THROTTLED.has(error?.code) ? strikes + 1 : 0;
       if (strikes >= HOST_STRIKES) {
@@ -207,7 +213,7 @@ async function main() {
     let list = rotated([...boards[kind]].filter((board) => !listed.has(key({ ats: kind, board }))).sort());
     if (values.limit) list = list.slice(0, Number(values.limit));
     const result = await probe(kind, list, ats, openToSpain, log);
-    log(`${kind}: ${result.read} of ${list.length} boards read, ${result.found.length} with remote postings`);
+    log(`${kind}: ${result.read} of ${list.length} boards read, ${result.found.length} candidates`);
     return { kind, ...result, asked: list.length };
   }));
   const out = {

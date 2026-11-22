@@ -5,7 +5,9 @@
 
 A board with remote postings open to Spain or Europe is kept when Levels.fyi
 knows its employer (lib.MIN_GLOBAL submissions anywhere, as the site asks of
-its own companies) or when one of those postings states its pay. It is written
+its own companies) or when one of those postings states its pay. A board with
+none is kept for an office or hybrid posting in Spain that states its pay, and
+Levels.fyi is not asked about it. It is written
 to data/remote-boards.json, which site.py adds to the boards scripts/jobs.mjs
 crawls every day; the rest go to data/remote-boards-none.json with the day,
 and are not asked about again for RECHECK_DAYS.
@@ -150,8 +152,10 @@ def decide(candidates: dict, kept: dict, none: dict, today: str, lookup) -> dict
             continue
         checked = lib.parse_date(none.get(k))
         recent = bool(checked and (day - checked).days < RECHECK_DAYS)
-        found = {} if recent else None
-        if not recent and not report["blocked"]:
+        # Levels.fyi vouches for remote work only: an office in Spain needs pay.
+        ask_levels = not recent and candidate.get("remote", 1)
+        found = None if ask_levels else {}
+        if ask_levels and not report["blocked"]:
             try:
                 found = lookup(candidate)
             except fs.Blocked:

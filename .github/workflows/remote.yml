@@ -1,7 +1,8 @@
 name: remote boards
 
-# Twice a month: which employers post remote work open to Spain or Europe on
-# the job boards the crawl can read, beyond the companies with salaries here.
+# Twice a month: which employers post remote work open to Spain or Europe, or
+# state the pay of a job at an office in Spain, on the job boards the crawl
+# can read, beyond the companies with salaries here.
 # scripts/remote_boards.mjs takes every board Common Crawl's index names on
 # Greenhouse, Ashby, Lever and Teamtailor and reads each one (about 9,500
 # requests, an hour); scripts/remote_levels.py keeps those Levels.fyi
