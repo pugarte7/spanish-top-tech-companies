@@ -230,13 +230,14 @@ landed.
 - `offers.py` merges each build's stated pay into `offers.csv` on the
   `offers` branch, a branch of its own so the daily commit neither redeploys
   nor races the refresh.
-- `remote_boards.mjs` takes every Greenhouse, Ashby, Lever and Teamtailor
-  board Common Crawl's URL index names (read from its cluster index and
+- `remote_boards.mjs` takes every board Common Crawl's URL index names on
+  the ATS in its `SOURCES` (those whose URL carries the board) (read from its cluster index and
   block files; its search API times out) and reads each one. Workable is
   left out on purpose: it refuses anything faster than a board every 2.5s,
   hours of run for a handful of employers; its boards on file are
   `via: hand`. An ATS that refuses 25 boards in a row is left, marked
-  incomplete, and the next run starts elsewhere in its list. A remote
+  incomplete, and the next run starts elsewhere in its list; so is one the
+  run's `--minutes` cut short. A remote
   posting counts only when it names Spain or Europe: a bare "Remote" does
   not. An office or hybrid posting in Spain counts only with pay the ATS
   gives as a field, not pay written in the description.
