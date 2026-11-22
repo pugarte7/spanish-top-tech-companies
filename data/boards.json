@@ -54,6 +54,7 @@
   "automattic": {"ats":"greenhouse","board":"automatticcareers"},
   "auvik-networks": {"ats":"greenhouse","board":"auviknetworks"},
   "ava-labs": {"ats":"ashby","board":"ava-labs"},
+  "avanade": {"ats":"workday","board":"accenture/wd103/AvanadeCareers","query":"Spain|Madrid|Barcelona|Malaga"},
   "axa": {"ats":"icims","board":"careers.axa.com"},
   "axpo": {"ats":"teamtailor","board":"careers.axpo.com"},
   "ayesa": {"ats":"jsonapi","board":"ayesa-es"},

@@ -64,7 +64,7 @@
   "automattic": {"ats":"greenhouse","board":"automatticcareers"},
   "auvik-networks": "https://www.auvik.com/careers/",
   "ava-labs": "https://jobs.ashbyhq.com/ava-labs",
-  "avanade": "https://www.avanade.com/es-es/career/search-jobs",
+  "avanade": {"ats":"workday","board":"accenture/wd103/AvanadeCareers","query":"Spain|Madrid|Barcelona|Malaga"},
   "avature": "https://careers.avature.net/en_US/main",
   "aviasales": "https://www.aviasales.ru/about/vacancies",
   "axa": "https://careers.axa.com/careers-home/?lang=en-US",
