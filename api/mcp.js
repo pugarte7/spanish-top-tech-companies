@@ -931,6 +931,9 @@ const ORDER = "With a query, the postings that match it best first: those matchi
 // fields jobs.mjs stores, or worked out here from the title and location for a
 // posting stored before them (years need the description, so stay null).
 const PREPARED = new WeakMap();
+/** A posting dated further back than this before the index is long open: an
+ * evergreen opening (Canonical keeps hundreds), or one never taken down. */
+const LONG_OPEN_DAYS = 365;
 
 // How much a query term counts: more the fewer postings in the index it
 // matches (inverse document frequency), so a framework outweighs "engineer".
@@ -990,6 +993,7 @@ function prepared(data, index) {
   if (PREPARED.has(index)) return PREPARED.get(index);
   const known = knownRoles(data);
   const list = [];
+  const asOf = Date.parse(index.generated_at ?? "") || Date.now();
   for (const job of index.jobs) {
     if (!isObject(job) || typeof job.id !== "string") continue;
     const title = words(job.title);
@@ -1007,6 +1011,7 @@ function prepared(data, index) {
       // One opening posted once per office or country is one result: same company, same
       // title once the places it names are left out.
       group: `${words(job.slug || job.company)}|${openingTitle(job)}`,
+      longOpen: asOf - Date.parse(job.posted_at ?? "") > LONG_OPEN_DAYS * 86_400_000,
     });
   }
   PREPARED.set(index, list);
@@ -1024,6 +1029,7 @@ function posting({ p, role, context, basis, matched, viaKeywords, size, contact 
     role, roles: p.roles, seniority: p.seniority, years_asked: p.years, keywords: [...p.keywords],
     salary_context: context, company_size: size ?? null,
     ...(contact ? { hiring_contact: true } : {}),
+    ...(p.longOpen ? { long_open: true } : {}),
     ...(basis ? { min_salary_checked_against: basis } : {}),
     ...(withTerms ? { matched_terms: matched } : {}),
     ...(withTerms && viaKeywords.length ? { matched_in_keywords: viaKeywords } : {}),
@@ -1198,7 +1204,9 @@ export async function findJobs(data, args = {}, env = {}) {
     // A city keeps the postings that name it; when none does, the whole region stays.
     const named = g.inCity ? found.filter((f) => g.inCity.test(f.p)) : [];
     if (named.length) found.splice(0, found.length, ...named);
-    found.sort((a, b) => b.distinct - a.distinct || b.score - a.score || (b.figure ?? -1) - (a.figure ?? -1) ||
+    // A long-open posting goes after the others that match as well.
+    found.sort((a, b) => b.distinct - a.distinct || b.score - a.score || a.p.longOpen - b.p.longOpen ||
+      (b.figure ?? -1) - (a.figure ?? -1) ||
       String(b.posted).localeCompare(String(a.posted)) || a.p.job.id.localeCompare(b.p.job.id));
     // The first in order speaks for its group; the others stay reachable by id.
     const groups = new Map();
@@ -1249,6 +1257,9 @@ export async function findJobs(data, args = {}, env = {}) {
     ...(minSalary !== null ? { left_out_without_salary_figure: unknownPay } : {}),
     ...(years ? { kept_without_years_figure: yearsUnstated } : {}),
     ...(sizes ? { left_out_without_company_size: unknownSize, company_size_note: SIZE_NOTE } : {}),
+    ...(jobs.some((j) => j.long_open) ? { long_open_note: `long_open: true marks a posting first published over ${LONG_OPEN_DAYS} ` +
+      "days ago and still listed, ranked after the others that match as well: often an opening the company keeps " +
+      "open all year, sometimes one it never took down. Say so when you show it." } : {}),
     ...(jobs.some((j) => j.hiring_contact) ? { hiring_contact_note: "hiring_contact: true marks a posting whose " +
       "company has a recruiter, or a manager or lead tied to that posting, on file. Tell the person, as an option beside " +
       "applying; hiring_contact with the job id gives the contact and the rules for writing to them." } : {}),
