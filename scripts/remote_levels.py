@@ -59,8 +59,11 @@ def flat(text: str) -> str:
 
 
 def board_name(board: str) -> str:
-    """The employer's part of a board: Teamtailor's is a host name."""
-    return board.lower().removesuffix(".teamtailor.com")
+    """The employer's part of a board: some ATS's is a host name."""
+    name = board.lower()
+    for suffix in (".teamtailor.com", ".pinpointhq.com", ".factorial.com"):
+        name = name.removesuffix(suffix)
+    return name
 
 
 def guesses(board: str) -> list[str]:

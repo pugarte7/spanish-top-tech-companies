@@ -9,6 +9,7 @@
 //   node scripts/remote_boards.mjs                    # every ATS below
 //   node scripts/remote_boards.mjs --ats ashby,lever
 //   node scripts/remote_boards.mjs --limit 50         # per ATS, to try it out
+//   node scripts/remote_boards.mjs --minutes 60       # stop reading after an hour
 //
 // No ATS publishes a directory of its customers, so the boards come from
 // Common Crawl's URL index: every path under jobs.ashbyhq.com names one. The
@@ -16,7 +17,9 @@
 // blocks hold a host); its search API times out. Each board is then read
 // through the adapters and the polite client the daily crawl uses.
 //
-// Only an ATS whose URL carries the board is here. Each run starts somewhere
+// Only an ATS whose URL carries the board is here. The run stops reading at
+// --minutes and writes what it has: the ATS it did not finish are marked
+// incomplete, like one that refused. Each run starts somewhere
 // else in an ATS's list: one that is cut short by refusals reaches other
 // boards the next time. Workable is left out: it refuses anything faster
 // than a board every 2.5s, which took 3.5 hours for 4,900 boards and 3 new
@@ -43,6 +46,14 @@ export const SOURCES = {
   ashby: { prefixes: ["com,ashbyhq,jobs)/"], in: "path" },
   lever: { prefixes: ["co,lever,jobs)/"], in: "path" },
   teamtailor: { prefixes: ["com,teamtailor,"], in: "host", board: (slug) => `${slug}.teamtailor.com` },
+  smartrecruiters: { prefixes: ["com,smartrecruiters,jobs)/", "com,smartrecruiters,careers)/"], in: "path" },
+  recruitee: { prefixes: ["com,recruitee,"], in: "host" },
+  bamboohr: { prefixes: ["com,bamboohr,"], in: "host" },
+  personio: { prefixes: ["de,personio,jobs,", "com,personio,jobs,"], in: "host" },
+  pinpoint: { prefixes: ["com,pinpointhq,"], in: "host", board: (slug) => `${slug}.pinpointhq.com` },
+  rippling: { prefixes: ["com,rippling,ats)/"], in: "path" },
+  gem: { prefixes: ["com,gem,jobs)/"], in: "path" },
+  factorial: { prefixes: ["com,factorial,", "es,factorial,"], in: "host", board: (slug) => `${slug}.factorial.com` },
 };
 const NOT_A_BOARD = new Set(["embed", "api", "v1", "jobs", "job_app", "job_board", "boards", "careers", "www", "j",
                              "robots.txt", "favicon.ico", "sitemap.xml", "app", "assets", "static"]);
@@ -147,12 +158,16 @@ export function judge(jobs, openToSpain, analyzeLocation) {
            hosts: wanted.length ? hostsIn(jobs) : [] };
 }
 
-async function probe(kind, boards, ats, openToSpain, log) {
+async function probe(kind, boards, ats, openToSpain, log, deadline) {
   const adapter = ats.adapterFor(kind);
   const found = [];
   let strikes = 0;
   let read = 0;
   for (const board of boards) {
+    if (Date.now() > deadline) {
+      log(`${kind} out of time after ${read}; the rest wait for the next run`);
+      return { found, read, complete: false };
+    }
     try {
       const company = ats.CompanySchema.parse({ name: board, ats: kind, board, active: true });
       const jobs = await Promise.race([
@@ -181,6 +196,7 @@ async function main() {
     ats: { type: "string", default: Object.keys(SOURCES).join(",") },
     indexes: { type: "string", default: "2" },
     limit: { type: "string" },
+    minutes: { type: "string", default: "170" },
     boards: { type: "string", default: join(ROOT, "data/boards.json") },
     remote: { type: "string", default: join(ROOT, "data/remote-boards.json") },
     cache: { type: "string", default: join(ROOT, ".cache/remote") },
@@ -209,10 +225,11 @@ async function main() {
 
   const { loadAts, openToSpain } = await import(pathToFileURL(join(ROOT, "scripts/jobs.mjs")).href);
   const ats = await loadAts();
+  const deadline = Date.now() + Number(values.minutes) * 60_000;
   const results = await Promise.all(kinds.map(async (kind) => {
     let list = rotated([...boards[kind]].filter((board) => !listed.has(key({ ats: kind, board }))).sort());
     if (values.limit) list = list.slice(0, Number(values.limit));
-    const result = await probe(kind, list, ats, openToSpain, log);
+    const result = await probe(kind, list, ats, openToSpain, log, deadline);
     log(`${kind}: ${result.read} of ${list.length} boards read, ${result.found.length} candidates`);
     return { kind, ...result, asked: list.length };
   }));
