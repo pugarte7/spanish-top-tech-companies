@@ -57,3 +57,34 @@ removal request could be honoured. Sizes are not personal and are public.
 
 `python3 tests/test_enrich.py` checks the brief's example against the schema;
 `python3 scripts/enrich.py check ANSWER.json` checks any answer.
+
+## What each company does
+
+`about/` is a second contract with the same agent: `about/brief.md` and
+`about/schema.json`, changed together. `.github/workflows/about.yml` runs
+`scripts/about.py` by hand, and daily once the repo variable `ABOUT_DAILY` is
+`on`, with the same `DATA_ISSUES_TOKEN`.
+
+1. It opens issues labelled `about` in the private repo, each listing 20
+   companies of `data.json` with no sentence in `data/about.json`, those with
+   most salaries first, 10 issues a run.
+2. The agent answers with one comment, as `pugarte7`, holding one JSON block
+   with one item per company: a sentence in Spanish and English, or
+   `about: null` and why.
+3. The next run stores every item that passes and commits `data/about.json`
+   to main. An issue is closed once every company it asked about is on file
+   or noted as not placed; otherwise it gets a comment listing what was
+   refused and `needs-human`, and a new answer below it is read again.
+
+Checked without trusting the agent: the comment is `pugarte7`'s and follows
+the schema; each sentence is one line of 10 to 140 characters, one sentence,
+does not start with the company's name and carries no praise word; it has a
+`source_url`; and the company is one the issue asked about. A sentence on
+file is never overwritten. A company not placed is asked again after 180
+days.
+
+The issues are in the private repo only because the agent already works
+there; nothing in them is personal.
+
+`python3 tests/test_about.py` checks the brief's example against the schema;
+`python3 scripts/about.py check ANSWER.json` checks any answer.

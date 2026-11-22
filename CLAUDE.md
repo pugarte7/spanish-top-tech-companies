@@ -75,6 +75,27 @@ After any data change: `python3 scripts/validate.py && python3 scripts/site.py
   repo and `scripts/enrich.py collect` checks and stores the answers. Change
   `brief.md` and `schema.json` together.
 
+## What a company does and its latest news
+
+- `data/about.json` (public): slug to one sentence, `es` and `en`, on what the
+  company does. Written by the outside agent through `instinct/about/` (brief
+  and schema, changed together): `about.yml` opens `about` issues in the
+  private repo, 20 companies each, and `scripts/about.py collect` checks and
+  stores the answers. A sentence on file is never overwritten, so a hand
+  correction stays. No model of ours writes it.
+- `data/news.json` (public): slug to one sentence on the most recent headline
+  about the company's business, with the headline's date, outlet and link.
+  `scripts/news.py` reads Google News and asks a small model through
+  OpenRouter (`OPENROUTER_API_KEY`; Keychain account `openrouter`); `news.yml`
+  runs it on Tuesdays. The model picks a headline by number and the link comes
+  from the feed, never from the model.
+- News is facts of the business only: a round, an acquisition, layoffs, an
+  opening, a contract, results, a launch. Never investigations, fines,
+  lawsuits, breaches, strikes, share price or opinion: the prompt in
+  `news.py` is the rule, and widening it is the maintainer's call.
+- `site.py` adds both to the built data.json; `company_salaries` returns them
+  as `about` and `latest_news` with a note that the news is a pointer.
+
 ## The digest's lists
 
 `lib.engineer_entries()` picks every software-engineer row with a base; the

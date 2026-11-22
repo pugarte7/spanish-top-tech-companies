@@ -96,6 +96,8 @@ const TOOLS = {
                    "by role, region or experience wherever it has salaries. Each figure says how " +
                    `many people it comes from, and few: true marks fewer than ${data.min_group}. Give ` +
                    "a role, region or years to see the groups within it, combinations included. " +
+                   "Where on file, about says in one sentence what the company does and latest_news " +
+                   "gives one recent headline about its business, both in Spanish and English. " +
                    "A name the site does not list gets close names to try. Companies listed apart under a " +
                    "name that starts like it (BBVA and BBVA Technology) come back in related_companies.",
       inputSchema: { type: "object", required: ["name"], properties: {
@@ -508,6 +510,21 @@ const sizeOf = (c) => (c?.size || c?.employees != null ? { bucket: c.size ?? nul
 const SIZE_NOTE = "company_size is the employer's headcount from public sources (annual reports, company " +
   "pages, third-party estimates), for the whole company or group worldwide, not its team in Spain; a " +
   "company whose headcount is not on file, or is known only for its Spanish branch, matches no bucket.";
+// What the company does and the last thing that happened at it: data.json's
+// companies carry `about` ({es, en}, data/about.json, written by an outside agent
+// and checked by scripts/about.py) and `latest` ({es, en, date, source, url},
+// data/news.json, a model's restatement of one news headline, scripts/news.py),
+// both added by site.py and either one missing for many companies.
+const contextOf = (c) => ({
+  ...(c?.about ? { about: { es: c.about.es, en: c.about.en } } : {}),
+  ...(c?.latest ? { latest_news: { es: c.latest.es, en: c.latest.en, date: c.latest.date,
+                                   source: c.latest.source ?? null, url: c.latest.url },
+                    latest_news_note: NEWS_NOTE } : {}) });
+const NEWS_NOTE = "latest_news is one recent news headline about the company's business (a funding round, " +
+  "an acquisition, layoffs, an opening, a contract, results, a launch), restated in one sentence by a " +
+  "language model, with the headline's date, outlet and link. It is a pointer, not a verified fact and " +
+  "not the whole picture: give it with its date and link, add nothing to it, and leave any judgement " +
+  "of the company to the person.";
 const BY_SLUG = new WeakMap();
 const companyBySlug = (data, slug) => {
   if (!BY_SLUG.has(data)) BY_SLUG.set(data, new Map(data.companies.filter((c) => c.levels).map((c) => [c.levels, c])));
@@ -670,7 +687,7 @@ export async function company(data, name, args = {}, env = {}) {
              selection_figures: r ? companyFigures(data, rowOf(table, r)) : null };
   });
   return { company: c.name, url: c.url, cities: c.cities, salaries_in_spain: c.n ?? null,
-           company_size: sizeOf(c), selection,
+           company_size: sizeOf(c), ...contextOf(c), selection,
            groups, ...(groups.length ? {} : { reason: "no salaries at this company for the selection; " +
              "drop role, region or years" }),
            ...(related.length ? { related_companies: related, related_note: "Listed apart on the site under a " +

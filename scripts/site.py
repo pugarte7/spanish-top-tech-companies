@@ -627,6 +627,27 @@ def company_sizes(data: dict) -> None:
     data["sizes"] = {"buckets": known["buckets"], "as_of": known["as_of"]}
 
 
+def company_context(data: dict) -> None:
+    """What each company does and the last thing that happened at it, for the
+    MCP server's company tools.
+
+    data/about.json (scripts/about.py) and data/news.json (scripts/news.py) map
+    a Levels.fyi slug to a sentence in Spanish and English; the news one also
+    holds the headline's date, outlet and link. Added to the built data.json
+    only, like the sizes. Either file may not exist yet."""
+    def read(name: str) -> dict:
+        path = AGGREGATES / name
+        return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    about, news = read("about.json"), read("news.json")
+    for company in data["companies"]:
+        slug = company.get("levels")
+        if slug in about.get("companies", {}):
+            company["about"] = about["companies"][slug]
+        if slug in news.get("companies", {}):
+            company["latest"] = news["companies"][slug]
+    data["context"] = {"about_as_of": about.get("as_of"), "news_as_of": news.get("as_of")}
+
+
 def board_tag(city: str) -> str:
     """lib/ats's tag for a city: normalizeForMatch(), spaces as hyphens."""
     text = "".join(ch for ch in unicodedata.normalize("NFD", city) if not unicodedata.combining(ch))
@@ -1030,6 +1051,7 @@ def main(argv: list[str]) -> int:
         shutil.rmtree(OUT)
     (OUT / "api" / "v1").mkdir(parents=True)
     company_sizes(data)
+    company_context(data)
     data["instructions"] = mcp_instructions(data)
     # boards.json is api/boards.js, which serves this file and counts the download.
     files = {"data.json": dump(data), "boards-list.json": dump(job_boards(data, cells)),
