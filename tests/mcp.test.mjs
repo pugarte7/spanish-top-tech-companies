@@ -522,6 +522,18 @@ const gone = (await run("find_jobs", { company: "workato", exclude: ["greenhouse
   "greenhouse:workato:892988002", "greenhouse:workato:892980002"] }, { jobs: offices })).structuredContent;
 report("excluding every id of a group removes it", gone.jobs.every((j) => !/Golang/i.test(j.title)) && gone.matches === 1);
 
+// --- A posting listed for over a year goes after the fresh ones -----------------------
+const aged = (n, posted) => ({ ...index.jobs[0], id: `greenhouse:canonical:${n}`, company: "Canonical", slug: "canonical",
+  title: `Ubuntu Engineer ${n}`, salary: null, posted_at: posted });
+const ages = { ...index, generated_at: "2026-11-22T00:00:00Z",
+  jobs: [aged(1, "2024-03-01T00:00:00Z"), aged(2, "2026-10-01T00:00:00Z"), aged(3, null)] };
+const byAge = (await run("find_jobs", { company: "canonical" }, { jobs: ages })).structuredContent;
+report("a posting over a year old is marked long_open and ranked after the others",
+  byAge.jobs.map((j) => j.id).at(-1) === "greenhouse:canonical:1" && byAge.jobs.filter((j) => j.long_open).length === 1 &&
+  /long_open: true/.test(byAge.long_open_note), byAge.jobs.map((j) => [j.id, j.long_open]));
+const fresh = (await run("find_jobs", { company: "canonical", exclude: ["greenhouse:canonical:1"] }, { jobs: ages })).structuredContent;
+report("without one there is no long_open note", !("long_open_note" in fresh));
+
 // --- Cities: a region for the salary tools, a narrower filter for find_jobs ----------
 const jobsIn = async (region) => (await run("find_jobs", { region })).structuredContent;
 const bcn = await jobsIn("barcelona");

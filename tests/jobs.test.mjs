@@ -701,7 +701,10 @@ const SF = {
   "https://careers.acme.example/search/?q=&locationsearch=Spain":
     `<link href="https://rmkcdn.successfactors.com/x/site.css"><span class="paginationLabel">Resultados <b>1 – 2</b> de <b>3</b></span>
      ${sfRow("1000001", "Backend Engineer", "Madrid, M, ES")}${sfRow("1000002", "Data &amp; AI Lead", "MADRID, ES, 28046")}`,
-  "https://careers.acme.example/search/?q=&locationsearch=Spain&startrow=2": sfRow("1000003", "Sales Rep", "Lisboa, PT"),
+  // Indra's layout: no date column, the date beside the title, in Spanish.
+  "https://careers.acme.example/search/?q=&locationsearch=Spain&startrow=2": `<tr class="data-row">
+  <td class="colTitle"><span class="jobTitle"><a href="/job/Lisboa-1000003/1000003/" class="jobTitle-link">Sales Rep</a></span>
+  <span class="jobDate visible-phone">3 dic 2025 </span></td><td class="colLocation"><span class="jobLocation"> Lisboa, PT </span></td></tr>`,
   "https://careers.acme.example/job/Madrid-1000001/1000001/":
     `<span itemprop="jobLocation"><meta itemprop="addressLocality" content="Barcelona"><meta itemprop="addressRegion" content="B">
      <meta itemprop="addressCountry" content="ES"></span><meta itemprop="datePosted" content="Sat Nov 07 08:00:00 UTC 2026">
@@ -725,7 +728,8 @@ const sfJobs = await sf.successfactorsAdapter.listJobs(sfCompany("Acme", "career
 assert.deepEqual(sfJobs.map((j) => [j.title, j.locationsRaw.join("|")]), [
   ["Backend Engineer", "Barcelona, B, Spain"], ["Data & AI Lead", "MADRID, Spain"], ["Sales Rep", "Lisboa, Portugal"],
 ], "postings from both pages, the posting page's place winning over the table's");
-assert.equal(sfJobs[0].postedAt, "2026-11-07T08:00:00.000Z");
+assert.deepEqual(sfJobs.map((j) => j.postedAt), ["2026-11-07T08:00:00.000Z", "2026-11-03T00:00:00.000Z", "2025-12-03T00:00:00.000Z"],
+                 "the posting page's date, else the table's, in English or Spanish");
 assert.match(sfJobs[0].descriptionText, /Go and Kafka/);
 const newer = await sf.successfactorsAdapter.listJobs(sfCompany("Newer", "jobs.newer.example"), "2026-11-09T00:00:00Z");
 assert.deepEqual(newer.map((j) => [j.title, j.url, j.locationsRaw[0], j.postedAt]),
