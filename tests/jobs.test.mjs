@@ -149,7 +149,8 @@ assert.deepEqual(byId["greenhouse:cabify:1"], {
   location: "Madrid", location_classes: ["spain"], workplace: null, department: null,
   posted_at: "2026-10-20T10:00:00-04:00",
   salary: { min: 60000, max: 80000, currency: "EUR", period: "year" },
-  roles: ["software-engineer"], seniority: null, years: [3, 5], regions: ["MD"], keywords: ["golang"],
+  // The title names no level: 3-5 years asked read as mid.
+  roles: ["software-engineer"], seniority: "mid", years: [3, 5], regions: ["MD"], keywords: ["golang"],
 });
 assert.deepEqual([byId["greenhouse:cabify:8"].roles, byId["greenhouse:cabify:8"].years], [["product-designer"], null],
                  "a description naming no years of experience");
@@ -1124,4 +1125,35 @@ console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs
     "an undated posting keeps its first day, a new or unrecorded one starts today, a dated one has none");
   assert.deepEqual(stampSeen(today, "HTTP 500").jobs.map((j) => j.seen ?? null), ["2026-11-22", "2026-11-22", null, "2026-11-22"],
     "with no previous index every undated posting starts today");
+}
+
+// --- Level from years, workplace from the description, roles the title missed ------
+{
+  const { levelOfYears, workplaceAsked, titleRoles } = await import("../api/_classify.js");
+  assert.deepEqual([[0, 1], [0, 2], [1, null], [3, 5], [5, null], [9, null], [10, null], null].map(levelOfYears),
+    ["intern", "junior", "junior", "mid", "senior", "senior", "staff", null]);
+  const said = {
+    "Ofrecemos horario flexible y modelo híbrido de trabajo.": "hybrid",
+    "Standard hybrid schedule of 3 days a week in the office.": "hybrid",
+    "Modelo 100% presencial: trabajarás desde nuestra oficina.": "onsite",
+    "Typeform is fully remote by design.": "remote",
+    "Consultor SAP (100% teletrabajo)": "remote",
+    "We build hybrid cloud infrastructure.": null,
+    "Horario flexible, teletrabajo y semanas full remote.": null,
+    "Medidas de flexibilidad (trabajo en remoto, flexibilidad entrada).": null,
+    "Remote or hybrid: fully remote, or a hybrid model in Madrid.": null,
+  };
+  assert.deepEqual(Object.keys(said).map(workplaceAsked), Object.values(said));
+  const known = new Set(["software-engineer", "security-analyst", "information-technologist", "accountant", "marketing",
+    "hardware-engineer", "business-analyst", "legal"]);
+  const roles = {
+    "QA Automation Tester": "software-engineer", "Tech Lead | Java": "software-engineer",
+    "Penetration tester M/F": "security-analyst", "Cloud Security Engineer": "software-engineer",
+    "Técnico/a Junior de Sistemas y Aplicaciones": "information-technologist", "Document Controller M/F": undefined,
+    "Senior Software Engineer - Growth": "software-engineer", "Ingeniero/a de RF M/F": "hardware-engineer",
+    "Ingeniero/a de Software Embebido para Defensa Electrónica": "software-engineer",
+    "Compliance Officer": "legal", "Senior Security Compliance Engineer": "software-engineer",
+    "VENDEDOR/A - MÁLAGA": undefined,
+  };
+  assert.deepEqual(Object.keys(roles).map((t) => titleRoles(t, known)[0]), Object.values(roles));
 }

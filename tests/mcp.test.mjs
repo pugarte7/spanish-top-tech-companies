@@ -695,7 +695,7 @@ report("find_jobs: seniority keeps the titles naming that level", seniors.matche
   seniors.filters.seniority === "senior", seniors.jobs.map((j) => j.title));
 const mids = await find({ seniority: "mid" });
 report("find_jobs: mid also takes titles naming no level", mids.jobs.length > 0 &&
-  mids.jobs.every((j) => j.seniority === null || j.seniority === "mid") && /name no level/.test(mids.filters.seniority_rule));
+  mids.jobs.every((j) => j.seniority === null || j.seniority === "mid") && /with no level/.test(mids.filters.seniority_rule));
 const three = await find({ years: 3 });
 report("find_jobs: years leaves out postings asking more, keeps those naming none",
   !three.jobs.some((j) => j.title === "Senior Backend Engineer") && three.jobs.some((j) => j.title === "Full Stack Developer") &&

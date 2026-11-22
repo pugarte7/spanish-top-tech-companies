@@ -149,10 +149,12 @@ const TOOLS = {
         region: { type: "string", description: "Spanish region code or name as in the salary " +
                   "tools (MD, Madrid, CT, Cataluña), spain, or remote." },
         workplace: { type: "string", enum: ["remote", "hybrid", "onsite"],
-                     description: "How the posting says the job is done." },
+                     description: "How the posting says the job is done: its board's field, its location, " +
+                       "else a phrase in its description (\"hybrid model\", \"100% remoto\"). Postings that say nothing are left out." },
         seniority: { type: "string", enum: SENIORITIES, description: "The level the title names: " +
                      "intern, junior, mid, senior, staff (staff or principal), lead, or head (head, " +
-                     "director, VP, chief). mid also takes titles that name no level." },
+                     "director, VP, chief); for a title that names none, the years the description asks " +
+                     "(0 intern, 1-2 junior, 3-4 mid, 5-9 senior, 10+ staff). mid also takes postings with no level." },
         years: { type: "string", description: "The person's years of experience, a number such as 3, " +
                  "a range such as 3-4 or a bucket such as 2-4: leaves out postings whose description asks for more. Postings " +
                  "that state no figure stay." },
@@ -1056,7 +1058,7 @@ const ALL_NEUTRAL = Object.assign({}, ...Object.values(NEUTRAL));
 const SUGGESTED = 5;
 // A level that finds nothing is widened one step each way, not dropped: a junior
 // search for remote Python work was offered senior and staff postings (2026-11-19).
-// A title that names no level counts as mid, as the mid filter reads it.
+// A posting with no level counts as mid, as the mid filter reads it.
 const levelsNear = (level) => {
   const at = SENIORITIES.indexOf(level);
   return SENIORITIES.slice(Math.max(at - 1, 0), at + 2);
@@ -1073,7 +1075,7 @@ function noMatch({ data, index, args, filtersSet, pass, withTerms, dropped }) {
     if (!matches || !keepsTopic(drop)) continue;
     const near = drop === "seniority" ? levelsNear(filtersSet.seniority) : null;
     results = pass({ ...filtersSet, ...NEUTRAL[drop], ...(near ? { levels: new Set(near) } : {}) }).results;
-    sourceLabel = near ? `at a level next to ${filtersSet.seniority} (${near.join(", ")}; a title that names no level is mid)`
+    sourceLabel = near ? `at a level next to ${filtersSet.seniority} (${near.join(", ")}; a posting with no level is mid)`
       : `without ${drop}`;
     if (results.length) break;
   }
@@ -1238,8 +1240,8 @@ export async function findJobs(data, args = {}, env = {}) {
                  : "no posting names the city, so the whole region" } : {}),
                workplace: workplace || null,
                seniority: seniority || null,
-               ...(seniority ? { seniority_rule: "the level the title names" +
-                 (seniority === "mid" ? "; mid also takes titles that name no level" : "") } : {}),
+               ...(seniority ? { seniority_rule: "the level the title names, else the one the years its description asks imply (0 intern, 1-2 junior, 3-4 mid, 5-9 senior, 10+ staff)" +
+                 (seniority === "mid" ? "; mid also takes postings with no level" : "") } : {}),
                years: years?.read ?? null,
                ...(years ? { years_rule: `postings asking at most ${years.read} years of experience, by the ` +
                  "figure in their description; postings that state none are kept" } : {}),
@@ -1274,7 +1276,9 @@ export async function findJobs(data, args = {}, env = {}) {
     order: ORDER,
     classification_note: "roles, seniority, years_asked and keywords are read from each posting when the index " +
       "is built: roles from the title, best first (the first is the one salary_context looks up); seniority " +
-      "from the title, null when it names no level; years_asked from the description as [min, max], max " +
+      "from the title, else from years_asked (0 intern, 1-2 junior, 3-4 mid, 5-9 senior, 10+ staff), null when " +
+      "neither gives one; workplace from the board, the location or a phrase in the description; years_asked " +
+      "from the description as [min, max], max " +
       "null when open-ended, null when it names no figure; keywords from the title and description, " +
       "from a fixed list of skills, tools, industries and spoken languages (a skill named as nice to have " +
       "counts too). They are guesses from text, not the employer's fields.",
