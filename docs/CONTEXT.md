@@ -236,8 +236,10 @@ landed.
   left out on purpose: it refuses anything faster than a board every 2.5s,
   hours of run for a handful of employers; its boards on file are
   `via: hand`. An ATS that refuses 25 boards in a row is left, marked
-  incomplete, and the next run starts elsewhere in its list. A remote board's postings count only when they name
-  Spain or Europe: a bare "Remote" does not.
+  incomplete, and the next run starts elsewhere in its list. A remote
+  posting counts only when it names Spain or Europe: a bare "Remote" does
+  not. An office or hybrid posting in Spain counts only with pay the ATS
+  gives as a field, not pay written in the description.
 - `remote_levels.py` guesses Levels.fyi's slug from the board's name, so a
   namesake can answer: the match counts only with Levels.fyi's domain in the
   postings or in the board's name. A refusal exits 3 and opens the refresh's

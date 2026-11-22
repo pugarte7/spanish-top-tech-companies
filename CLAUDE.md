@@ -143,7 +143,8 @@ pauses the refresh until its "Refresh paused" issue is closed.
 - `data/remote-boards.json` adds employers with no salary in Spain to that
   crawl: a board with remote postings naming Spain or Europe, kept when
   Levels.fyi knows the employer (`MIN_GLOBAL` anywhere) or a posting states
-  pay. `remote.yml` writes it twice a month (`scripts/remote_boards.mjs`,
+  pay, or a board with an office or hybrid posting in Spain that states pay
+  (Levels.fyi vouches for remote work only). `remote.yml` writes it twice a month (`scripts/remote_boards.mjs`,
   `scripts/remote_levels.py`). A Levels.fyi match needs its domain in the
   postings or in the board's name, never the name alone. `"via": "hand"`
   keeps an entry whatever a run finds; `"no"` in
