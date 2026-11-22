@@ -809,6 +809,12 @@ assert.throws(() => phenomAdapter.listUrl({ board: "careers.cisco.com" }), /host
 
 // scripts/boards.mjs: how a board is read off a link or a careers page.
 const spain = await import("../lib/ats/presets/spain.js");
+{
+  const { searchTexts } = await import("../lib/ats/sources/workday.js");
+  assert.deepEqual(searchTexts("Spain|Madrid| Barcelona"), ["Spain", "Madrid", "Barcelona"], "one Workday search per office");
+  assert.deepEqual(searchTexts("Spain"), ["Spain"]);
+  assert.deepEqual(searchTexts(undefined), [undefined], "no query stays no search text");
+}
 assert.deepEqual(spain.boardFromUrl("https://redhat.wd5.myworkdayjobs.com/en-US/jobs"),
                  { ats: "workday", board: "redhat/wd5/jobs", region: "global" }, "a Workday site may be called jobs");
 assert.deepEqual(spain.boardFromUrl("https://job-boards.eu.greenhouse.io/sahajsoftware"),
