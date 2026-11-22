@@ -79,7 +79,9 @@ or remote open to Spain or Europe), and helps apply to them. See "Applying" belo
   suggests the closest postings with the filter they miss: tell the person
   which one before offering them.
   Each result has the `roles`, `seniority` and `years_asked` read from it.
-  `salary` is the pay in the board's own fields; when it is null the posting's
+  `salary` is the pay in the board's own fields, or a yearly euro figure the
+  description states (`source: description`; `variable_included` marks
+  on-target earnings, which `min_salary_eur` does not check); when it is null the posting's
   text may still state a range (see `conditions` below), and `min_salary_eur`
   is then checked against the company's median for the role, as
   `min_salary_checked_against` says. A salary in another currency, or on a

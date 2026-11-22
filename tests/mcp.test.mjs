@@ -537,6 +537,15 @@ report("a posting over a year old, by its date or else by first_seen, is marked 
 const fresh = (await run("find_jobs", { company: "canonical", exclude: ["greenhouse:canonical:1", "greenhouse:canonical:4"] }, { jobs: ages })).structuredContent;
 report("without one there is no long_open note", !("long_open_note" in fresh));
 
+// --- On-target earnings read from a description are not a base -----------------------
+const ote = { ...index, jobs: [{ ...index.jobs[0], id: "greenhouse:factorial:1", company: "Factorial", slug: "factorial",
+  title: "Account Executive", salary: { min: 80000, max: 90000, currency: "EUR", period: "year", source: "description",
+  variable_included: true } }] };
+const oteRun = (await run("find_jobs", { company: "factorial", min_salary_eur: 70000 }, { jobs: ote })).structuredContent;
+report("min_salary_eur is not checked against on-target earnings",
+  oteRun.jobs.every((j) => j.min_salary_checked_against !== "posting") &&
+  /variable_included/.test(oteRun.salary_note ?? (await run("find_jobs", { company: "factorial" }, { jobs: ote })).structuredContent.salary_note), oteRun);
+
 // --- Cities: a region for the salary tools, a narrower filter for find_jobs ----------
 const jobsIn = async (region) => (await run("find_jobs", { region })).structuredContent;
 const bcn = await jobsIn("barcelona");
