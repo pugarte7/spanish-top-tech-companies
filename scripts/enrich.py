@@ -128,8 +128,9 @@ def answer_errors(answer, asked: dict) -> list[str]:
 
 
 def json_block(text: str):
-    """The last ```json block of a text that parses, or None."""
-    for block in reversed(re.findall(r"```json\s*\n(.*?)```", text or "", re.S)):
+    """The last ```json block of a text that parses, or None. A block left
+    open at the end of the text counts: the agent has sent one."""
+    for block in reversed(re.findall(r"```json\s*\n(.*?)(?:```|\Z)", text or "", re.S)):
         try:
             return json.loads(block)
         except json.JSONDecodeError:
