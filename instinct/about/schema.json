@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "What each company does",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["companies"],
+  "properties": {
+    "companies": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slug", "about", "source_url", "notes"],
+        "properties": {
+          "slug": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+          "about": {
+            "anyOf": [
+              {"type": "null"},
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["es", "en"],
+                "properties": {
+                  "es": {"type": "string", "pattern": "^\\S[^\\n]{8,138}\\S$"},
+                  "en": {"type": "string", "pattern": "^\\S[^\\n]{8,138}\\S$"}
+                }
+              }
+            ]
+          },
+          "source_url": {"type": ["string", "null"], "format": "uri"},
+          "notes": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}

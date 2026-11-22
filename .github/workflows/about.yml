@@ -1,0 +1,74 @@
+name: about
+
+# What each company does, in one sentence, from an outside agent
+# (instinct/about/). It stores the sentences the agent left in the private
+# repo's `about` issues, closes those issues once data/about.json is pushed,
+# then opens issues for the next companies without one (scripts/about.py).
+# Daily only while the repo variable ABOUT_DAILY is `on`; by hand otherwise.
+#
+# Nothing here is personal. The issues live in the private repo only because
+# the agent already answers there (enrich.yml), with the same account.
+#
+# Secret: DATA_ISSUES_TOKEN, a fine-grained token with Issues read and write
+# on the private repo only.
+
+on:
+  schedule:
+    - cron: "10 10 * * *"
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Issues to open in this run (20 companies each)"
+        type: string
+        default: "1"
+
+concurrency:
+  group: about
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  about:
+    if: github.event_name == 'workflow_dispatch' || vars.ABOUT_DAILY == 'on'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ secrets.DATA_ISSUES_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Store the agent's sentences
+        run: |
+          [ -n "$GH_TOKEN" ] || { echo "DATA_ISSUES_TOKEN is not set."; exit 1; }
+          python3 scripts/about.py collect --closing "$RUNNER_TEMP/closing.json"
+
+      - name: Commit data/about.json
+        run: |
+          git add -N data/about.json 2> /dev/null || true
+          if git diff --quiet -- data/about.json; then
+            echo "No new sentences."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/about.json
+          git commit -q -m "Company descriptions $(date -u +%F)"
+          git pull --rebase -q origin main
+          git push -q origin HEAD:main
+          echo "data/about.json pushed."
+
+      - name: Close the stored issues
+        run: python3 scripts/about.py close "$RUNNER_TEMP/closing.json"
+
+      - name: Ask about the next companies
+        env:
+          LIMIT: ${{ inputs.limit || '10' }}
+        run: python3 scripts/about.py open --limit "$LIMIT"

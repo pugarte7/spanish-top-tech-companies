@@ -5,7 +5,7 @@
 // stub: no test reaches the network.
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import mcp, { analytics, formAccess, openingTitle, queryTerms, respond as answer, sessionOf } from "../api/mcp.js";
+import mcp, { analytics, company, formAccess, openingTitle, queryTerms, respond as answer, sessionOf } from "../api/mcp.js";
 import { redact } from "../api/_track.js";
 import { keywordsOf, seniorityOf, titleRoles, yearsAsked } from "../api/_classify.js";
 
@@ -1666,6 +1666,18 @@ const branchCompany = data.companies.find((c) => c.branch);
 const branchAnswer = (await run("company_salaries", { name: branchCompany.name })).structuredContent;
 report("a branch's headcount is shown without a bucket", branchAnswer.company_size.bucket === null &&
   branchAnswer.company_size.employees === branchCompany.employees && /subsidiary/.test(branchAnswer.company_size.covers), branchAnswer.company_size);
+
+const described = { ...data, companies: data.companies.map((c) => c === branchCompany ? { ...c,
+  about: { es: "Software de nóminas para pymes.", en: "Payroll software for small companies." },
+  latest: { es: "Abrió oficina en Málaga.", en: "It opened an office in Málaga.", date: "2026-11-03",
+            source: "Expansión", url: "https://news.example/1" } } : c) };
+const withContext = await company(described, branchCompany.name, {}, { jobs: index, companies: table });
+report("company_salaries: what the company does and its latest news, with the note on how to use it",
+  withContext.about.en === "Payroll software for small companies." && withContext.latest_news.date === "2026-11-03" &&
+  withContext.latest_news.url === "https://news.example/1" && /not a verified fact/.test(withContext.latest_news_note),
+  withContext);
+report("company_salaries: a company with neither carries no empty field",
+  !("about" in branchAnswer) && !("latest_news" in branchAnswer) && !("latest_news_note" in branchAnswer));
 
 const glovoIds = index.jobs.filter((j) => j.slug === "glovo").map((j) => j.id);
 const [glovoA, glovoB] = glovoIds;
