@@ -28,6 +28,7 @@ import concurrent.futures
 import datetime
 import email.utils
 import html
+import http.client
 import json
 import os
 import random
@@ -142,7 +143,7 @@ def get(url: str, limit: int = 400_000) -> str:
     try:
         with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=20) as answer:
             return answer.read(limit).decode("utf-8", "replace")
-    except (urllib.error.URLError, OSError, ValueError):
+    except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError):
         return ""
 
 
@@ -213,7 +214,8 @@ def ask(api_key: str, model: str, text: str) -> dict | None:
         except urllib.error.HTTPError as error:
             if error.code in (401, 402, 403):
                 raise SystemExit(f"OpenRouter refused the key or the credit ({error.code}).")
-        except (urllib.error.URLError, OSError, KeyError, IndexError, TypeError, ValueError):
+        except (urllib.error.URLError, http.client.HTTPException, OSError, KeyError, IndexError,
+                TypeError, ValueError):
             pass
     return None
 
@@ -270,7 +272,11 @@ def main() -> int:
                 for c in companies}
         for job in concurrent.futures.as_completed(jobs):
             slug = jobs[job]["levels"]
-            text, found = job.result()
+            try:
+                text, found = job.result()
+            except Exception as error:      # one company never ends the run
+                text, found = "", {}
+                print(f"{slug}: {type(error).__name__}", file=sys.stderr)
             if args.dry:
                 print(text, end="\n\n")
             elif found == {}:
