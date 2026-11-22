@@ -113,5 +113,7 @@ check("a new answer after a rejection is read again",
 check("a JSON block that does not parse is an answer to send back",
       enrich.reply([said(me, "```json\n{oops\n```")]) == ("answer", None))
 
+check("a block left open at the end is read", enrich.json_block("```json\n{\"a\": 1}\n") == {"a": 1})
+
 print(f"{len(failures)} failed" if failures else "enrich.py checks answers as expected")
 sys.exit(1 if failures else 0)
