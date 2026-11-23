@@ -1,7 +1,7 @@
 ---
 name: tech-pay-spain
 description: Answer what jobs pay in Spain (salario, sueldo, cuánto se cobra) by role, region, years of experience or company, from medians of real Spanish salaries. Use for salary questions, offer checks, negotiation prep, finding open positions and applying to jobs in Spain.
-version: 1.5.4
+version: 1.5.5
 author: pugarte7
 license: CC-BY-SA-4.0
 metadata:
@@ -115,7 +115,10 @@ or remote open to Spain or Europe), and helps apply to them. See "Applying" belo
   the person signs in or creates an account there. An employer's own careers site with
   schema.org JobPosting (Factorial, eDreams, Dynatrace, Adevinta), and Radancy and iCIMS
   career sites (ING, Sanofi, AXA, Publicis), give the posting, and the Apply link's form
-  when the page names one. Oracle (Marriott, JPMorgan) and Cornerstone
+  when the page names one. Capitole and Prosegur (Viterbit) turn the server away: their form
+  comes from the site's daily crawl, with `form_read_at`; open `apply_url`, check the form still
+  asks the same, read the posting there, and set each `preselected` option to the person's
+  answer, since the page comes with it already chosen. Oracle (Marriott, JPMorgan) and Cornerstone
   (GMV, Bankinter) give the posting but not its form; there, and on any other system
   behind Phenom, the form is read in the browser.
 - `hiring_contact(id)`, when the server offers it: for one posting that

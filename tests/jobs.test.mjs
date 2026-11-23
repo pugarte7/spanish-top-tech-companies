@@ -8,7 +8,7 @@ import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { carryOver, crawl, stampSeen, fresh, isIndex, loadAts, ownerOf, slugFinder, summary, summaryPath, throttled } from "../scripts/jobs.mjs";
+import { carryOver, crawl, stampSeen, storeForms, fresh, isIndex, loadAts, ownerOf, slugFinder, summary, summaryPath, throttled } from "../scripts/jobs.mjs";
 import { KEYWORDS } from "../api/_classify.js";
 
 process.env.ATS_MIN_INTERVAL_MS = "0";
@@ -1136,6 +1136,46 @@ console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs
     "an undated posting keeps its first day, a new or unrecorded one starts today, a dated one has none");
   assert.deepEqual(stampSeen(today, "HTTP 500").jobs.map((j) => j.seen ?? null), ["2026-11-22", "2026-11-22", null, "2026-11-22"],
     "with no previous index every undated posting starts today");
+}
+
+// --- Application forms of sites that turn the MCP away, read once each ------------
+{
+  const page = readFileSync("tests/fixtures/viterbit-apply.html", "utf8").replace("COUNTRIES", "");
+  const site = (id, extra = {}) => ({ id: `jsonld:careers.example.com/sitemap.xml:${id}`, ats: "jsonld",
+                                      url: `https://careers.example.com/p-${id}/`, ...extra });
+  const other = { id: "jsonld:www.open.example/sitemap.xml:9", ats: "jsonld", url: "https://www.open.example/p-9/" };
+  const read = [];
+  const reader = (answers) => async (url) => {
+    read.push(url);
+    const answer = answers[url];
+    if (answer instanceof Error) throw answer;
+    return answer ?? "<html>no form</html>";
+  };
+  const prior = { version: 1, generated_at: "2026-11-22T01:00:00Z", boards: {}, forms: [[{ key: "name", label: "Nombre" }]],
+    jobs: [site(1, { form: 0, form_read: "2026-11-20" }), site(5, { form: 3 })] };
+  const today = { version: 1, generated_at: "2026-11-23T01:00:00Z", boards: {}, forms: [["stale"]],
+    jobs: [site(1), site(2), site(3), site(4), site(5), other] };
+  const out = await storeForms(today, prior, ["careers.example.com"], reader({
+    "https://careers.example.com/p-2/apply/": page, "https://careers.example.com/p-3/apply/": page,
+    "https://careers.example.com/p-4/apply/": new Error("HTTP 403") }));
+  const byId = Object.fromEntries(out.index.jobs.map((j) => [j.id.split(":").at(-1), j]));
+  assert.deepEqual(read, ["https://careers.example.com/p-2/apply/", "https://careers.example.com/p-3/apply/",
+    "https://careers.example.com/p-4/apply/", "https://careers.example.com/p-5/apply/"],
+    "only postings on the listed hosts with no stored form are read, each at its apply/ page");
+  assert.deepEqual([out.reads, out.failed], [4, 1]);
+  assert.deepEqual(out.index.forms[byId[1].form], [{ key: "name", label: "Nombre" }], "a stored form is kept from the previous index");
+  assert.equal(byId[1].form_read, "2026-11-20");
+  assert.equal(byId[2].form, byId[3].form, "two postings with the same form share one entry");
+  assert.equal(byId[2].form_read, "2026-11-23");
+  assert.equal(out.index.forms[byId[2].form].find((f) => f.key === "question_aa01").preselected, "Básico (A1/A2)");
+  assert.equal(out.index.forms.length, 2, "the previous run's forms are not carried as they are");
+  for (const id of ["4", "5", "9"]) assert.ok(!("form" in byId[id]) && !("form_read" in byId[id]), `posting ${id} has no form`);
+  read.length = 0;
+  const off = await storeForms(today, prior, ["careers.example.com"], reader({}), 0);
+  assert.deepEqual([read.length, off.index.jobs.filter((j) => "form" in j).length], [0, 1],
+    "without the browser nothing is read and stored forms are kept");
+  const none = await storeForms({ ...today, jobs: [other] }, null, ["careers.example.com"], reader({}));
+  assert.ok(!("forms" in none.index), "an index with no stored form has no forms key");
 }
 
 // --- Level from years, workplace from the description, roles the title missed ------

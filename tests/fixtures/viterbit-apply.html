@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html><head><title>Example | Backend Developer</title>
+<script src="https://assets.viterbit.com/assets/app-1.js"></script></head>
+<body>
+<form name="apply" autocomplete="off" method="post" class="kt-form" data-type="ajax-form" enctype="multipart/form-data">
+<div class="alert">Si ya tienes cuenta, <a href="https://careers.example.com/talent-community/login/">inicia sesión</a> para inscribirte más rápidamente.</div>
+<h3 class="kt-section__title">Información de contacto</h3>
+<div class="form-group"><label class="required">Nombre</label><div><input type="text" id="apply_name" name="apply[name]" required="required" class="form-control" /></div></div>
+<div class="form-group"><label class="required">Email</label><div><input type="email" id="apply_email" name="apply[email]" required="required" /></div></div>
+<div class="form-group"><label class="required" data-phone-default-country="es">Teléfono</label><div><input type="tel" id="apply_phone" name="apply[phone]" required="required" data-phone-default-country="es" /></div></div>
+<div class="form-group"><label>Url del perfil de Linkedin</label><div><input type="text" id="apply_linkedin" name="apply[linkedin]" /></div></div>
+<div class="form-group"><label required="required">País</label><div><select id="apply_address_country" name="apply[address][country]" required="required" required="required"><option value=""></option>COUNTRIES</select></div></div>
+<div class="form-group"><label class="required" data-url="/talent-community/utils/cities/">Ciudad</label><div><select id="apply_address_city" name="apply[address][city]" required="required" data-load="ajax_data"></select></div></div>
+<div class="form-group"><label>Foto</label><div><div data-toggle="kt-image-upload"><label data-toggle-tooltip="kt-tooltip" title="" data-original-title="Change"><i class="fa fa-pen"></i><input type="file" id="apply_pictureDocument_file" name="apply[pictureDocument][file]" /></label></div></div></div>
+<h3>Curriculum</h3>
+<div class="form-group"><label class="required">Curriculum</label><div><input type="file" id="apply_cvDocument_file" name="apply[cvDocument][file]" required="required" accept="application/pdf" /><label for="customFile"></label></div></div>
+<div class="form-group"><label data-plugin="quill">Carta de presentación</label><div><textarea id="apply_coverLetter" name="apply[coverLetter]" data-plugin="quill"></textarea></div></div>
+<div id="apply_questions"><div class="form-group"><label class="required" data-none-selected-text="Selecciona al menos una opción...">¿Cuál es tu nivel de inglés?</label><div><div id="apply_questions_aa01" class="kt-radio-list">
+<div><div><label class="kt-radio"><input type="radio" id="apply_questions_aa01_0" name="apply[questions][aa01]" required="required" checked="checked" value="Básico (A1/A2)"> Básico (A1/A2) <span></span></label></div></div>
+<div><div><label class="kt-radio"><input type="radio" id="apply_questions_aa01_1" name="apply[questions][aa01]" required="required" value="Puedo trabajar en inglés (B2)"> Puedo trabajar en inglés (B2) <span></span></label></div></div>
+</div></div></div>
+<div class="form-group"><label class="required">¿Cuáles son tus expectativas salariales? (salario bruto anual)</label><div><input type="text" id="apply_questions_aa02" name="apply[questions][aa02]" required="required" /></div></div>
+<div class="form-group"><label class="required">¿Te encuentras en búsqueda activa de empleo?</label><div><select id="apply_questions_aa03" name="apply[questions][aa03][]" required="required" multiple="multiple"><option value="Si">Si</option><option value="No">No</option></select></div></div>
+<div class="form-group"><label data-plugin="quill">Me ha interesado esta oferta por...</label><div><textarea id="apply_questions_aa04" name="apply[questions][aa04]" data-plugin="quill"></textarea></div></div>
+</div>
+<div class="form-group"><label class="kt-checkbox"><input type="checkbox" id="apply_terms" name="apply[terms]" required="required" value="1"> <p><strong>Responsable:</strong> Example, S.L.</p><p><strong>Finalidad</strong>: considerar su candidatura. <strong>Derechos</strong>: acceder, rectificar y suprimir los datos.</p> <span></span></label></div>
+<button type="submit" class="btn btn-brand">Enviar candidatura</button>
+<input type="hidden" id="apply_company" name="apply[company]" />
+<div hidden><label hidden="hidden">settings.profile.form.profile.social</label><input type="text" id="apply_socialProfiles_0_key" name="apply[socialProfiles][0][key]" hidden="hidden" value="linkedin" /><input type="text" id="apply_socialProfiles_0_value" name="apply[socialProfiles][0][value]" /></div>
+<input type="hidden" id="apply__token" name="apply[_token]" value="csrf-token" />
+</form>
+</body></html>

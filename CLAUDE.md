@@ -157,6 +157,10 @@ pauses the refresh until its "Refresh paused" issue is closed.
   under both companies.
 - ATS adapters live in `lib/ats/`; `scripts/jobs.mjs` crawls every board
   daily into `/api/v1/jobs.json`, which the MCP's job tools search.
+- Sites that turn the MCP's address away (`data/browser-hosts.json`) get
+  their application forms stored in jobs.json by the crawl (`forms`), read
+  once per posting through the cloud browser, never again; `job_questions`
+  serves them. Only Viterbit's page has a reader (`api/_viterbit.js`).
 - With `BROWSERBASE_API_KEY`, a host that still refuses after the retries
   (403, 405, 429, 503, a challenge, a dropped connection) gets one more try
   in a Browserbase cloud browser (`lib/ats/sources/browserbase.js`), and the

@@ -7,6 +7,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import mcp, { analytics, company, formAccess, openingTitle, queryTerms, respond as answer, sessionOf } from "../api/mcp.js";
 import { redact } from "../api/_track.js";
+import { viterbitApplyUrl, viterbitFields } from "../api/_viterbit.js";
 import { keywordsOf, seniorityOf, titleRoles, yearsAsked } from "../api/_classify.js";
 
 const DATA = "_site/api/v1/data.json";
@@ -1395,6 +1396,58 @@ report("jsonld: with no Apply link the form is the posting's page",
   factorial.apply_url === "https://careers.factorial.com/job_posting/account-executive-328088" && /Sell Factorial/.test(factorial.description.text), factorial);
 const expired = await run("job_questions", { id: "jsonld:careers.factorial.com/:1" }, { jobs: boards3 });
 report("jsonld: a posting past its validThrough is a tool error", expired.isError === true && /may have closed/.test(expired.content[0].text), expired);
+// Viterbit sites (Capitole, Prosegur) turn this server away: the daily crawl
+// stores each application form in the index, and job_questions serves it.
+const vPage = readFileSync("tests/fixtures/viterbit-apply.html", "utf8")
+  .replace("COUNTRIES", Array.from({ length: 80 }, (_, k) => `<option value="c${k}">País ${k}</option>`).join(""));
+const vFields = viterbitFields(vPage);
+const vField = (key) => vFields.find((f) => f.key === key);
+report("viterbit: the application page's fields, the employer's questions after the standard ones",
+  JSON.stringify(vFields.map((f) => f.key)) === JSON.stringify(["name", "email", "phone", "linkedin", "address_country",
+    "address_city", "pictureDocument", "cvDocument", "coverLetter", "question_aa01", "question_aa02", "question_aa03",
+    "question_aa04", "terms"]) &&
+  vField("name").label === "Nombre" && vField("name").required && !vField("linkedin").required &&
+  vField("phone").type === "phone" && vField("pictureDocument").label === "Foto" && vField("pictureDocument").type === "file" &&
+  vField("cvDocument").required && vField("coverLetter").type === "textarea", vFields);
+report("viterbit: a radio group is a select with its options and the one the page chose",
+  vField("question_aa01").type === "select" && vField("question_aa01").required &&
+  JSON.stringify(vField("question_aa01").options) === JSON.stringify(["Básico (A1/A2)", "Puedo trabajar en inglés (B2)"]) &&
+  vField("question_aa01").preselected === "Básico (A1/A2)" && vField("question_aa03").type === "multiselect" &&
+  vField("question_aa03").options.length === 2 && !vField("question_aa04").required, vFields);
+report("viterbit: the privacy notice is a consent, a long country list is left to the browser",
+  vField("terms").consent === true && vField("terms").type === "checkbox" && /Responsable: Example/.test(vField("terms").label) &&
+  vField("address_country").options.length === 0, vFields);
+report("viterbit: a page with no application form (a closed posting) gives null",
+  viterbitFields("<html><title>Example</title><script src=\"https://assets.viterbit.com/a.js\"></script></html>") === null);
+report("viterbit: the application page is the posting's apply/",
+  viterbitApplyUrl("https://careers.example.com/backend-developer-2OfC") === "https://careers.example.com/backend-developer-2OfC/apply/" &&
+  viterbitApplyUrl("https://careers.example.com/backend-developer-2OfC/") === "https://careers.example.com/backend-developer-2OfC/apply/");
+const vJob = (id, extra) => ({ id: `jsonld:careers.example.com/sitemap.xml:${id}`, company: "Site", slug: "site", title: "Backend Developer",
+  ats: "jsonld", url: `https://careers.example.com/backend-developer-${id}/`, location: "Madrid, Spain", ...extra });
+const vIndex = { ...boards3, forms: [vFields],
+  jobs: [...boards3.jobs, vJob("aa1", { form: 0, form_read: "2026-11-23" }), vJob("aa2"), vJob("aa3", { form: 4 })] };
+BOARDS["https://careers.example.com/backend-developer-aa2/"] = () => new Response("<title>Just a moment...</title>", { status: 403 });
+BOARDS["https://careers.example.com/backend-developer-aa3/"] = () => new Response("<title>Just a moment...</title>", { status: 403 });
+const before = requests.length;
+const vStored = (await run("job_questions", { id: "jsonld:careers.example.com/sitemap.xml:aa1" }, { jobs: vIndex })).structuredContent;
+const vq = (key) => vStored.questions.find((q) => q.key === key);
+report("viterbit: job_questions serves the stored form without reading the site",
+  requests.length === before && vStored.form_read_at === "2026-11-23" && /daily crawl on 2026-11-23/.test(vStored.form_source) &&
+  vStored.apply_url === "https://careers.example.com/backend-developer-aa1/apply/" && vStored.questions.length === vFields.length &&
+  vStored.description === null && formAccess(vStored).form_access === "stored" && formAccess(vStored).form_read === false, vStored);
+report("viterbit: stored questions are classified as live ones, the preselected option kept",
+  vq("terms").who === "person" && vq("terms").category === "consent" && vq("question_aa02").who === "person" &&
+  vq("question_aa02").category === "compensation" && vq("question_aa04").who === "agent" &&
+  vq("question_aa01").preselected === "Básico (A1/A2)" && vq("name").section === "application", vStored);
+const vRefused = await run("job_questions", { id: "jsonld:careers.example.com/sitemap.xml:aa2" }, { jobs: vIndex });
+report("jsonld: a site that turns this server away is an answer that sends the agent to the browser, not an error",
+  !vRefused.isError && vRefused.structuredContent.board_refused === 403 &&
+  vRefused.structuredContent.apply_url === "https://careers.example.com/backend-developer-aa2/" &&
+  vRefused.structuredContent.questions[0].type === "unread" && vRefused.structuredContent.description === null &&
+  formAccess(vRefused.structuredContent).form_access === "refused", vRefused);
+const vMissing = await run("job_questions", { id: "jsonld:careers.example.com/sitemap.xml:aa3" }, { jobs: vIndex });
+report("viterbit: a form place the index does not hold is read live",
+  !vMissing.isError && vMissing.structuredContent.board_refused === 403 && vMissing.structuredContent.form_read_at === undefined, vMissing);
 // Radancy and iCIMS sites carry the same JobPosting block; AXA's iCIMS page moves on its host.
 BOARDS["https://careers.ing.com/en/job/madrid/senior-java-engineer/3121/44240472640"] = ldPage({ description: "Write Java at ING." },
   `<a href="https://ing.wd3.myworkdayjobs.com/ICSGBLCOR/job/Madrid/Java_REQ-1/apply">Apply</a>`);
@@ -1436,7 +1489,7 @@ report("cornerstone: the requisition found through the site's own search, with t
   /Fly satellites at GMV/.test(gmv.description.text) && gmv.form_source.startsWith("Cornerstone"), gmv);
 const boardCalls = requests.filter((r) => !r.url.includes("/api/v1/"));
 report("boards are read on allow-listed HTTPS hosts only, without following redirects", boardCalls.length > 0 &&
-  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|wd\d+\.myworkdaysite\.com|careers\.(roche|allianz|vueling|verisure)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai|careers\.ey\.com|www\.amazon\.jobs|careers\.capgemini\.com|adevinta\.com|www\.porsche\.digital|careers\.factorial\.com|careers\.ing\.com|careers\.axa\.com|jpmc\.fa\.oraclecloud\.com|gmv\.csod\.com|eu-fra\.api\.csod\.com)\//.test(r.url) &&
+  boardCalls.every((r) => /^https:\/\/(boards-api\.greenhouse\.io|jobs(\.eu)?\.lever\.co|api(\.eu)?\.lever\.co|jobs\.ashbyhq\.com|apply\.workable\.com|[a-z0-9-]+\.recruitee\.com|[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com|wd\d+\.myworkdaysite\.com|careers\.(roche|allianz|vueling|verisure)\.com|[a-z0-9-]+\.bamboohr\.com|jobs\.bendingspoons\.com|api\.rippling\.com|api\.smartrecruiters\.com|[a-z0-9-]+\.pinpointhq\.com|careers\.infor\.com|careerhub\.qlik\.com|jobs\.nvidia\.com|[a-z]+\.eightfold\.ai|careers\.ey\.com|www\.amazon\.jobs|careers\.capgemini\.com|adevinta\.com|www\.porsche\.digital|careers\.factorial\.com|careers\.example\.com|careers\.ing\.com|careers\.axa\.com|jpmc\.fa\.oraclecloud\.com|gmv\.csod\.com|eu-fra\.api\.csod\.com)\//.test(r.url) &&
     // The exceptions: asking a Pinpoint, Eightfold or SuccessFactors board where it sends a page, without following it.
     (r.init.redirect === "error" || (r.init.redirect === "manual" && /\.pinpointhq\.com\/|\.eightfold\.ai\/|careers\.ey\.com\/|www\.porsche\.digital\/|careers\.axa\.com\//.test(r.url))) &&
     r.init.signal instanceof AbortSignal));
