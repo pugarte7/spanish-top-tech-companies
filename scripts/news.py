@@ -221,6 +221,8 @@ def headlines(name: str, today: datetime.date) -> list[dict] | None:
 def ask(api_key: str, model: str, text: str) -> dict | None:
     body = json.dumps({
         "model": model, "temperature": 0,
+        # Left to itself the model reasons for thousands of tokens, most of the bill.
+        "reasoning": {"effort": "low"},
         "messages": [{"role": "system", "content": PROMPT}, {"role": "user", "content": text}],
         "response_format": {"type": "json_schema", "json_schema": {
             "name": "company_context", "strict": True, "schema": SCHEMA}},
