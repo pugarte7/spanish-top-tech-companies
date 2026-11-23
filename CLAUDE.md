@@ -71,7 +71,7 @@ After any data change: `python3 scripts/validate.py && python3 scripts/site.py
   term of use: `MESSAGES_A_DAY` in `api/mcp.js` and `site.py`, the legal page,
   SKILL.md. The person sends every message; the server sends nothing.
 - New companies are asked about through `instinct/` (brief and schema for the
-  outside agent): `enrich.yml` opens issues of 50 companies in the private
+  outside agent): `enrich.yml` opens issues of up to 50 companies in the private
   repo and `scripts/enrich.py collect` checks and stores the answers. Change
   `brief.md` and `schema.json` together.
 - The agent sees only the private repo's newest 100 issues, so no more than

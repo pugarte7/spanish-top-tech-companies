@@ -1,6 +1,6 @@
 # Company enrichment
 
-Each issue labelled `enrich` lists up to 50 companies with open roles in Spain
+Each issue labelled `enrich` lists one to 50 companies with open roles in Spain
 or remote open to Spain. For each, find two things: how many people it
 employs, and who at it a candidate for one of its openings can reach. Answer
 with one comment holding one JSON block that follows `schema.json`, with one
@@ -36,7 +36,8 @@ companies, size and contacts, also after the issue is closed (for 14 days).
 }
 ```
 
-Each company lists its first postings, as many as fit in the issue.
+Each company lists its open postings; one with hundreds lists the first that
+fit in the issue.
 `website` and `linkedin` fix the identity. If they disagree, or the name
 belongs to several companies and you cannot tell which, leave that company
 out and say so.

@@ -43,10 +43,20 @@ many = [{"slug": f"c{n}", "name": f"C{n}", "website": None, "linkedin": None, "c
          "jobs": [{"id": f"c{n}-{j}", "title": "Senior Backend Engineer, Payments Platform", "location": "Madrid",
                    "url": f"https://jobs.example.com/company-{n}/postings/{j}-senior-backend-engineer"}
                   for j in range(300)]} for n in range(enrich.PER_ISSUE)]
-fitted = enrich.issue_body(many)
-check("fifty companies with hundreds of postings fit in one issue, each with some",
-      len(fitted) <= 65536 and len(enrich.asked_in({"body": fitted})) == enrich.PER_ISSUE
-      and all(0 < len(c["jobs"]) <= enrich.JOBS_MAX for c in enrich.asked_in({"body": fitted}).values()), len(fitted))
+packed = list(enrich.batches(many))
+bodies = [enrich.issue_body(b) for b in packed]
+check("companies with hundreds of postings go in as many issues as it takes, none over GitHub's limit",
+      len(packed) > 1 and sum(len(b) for b in packed) == len(many) and all(len(t) <= 65536 for t in bodies),
+      [len(b) for b in packed])
+check("... and each lists every posting it has",
+      all(len(c["jobs"]) == 300 for t in bodies for c in enrich.asked_in({"body": t}).values()))
+small = [{**c, "jobs": []} for c in many] * 2
+check("companies without postings go fifty to an issue",
+      [len(b) for b in enrich.batches(small)] == [enrich.PER_ISSUE, enrich.PER_ISSUE])
+huge = [{**many[0], "jobs": many[0]["jobs"] * 4}]
+alone = enrich.issue_body(huge)
+check("a company too big for an issue of its own lists the first postings that fit",
+      len(alone) <= 65536 and 0 < len(enrich.asked_in({"body": alone})["c0"]["jobs"]) < 1200, len(alone))
 
 
 def broken(change) -> list[str]:
