@@ -4,6 +4,7 @@ from __future__ import annotations
 import csv
 import datetime as dt
 import io
+import json
 import os
 import pathlib
 import re
@@ -545,3 +546,39 @@ def parse_office(raw: str):
     lat = float(found.group(3)) if found.group(3) else None
     lon = float(found.group(4)) if found.group(4) else None
     return found.group(1), found.group(2), lat, lon
+
+
+# Where an ATS serves a board, for the employers known only by one.
+BOARD_URLS = {
+    "ashby": "https://jobs.ashbyhq.com/{}", "greenhouse": "https://boards.greenhouse.io/{}",
+    "lever": "https://jobs.lever.co/{}", "workable": "https://apply.workable.com/{}",
+    "smartrecruiters": "https://jobs.smartrecruiters.com/{}", "recruitee": "https://{}.recruitee.com",
+    "bamboohr": "https://{}.bamboohr.com/careers", "personio": "https://{}.jobs.personio.com",
+    "rippling": "https://ats.rippling.com/{}/jobs", "gem": "https://jobs.gem.com/{}",
+    "teamtailor": "https://{}", "pinpoint": "https://{}", "factorial": "https://{}",
+}
+
+
+def unlisted_employers(data: dict) -> list[dict]:
+    """The employers of data/remote-boards.json shaped like data.json's
+    companies, for the scripts that ask what a company is: its size, what it
+    does, its news. The slug is Levels.fyi's when the entry has one, else the
+    name's, and an employer whose slug a listed company holds is left out.
+    The only address on file is the job board, as `web`, `url` and `careers`;
+    `board` is the key its postings carry in jobs.json. Nothing gathered for
+    them is shown: site.py reads those files for data.json's companies only."""
+    path = ROOT / "data" / "remote-boards.json"
+    if not path.exists():
+        return []
+    taken = {c.get("levels") for c in data.get("companies", [])}
+    out = []
+    for key, entry in sorted(json.loads(path.read_text(encoding="utf-8")).items()):
+        slug = entry.get("levels") or slugify(entry["name"])
+        template = BOARD_URLS.get(entry["ats"])
+        if not slug or slug in taken or not template:
+            continue
+        taken.add(slug)
+        url = template.format(entry["board"])
+        out.append({"name": entry["name"], "levels": slug, "web": url, "url": url, "careers": url,
+                    "linkedin": None, "n": 0, "board": key})
+    return out

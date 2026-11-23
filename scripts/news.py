@@ -276,7 +276,11 @@ def main() -> int:
     parser.add_argument("--model", default=MODEL)
     args = parser.parse_args()
 
-    everyone = json.loads((lib.ROOT / "data" / "data.json").read_text())["companies"]
+    data = json.loads((lib.ROOT / "data" / "data.json").read_text())
+    about = json.loads(ABOUT.read_text())["companies"] if ABOUT.exists() else {}
+    # An employer known only by its board is read once we know what it does:
+    # a name alone finds its namesakes' headlines.
+    everyone = [*data["companies"], *(c for c in lib.unlisted_employers(data) if c["levels"] in about)]
     listed = {c["levels"] for c in everyone}
     companies = everyone
     if args.slugs:
@@ -290,8 +294,6 @@ def main() -> int:
     today = datetime.date.today()
     book = json.loads(OUT.read_text()) if OUT.exists() else {"companies": {}}
     known = book["companies"]
-
-    about = json.loads(ABOUT.read_text())["companies"] if ABOUT.exists() else {}
 
     failed = fresh = silent = unpicked = 0
     api_key = None if args.dry else key()

@@ -333,7 +333,7 @@ def wanted(data: dict, jobs: list[dict], sizes: dict, contacts: dict, today: dt.
             continue
         mine = by_slug.get(slug, [])
         out.append({"slug": slug, "name": c["name"], "website": c.get("url") or None,
-                    "linkedin": c.get("linkedin") or None, "careers": careers.get(slug),
+                    "linkedin": c.get("linkedin") or None, "careers": careers.get(slug) or c.get("careers"),
                     "jobs": [{"id": j["id"], "title": j["title"], "location": j.get("location"),
                               "url": j["url"]} for j in mine]})
     out.sort(key=lambda x: (not x["jobs"], x["slug"]))
@@ -382,6 +382,14 @@ def open_issues(limit: int, dry: bool) -> int:
         jobs = json.load(r)["jobs"]
     sizes = read_json(SIZES, {"companies": {}})
     contacts = read_json(CONTACTS, {"companies": {}, "checked": {}})
+    # The employers known only by their board are asked about too: their
+    # postings carry no slug, so they are matched by the board in their id.
+    unlisted = lib.unlisted_employers(data)
+    slug_of = {c["board"]: c["levels"] for c in unlisted}
+    for j in jobs:
+        if not j.get("slug"):
+            j["slug"] = slug_of.get(":".join(j["id"].split(":")[:2]).lower())
+    data = {"companies": [*data["companies"], *unlisted]}
     todo = wanted(data, jobs, sizes, contacts, dt.date.today())
     if not dry:
         ensure_labels()

@@ -83,6 +83,12 @@ After any data change: `python3 scripts/validate.py && python3 scripts/site.py
 
 ## What a company does and its latest news
 
+- The employers of `data/remote-boards.json` are asked about too
+  (`lib.unlisted_employers()`): size, sentence and news, under Levels.fyi's
+  slug or the name's, with their job board as the only address. Nothing of
+  it is shown yet: `site.py` reads these files for `data.json`'s companies
+  only. News waits for the sentence, since a name alone finds namesakes.
+
 - `data/about.json` (public): slug to one sentence, `es` and `en`, on what the
   company does. Written by the outside agent through `instinct/about/` (brief
   and schema, changed together): `about.yml` opens `about` issues in the

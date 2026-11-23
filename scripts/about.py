@@ -126,6 +126,8 @@ def asked_in(issue: dict) -> dict[str, dict]:
 
 def open_issues(limit: int, dry: bool) -> int:
     data = json.loads((lib.ROOT / "data" / "data.json").read_text(encoding="utf-8"))
+    # The employers known only by their board are asked about too, last.
+    data = {"companies": [*data["companies"], *lib.unlisted_employers(data)]}
     todo = wanted(data, read_about(), dt.date.today())
     asked: set[str] = set()
     if not dry:
