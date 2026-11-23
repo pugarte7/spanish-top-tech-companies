@@ -16,9 +16,9 @@ and write on the private repo only.
 
 1. It lists companies of `data.json` missing from `data/sizes.json` or whose
    contacts were not checked in the last 120 days, those with open postings
-   first, 25 a run.
-2. It opens one issue per company, labelled `enrich`, in the private repo
-   `pugarte7/spanish-top-tech-companies-data`, unless one is already open.
+   first.
+2. It opens issues of 50 companies, labelled `enrich`, in the private repo
+   `pugarte7/spanish-top-tech-companies-data`, leaving out those already asked.
    The body holds the input block of `brief.md`.
 3. The agent answers with one comment, as `pugarte7`, holding one JSON block
    that follows `schema.json`, or a line starting `NEEDS_HUMAN` and why. It
@@ -49,8 +49,11 @@ removal request could be honoured. Sizes are not personal and are public.
   email is dropped, and the contact with it unless it has a profile.
 - Job ids are the ones the issue listed, and the answer is about the
   company the issue asked about.
-- A size on file is never overwritten; contacts on file stay beside the new
-  ones.
+- A first answer never overwrites a size on file, and contacts on file stay
+  beside the new ones. A later answer in the same issue is a correction and
+  replaces both, also for 14 days after the issue is closed.
+- Each company's item is checked on its own: the good ones are stored, the
+  rest go back in a comment and the issue stays open.
 - We bucket `employees` or `range` ourselves (`scripts/headcount.py`:
   1-50, 51-200, 201-1000, 1001-5000, 5001+); `scope: branch` gets no bucket.
 - A manager or lead with no `jobs` is refused.
@@ -79,8 +82,10 @@ removal request could be honoured. Sizes are not personal and are public.
 Checked without trusting the agent: the comment is `pugarte7`'s and follows
 the schema; each sentence is one line of 10 to 140 characters, one sentence,
 does not start with the company's name and carries no praise word; it has a
-`source_url`; and the company is one the issue asked about. A sentence on
-file is never overwritten. A company not placed is asked again after 180
+`source_url`; and the company is one the issue asked about. A first
+answer never overwrites a sentence on file; a later answer in the same issue
+is a correction and replaces it, also for 14 days after the issue is closed.
+A company not placed is asked again after 180
 days.
 
 The issues are in the private repo only because the agent already works

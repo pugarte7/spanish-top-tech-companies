@@ -16,9 +16,11 @@ back in a comment with `needs-human`, and the issue stays open until every
 company it asked about is on file. `close` closes the finished ones once
 about.yml has pushed the file.
 
-A sentence on file is never overwritten, so one corrected by hand stays. A
-company the agent could not place is noted under `none` with the date and
-asked again after RECHECK_DAYS.
+A first answer never overwrites a sentence on file, so one corrected by hand
+stays. A later answer in the same issue is the agent correcting itself and
+replaces what the earlier one left; `collect` reads the issues closed in the
+last enrich.CORRECTION_DAYS for one. A company the agent could not place is
+noted under `none` with the date and asked again after RECHECK_DAYS.
 
 Nothing here is private, but the log still shows counts only.
 """
@@ -38,7 +40,7 @@ SCHEMA = INSTINCT / "schema.json"
 BRIEF = "https://github.com/pugarte7/spanish-top-tech-companies/blob/main/instinct/about/brief.md"
 ABOUT = lib.ROOT / "data" / "about.json"
 LABEL = "about"
-PER_ISSUE = 20
+PER_ISSUE = enrich.PER_ISSUE
 LIMIT = 10           # issues opened in one run
 RECHECK_DAYS = 180
 # A full stop after a word, then a capital: "RR. HH." and "S.A." are not that.
@@ -111,7 +113,8 @@ def wanted(data: dict, book: dict, today: dt.date) -> list[dict]:
 def issue_body(companies: list[dict]) -> str:
     asked = json.dumps({"companies": companies}, ensure_ascii=False, indent=2)
     return (f"Instructions: {BRIEF}\n\nAnswer with one comment by {enrich.ANSWERER} holding one JSON "
-            f"block that follows instinct/about/schema.json, with one item per company below.\n\n"
+            f"block that follows instinct/about/schema.json, with one item per company below. To correct "
+            f"an answer, comment again with the items to replace.\n\n"
             f"```json\n{asked}\n```\n")
 
 
@@ -151,10 +154,22 @@ def collect(dry: bool, closing: str | None) -> int:
     today = dt.date.today().isoformat()
     stored = unplaced = rejected = pending = 0
     to_close = []
+    def store(good: dict, none: dict, replace: bool) -> None:
+        nonlocal stored, unplaced
+        for slug, sentence in good.items():
+            if replace or slug not in book["companies"]:
+                stored += book["companies"].get(slug) != sentence
+                book["companies"][slug] = sentence
+                book["none"].pop(slug, None)
+        for slug in none:
+            if replace or slug not in book["companies"]:
+                unplaced += slug not in book["none"]
+                book["companies"].pop(slug, None)
+                book["none"][slug] = today
+
     for issue in enrich.issues(LABEL):
         asked = asked_in(issue)
-        comments = json.loads(enrich.gh("issue", "view", str(issue["number"]), "-R", enrich.PRIVATE_REPO,
-                                        "--json", "comments"))["comments"]
+        comments = enrich.comments_of(issue["number"])
         state, answer = enrich.reply(comments)
         if state in ("pending", "handled"):
             pending += state == "pending"
@@ -165,15 +180,7 @@ def collect(dry: bool, closing: str | None) -> int:
             continue
         good, none, bad = ({}, {}, ["the JSON block does not parse"]) if answer is None \
             else sort_answer(answer, asked)
-        for slug, sentence in good.items():
-            if slug not in book["companies"]:
-                book["companies"][slug] = sentence
-                book["none"].pop(slug, None)
-                stored += 1
-        for slug in none:
-            if slug not in book["companies"]:
-                book["none"][slug] = today
-                unplaced += 1
+        store(good, none, enrich.corrects(comments))
         missing = [s for s in asked if s not in book["companies"] and s not in book["none"]]
         if bad or missing:
             rejected += 1
@@ -184,6 +191,18 @@ def collect(dry: bool, closing: str | None) -> int:
         else:
             to_close.append({"number": issue["number"],
                              "text": f"Stored: {len(good)} sentences, {len(none)} companies not placed."})
+    # A new answer in an issue already stored and closed is a correction.
+    for issue in enrich.closed_lately(LABEL):
+        state, answer = enrich.reply(enrich.comments_of(issue["number"]))
+        if state != "answer":
+            continue
+        good, none, bad = ({}, {}, ["the JSON block does not parse"]) if answer is None \
+            else sort_answer(answer, asked_in(issue))
+        store(good, none, True)
+        if not dry:
+            enrich.note(issue["number"], f"Correction stored for {len(good) + len(none)} companies."
+                        + ("\n\nNot stored:\n\n" + "\n".join(f"- {e}" for e in bad[:40]) if bad else ""))
+
     if (stored or unplaced) and not dry:
         enrich.write_json(ABOUT, {
             "as_of": today,

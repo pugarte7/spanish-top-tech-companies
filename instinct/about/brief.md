@@ -34,6 +34,10 @@ belongs to several companies and you cannot tell which, that company's `about`
 is null. A `website` that is only a job board says who is hiring, not what
 they do: look the company up.
 
+To correct an answer, comment again with the items to replace, in the same
+shape: the newest comment replaces the earlier one for those companies, also
+after the issue is closed (for 14 days).
+
 ## Output (comment)
 
 ```json

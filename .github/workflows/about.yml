@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
     inputs:
       limit:
-        description: "Issues to open in this run (20 companies each)"
+        description: "Issues to open in this run (50 companies each)"
         type: string
         default: "1"
 

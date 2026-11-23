@@ -71,18 +71,22 @@ After any data change: `python3 scripts/validate.py && python3 scripts/site.py
   term of use: `MESSAGES_A_DAY` in `api/mcp.js` and `site.py`, the legal page,
   SKILL.md. The person sends every message; the server sends nothing.
 - New companies are asked about through `instinct/` (brief and schema for the
-  outside agent): `enrich.yml` opens one issue per company in the private
+  outside agent): `enrich.yml` opens issues of 50 companies in the private
   repo and `scripts/enrich.py collect` checks and stores the answers. Change
   `brief.md` and `schema.json` together.
+- The agent corrects itself with a new comment: a later answer in the same
+  issue replaces what the earlier one left (`enrich.corrects()`), for sizes,
+  contacts and descriptions, also in issues closed in the last
+  `CORRECTION_DAYS`.
 
 ## What a company does and its latest news
 
 - `data/about.json` (public): slug to one sentence, `es` and `en`, on what the
   company does. Written by the outside agent through `instinct/about/` (brief
   and schema, changed together): `about.yml` opens `about` issues in the
-  private repo, 20 companies each, and `scripts/about.py collect` checks and
-  stores the answers. A sentence on file is never overwritten, so a hand
-  correction stays. No model of ours writes it.
+  private repo, 50 companies each, and `scripts/about.py collect` checks and
+  stores the answers. A first answer never overwrites a sentence on file, so a
+  hand correction stays. No model of ours writes it.
 - `data/news.json` (public): slug to one sentence on the most recent headline
   about the company's business, with the headline's date, outlet and link.
   `scripts/news.py` reads Google News and asks a small model through

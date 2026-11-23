@@ -99,22 +99,25 @@ praise = copy.deepcopy(example)
 praise["companies"][0]["about"]["en"] = "Leading delivery platform for food and groceries."
 
 
-def run_collect(comments: list[dict], on_file: dict | None = None):
-    """collect() over one issue with these comments: (file written, issues to close, notes left)."""
+def run_collect(comments: list[dict], on_file: dict | None = None, closed: bool = False):
+    """collect() over one issue with these comments, open or closed lately:
+    (file written, issues to close, notes left)."""
     notes: list[tuple] = []
     with tempfile.TemporaryDirectory() as tmp:
         path, closing = pathlib.Path(tmp) / "about.json", pathlib.Path(tmp) / "closing.json"
         if on_file:
             path.write_text(json.dumps(on_file), encoding="utf-8")
-        saved = about.ABOUT, enrich.issues, enrich.gh, enrich.note
+        saved = about.ABOUT, enrich.issues, enrich.gh, enrich.note, enrich.closed_lately
         about.ABOUT = path
-        enrich.issues = lambda label: [{"number": 7, "title": "t", "body": body}]
+        issue = [{"number": 7, "title": "t", "body": body}]
+        enrich.issues = lambda label: [] if closed else issue
+        enrich.closed_lately = lambda label: issue if closed else []
         enrich.gh = lambda *args, **kw: json.dumps({"comments": comments})
         enrich.note = lambda number, text, label=None: notes.append((number, text, label))
         try:
             about.collect(False, str(closing))
         finally:
-            about.ABOUT, enrich.issues, enrich.gh, enrich.note = saved
+            about.ABOUT, enrich.issues, enrich.gh, enrich.note, enrich.closed_lately = saved
         book = json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
         return book, json.loads(closing.read_text(encoding="utf-8")), notes
 
@@ -157,8 +160,35 @@ check("NEEDS_HUMAN is left for a human", book is None and not closing and notes[
 
 mine = {"companies": {"acme": {"es": "A mano.", "en": "By hand."}}, "none": {}}
 book, closing, notes = run_collect([{"author": ME, "body": fenced(example)}], mine)
-check("a sentence on file is never overwritten", book["companies"]["acme"]["en"] == "By hand."
+check("a first answer never overwrites a sentence on file", book["companies"]["acme"]["en"] == "By hand."
       and set(book["none"]) == {"initech"} and len(closing) == 1, book)
+
+# The agent corrects itself with a new comment: the newest one wins.
+fixed = copy.deepcopy(example)
+fixed["companies"] = [c for c in fixed["companies"] if c["slug"] == "acme"]
+fixed["companies"][0]["about"] = {"es": "Software de nóminas para pymes.", "en": "Payroll software for small companies."}
+first = {"author": ME, "body": fenced(example)}
+stored = {"companies": {"acme": example["companies"][0]["about"]}, "none": {"initech": "2026-11-01"}}
+book, closing, notes = run_collect([first, {"author": ME, "body": fenced(fixed)}], stored)
+check("a second answer in an open issue replaces the first, and only what it names",
+      book["companies"]["acme"]["en"] == "Payroll software for small companies."
+      and set(book["none"]) == {"initech"} and len(closing) == 1, (book, closing))
+
+closed_by_us = {"author": ME, "body": enrich.MARK + "\nStored: 1 sentences, 1 companies not placed."}
+book, closing, notes = run_collect([first, closed_by_us, {"author": ME, "body": fenced(fixed)}], stored, closed=True)
+check("a new answer in an issue already closed replaces what was stored, and is acknowledged",
+      book["companies"]["acme"]["en"] == "Payroll software for small companies." and not closing
+      and "Correction stored for 1" in notes[0][1] and notes[0][2] is None, (book, notes))
+
+book, closing, notes = run_collect([first, closed_by_us], stored, closed=True)
+check("a closed issue with nothing new is left alone", book is None or book == stored, (book, notes))
+check("... and nothing is said in it", not notes and not closing)
+
+placed = copy.deepcopy(fixed)
+placed["companies"][0].update(slug="initech")
+book, closing, notes = run_collect([first, closed_by_us, {"author": ME, "body": fenced(placed)}], stored, closed=True)
+check("a correction places a company first left without a sentence",
+      "initech" in book["companies"] and "initech" not in book["none"], book)
 
 print()
 print("FAILED: " + ", ".join(failures) if failures else "all passed")
