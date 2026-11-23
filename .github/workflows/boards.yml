@@ -65,11 +65,13 @@ jobs:
           [ -n "$ONLY" ] && args+=(--only "$ONLY")
           [ "$ALL" = true ] && args+=(--all)
           node scripts/boards.mjs "${args[@]}"
+          python3 scripts/run_summary.py boards
 
       - name: Commit data/boards.json
         run: |
           if git diff --quiet -- data/boards.json data/boards-none.json data/browser-hosts.json; then
             echo "No change."
+            python3 scripts/run_summary.py Changed "no"
             exit 0
           fi
           git config user.name "github-actions[bot]"
@@ -79,3 +81,4 @@ jobs:
           git pull --rebase -q origin main
           git push -q origin HEAD:main
           git show --stat --format=%s HEAD
+          python3 scripts/run_summary.py Changed "yes"

@@ -3,7 +3,7 @@ name: news
 # The last thing that happened at each company, in one sentence
 # (scripts/news.py): Google News headlines, one picked and restated by a small
 # model through OpenRouter. Weekly, and by hand. Commits data/news.json to
-# main; the daily deploy publishes it.
+# main and asks for a deploy.
 #
 # Secret: OPENROUTER_API_KEY, an inference key with a credit limit.
 
@@ -19,6 +19,7 @@ concurrency:
 
 permissions:
   contents: write
+  actions: write   # dispatches deploy.yml
 
 jobs:
   news:
@@ -38,9 +39,16 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           [ -n "$OPENROUTER_API_KEY" ] || { echo "OPENROUTER_API_KEY is not set."; exit 1; }
-          python3 scripts/news.py > /dev/null
+          status=0
+          python3 scripts/news.py > /dev/null 2> "$RUNNER_TEMP/news.log" || status=$?
+          cat "$RUNNER_TEMP/news.log"
+          python3 scripts/run_summary.py News "$(tail -1 "$RUNNER_TEMP/news.log")"
+          exit "$status"
 
+      # A push by the workflow's own token starts no deploy, so it asks for one.
       - name: Commit data/news.json
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git add -N data/news.json
           if git diff --quiet -- data/news.json; then
@@ -54,3 +62,4 @@ jobs:
           git pull --rebase -q origin main
           git push -q origin HEAD:main
           echo "data/news.json pushed."
+          gh workflow run deploy.yml --ref main -f reuse_jobs=true

@@ -9,6 +9,8 @@
 #   scripts/private_data.sh log    # print the last refresh's log
 #   scripts/private_data.sh contacts OUT   # only contacts.json, to OUT (deploy.yml)
 #   scripts/private_data.sh log-push FILE   # keep FILE as that log (refresh.yml)
+#   scripts/private_data.sh history         # one line per workflow run, oldest first
+#   scripts/private_data.sh history-push FILE   # add FILE's lines to it (history.yml)
 #
 # Encrypted with AES-256 (openssl, PBKDF2) under DATA_KEY: the env variable
 # on Actions, the login Keychain on the Mac (service spanish-top-tech-companies,
@@ -26,6 +28,9 @@ BLOB=data.tar.gz.enc
 # What a refresh on Actions printed: its public log shows only which steps
 # passed, since the scripts' output names companies, counts and sources.
 LOG=logs/latest.log.enc
+# One JSON line per workflow run (scripts/run_summary.py): counts only, so it
+# is kept as it is.
+HISTORY=logs/history.jsonl
 
 csv="${STC_DATA:-$HOME/.local/share/spanish-top-tech-companies-data/website/companies.csv}"
 dir="$(dirname "$csv")"
@@ -48,6 +53,15 @@ sync_clone() {
     mkdir -p "$(dirname "$clone")"
     git clone -q "$REPO" "$clone"
   fi
+}
+
+# history.yml may add its line between the fetch and the push: its commit
+# touches another file, so the push goes on top of it. Anything else there
+# conflicts and stops, as before.
+push_main() {
+  git -C "$clone" push -q origin main 2> /dev/null && return
+  git -C "$clone" pull -q --rebase origin main || { git -C "$clone" rebase --abort; return 1; }
+  git -C "$clone" push -q origin main
 }
 
 remote_head() { git -C "$clone" rev-parse -q --verify origin/main || true; }
@@ -99,7 +113,7 @@ push() {
   git -C "$clone" -c user.name="${GIT_AUTHOR_NAME:-$(git config user.name || echo refresh)}" \
     -c user.email="${GIT_AUTHOR_EMAIL:-$(git config user.email || echo refresh@localhost)}" \
     commit -q -m "Data $(date -u +%F)"
-  git -C "$clone" push -q origin main
+  push_main
   git -C "$clone" rev-parse HEAD > "$pulled"
   echo "Pushed $(git -C "$clone" log -1 --format='%h %s')"
 }
@@ -116,8 +130,32 @@ log_push() {
   git -C "$clone" -c user.name="${GIT_AUTHOR_NAME:-$(git config user.name || echo refresh)}" \
     -c user.email="${GIT_AUTHOR_EMAIL:-$(git config user.email || echo refresh@localhost)}" \
     commit -q -m "Log $(date -u +%F)"
-  git -C "$clone" push -q origin main
+  push_main
   echo "Log kept in the private repo."
+}
+
+history_push() {
+  sync_clone
+  local try
+  for try in 1 2 3 4 5; do
+    git -C "$clone" fetch -q origin
+    git -C "$clone" checkout -q -B main origin/main
+    mkdir -p "$clone/logs"
+    cat "$1" >> "$clone/$HISTORY"
+    git -C "$clone" add "$HISTORY"
+    git -C "$clone" -c user.name="${GIT_AUTHOR_NAME:-$(git config user.name || echo history)}" \
+      -c user.email="${GIT_AUTHOR_EMAIL:-$(git config user.email || echo history@localhost)}" \
+      commit -q -m "History $(date -u +%F)"
+    if git -C "$clone" push -q origin main 2> /dev/null; then echo "History kept."; return; fi
+    sleep $((try * 3))
+  done
+  echo "Could not keep the history." >&2
+  exit 1
+}
+
+history() {
+  sync_clone
+  git -C "$clone" show "origin/main:$HISTORY"
 }
 
 log() {
@@ -144,6 +182,8 @@ case "${1:-}" in
   push) push ;;
   log) log ;;
   log-push) log_push "${2:?usage: $0 log-push FILE}" ;;
+  history) history ;;
+  history-push) history_push "${2:?usage: $0 history-push FILE}" ;;
   contacts) contacts "${2:?usage: $0 contacts OUT}" ;;
-  *) echo "usage: $0 pull|push|log|log-push FILE|contacts OUT" >&2; exit 2 ;;
+  *) echo "usage: $0 pull|push|log|log-push FILE|history|history-push FILE|contacts OUT" >&2; exit 2 ;;
 esac
