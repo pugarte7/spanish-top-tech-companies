@@ -17,7 +17,8 @@ and write on the private repo only.
 1. It lists companies of `data.json` missing from `data/sizes.json` or whose
    contacts were not checked in the last 120 days, those with open postings
    first.
-2. It opens issues of 50 companies, labelled `enrich`, in the private repo
+2. It opens issues of up to 50 companies, fewer when their postings fill the
+   issue first, labelled `enrich`, in the private repo
    `pugarte7/spanish-top-tech-companies-data`, leaving out those already asked.
    The body holds the input block of `brief.md`.
 3. The agent answers with one comment, as `pugarte7`, holding one JSON block

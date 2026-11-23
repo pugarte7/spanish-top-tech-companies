@@ -52,7 +52,8 @@ SIZES = headcount.SIZES
 CONTACTS = headcount.CONTACTS
 # A company whose contacts were checked this long ago is asked again: people move.
 RECHECK_DAYS = 120
-# One issue per company was more than the agent could take.
+# One issue per company was more than the agent could take. An issue holds
+# up to this many, fewer when their postings fill it first (BODY_MAX).
 PER_ISSUE = 50
 # Issues opened in one run.
 LIMIT = 25
@@ -342,22 +343,36 @@ def wanted(data: dict, jobs: list[dict], sizes: dict, contacts: dict, today: dt.
 # GitHub refuses an issue body over 65,536 characters, and a consultancy has
 # hundreds of postings.
 BODY_MAX = 60_000
-# Postings listed per company, fewer when the issue would not fit.
-JOBS_MAX = 12
+
+
+def batches(items: list[dict]):
+    """The companies in issues of PER_ISSUE, or of as many as fit with every
+    posting of each."""
+    room = BODY_MAX - len(issue_body([]))
+    batch, used = [], 0
+    for item in items:
+        size = len(json.dumps(item, ensure_ascii=False)) + 2
+        if batch and (len(batch) == PER_ISSUE or used + size > room):
+            yield batch
+            batch, used = [], 0
+        batch.append(item)
+        used += size
+    if batch:
+        yield batch
 
 
 def issue_body(batch: list[dict]) -> str:
-    """The issue's text: one company a line, each with its first postings, as
-    many as fit."""
+    """The issue's text, one company a line. A company with more postings
+    than fit in an issue of its own lists the first that do."""
     def body(most: int) -> str:
         lines = ",\n".join(json.dumps({**c, "jobs": c["jobs"][:most]}, ensure_ascii=False) for c in batch)
         return (f"Instructions: {BRIEF}\n\nAnswer with one comment by {ANSWERER} holding one JSON block that "
                 f"follows instinct/schema.json, with one item per company below, or a line starting "
                 f"NEEDS_HUMAN and why. To correct an answer, comment again with the items to replace.\n\n"
                 f"```json\n{{\"companies\": [\n{lines}\n]}}\n```\n")
-    most = JOBS_MAX
+    most = max((len(c["jobs"]) for c in batch), default=0)
     while most and len(body(most)) > BODY_MAX:
-        most -= 1
+        most = most * 9 // 10
     return body(most)
 
 
@@ -378,10 +393,9 @@ def open_issues(limit: int, dry: bool) -> int:
     if not dry:
         limit = min(limit, room())
     opened = 0
-    for start in range(0, len(left), PER_ISSUE):
+    for batch in batches(left):
         if opened >= limit:
             break
-        batch = left[start:start + PER_ISSUE]
         if not dry:
             gh("issue", "create", "-R", PRIVATE_REPO, "--title",
                f"Enrich {len(batch)} companies ({batch[0]['slug']} to {batch[-1]['slug']})",
