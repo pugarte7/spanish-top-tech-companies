@@ -140,6 +140,13 @@ check("a new answer after a rejection is read again",
       enrich.reply([said(me, enrich.MARK + "\nNot stored"), said(me, good)]) == ("answer", example))
 check("a JSON block that does not parse is an answer to send back",
       enrich.reply([said(me, "```json\n{oops\n```")]) == ("answer", None))
+split = lambda slugs: "```json\n" + json.dumps({"companies": [{"slug": slug} for slug in slugs]}) + "\n```"
+check("an answer split over comments is read whole, the newest item winning",
+      enrich.reply([said(me, split(["a", "b"])), said(me, split(["b", "c"]))])
+      == ("answer", {"companies": [{"slug": "a"}, {"slug": "b"}, {"slug": "c"}]}))
+check("answers before this script's note are not read again",
+      enrich.reply([said(me, split(["a"])), said(me, enrich.MARK), said(me, split(["b"]))])
+      == ("answer", {"companies": [{"slug": "b"}]}))
 
 check("a block left open at the end is read", enrich.json_block("```json\n{\"a\": 1}\n") == {"a": 1})
 
