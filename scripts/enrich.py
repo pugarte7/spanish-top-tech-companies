@@ -7,20 +7,24 @@
     python3 scripts/enrich.py check ANSWER.json
 
 The contract with the agent is instinct/: brief.md (what it is told) and
-schema.json (what it answers). `open` files one issue per company that has no
-size in data/sizes.json or no contact check in contacts.json, labelled
-`enrich`, in the private repo: the answers name people, and a public issue
-would publish them. The agent can comment but not label, so `collect` reads
-every open `enrich` issue for the last answer by ANSWERER: a JSON block, or a
-NEEDS_HUMAN line. No answer yet leaves the issue as it is. A good answer
-writes the size to data/sizes.json and the contacts to contacts.json beside
-lib.DATA (private_data.sh push keeps it); a bad one, or NEEDS_HUMAN, gets a
-comment and `needs-human` and nothing is written. Its issues are closed by
+schema.json (what it answers). `open` files issues of PER_ISSUE companies
+that have no size in data/sizes.json or no contact check in contacts.json,
+labelled `enrich`, in the private repo: the answers name people, and a public
+issue would publish them. The agent can comment but not label, so `collect`
+reads every open `enrich` issue for the last answer by ANSWERER: a JSON
+block, or a NEEDS_HUMAN line. No answer yet leaves the issue as it is. Each
+company's item that passes writes the size to data/sizes.json and the
+contacts to contacts.json beside lib.DATA (private_data.sh push keeps it);
+the rest go back in a comment with `needs-human`, and the issue stays open
+until every company it asked about is on file. Its issues are closed by
 `close` once the files are saved (enrich.yml runs it after the push), so a
 failed push leaves them open to be stored again.
 
-Never overwrites: a size on file stays, and a contact on file stays beside
-the new ones. An email is kept only if it appears at its evidence_url.
+A first answer never overwrites: a size on file stays, and a contact on file
+stays beside the new ones. A later answer in the same issue is a correction
+and replaces what the earlier one left, size and contacts; `collect` reads
+the issues closed in the last CORRECTION_DAYS for one. An email is kept only
+if it appears at its evidence_url.
 
 It prints counts only: enrich.yml's log is public.
 """
@@ -48,8 +52,12 @@ SIZES = headcount.SIZES
 CONTACTS = headcount.CONTACTS
 # A company whose contacts were checked this long ago is asked again: people move.
 RECHECK_DAYS = 120
-# Issues opened in one run, so the agent gets a queue it can keep up with.
+# One issue per company was more than the agent could take.
+PER_ISSUE = 50
+# Issues opened in one run.
 LIMIT = 25
+# How long after an issue is closed a new answer in it is still read.
+CORRECTION_DAYS = 14
 LABELS = {"enrich": "0e8a16", "needs-human": "d93f0b"}
 # The account the agent comments with. enrich.yml's token is this account's
 # too, so this script's own comments carry MARK to tell them apart.
@@ -113,19 +121,36 @@ def schema_errors(value, schema: dict, at: str = "$") -> list[str]:
     return errors
 
 
-def answer_errors(answer, asked: dict) -> list[str]:
-    """What is wrong with an answer to the issue that asked `asked`."""
-    errors = schema_errors(answer, json.loads(SCHEMA.read_text(encoding="utf-8")))
+def item_errors(item, asked: dict[str, dict]) -> list[str]:
+    """What is wrong with one company's item of an answer to the issue that
+    asked about `asked` (slug to what was asked)."""
+    schema = json.loads(SCHEMA.read_text(encoding="utf-8"))["properties"]["companies"]["items"]
+    errors = schema_errors(item, schema)
     if errors:
         return errors
-    if answer["slug"] != asked["slug"]:
-        errors.append(f"$.slug: the issue asked about {asked['slug']}")
-    ids = {j["id"] for j in asked.get("jobs", [])}
-    for i, c in enumerate(answer["contacts"]):
+    if item["slug"] not in asked:
+        return ["$.slug: the issue did not ask about it"]
+    ids = {j["id"] for j in asked[item["slug"]].get("jobs", [])}
+    for i, c in enumerate(item["contacts"]):
         unknown = [j for j in c["jobs"] if j not in ids]
         if unknown:
             errors.append(f"$.contacts[{i}].jobs: not in the issue: {', '.join(unknown)}")
     return errors
+
+
+def sort_answer(answer, asked: dict[str, dict]) -> tuple[list[dict], list[str]]:
+    """(the items to store, what is wrong with the rest) of one answer."""
+    if not isinstance(answer, dict) or not isinstance(answer.get("companies"), list):
+        return [], ["$: not an object with a `companies` list"]
+    good, bad = [], []
+    for n, item in enumerate(answer["companies"]):
+        wrong = item_errors(item, asked)
+        name = item.get("slug") if isinstance(item, dict) and isinstance(item.get("slug"), str) else f"item {n}"
+        if wrong:
+            bad += [f"{name}: {w}" for w in wrong[:6]]
+        else:
+            good.append(item)
+    return good, bad
 
 
 def json_block(text: str):
@@ -156,6 +181,14 @@ def reply(comments: list[dict]) -> tuple[str, object]:
         if "```json" in body:
             return "answer", json_block(body)
     return "pending", None
+
+
+def corrects(comments: list[dict]) -> bool:
+    """Whether the newest answer comes after an earlier one in the same issue:
+    the agent corrects itself with a new comment, and the new one wins."""
+    answers = [c for c in comments if (c.get("author") or {}).get("login") == ANSWERER
+               and MARK not in (c.get("body") or "") and "```json" in (c.get("body") or "")]
+    return len(answers) > 1
 
 
 # --- What is stored ----------------------------------------------------------------
@@ -246,6 +279,26 @@ def issues(label: str) -> list[dict]:
     return json.loads(out)
 
 
+def closed_lately(label: str) -> list[dict]:
+    """The issues closed and touched in the last CORRECTION_DAYS, where a
+    correction may have come after the answer was stored."""
+    since = (dt.date.today() - dt.timedelta(days=CORRECTION_DAYS)).isoformat()
+    out = gh("issue", "list", "-R", PRIVATE_REPO, "--label", label, "--state", "closed", "--limit", "200",
+             "--search", f"updated:>={since}", "--json", "number,title,body")
+    return json.loads(out)
+
+
+def comments_of(number: int) -> list[dict]:
+    return json.loads(gh("issue", "view", str(number), "-R", PRIVATE_REPO, "--json", "comments"))["comments"]
+
+
+def asked_in(issue: dict) -> dict[str, dict]:
+    """Slug to what the issue asked about it."""
+    block = json_block(issue["body"])
+    companies = block.get("companies", []) if isinstance(block, dict) else []
+    return {c["slug"]: c for c in companies if isinstance(c, dict) and c.get("slug")}
+
+
 def ensure_labels() -> None:
     for name, color in LABELS.items():
         gh("label", "create", name, "-R", PRIVATE_REPO, "--color", color, "--force")
@@ -280,19 +333,23 @@ def wanted(data: dict, jobs: list[dict], sizes: dict, contacts: dict, today: dt.
 # GitHub refuses an issue body over 65,536 characters, and a consultancy has
 # hundreds of postings.
 BODY_MAX = 60_000
+# Postings listed per company, fewer when the issue would not fit.
+JOBS_MAX = 12
 
 
-def issue_body(asked: dict) -> str:
-    """The issue's text; with too many postings to fit, the first that do."""
-    def body(jobs: list) -> str:
-        block = json.dumps({**asked, "jobs": jobs}, ensure_ascii=False, indent=2)
+def issue_body(batch: list[dict]) -> str:
+    """The issue's text: one company a line, each with its first postings, as
+    many as fit."""
+    def body(most: int) -> str:
+        lines = ",\n".join(json.dumps({**c, "jobs": c["jobs"][:most]}, ensure_ascii=False) for c in batch)
         return (f"Instructions: {BRIEF}\n\nAnswer with one comment by {ANSWERER} holding one JSON block that "
-                f"follows instinct/schema.json, or a line starting NEEDS_HUMAN and why.\n\n"
-                f"```json\n{block}\n```\n")
-    jobs = list(asked.get("jobs", []))
-    while len(body(jobs)) > BODY_MAX:
-        jobs = jobs[:len(jobs) * 3 // 4]
-    return body(jobs)
+                f"follows instinct/schema.json, with one item per company below, or a line starting "
+                f"NEEDS_HUMAN and why. To correct an answer, comment again with the items to replace.\n\n"
+                f"```json\n{{\"companies\": [\n{lines}\n]}}\n```\n")
+    most = JOBS_MAX
+    while most and len(body(most)) > BODY_MAX:
+        most -= 1
+    return body(most)
 
 
 def open_issues(limit: int, dry: bool) -> int:
@@ -304,21 +361,20 @@ def open_issues(limit: int, dry: bool) -> int:
     todo = wanted(data, jobs, sizes, contacts, dt.date.today())
     if not dry:
         ensure_labels()
-    asked = set()
+    asked: set[str] = set()
     for label in LABELS:
         for issue in ([] if dry else issues(label)):
-            block = json_block(issue["body"])
-            if isinstance(block, dict) and block.get("slug"):
-                asked.add(block["slug"])
+            asked |= set(asked_in(issue))
+    left = [item for item in todo if item["slug"] not in asked]
     opened = 0
-    for item in todo:
+    for start in range(0, len(left), PER_ISSUE):
         if opened >= limit:
             break
-        if item["slug"] in asked:
-            continue
+        batch = left[start:start + PER_ISSUE]
         if not dry:
-            gh("issue", "create", "-R", PRIVATE_REPO, "--title", f"Enrich {item['name']} ({item['slug']})",
-               "--label", "enrich", "--body-file", "-", input=issue_body(item))
+            gh("issue", "create", "-R", PRIVATE_REPO, "--title",
+               f"Enrich {len(batch)} companies ({batch[0]['slug']} to {batch[-1]['slug']})",
+               "--label", "enrich", "--body-file", "-", input=issue_body(batch))
         opened += 1
     print(f"{len(todo)} companies to enrich, {len(asked)} already asked, {opened} issues opened")
     return 0
@@ -334,13 +390,41 @@ def collect(dry: bool, closing: str | None) -> int:
     sizes = read_json(SIZES, {"companies": {}})
     contacts = read_json(CONTACTS, {"as_of": None, "companies": {}, "checked": {}})
     contacts.setdefault("checked", {})
-    today = dt.date.today().isoformat()
+    today = dt.date.today()
     stored = rejected = flagged = pending = sized = people = dropped = 0
     to_close = []
+
+    def on_file(slug: str) -> bool:
+        when = contacts["checked"].get(slug)
+        return bool(when) and (today - dt.date.fromisoformat(when)).days < RECHECK_DAYS
+
+    def store(item: dict, replace: bool) -> None:
+        nonlocal sized, people, dropped, stored
+        slug = item["slug"]
+        entry = size_entry(item["size"])
+        if entry and (replace or slug not in sizes["companies"]):
+            sized += sizes["companies"].get(slug) != entry
+            sizes["companies"][slug] = entry
+        kept = []
+        for c in item["contacts"]:
+            if c["email"] and not published_at(c["evidence_url"], c["email"]):
+                c = {**c, "email": None}
+                dropped += 1
+            if c["email"] or c["linkedin"]:
+                kept.append(stored_contact(c))
+        before = contacts["companies"].get(slug, [])
+        merged = merge_contacts([], kept) if replace else merge_contacts(before, kept)
+        people += len(merged) - len(before)
+        if merged:
+            contacts["companies"][slug] = merged
+        else:
+            contacts["companies"].pop(slug, None)
+        contacts["checked"][slug] = today.isoformat()
+        stored += 1
+
     for issue in issues("enrich"):
-        asked = json_block(issue["body"])
-        comments = json.loads(gh("issue", "view", str(issue["number"]), "-R", PRIVATE_REPO,
-                                 "--json", "comments"))["comments"]
+        asked = asked_in(issue)
+        comments = comments_of(issue["number"])
         state, answer = reply(comments)
         if state in ("pending", "handled"):
             pending += state == "pending"
@@ -350,45 +434,42 @@ def collect(dry: bool, closing: str | None) -> int:
             if not dry:
                 note(issue["number"], "Left for a human.", "needs-human")
             continue
-        errors = ["the JSON block does not parse"] if answer is None else answer_errors(answer, asked or {})
-        if errors:
+        good, bad = ([], ["the JSON block does not parse"]) if answer is None else sort_answer(answer, asked)
+        for item in good:
+            store(item, corrects(comments))
+        missing = [slug for slug in asked if not on_file(slug)]
+        if bad or missing:
             rejected += 1
+            lines = [f"- {e}" for e in bad[:40]] + [f"- {slug}: no answer" for slug in missing[:60]]
             if not dry:
-                note(issue["number"], "Not stored:\n\n" + "\n".join(f"- {e}" for e in errors[:30]), "needs-human")
+                note(issue["number"], f"{len(good)} stored. Not stored:\n\n" + "\n".join(lines), "needs-human")
+        else:
+            to_close.append({"number": issue["number"], "text": f"Stored: {len(good)} companies."})
+
+    # A new answer in an issue already stored and closed is a correction.
+    for issue in closed_lately("enrich"):
+        comments = comments_of(issue["number"])
+        state, answer = reply(comments)
+        if state != "answer":
             continue
-        slug = answer["slug"]
-        entry = size_entry(answer["size"])
-        added = bool(entry) and slug not in sizes["companies"]
-        if added:
-            sizes["companies"][slug] = entry
-            sized += 1
-        kept = []
-        for c in answer["contacts"]:
-            if c["email"] and not published_at(c["evidence_url"], c["email"]):
-                c = {**c, "email": None}
-                dropped += 1
-            if c["email"] or c["linkedin"]:
-                kept.append(stored_contact(c))
-        before = contacts["companies"].get(slug, [])
-        merged = merge_contacts(before, kept)
-        people += len(merged) - len(before)
-        if merged:
-            contacts["companies"][slug] = merged
-        contacts["checked"][slug] = today
-        stored += 1
-        to_close.append({"number": issue["number"],
-                         "text": f"Stored: size {'added' if added else 'unchanged'}, "
-                                 f"{len(merged) - len(before)} new contacts."})
+        good, bad = ([], ["the JSON block does not parse"]) if answer is None \
+            else sort_answer(answer, asked_in(issue))
+        for item in good:
+            store(item, True)
+        if not dry:
+            note(issue["number"], f"Correction stored for {len(good)} companies."
+                 + ("\n\nNot stored:\n\n" + "\n".join(f"- {e}" for e in bad[:40]) if bad else ""))
+
     if stored and not dry:
         sizes["companies"] = dict(sorted(sizes["companies"].items()))
         contacts["companies"] = dict(sorted(contacts["companies"].items()))
-        contacts["as_of"] = today
+        contacts["as_of"] = today.isoformat()
         write_json(SIZES, sizes, 0)
         write_json(CONTACTS, contacts, 1)
     if closing and not dry:
         write_json(pathlib.Path(closing), to_close, 0)
-    print(f"{stored} answers stored ({sized} sizes, {people} contacts, {dropped} emails not found at their "
-          f"source), {rejected} sent back, {flagged} left for a human, {pending} not answered yet")
+    print(f"{stored} companies stored ({sized} sizes, {people} contacts, {dropped} emails not found at their "
+          f"source), {rejected} answers sent back, {flagged} left for a human, {pending} issues not answered yet")
     return 0
 
 

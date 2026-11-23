@@ -1,78 +1,93 @@
 # Company enrichment
 
-Each issue labelled `enrich` names one company with open roles in Spain or
-remote open to Spain. Find two things: how many people it employs, and who at
-it a candidate for one of its openings can reach. Answer with one comment
-holding one JSON block that follows `schema.json`, from the account
-`pugarte7`; comments by other accounts are ignored. If the company is
-ambiguous, comment a line starting `NEEDS_HUMAN` and why, with no JSON. Do not
-change labels. Never guess: a field you cannot source is null, and an empty
-`contacts` is a valid answer.
+Each issue labelled `enrich` lists up to 50 companies with open roles in Spain
+or remote open to Spain. For each, find two things: how many people it
+employs, and who at it a candidate for one of its openings can reach. Answer
+with one comment holding one JSON block that follows `schema.json`, with one
+item per company, from the account `pugarte7`; comments by other accounts are
+ignored. A company you cannot tell apart from another of the same name is left
+out of `companies` and named, with why, in the same comment outside the JSON:
+the issue then waits for a human. If none can be answered, comment a line
+starting `NEEDS_HUMAN` and why, with no JSON. Do not change labels. Never
+guess: a field you cannot source is null, and an empty `contacts` is a valid
+answer.
+
+To correct an answer, comment again with the items to replace, in the same
+shape: the newest comment replaces what the earlier one left for those
+companies, size and contacts, also after the issue is closed (for 14 days).
 
 ## Input (issue body)
 
 ```json
 {
-  "slug": "acme",
-  "name": "Acme",
-  "website": "https://acme.com",
-  "linkedin": "https://www.linkedin.com/company/acme",
-  "careers": "https://acme.com/jobs",
-  "jobs": [
-    {"id": "acme-123", "title": "Senior Backend Engineer, Payments",
-     "location": "Madrid", "url": "https://acme.com/jobs/123"}
+  "companies": [
+    {
+      "slug": "acme",
+      "name": "Acme",
+      "website": "https://acme.com",
+      "linkedin": "https://www.linkedin.com/company/acme",
+      "careers": "https://acme.com/jobs",
+      "jobs": [
+        {"id": "acme-123", "title": "Senior Backend Engineer, Payments",
+         "location": "Madrid", "url": "https://acme.com/jobs/123"}
+      ]
+    }
   ]
 }
 ```
 
-A company with hundreds of postings lists only the first that fit in the
-issue. `website` and `linkedin` fix the identity. If they disagree, or the name
-belongs to several companies and you cannot tell which, stop and comment
-`NEEDS_HUMAN`.
+Each company lists its first postings, as many as fit in the issue.
+`website` and `linkedin` fix the identity. If they disagree, or the name
+belongs to several companies and you cannot tell which, leave that company
+out and say so.
 
 ## Output (comment)
 
 ```json
 {
-  "slug": "acme",
-  "size": {
-    "employees": 1234,
-    "range": null,
-    "scope": "group",
-    "as_of": "2026-06",
-    "source_url": "https://...",
-    "source_type": "annual_report"
-  },
-  "contacts": [
+  "companies": [
     {
-      "kind": "recruiter",
-      "name": "Jane Doe",
-      "role": "Talent Acquisition Partner, Spain",
-      "scope": "Spain",
-      "linkedin": "https://www.linkedin.com/in/...",
-      "email": "jane.doe@acme.com",
-      "jobs": [],
-      "link_evidence": "Recruiter for Spain at Acme",
-      "evidence_url": "https://acme.com/careers",
-      "evidence_quote": "Send your CV to jane.doe@acme.com",
-      "published_on": "2025-03"
-    },
-    {
-      "kind": "hiring_manager",
-      "name": "John Roe",
-      "role": "Engineering Manager, Payments",
-      "scope": "Spain",
-      "linkedin": "https://www.linkedin.com/in/...",
-      "email": null,
-      "jobs": ["acme-123"],
-      "link_evidence": "Current title: Engineering Manager, Payments at Acme, Madrid",
-      "evidence_url": "https://www.linkedin.com/in/...",
-      "evidence_quote": null,
-      "published_on": null
+      "slug": "acme",
+      "size": {
+        "employees": 1234,
+        "range": null,
+        "scope": "group",
+        "as_of": "2026-06",
+        "source_url": "https://...",
+        "source_type": "annual_report"
+      },
+      "contacts": [
+        {
+          "kind": "recruiter",
+          "name": "Jane Doe",
+          "role": "Talent Acquisition Partner, Spain",
+          "scope": "Spain",
+          "linkedin": "https://www.linkedin.com/in/...",
+          "email": "jane.doe@acme.com",
+          "jobs": [],
+          "link_evidence": "Recruiter for Spain at Acme",
+          "evidence_url": "https://acme.com/careers",
+          "evidence_quote": "Send your CV to jane.doe@acme.com",
+          "published_on": "2025-03"
+        },
+        {
+          "kind": "hiring_manager",
+          "name": "John Roe",
+          "role": "Engineering Manager, Payments",
+          "scope": "Spain",
+          "linkedin": "https://www.linkedin.com/in/...",
+          "email": null,
+          "jobs": ["acme-123"],
+          "link_evidence": "Current title: Engineering Manager, Payments at Acme, Madrid",
+          "evidence_url": "https://www.linkedin.com/in/...",
+          "evidence_quote": null,
+          "published_on": null
+        }
+      ],
+      "searched": ["acme.com/careers", "acme.com/contact", "web search"],
+      "notes": null
     }
-  ],
-  "searched": ["acme.com/careers", "acme.com/contact", "web search"],
-  "notes": null
+  ]
 }
 ```
 
