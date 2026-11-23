@@ -1,5 +1,5 @@
 {
-"as_of": "2026-11-22",
+"as_of": "2026-11-23",
 "note": "What each company does, in one sentence, written by an outside agent from the company's own site and other public pages (instinct/about).",
 "companies": {
 "accenture": {
@@ -10,9 +10,25 @@
 "es": "Grupo de portales de anuncios clasificados online, como Milanuncios e InfoJobs.",
 "en": "Online classifieds group running marketplaces such as Milanuncios and InfoJobs."
 },
+"adidas": {
+"es": "Fabricante de calzado, ropa y accesorios deportivos que vende en tiendas y en línea.",
+"en": "Maker of sports footwear, apparel and accessories sold in stores and online."
+},
 "amazon": {
 "es": "Tienda online de productos de todo tipo, con marketplace para vendedores, nube (AWS) y streaming.",
 "en": "Online store for all kinds of products, with a seller marketplace, AWS cloud and streaming."
+},
+"barcelona-supercomputing-center": {
+"es": "Centro público de investigación y computación de alto rendimiento que opera supercomputadores.",
+"en": "Public research center for high-performance computing that operates supercomputers."
+},
+"bbva": {
+"es": "Banco con servicios de cuentas, tarjetas, préstamos e inversión para particulares y empresas.",
+"en": "Bank offering accounts, cards, loans and investment services for individuals and businesses."
+},
+"cabify": {
+"es": "Plataforma de movilidad para pedir viajes en coche con conductor desde el móvil.",
+"en": "Mobility platform for booking rides with a driver from a mobile app."
 },
 "capgemini": {
 "es": "Consultora de tecnología e ingeniería: servicios de TI y transformación digital para empresas.",
@@ -34,13 +50,41 @@
 "es": "Consultora de ingeniería de software y servicios digitales para grandes empresas.",
 "en": "Software engineering and digital services consultancy for large enterprises."
 },
+"ernst-and-young": {
+"es": "Firma de servicios profesionales de auditoría, consultoría, fiscalidad y asesoramiento financiero.",
+"en": "Professional services firm offering audit, consulting, tax and financial advisory."
+},
+"eventbrite": {
+"es": "Plataforma para crear, promocionar y vender entradas de eventos y para encontrarlos.",
+"en": "Platform to create, promote and sell tickets for events, and to find them."
+},
+"fever": {
+"es": "Plataforma para descubrir y reservar entradas de eventos y planes de ocio en la ciudad.",
+"en": "Platform to discover and book tickets for events and leisure activities in your city."
+},
+"free-now": {
+"es": "Aplicación de movilidad urbana para pedir taxis y otros vehículos con conductor.",
+"en": "Urban mobility app for booking taxis and other rides with a driver."
+},
 "glovo": {
 "es": "Reparto a domicilio de comida de restaurante, compras de supermercado y paquetería urbana.",
 "en": "On-demand delivery of restaurant food, groceries and urban parcels."
 },
+"gmv": {
+"es": "Grupo tecnológico de software y sistemas para espacio, defensa, transporte, salud y ciberseguridad.",
+"en": "Technology group building software and systems for space, defence, transport, health and cybersecurity."
+},
+"hiberus": {
+"es": "Consultora tecnológica de desarrollo de software, nube, datos y transformación digital.",
+"en": "Technology consultancy for software development, cloud, data and digital transformation."
+},
 "hpe": {
 "es": "Servidores, almacenamiento y redes para empresas, con servicios de nube híbrida.",
 "en": "Enterprise servers, storage and networking, with hybrid cloud services."
+},
+"ibm": {
+"es": "Tecnología de nube híbrida, inteligencia artificial, software y consultoría para empresas.",
+"en": "Hybrid cloud, artificial intelligence, software and consulting technology for businesses."
 },
 "indra": {
 "es": "Grupo tecnológico de defensa, tráfico aéreo y servicios de TI para empresas y administraciones.",
@@ -66,21 +110,57 @@
 "es": "Consultora de servicios de TI: integración de sistemas, aplicaciones y outsourcing para empresas.",
 "en": "IT services consultancy: systems integration, applications and outsourcing for enterprises."
 },
+"ocado-group": {
+"es": "Tecnología y automatización de almacenes para supermercados en línea y reparto de comestibles.",
+"en": "Technology and warehouse automation for online grocery retailers and delivery."
+},
 "oracle": {
 "es": "Bases de datos, aplicaciones de gestión empresarial y servicios de nube para empresas.",
 "en": "Databases, enterprise management applications and cloud services for businesses."
+},
+"personio": {
+"es": "Software de recursos humanos, nóminas y contratación para pequeñas y medianas empresas.",
+"en": "HR, payroll and recruiting software for small and medium-sized businesses."
+},
+"red-hat": {
+"es": "Software empresarial de código abierto, como Linux, Kubernetes y automatización en la nube.",
+"en": "Open source enterprise software, including Linux, Kubernetes and cloud automation."
 },
 "revolut": {
 "es": "Banco digital con cuenta, tarjeta, cambio de divisa e inversión desde la app.",
 "en": "Digital bank with accounts, cards, currency exchange and investing in one app."
 },
+"santander-bank": {
+"es": "Banco minorista de EE. UU. con cuentas, tarjetas y préstamos para particulares y empresas.",
+"en": "US retail bank with accounts, cards and loans for individuals and businesses."
+},
+"scopely": {
+"es": "Estudio de videojuegos para móvil que desarrolla y publica juegos gratuitos.",
+"en": "Mobile game studio that develops and publishes free-to-play games."
+},
 "semrush": {
 "es": "Plataforma de SEO y marketing online para analizar buscadores, contenidos y publicidad.",
 "en": "SEO and online marketing platform for analyzing search, content and advertising."
 },
+"telefonica": {
+"es": "Operador de telecomunicaciones con telefonía móvil, fibra, internet y televisión.",
+"en": "Telecommunications operator offering mobile, fibre, internet and TV services."
+},
+"thoughtworks": {
+"es": "Consultora tecnológica de desarrollo de software, datos, IA y transformación digital.",
+"en": "Technology consultancy for software development, data, AI and digital transformation."
+},
 "travelperk": {
 "es": "Plataforma para gestionar viajes de empresa: reservas, gastos y políticas de viaje.",
 "en": "Business travel management platform for bookings, expenses and travel policies."
+},
+"twilio": {
+"es": "Plataforma de comunicaciones con API de SMS, voz y correo electrónico para desarrolladores.",
+"en": "Communications platform with SMS, voice and email APIs for developers."
+},
+"typeform": {
+"es": "Software para crear formularios y encuestas interactivas en línea.",
+"en": "Software for building interactive online forms and surveys."
 }
 },
 "none": {}
