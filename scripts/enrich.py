@@ -56,6 +56,9 @@ RECHECK_DAYS = 120
 PER_ISSUE = 50
 # Issues opened in one run.
 LIMIT = 25
+# The agent sees the private repo's newest 100 issues and no more: with more
+# than that open, the oldest would never be answered.
+OPEN_MAX = 80
 # How long after an issue is closed a new answer in it is still read.
 CORRECTION_DAYS = 14
 LABELS = {"enrich": "0e8a16", "needs-human": "d93f0b"}
@@ -279,6 +282,12 @@ def issues(label: str) -> list[dict]:
     return json.loads(out)
 
 
+def room() -> int:
+    """How many more issues can be opened without passing OPEN_MAX, whatever their label."""
+    out = gh("issue", "list", "-R", PRIVATE_REPO, "--state", "open", "--limit", "1000", "--json", "number")
+    return max(0, OPEN_MAX - len(json.loads(out)))
+
+
 def closed_lately(label: str) -> list[dict]:
     """The issues closed and touched in the last CORRECTION_DAYS, where a
     correction may have come after the answer was stored."""
@@ -366,6 +375,8 @@ def open_issues(limit: int, dry: bool) -> int:
         for issue in ([] if dry else issues(label)):
             asked |= set(asked_in(issue))
     left = [item for item in todo if item["slug"] not in asked]
+    if not dry:
+        limit = min(limit, room())
     opened = 0
     for start in range(0, len(left), PER_ISSUE):
         if opened >= limit:
