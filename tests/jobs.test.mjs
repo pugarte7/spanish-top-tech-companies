@@ -576,6 +576,8 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
     const { allLocationClasses } = await import("../lib/ats/ranking/location.js");
     assert.deepEqual(allLocationClasses(["La Jonquera, Catalunya, Spain", "Remote, La Rioja, Spain", "New Orleans, LA"]),
                      ["spain", "remote-spain", "us-other"], "a place ending in Spain is in Spain, whatever word spells a state");
+    assert.deepEqual(allLocationClasses(["Logroño, La Rioja", "Baton Rouge, LA", "Lafayette, LA 70501"]),
+                     ["spain", "us-other"], "LA before a word is the article, not Louisiana");
   }
   const bizneo = await list("bizneo", "jobs.acme.es");
   assert.deepEqual(bizneo.map((j) => [j.externalId, j.locationsRaw[0], j.workplaceType]),
