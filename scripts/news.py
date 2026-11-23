@@ -173,14 +173,14 @@ def question(company: dict, about: dict, news: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def headlines(name: str, today: datetime.date) -> list[dict]:
-    """Google News for the exact name, newest first."""
+def headlines(name: str, today: datetime.date) -> list[dict] | None:
+    """Google News for the exact name, newest first; None when it did not answer."""
     query = urllib.parse.quote(f'"{name}" when:{DAYS}d')
     feed = get(f"https://news.google.com/rss/search?hl=es&gl=ES&ceid=ES:es&q={query}", 2_000_000)
     try:
-        items = ET.fromstring(feed).iter("item") if feed else []
-    except ET.ParseError:
-        items = []
+        items = ET.fromstring(feed).iter("item")
+    except ET.ParseError:       # an empty answer too: Google throttles a long run
+        return None
     out = []
     for item in items:
         try:
@@ -233,6 +233,8 @@ def latest(company: dict, about: dict, today: datetime.date, api_key: str | None
            model: str):
     """(headlines sent, the model's answer checked, the headlines read) for one company."""
     news = headlines(company["name"], today)
+    if news is None:
+        return question(company, about, []), {}, []
     text = question(company, about, news)
     if api_key is None or not news:
         return text, {} if news else None, news
@@ -289,7 +291,7 @@ def main() -> int:
             if args.dry:
                 print(text, end="\n\n")
             elif found == {}:
-                failed += 1            # no answer: last run's sentence stays
+                failed += 1            # not read or not answered: last run's sentence stays
                 print(f"{slug}: no answer", file=sys.stderr)
             elif found:
                 fresh += 1
@@ -317,7 +319,7 @@ def main() -> int:
     OUT.write_text(json.dumps(book, ensure_ascii=False, indent=0) + "\n")
     print(f"{len(known)} companies in {OUT.name}: of {len(companies)} asked, {fresh} with news, "
           f"{unpicked} with no headline that counts, {silent} with no headlines, "
-          f"{failed} without an answer", file=sys.stderr)
+          f"{failed} not read or not answered", file=sys.stderr)
     return 1 if failed > len(companies) / 2 else 0
 
 
