@@ -16,7 +16,7 @@ prompt below is the rule.
 
 Writes data/news.json, keyed by Levels.fyi slug. A company is redone every
 run; with no headline that counts it keeps last run's sentence until that is
-KEEP_DAYS old.
+KEEP_DAYS old, unless that sentence's own headline was read again and not picked.
 
 The key is OPENROUTER_API_KEY, or the Keychain (service
 spanish-top-tech-companies, account openrouter).
@@ -91,6 +91,10 @@ por", "could", "is considering"): only things that already happened
 - appointments below CEO, internal policies, staff training, changes to a \
 partner or reseller programme, minor feature updates
 - opinion, interviews, profiles, rankings, awards, events, sponsorships
+- promotions, discounts, sales campaigns (Black Friday, rebajas), prices, \
+advertising, gift guides, buying advice
+- who holds how much of its shares: a stake notified, raised or cut by a \
+shareholder or a fund
 - studies, surveys or reports the company published about something else
 - headlines that only mention the company in passing, or quote it as a source
 - headlines about a different company, person, place or thing with the same \
@@ -104,7 +108,9 @@ When several count, take the most recent; among those of the same week, the \
 one about Spain.
 
 Write it as one sentence in the past tense, at most {LATEST_MAX} characters \
-in each language, starting with the company's name. State only what the \
+in each language, starting with the company's name as the subject of a verb \
+("Acme abrió...", never "Acme: ..."). The sentence must say who did what; if \
+the headline does not say who, it does not count. State only what the \
 headline states: keep its figures, add none, and no cause, consequence or \
 judgement. Drop the headline's own commentary ("sin asumir toda la factura", \
 "to boost growth") and keep the bare fact; if no bare fact is left, the \
@@ -140,11 +146,14 @@ def key() -> str:
 
 
 def get(url: str, limit: int = 400_000) -> str:
-    try:
-        with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=20) as answer:
-            return answer.read(limit).decode("utf-8", "replace")
-    except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError):
-        return ""
+    for wait in (0, 4):
+        time.sleep(wait)
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=20) as answer:
+                return answer.read(limit).decode("utf-8", "replace")
+        except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError):
+            pass
+    return ""
 
 
 def clean(text: str) -> str:
@@ -222,21 +231,21 @@ def ask(api_key: str, model: str, text: str) -> dict | None:
 
 def latest(company: dict, about: dict, today: datetime.date, api_key: str | None,
            model: str):
-    """(headlines sent, the model's answer checked) for one company."""
+    """(headlines sent, the model's answer checked, the headlines read) for one company."""
     news = headlines(company["name"], today)
     text = question(company, about, news)
     if api_key is None or not news:
-        return text, {} if news else None
+        return text, {} if news else None, news
     answer = ask(api_key, model, text)
     if answer is None:
-        return text, {}
+        return text, {}, news
     es, en, number = clean(answer.get("es")), clean(answer.get("en")), answer.get("i")
     if (answer.get("found") is not True or not es or not en or max(len(es), len(en)) > LATEST_MAX
-            or not isinstance(number, int) or not 1 <= number <= len(news)):
-        return text, None
+            or not isinstance(number, int) or not 1 <= number <= news):
+        return text, None, news
     chosen = news[number - 1]
     return text, {"es": es, "en": en, "date": chosen["date"], "source": chosen["source"],
-                  "url": chosen["url"]}
+                  "url": chosen["url"]}, news
 
 
 def main() -> int:
@@ -265,7 +274,7 @@ def main() -> int:
 
     about = json.loads(ABOUT.read_text())["companies"] if ABOUT.exists() else {}
 
-    failed = 0
+    failed = fresh = silent = unpicked = 0
     api_key = None if args.dry else key()
     with concurrent.futures.ThreadPoolExecutor(WORKERS) as pool:
         jobs = {pool.submit(latest, c, about.get(c["levels"], {}), today, api_key, args.model): c
@@ -273,9 +282,9 @@ def main() -> int:
         for job in concurrent.futures.as_completed(jobs):
             slug = jobs[job]["levels"]
             try:
-                text, found = job.result()
+                text, found, read = job.result()
             except Exception as error:      # one company never ends the run
-                text, found = "", {}
+                text, found, read = "", {}, []
                 print(f"{slug}: {type(error).__name__}", file=sys.stderr)
             if args.dry:
                 print(text, end="\n\n")
@@ -283,8 +292,16 @@ def main() -> int:
                 failed += 1            # no answer: last run's sentence stays
                 print(f"{slug}: no answer", file=sys.stderr)
             elif found:
+                fresh += 1
                 known[slug] = found
                 print(f"{slug}: {found['es']} [{found['date']} {found['source']}]")
+            elif read:
+                unpicked += 1
+                # Offered its own headline again and turned down: the rule changed.
+                if known.get(slug, {}).get("url") in {h["url"] for h in read}:
+                    del known[slug]
+            else:
+                silent += 1
     if args.dry:
         return 0
 
@@ -298,7 +315,9 @@ def main() -> int:
                     "business, restated in one sentence by a language model; `url` is the headline.",
             "companies": dict(sorted(known.items()))}
     OUT.write_text(json.dumps(book, ensure_ascii=False, indent=0) + "\n")
-    print(f"{len(known)} companies in {OUT.name}, {failed} without an answer", file=sys.stderr)
+    print(f"{len(known)} companies in {OUT.name}: of {len(companies)} asked, {fresh} with news, "
+          f"{unpicked} with no headline that counts, {silent} with no headlines, "
+          f"{failed} without an answer", file=sys.stderr)
     return 1 if failed > len(companies) / 2 else 0
 
 

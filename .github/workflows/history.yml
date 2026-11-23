@@ -1,0 +1,54 @@
+name: history
+
+# One line per run of the workflows below, kept in the private repo
+# (private_data.sh history): when, how long, how it ended and the counts the
+# run printed with scripts/run_summary.py. Actions drops its own logs after 90
+# days; this is what is left to see how the runs go over time.
+#
+# Secret: DATA_DEPLOY_KEY, the private repo's deploy key (refresh.yml).
+
+on:
+  workflow_run:
+    workflows: [refresh, boards, "remote boards", deploy, enrich, about, news]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  history:
+    if: github.event.workflow_run.conclusion != 'skipped'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - name: Keep the run's line
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          DATA_DEPLOY_KEY: ${{ secrets.DATA_DEPLOY_KEY }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          [ -n "$DATA_DEPLOY_KEY" ] || { echo "DATA_DEPLOY_KEY is not set."; exit 1; }
+          gh run view "$RUN_ID" -R "$GITHUB_REPOSITORY" \
+            --json databaseId,workflowName,event,conclusion,startedAt,updatedAt,headSha > "$RUNNER_TEMP/run.json"
+          # The log is not always there the second the run ends.
+          for try in 1 2 3; do
+            gh run view "$RUN_ID" -R "$GITHUB_REPOSITORY" --log > "$RUNNER_TEMP/run.log" 2> /dev/null && break
+            sleep 20
+          done
+          python3 scripts/run_summary.py line "$RUNNER_TEMP/run.json" "$RUNNER_TEMP/run.log" > "$RUNNER_TEMP/line.jsonl"
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DATA_DEPLOY_KEY" > ~/.ssh/data_key
+          chmod 600 ~/.ssh/data_key
+          ssh-keyscan -q github.com >> ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/data_key -o IdentitiesOnly=yes"
+          export STC_DATA="$RUNNER_TEMP/data/website/companies.csv"
+          bash scripts/private_data.sh history-push "$RUNNER_TEMP/line.jsonl" > /dev/null 2>&1 \
+            || { echo "Could not keep the history."; exit 1; }
+          echo "Kept."

@@ -28,6 +28,7 @@ concurrency:
 
 permissions:
   contents: write
+  actions: write   # dispatches deploy.yml
 
 jobs:
   about:
@@ -48,9 +49,14 @@ jobs:
       - name: Store the agent's sentences
         run: |
           [ -n "$GH_TOKEN" ] || { echo "DATA_ISSUES_TOKEN is not set."; exit 1; }
-          python3 scripts/about.py collect --closing "$RUNNER_TEMP/closing.json"
+          set -o pipefail
+          python3 scripts/about.py collect --closing "$RUNNER_TEMP/closing.json" | tee "$RUNNER_TEMP/out.txt"
+          python3 scripts/run_summary.py Stored "$(tail -1 "$RUNNER_TEMP/out.txt")"
 
+      # A push by the workflow's own token starts no deploy, so it asks for one.
       - name: Commit data/about.json
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git add -N data/about.json 2> /dev/null || true
           if git diff --quiet -- data/about.json; then
@@ -64,6 +70,7 @@ jobs:
           git pull --rebase -q origin main
           git push -q origin HEAD:main
           echo "data/about.json pushed."
+          gh workflow run deploy.yml --ref main -f reuse_jobs=true
 
       - name: Close the stored issues
         run: python3 scripts/about.py close "$RUNNER_TEMP/closing.json"
@@ -71,4 +78,7 @@ jobs:
       - name: Ask about the next companies
         env:
           LIMIT: ${{ inputs.limit || '10' }}
-        run: python3 scripts/about.py open --limit "$LIMIT"
+        run: |
+          set -o pipefail
+          python3 scripts/about.py open --limit "$LIMIT" | tee "$RUNNER_TEMP/out.txt"
+          python3 scripts/run_summary.py Asked "$(tail -1 "$RUNNER_TEMP/out.txt")"

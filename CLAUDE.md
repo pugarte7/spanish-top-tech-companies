@@ -215,6 +215,10 @@ pauses the refresh until its "Refresh paused" issue is closed.
   dispatches `deploy.yml` and opens the week's issue. `scripts/guard.py`
   stops it before any push. `scripts/weekly.sh` does the same by hand.
 - `boards.yml` runs board discovery after each refresh.
+- `history.yml` keeps one line per run of the data workflows in the private
+  repo (`private_data.sh history`): how it ended, how long, and the counts
+  each run prints with `scripts/run_summary.py`. Counts only, since the run's
+  page is public; the refresh adds none.
 - `listings.yml` keeps outside copies in step: a change under
   `hermes-plugin/` needs a version bump in `hermes-plugin/plugin.json`; a new
   `version:` in `skills/tech-pay-spain/SKILL.md` is published to ClawHub;

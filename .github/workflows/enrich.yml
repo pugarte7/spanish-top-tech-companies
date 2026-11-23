@@ -72,7 +72,10 @@ jobs:
           echo "Private data pulled."
 
       - name: Store the agent's answers
-        run: python3 scripts/enrich.py collect --closing "$RUNNER_TEMP/closing.json"
+        run: |
+          set -o pipefail
+          python3 scripts/enrich.py collect --closing "$RUNNER_TEMP/closing.json" | tee "$RUNNER_TEMP/out.txt"
+          python3 scripts/run_summary.py Stored "$(tail -1 "$RUNNER_TEMP/out.txt")"
 
       - name: Push the contacts
         env:
@@ -109,4 +112,7 @@ jobs:
       - name: Ask about the next companies
         env:
           LIMIT: ${{ inputs.limit || '25' }}
-        run: python3 scripts/enrich.py open --limit "$LIMIT"
+        run: |
+          set -o pipefail
+          python3 scripts/enrich.py open --limit "$LIMIT" | tee "$RUNNER_TEMP/out.txt"
+          python3 scripts/run_summary.py Asked "$(tail -1 "$RUNNER_TEMP/out.txt")"

@@ -120,6 +120,10 @@ jobs:
           vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
           vercel build --prod --token="$VERCEL_TOKEN"
 
+      - name: Summary
+        if: ${{ hashFiles('_site/api/v1/jobs.json') != '' }}
+        run: python3 scripts/run_summary.py postings _site/api/v1/jobs.json
+
       - name: /mcp answers
         run: node tests/mcp.test.mjs
 
