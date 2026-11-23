@@ -129,7 +129,16 @@ NO_LEVEL = {"", "false", "none", "null"}
 # the company's salaries abroad; with three or four of those from cheaper
 # countries it dropped real seniors (Stenn, Kiwi.com, Zooplus), so the
 # maintainer removed that rule.
+# A company short of MIN_GLOBAL in the roles of its Spanish rows is counted
+# over these too, the ones most companies are reported for: one manager in
+# Spain can be the only manager a studio of engineers has on Levels.fyi.
+# remote_levels.py counts a board's employer over the same roles.
+COMMON_ROLES = ("software-engineer", "product-manager", "data-scientist", "product-designer",
+                "software-engineering-manager")
 MIN_GLOBAL = lib.MIN_GLOBAL
+# Extra questions a run may ask over COMMON_ROLES: at --delay 3.0 an hour,
+# inside refresh.yml's limit. The rest wait for the next run.
+COMMON_ASKS = 1200
 GLOBAL_DAYS = 90
 GLOBAL_CACHE = lib.DATA.parent / "global.json"
 # How often a role is read to the end rather than from its cursor. Each role
@@ -598,14 +607,18 @@ def load_global_cache() -> dict:
         return {}
 
 
+def fresh(found: dict | None, today: str) -> bool:
+    checked = lib.parse_date((found or {}).get("checked"))
+    return bool(found and checked and (lib.parse_date(today) - checked).days < GLOBAL_DAYS)
+
+
 def world_of(bearer: str, cache: dict, slug: str, role: str, delay: float,
              today: str) -> dict | None:
     """worldwide(), remembered for GLOBAL_DAYS; the cache is written after
     every answer so a blocked run keeps what it learned."""
     key = f"{slug}|{role}"
     found = cache.get(key)
-    checked = lib.parse_date((found or {}).get("checked"))
-    if found and checked and (lib.parse_date(today) - checked).days < GLOBAL_DAYS:
+    if fresh(found, today):
         return found
     found = worldwide(bearer, slug, role, delay)
     if found is not None:
@@ -615,27 +628,54 @@ def world_of(bearer: str, cache: dict, slug: str, role: str, delay: float,
     return found
 
 
+def world_small(bearer: str, cache: dict, slug: str, role: str, delay: float,
+                today: str, budget: list[int]) -> None:
+    """Ask the world about a small company: the role read, then COMMON_ROLES
+    until MIN_GLOBAL is reached or the run's budget of those extra questions
+    is spent. world_total() judges from the cache."""
+    found = world_of(bearer, cache, slug, role, delay, today)
+    total = (found or {}).get("total", 0)
+    for other in COMMON_ROLES:
+        if found is None or total >= MIN_GLOBAL:
+            return
+        if other == role:
+            continue
+        known = fresh(cache.get(f"{slug}|{other}"), today)
+        if not known and budget[0] <= 0:
+            return
+        found = world_of(bearer, cache, slug, other, delay, today)
+        budget[0] -= not known
+        total += (found or {}).get("total", 0)
+
+
 def world_total(company: dict, cache: dict, today: str) -> int | None:
     """How many submissions the company has anywhere, summed over the roles
     of its Levels.fyi rows: the cached world count where one is fresh, the
     Spanish rows themselves where the pair was never asked (five Spanish rows
     are five submissions). None when a pair's answer is missing and the sum
-    without it stays under MIN_GLOBAL: that company is judged next run.
+    without it stays under MIN_GLOBAL: that company is judged next run. A
+    company still short gets what the cache holds for COMMON_ROLES; one of
+    those not asked yet counts as none, so nobody is listed while waiting.
     """
     slugs = [company["levels_slug"]] + lib.aliases_of(company["levels_slug"])
     spain = collections.Counter(entry.get("role") for entry in company["entries"]
                                 if ours(entry) and not unscoped(entry))
-    total, unknown = 0, False
-    for role, rows in spain.items():
+
+    def cached(role):
         found = next((cache.get(f"{slug}|{role}") for slug in slugs
                       if cache.get(f"{slug}|{role}")), None)
-        checked = lib.parse_date((found or {}).get("checked"))
-        if rows >= MIN_GLOBAL or not found or not checked \
-                or (lib.parse_date(today) - checked).days >= GLOBAL_DAYS:
+        return found if fresh(found, today) else None
+    total, unknown = 0, False
+    for role, rows in spain.items():
+        found = cached(role)
+        if rows >= MIN_GLOBAL or not found:
             unknown = unknown or rows < MIN_GLOBAL
             total += rows
         else:
             total += max(found["total"], rows)
+    if spain and total < MIN_GLOBAL:
+        total += sum((cached(role) or {}).get("total", 0)
+                     for role in COMMON_ROLES if role not in spain)
     return None if unknown and total < MIN_GLOBAL else total
 
 
@@ -1043,6 +1083,7 @@ def main(argv: list[str]) -> int:
                 1 for entry in company["entries"] if ours(entry) and not unscoped(entry))
 
     blocked = False
+    budget = [COMMON_ASKS]
     try:
         for role in roles_from_args(args):
             known = state["roles"].get(role) or {}
@@ -1087,7 +1128,7 @@ def main(argv: list[str]) -> int:
             # Audited too: --audit reads everything and writes nothing.
             for slug, group in by_slug.items():
                 if len(group["entries"]) < MIN_GLOBAL and spain_rows[slug] < MIN_GLOBAL:
-                    world_of(bearer, cache, group["slug"], role, args.delay, today)
+                    world_small(bearer, cache, group["slug"], role, args.delay, today, budget)
             total = sum(len(group["entries"]) for group in by_slug.values())
             dropped = ", ".join(f"{k} {v}" for k, v in skipped.items() if v)
             print(f"  {role}: {total} {'entries' if whole else 'new entries'} at "

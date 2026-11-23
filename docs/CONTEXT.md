@@ -143,7 +143,12 @@ worked (exit 0); only one where nothing answered fails.
 The global count behind `prune_unproven()` is one call per company-role pair
 (`companySlug` + `jobFamilySlug`, no country), cached in `global.json` for
 `GLOBAL_DAYS` (90). Pairs with five Spanish rows, and every pair of a company
-with five Levels.fyi rows on file, are never looked up.
+with five Levels.fyi rows on file, are never looked up. A company still short
+is asked about over `COMMON_ROLES` too, the roles `remote_levels.py` counts a
+board's employer over, so both doors count the same. A run asks at most
+`COMMON_ASKS` of those extra questions; a role not asked yet counts as none,
+so the company waits unlisted and its rows come back on the role's next whole
+read.
 
 ## The weekly refresh
 
