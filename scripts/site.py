@@ -661,7 +661,8 @@ def job_boards(data: dict, cells: dict) -> dict:
 
     data/boards.json maps a Levels.fyi slug to its board; scripts/boards.mjs
     finds them. data/remote-boards.json adds the boards of employers with no
-    board there that post remote work, marked `remote`. The tier is the site's
+    board there that post work open to Spain and state its pay or have a
+    salary in Spain on Levels.fyi, marked `remote`. The tier is the site's
     own ranking, today's: A when the engineers' median reaches the bar over
     min_ranked salaries, B at the bar on fewer or above BOARD_TIER_FLOOR_EUR,
     C below it or with no engineers."""
@@ -682,9 +683,10 @@ def job_boards(data: dict, cells: dict) -> dict:
         out.append({"name": company["name"], "ats": board["ats"], "board": board["board"],
                     "tier": tier, "tags": list(dict.fromkeys(["spain", *cities])),
                     **{k: board[k] for k in ("region", "query", "country", "title") if board.get(k)}})
-    # Employers with no board above that post remote work open to Spain or
-    # Europe (scripts/remote_levels.py), most of them with no salary in Spain
-    # on file. No tier: the site ranks nobody it has no salaries for.
+    # Employers with no board above whose postings open to Spain state their
+    # pay, or that Levels.fyi has a salary in Spain for
+    # (scripts/remote_levels.py). No tier: the site ranks nobody it has no
+    # salaries for.
     remote_path = AGGREGATES / "remote-boards.json"
     remote = json.loads(remote_path.read_text(encoding="utf-8")) if remote_path.exists() else {}
     boards_taken = {(e["ats"], e["board"].lower()) for e in out}
@@ -1275,7 +1277,7 @@ them the steps under Tools. The code is open at {REPO}.
 - [All aggregates (JSON)]({SITE}/api/v1/data.json): `cells["role|region|years"]` (empty part = all) gives n, median, p25, p75 (null under {data['quartile_min']} people), total, share at 60k+; `company_cells` the same per company from {data['min_group']} people, `c` indexing `companies`
 - [Companies table by selection (JSON)]({SITE}/api/v1/company-cells.json): the site's companies table keyed like `cells`, every company with data down to one salary, rows in `fields` order (`c` indexing data.json's `companies`); what the MCP server's company tools read
 - [Open postings (JSON)]({SITE}/api/v1/jobs.json): the open postings at the companies listed here, and at employers with no salaries here that post remote work open to Spain or Europe or state the pay of a job in Spain (`slug` null, no `tier`), refreshed daily from their public job boards (Greenhouse, Lever, Ashby, Workday and others); only postings in Spain or remote open to Spain or Europe, and nothing about any person; `find_jobs` searches it
-- [Job boards (JSON)]({SITE}/api/v1/boards.json): the companies listed here whose job board is known (`ats`, `board`, `tier` A/B/C by the engineers' median, `tags`) and the employers with no salaries here, read for their remote postings and their jobs in Spain (`remote: true`, no tier), the list the daily postings are read from
+- [Job boards (JSON)]({SITE}/api/v1/boards.json): the companies listed here whose job board is known (`ats`, `board`, `tier` A/B/C by the engineers' median, `tags`) and the employers with no salaries here that post work open to Spain and state its pay or have a salary in Spain on Levels.fyi (`remote: true`, no tier), the list the daily postings are read from
 
 ## Tools
 

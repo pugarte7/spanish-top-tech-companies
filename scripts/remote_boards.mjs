@@ -2,9 +2,11 @@
 // Finds job boards of employers the site does not list that someone in Spain
 // could work for, and writes the candidates scripts/remote_levels.py judges.
 // A company gets into the daily crawl without a salary in Spain on file when
-// it posts remote work open to Spain or Europe and either Levels.fyi knows it
-// or the posting states its pay, or when it posts an office or hybrid job in
-// Spain that states its pay.
+// it has a posting open to Spain (an office or hybrid job in Spain, or remote
+// work naming Spain or Europe) and either one of those states its pay, read
+// as the daily crawl reads it (the board's pay fields, or a euro figure the
+// description gives), or Levels.fyi knows the company and has a salary of
+// its in Spain.
 //
 //   node scripts/remote_boards.mjs                    # every ATS below
 //   node scripts/remote_boards.mjs --ats ashby,lever
@@ -24,7 +26,6 @@
 // boards the next time. Workable is left out: it refuses anything faster
 // than a board every 2.5s, which took 3.5 hours for 4,900 boards and 3 new
 // employers; the ones found then stay in remote-boards.json by hand.
-// Recruitee, BambooHR and Rippling had no remote posting in 120 boards each.
 
 import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -37,7 +38,7 @@ import { gunzipSync } from "node:zlib";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CC = "https://data.commoncrawl.org/cc-index/collections";
-const UA = "spanishtoptechcompanies-boards/1 (+https://spanishtoptechcompanies.com; finds job boards with remote postings)";
+const UA = "spanishtoptechcompanies-boards/1 (+https://spanishtoptechcompanies.com; finds job boards with postings open to Spain)";
 
 /** ATS -> the SURT prefixes its boards live under, and where the board is:
  * the first path segment, or the host's first label. */
@@ -57,8 +58,6 @@ export const SOURCES = {
 };
 const NOT_A_BOARD = new Set(["embed", "api", "v1", "jobs", "job_app", "job_board", "boards", "careers", "www", "j",
                              "robots.txt", "favicon.ico", "sitemap.xml", "app", "assets", "static"]);
-/** Classes that make a posting remote from Spain: an office here is not it. */
-export const REMOTE_CLASSES = new Set(["remote-spain", "remote-europe"]);
 /** Refusals in a row after which an ATS is left for the next run. */
 const HOST_STRIKES = 25;
 const THROTTLED = new Set(["retryable_http", "http_error", "timeout"]);
@@ -143,22 +142,19 @@ export function rotated(list, day = Math.floor(Date.now() / 86_400_000)) {
   return [...list.slice(start), ...list.slice(0, start)];
 }
 
-/** One board's verdict: its postings, how many are remote from Spain or
- * Europe, how many are at an office in Spain and state pay (`office`), how
- * many of both state pay, and the hosts they mention. */
-export function judge(jobs, openToSpain, analyzeLocation) {
-  const stated = (job) => job.compensation?.source === "ats-structured";
-  const classes = jobs.map((job) => openToSpain(job, analyzeLocation) ?? []);
-  const remote = jobs.filter((_, i) => classes[i].some((c) => REMOTE_CLASSES.has(c)));
-  const office = jobs.filter((job, i) => stated(job) && classes[i].includes("spain") && !remote.includes(job));
-  const wanted = [...remote, ...office];
-  return { postings: jobs.length, remote: remote.length, office: office.length,
-           paid: remote.filter(stated).length + office.length,
-           sample: wanted.slice(0, 2).map((job) => `${job.title} | ${job.locationsRaw.join("; ")}`.slice(0, 160)),
-           hosts: wanted.length ? hostsIn(jobs) : [] };
+/** One board's verdict: how many of its postings the daily crawl would list
+ * for an employer with no salary here (`open`), how many of those state their
+ * pay, and the hosts its postings mention. `toEntry` is jobs.mjs's entry for
+ * such a board, so pay counts here exactly when the crawl would show it. */
+export function judge(jobs, toEntry) {
+  const rows = jobs.map(toEntry).filter(Boolean);
+  const paid = rows.filter((row) => row.salary);
+  return { postings: jobs.length, open: rows.length, paid: paid.length,
+           sample: (paid.length ? paid : rows).slice(0, 2).map((row) => `${row.title} | ${row.location}`.slice(0, 160)),
+           hosts: rows.length ? hostsIn(jobs) : [] };
 }
 
-async function probe(kind, boards, ats, openToSpain, log, deadline) {
+async function probe(kind, boards, ats, toEntry, log, deadline) {
   const adapter = ats.adapterFor(kind);
   const found = [];
   let strikes = 0;
@@ -176,8 +172,8 @@ async function probe(kind, boards, ats, openToSpain, log, deadline) {
       ]);
       strikes = 0;
       read += 1;
-      const verdict = judge(jobs, openToSpain, ats.location.analyzeLocation);
-      if (verdict.remote || verdict.office) found.push({ ats: kind, board, ...verdict });
+      const verdict = judge(jobs, (job) => toEntry(job, { name: board, ats: kind, board, remote: true }));
+      if (verdict.open) found.push({ ats: kind, board, ...verdict });
     } catch (error) {
       strikes = THROTTLED.has(error?.code) ? strikes + 1 : 0;
       if (strikes >= HOST_STRIKES) {
@@ -198,7 +194,9 @@ async function main() {
     limit: { type: "string" },
     minutes: { type: "string", default: "170" },
     boards: { type: "string", default: join(ROOT, "data/boards.json") },
+    data: { type: "string", default: join(ROOT, "data/data.json") },
     remote: { type: "string", default: join(ROOT, "data/remote-boards.json") },
+    none: { type: "string", default: join(ROOT, "data/remote-boards-none.json") },
     cache: { type: "string", default: join(ROOT, ".cache/remote") },
     out: { type: "string", default: join(ROOT, ".cache/remote/candidates.json") },
   } });
@@ -217,19 +215,27 @@ async function main() {
     for (const kind of kinds) for (const board of found[kind]) boards[kind].add(board);
     log(`${collection}: ${kinds.map((kind) => `${kind} ${found[kind].size}`).join(", ")}`);
   }
-  // The site's own boards are crawled already; the remote ones on file are
-  // read again whether or not this index saw them.
+  // The site's own boards are crawled already; the ones on file, kept or
+  // turned down, are read again whether or not this index saw them, so a
+  // board turned down comes in the day it states pay.
   const listed = new Set(Object.values(JSON.parse(readFileSync(values.boards, "utf8"))).map(key));
   const onFile = existsSync(values.remote) ? Object.values(JSON.parse(readFileSync(values.remote, "utf8"))) : [];
   for (const entry of onFile) boards[entry.ats]?.add(entry.board);
+  const turnedDown = existsSync(values.none) ? Object.entries(JSON.parse(readFileSync(values.none, "utf8"))) : [];
+  for (const [id, day] of turnedDown) {
+    const at = id.indexOf(":");
+    if (day !== "no") boards[id.slice(0, at)]?.add(id.slice(at + 1));
+  }
 
-  const { loadAts, openToSpain } = await import(pathToFileURL(join(ROOT, "scripts/jobs.mjs")).href);
+  const { loadAts, entry } = await import(pathToFileURL(join(ROOT, "scripts/jobs.mjs")).href);
   const ats = await loadAts();
+  const known = new Set(JSON.parse(readFileSync(values.data, "utf8")).roles.map((role) => role.slug));
+  const toEntry = (job, board) => entry(job, board, null, ats.location, known);
   const deadline = Date.now() + Number(values.minutes) * 60_000;
   const results = await Promise.all(kinds.map(async (kind) => {
     let list = rotated([...boards[kind]].filter((board) => !listed.has(key({ ats: kind, board }))).sort());
     if (values.limit) list = list.slice(0, Number(values.limit));
-    const result = await probe(kind, list, ats, openToSpain, log, deadline);
+    const result = await probe(kind, list, ats, toEntry, log, deadline);
     log(`${kind}: ${result.read} of ${list.length} boards read, ${result.found.length} candidates`);
     return { kind, ...result, asked: list.length };
   }));

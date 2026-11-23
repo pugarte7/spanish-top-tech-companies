@@ -123,7 +123,7 @@ const TOOLS = {
   find_jobs: {
     define: (data) => ({ title: "Open job postings",
       description: "Open postings at the companies on this site, and at employers with no salaries here " +
-                   "that post remote work open to Spain or Europe or state the pay of a job in Spain, " +
+                   "that post work open to Spain and state its pay or have a salary in Spain on Levels.fyi, " +
                    "from their public job boards " +
                    "(Greenhouse, Lever, Ashby, Workday and others), refreshed daily. Filter by text, " +
                    "role, region or remote, workplace, level, the person's years of experience, company, " +
@@ -2837,8 +2837,8 @@ export function applicationGuide(args = {}, env = {}) {
     "either, give the person the document at the end of the session to paste back next time.";
   return {
     summary: "find_jobs searches the daily index of open postings at the companies on this site and at " +
-      "employers that post remote work open to Spain or Europe or state the pay of a job in Spain, " +
-      "which have no salary figure here; " +
+      "employers with no salaries here that post work open to Spain and state its pay or have a " +
+      "salary in Spain on Levels.fyi; " +
       "job_questions reads one posting's application form live from its board; this guide is the " +
       "procedure. This server stores nothing about the person: the agent keeps their details in a " +
       "state document of its own, and sends each application with its own browser once the person " +

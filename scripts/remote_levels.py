@@ -3,11 +3,11 @@
 
     node scripts/remote_boards.mjs && python3 scripts/remote_levels.py
 
-A board with remote postings open to Spain or Europe is kept when Levels.fyi
-knows its employer (lib.MIN_GLOBAL submissions anywhere, as the site asks of
-its own companies) or when one of those postings states its pay. A board with
-none is kept for an office or hybrid posting in Spain that states its pay, and
-Levels.fyi is not asked about it. It is written
+A board with postings open to Spain (an office or hybrid job in Spain, or
+remote work naming Spain or Europe) is kept when one of them states its pay,
+or when Levels.fyi knows its employer as the site asks of its own companies:
+lib.MIN_GLOBAL submissions anywhere and one of them in Spain. One that states
+pay is kept without asking Levels.fyi. It is written
 to data/remote-boards.json, which site.py adds to the boards scripts/jobs.mjs
 crawls every day; the rest go to data/remote-boards-none.json with the day,
 and are not asked about again for RECHECK_DAYS.
@@ -41,7 +41,8 @@ NONE = ROOT / "data" / "remote-boards-none.json"
 CANDIDATES = ROOT / ".cache" / "remote" / "candidates.json"
 
 RECHECK_DAYS = 90
-# A board that has shown no remote posting for this long leaves the crawl.
+# A board that has shown no posting open to Spain for this long, or none
+# stating pay when that is why it is here, leaves the crawl.
 DROP_DAYS = 45
 # Asked about when engineers alone do not reach MIN_GLOBAL: the site sums
 # every role, and the API answers one job family at a time.
@@ -87,11 +88,13 @@ def owns(board: str, domain: str | None, hosts: list[str]) -> bool:
     return bool(labels) and flat(labels[-1]) == flat(name)
 
 
-def ask(bearer: str, slug: str, role: str, delay: float) -> dict | None:
-    """Levels.fyi's count for a slug and role anywhere, with the company's
-    name and domain (its logo's). None when the answer could not be read."""
+def ask(bearer: str, slug: str, role: str, delay: float, spain: bool = False) -> dict | None:
+    """Levels.fyi's count for a slug and role anywhere, or in Spain, with the
+    company's name and domain (its logo's). None when the answer could not be
+    read."""
     query = urllib.parse.urlencode([
-        ("companySlug", slug), ("jobFamilySlug", role), ("offset", 0), ("limit", 5),
+        ("companySlug", slug), ("jobFamilySlug", role),
+        *([("countryIds[0]", fs.SPAIN_COUNTRY_ID)] if spain else []), ("offset", 0), ("limit", 5),
         ("sortBy", "offer_date"), ("sortOrder", "DESC")])
     body = fs.get(f"{fs.API}?{query}", delay,
                   headers=fs._api_headers(bearer, f"{fs.BASE}/companies/{slug}/salaries/{role}"))
@@ -110,9 +113,22 @@ def ask(bearer: str, slug: str, role: str, delay: float) -> dict | None:
         return None
 
 
+def in_spain(bearer: str, slug: str, delay: float) -> bool | None:
+    """Whether Levels.fyi has a submission in Spain for the company, in the
+    roles the count is made over. None when an answer could not be read."""
+    for role in ("software-engineer", *OTHER_ROLES):
+        found = ask(bearer, slug, role, delay, spain=True)
+        if found is None:
+            return None
+        if found["total"]:
+            return True
+    return False
+
+
 def on_levels(bearer: str, candidate: dict, delay: float) -> dict | None:
-    """The Levels.fyi company behind a board with MIN_GLOBAL submissions, {}
-    when there is none, None when Levels.fyi could not be read."""
+    """The Levels.fyi company behind a board with MIN_GLOBAL submissions, one
+    of them in Spain, {} when there is none, None when Levels.fyi could not
+    be read."""
     unread = False
     for slug in guesses(candidate["board"]):
         found = ask(bearer, slug, "software-engineer", delay)
@@ -131,7 +147,10 @@ def on_levels(bearer: str, candidate: dict, delay: float) -> dict | None:
                 break
             total += more["total"]
         if total >= lib.MIN_GLOBAL:
-            return found
+            here = in_spain(bearer, found["slug"], delay)
+            if here:
+                return found
+            unread = unread or here is None
     return None if unread else {}
 
 
@@ -148,15 +167,17 @@ def decide(candidates: dict, kept: dict, none: dict, today: str, lookup) -> dict
     for candidate in candidates.get("boards", []):
         k = key(candidate)
         if k in kept:
-            kept[k]["seen"] = today
-            report["seen"] += 1
+            # A board kept for its pay is seen while it still states it.
+            if kept[k].get("via") != "pay" or candidate.get("paid"):
+                kept[k]["seen"] = today
+                report["seen"] += 1
             continue
         if none.get(k) == "no":
             continue
         checked = lib.parse_date(none.get(k))
         recent = bool(checked and (day - checked).days < RECHECK_DAYS)
-        # Levels.fyi vouches for remote work only: an office in Spain needs pay.
-        ask_levels = not recent and candidate.get("remote", 1)
+        # Stated pay is enough: Levels.fyi is asked only about the rest.
+        ask_levels = not recent and not candidate.get("paid")
         found = None if ask_levels else {}
         if ask_levels and not report["blocked"]:
             try:

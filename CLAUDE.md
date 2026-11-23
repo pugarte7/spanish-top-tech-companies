@@ -172,10 +172,13 @@ pauses the refresh until its "Refresh paused" issue is closed.
   in the Keychain (service `browserbase`); never commit, print or log it.
   Test a "blocked" site with Node's fetch, not macOS curl.
 - `data/remote-boards.json` adds employers with no salary in Spain to that
-  crawl: a board with remote postings naming Spain or Europe, kept when
-  Levels.fyi knows the employer (`MIN_GLOBAL` anywhere) or a posting states
-  pay, or a board with an office or hybrid posting in Spain that states pay
-  (Levels.fyi vouches for remote work only). `remote.yml` writes it twice a month (`scripts/remote_boards.mjs`,
+  crawl: a board with a posting open to Spain (an office or hybrid job in
+  Spain, or remote work naming Spain or Europe) is kept when one of them
+  states its pay, read as the daily crawl reads it, or when Levels.fyi knows
+  the employer (`MIN_GLOBAL` anywhere) and has a salary of its in Spain.
+  One rule for every employer, remote or not: what the site asks of its own
+  companies, or stated pay. Knowing the employer abroad alone is not enough.
+  `remote.yml` writes it twice a month (`scripts/remote_boards.mjs`,
   `scripts/remote_levels.py`). A Levels.fyi match needs its domain in the
   postings or in the board's name, never the name alone. `"via": "hand"`
   keeps an entry whatever a run finds; `"no"` in

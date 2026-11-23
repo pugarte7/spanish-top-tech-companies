@@ -976,8 +976,7 @@ assert.deepEqual(pageLinks('<a href="/jobs/page/2/">2</a><a href="/jobs/?page=3"
   assert.deepEqual(rendered, [], "no browser when the HTML links a board");
 }
 // --- Remote boards: employers with no salary in Spain on file ---------------
-const { boardOf, hostsIn, judge, rotated, REMOTE_CLASSES } = await import("../scripts/remote_boards.mjs");
-const { openToSpain: open } = await import("../scripts/jobs.mjs");
+const { boardOf, hostsIn, judge, rotated } = await import("../scripts/remote_boards.mjs");
 const remoteBoard = { name: "Far", ats: "ashby", board: "far", remote: true, tags: ["remote"] };
 const { normalizeJob } = await import("../lib/ats/sources/normalize.js");
 const posting = (id, locations, more = {}) => normalizeJob({
@@ -991,16 +990,18 @@ const kept = (board) => farJobs.map((j) => entry(j, board, null, spoonsAts.locat
 assert.deepEqual(kept(remoteBoard), ["1", "3", "4"], "a bare Remote on a remote board is not open to Spain");
 assert.deepEqual(kept({ ...remoteBoard, remote: undefined }), ["1", "2", "3", "4"], "as it is on a listed company's");
 assert.equal(entry(farJobs[0], remoteBoard, null, spoonsAts.location).tier, null, "and nobody without salaries is tiered");
-const verdict = judge(farJobs, open, spoonsAts.location.analyzeLocation);
-assert.deepEqual([verdict.postings, verdict.remote, verdict.office, verdict.paid], [4, 2, 0, 1], "an office in Spain is not remote work");
-const pay = { structuredCompensation: { min: 40000, max: 50000, currency: "EUR", period: "year", source: "ats-structured" } };
-const inOffice = judge([posting("5", ["Madrid, Spain"], pay), posting("6", ["Barcelona, Spain"]), posting("7", ["Berlin, Germany"], pay)],
-                     open, spoonsAts.location.analyzeLocation);
-assert.deepEqual([inOffice.remote, inOffice.office, inOffice.paid], [0, 1, 1], "but one that states pay makes the board a candidate");
-assert.ok(inOffice.hosts.includes("far.dev"));
+const asRemote = (job) => entry(job, remoteBoard, null, spoonsAts.location);
+const verdict = judge(farJobs, asRemote);
+assert.deepEqual([verdict.postings, verdict.open, verdict.paid], [4, 3, 1], "a posting open to Spain makes a board a candidate, and its pay is counted");
 assert.ok(verdict.hosts.includes("far.dev") && verdict.hosts.includes("jobs.ashbyhq.com"));
 assert.deepEqual(hostsIn([{ descriptionText: "v1.2 and e.g. nothing", url: "https://www.acme.com/x" }]), ["acme.com"]);
-assert.ok(REMOTE_CLASSES.has("remote-europe") && !REMOTE_CLASSES.has("spain") && !REMOTE_CLASSES.has("remote-global"));
+const pay = { structuredCompensation: { min: 40000, max: 50000, currency: "EUR", period: "year", source: "ats-structured" } };
+const inOffice = judge([posting("5", ["Madrid, Spain"], pay), posting("6", ["Barcelona, Spain"]), posting("7", ["Berlin, Germany"], pay)], asRemote);
+assert.deepEqual([inOffice.open, inOffice.paid], [2, 1], "an office in Spain counts like remote work, pay elsewhere does not");
+const inText = judge([posting("8", ["Valencia, Spain"], { descriptionPlain: "Salario: 45.000 - 55.000 € brutos anuales." }),
+                      posting("9", ["Remote - Europe"], { workplaceType: "remote", descriptionPlain: "Salary: 45.000 - 55.000 € gross per year." })], asRemote);
+assert.deepEqual([inText.open, inText.paid], [2, 1], "pay in the description counts where the crawl reads it: in Spain or remote from it");
+assert.deepEqual(judge([posting("10", ["Berlin, Germany"], pay)], asRemote).hosts, [], "nothing open to Spain, nothing to ask about");
 assert.equal(boardOf("com,ashbyhq,jobs)/linear/abc 2026", "com,ashbyhq,jobs)/", "path"), "linear");
 assert.equal(boardOf("com,ashbyhq,jobs)/api/x", "com,ashbyhq,jobs)/", "path"), null);
 assert.equal(boardOf("com,teamtailor,acme)/jobs", "com,teamtailor,", "host"), "acme");

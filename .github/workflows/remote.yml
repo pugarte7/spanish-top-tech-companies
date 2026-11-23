@@ -1,14 +1,15 @@
 name: remote boards
 
-# Twice a month: which employers post remote work open to Spain or Europe, or
-# state the pay of a job at an office in Spain, on the job boards the crawl
-# can read, beyond the companies with salaries here.
+# Twice a month: which employers post work open to Spain (an office or hybrid
+# job in Spain, or remote work naming Spain or Europe) on the job boards the
+# crawl can read, beyond the companies with salaries here.
 # scripts/remote_boards.mjs takes every board Common Crawl's index names on
 # Greenhouse, Ashby, Lever, Teamtailor, SmartRecruiters, Recruitee, BambooHR,
 # Personio, Pinpoint, Rippling, Gem and Factorial and reads each one, for at
 # most 200 minutes: an ATS not finished by then goes on from another place
-# next time. scripts/remote_levels.py keeps those Levels.fyi
-# knows or whose posting states pay, in data/remote-boards.json. site.py adds
+# next time. scripts/remote_levels.py keeps those whose posting
+# states pay or that Levels.fyi knows with a salary in Spain, in
+# data/remote-boards.json. site.py adds
 # that file to the boards the daily deploy crawls, so nothing is deployed
 # from here: the next daily build reads the new boards.
 #
@@ -73,7 +74,7 @@ jobs:
           npm ci --omit=dev -q
           node scripts/remote_boards.mjs --minutes 200
 
-      - name: Keep the ones Levels.fyi knows or that state pay
+      - name: Keep the ones that state pay or Levels.fyi knows in Spain
         id: judge
         if: steps.paused.outputs.skip != 'true'
         env:
