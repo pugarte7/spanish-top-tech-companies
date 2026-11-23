@@ -33,6 +33,7 @@ import pathlib
 import re
 import subprocess
 import sys
+import time
 import urllib.request
 
 import headcount
@@ -216,8 +217,27 @@ def write_json(path, value, indent) -> None:
 
 # --- Issues ----------------------------------------------------------------------
 
+# Seconds to wait when GitHub says issues are coming too fast, try after try.
+TOO_FAST = (60, 180, 600)
+
+
 def gh(*args: str, input: str | None = None) -> str:
-    return subprocess.run(["gh", *args], input=input, capture_output=True, text=True, check=True).stdout
+    """gh's output. Its own words go to the log when it fails: without them a
+    failed run says only that gh failed."""
+    creating = args[:2] == ("issue", "create")
+    for wait in (*TOO_FAST, None):
+        done = subprocess.run(["gh", *args], input=input, capture_output=True, text=True)
+        if done.returncode == 0:
+            if creating:
+                time.sleep(2)       # GitHub asks for a second between the things one creates
+            return done.stdout
+        said = " ".join(done.stderr.split())[:300]
+        if wait is None or not re.search(r"too quickly|rate limit|abuse", said, re.I):
+            break
+        print(f"gh: {said}; waiting {wait}s", file=sys.stderr)
+        time.sleep(wait)
+    print(f"gh {' '.join(args[:2])}: {said}", file=sys.stderr)
+    raise subprocess.CalledProcessError(done.returncode, ["gh", *args[:2]], done.stdout, done.stderr)
 
 
 def issues(label: str) -> list[dict]:
