@@ -237,15 +237,21 @@ landed.
   hours of run for a handful of employers; its boards on file are
   `via: hand`. An ATS that refuses 25 boards in a row is left, marked
   incomplete, and the next run starts elsewhere in its list; so is one the
-  run's `--minutes` cut short. A remote
-  posting counts only when it names Spain or Europe: a bare "Remote" does
-  not. An office or hybrid posting in Spain counts only with pay the ATS
-  gives as a field, not pay written in the description.
-- `remote_levels.py` guesses Levels.fyi's slug from the board's name, so a
-  namesake can answer: the match counts only with Levels.fyi's domain in the
-  postings or in the board's name. A refusal exits 3 and opens the refresh's
-  pause issue. A board unseen for 45 days leaves, unless its ATS was read
-  incompletely or the entry is `via: hand`.
+  run's `--minutes` cut short. A board is a candidate when the daily crawl
+  would list one of its postings (`judge()` runs `jobs.mjs`'s own
+  `entry()`): an office in Spain or remote work naming Spain or Europe,
+  never a bare "Remote". Its pay is read as the crawl reads it, from the
+  board's fields or the description.
+- `remote_levels.py` keeps a candidate that states pay without asking
+  Levels.fyi, and asks about the rest: `MIN_GLOBAL` submissions anywhere and
+  one in Spain, what the listed companies are asked. Knowing an employer
+  abroad alone used to keep a remote board: most of those postings had no
+  pay and nothing of the foreign salaries could be shown. It guesses
+  Levels.fyi's slug from the board's name, so a namesake can answer: the
+  match counts only with Levels.fyi's domain in the postings or in the
+  board's name. A refusal exits 3 and opens the refresh's pause issue. A
+  board unseen for 45 days leaves (one kept for its pay, unseen stating
+  it), unless its ATS was read incompletely or the entry is `via: hand`.
 - `boards.mjs` probes only companies with no board that
   `data/boards-none.json` does not show as checked in the last 7 days;
   `--all` re-probes everyone (a few hours); `--render` loads the page in
