@@ -168,23 +168,46 @@ def json_block(text: str):
     return None
 
 
+def merged(answers: list):
+    """Several answers as one, oldest first: the agent splits a long answer
+    over comments. A slug answered twice keeps the newest item."""
+    if len(answers) == 1 or not all(isinstance(a, dict) for a in answers):
+        return answers[-1]
+    out: dict = {}
+    for answer in answers:
+        for key, value in answer.items():
+            if not (isinstance(value, list) and isinstance(out.get(key), list)):
+                out[key] = value
+                continue
+            slug = lambda item: item.get("slug") if isinstance(item, dict) else item
+            fresh = {slug(item) for item in value}
+            out[key] = [item for item in out[key] if slug(item) not in fresh] + value
+    return out
+
+
 def reply(comments: list[dict]) -> tuple[str, object]:
     """What an issue's comments hold, read from the newest by ANSWERER:
     ("handled", None) when this script spoke after the last answer,
     ("needs-human", None), ("answer", the JSON or None if it does not parse),
-    or ("pending", None) with no answer yet. Other accounts' comments, and
+    or ("pending", None) with no answer yet. The answer is every JSON block
+    since this script last spoke, merged. Other accounts' comments, and
     ANSWERER's without a JSON block, are passed over."""
+    answers: list = []
     for c in reversed(comments):
         if (c.get("author") or {}).get("login") != ANSWERER:
             continue
         body = c.get("body") or ""
         if MARK in body:
+            if answers:
+                break
             return "handled", None
-        if NEEDS_HUMAN.search(body):
+        if NEEDS_HUMAN.search(body) and not answers:
             return "needs-human", None
         if "```json" in body:
-            return "answer", json_block(body)
-    return "pending", None
+            answers.insert(0, json_block(body))
+    if not answers:
+        return "pending", None
+    return "answer", None if answers[-1] is None else merged([a for a in answers if a is not None])
 
 
 def corrects(comments: list[dict]) -> bool:
