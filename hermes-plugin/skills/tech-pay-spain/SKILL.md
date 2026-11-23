@@ -1,7 +1,7 @@
 ---
 name: tech-pay-spain
 description: Answer what jobs pay in Spain (salario, sueldo, cuánto se cobra) by role, region, years of experience or company, from medians of real Spanish salaries. Use for salary questions, offer checks, negotiation prep, finding open positions and applying to jobs in Spain.
-version: 1.5.5
+version: 1.5.6
 author: pugarte7
 license: CC-BY-SA-4.0
 metadata:
@@ -89,8 +89,9 @@ or remote open to Spain or Europe), and helps apply to them. See "Applying" belo
   posting open to several countries, is often another country's range: quote
   it as published, never as pay in Spain. `salary_context` with
   `for_this_role: false` is the company's median over other roles
-  (`roles_counted`), given when nobody there reports the posting's role: what
-  the company pays, not what the job pays. Say so when you quote it.
+  (`roles_counted`), given when nobody there reports the posting's role, only
+  for a technical posting at a company whose salaries are mostly technical
+  roles: what the company pays, not what the job pays. Say so when you quote it.
   `company_median_total_eur` beside the base adds bonus and stock; quote both,
   and the base when comparing against what the person asks.
 - `job_questions(id)`: one posting's application form, read live from its

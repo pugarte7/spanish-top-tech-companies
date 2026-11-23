@@ -449,20 +449,42 @@ const quietly = async (fn) => {
 // down to one person, and carries no more than top_companies shows (median base and total, people).
 const everything = (await run("find_jobs", {})).structuredContent.jobs;
 const slugIndex = new Map(data.companies.map((c, i) => [c.levels, i]));
-report("salary context is the table's row for the role, else the company's over every role, or null", everything.every((j) => {
+// Levels.fyi's technical families, as api/mcp.js reads them from data.json.
+const TECH = new Set(data.roles.filter((r) => ["Technology", "Design", "Information Technology (IT)", "Engineering"]
+  .includes(r.category) || ["data-analyst", "sales-engineer"].includes(r.slug)).map((r) => r.slug));
+const rolesAtCompany = (c) => data.roles.map((r) => ({ role: r.slug, people: rowsAt(`${r.slug}||`).find((a) => a.c === c)?.n ?? 0 }))
+  .filter((r) => r.people > 0);
+report("salary context is the table's row for the role, else, for a technical posting at a company paying mostly " +
+  "technical roles, the company's over every role, else null", everything.every((j) => {
   const cell = rowsAt(`${j.role}||`).find((a) => a.c === slugIndex.get(j.slug));
   const whole = rowsAt("||").find((a) => a.c === slugIndex.get(j.slug));
   const c = j.salary_context;
   if (cell) return c.for_this_role === true && c.role === j.role && c.company_median_base_eur === cell.median &&
     c.company_median_total_eur === cell.total && c.people === cell.n && c.few === cell.n < data.min_group &&
     Object.keys(c).sort().join() === "company_median_base_eur,company_median_total_eur,few,for_this_role,people,role,scope";
-  if (whole) return c.for_this_role === false && c.role === null && c.company_median_base_eur === whole.median &&
+  const counted = rolesAtCompany(slugIndex.get(j.slug));
+  const techPeople = counted.reduce((n, r) => n + (TECH.has(r.role) ? r.people : 0), 0);
+  const techFigure = [j.role, ...j.roles].some((r) => TECH.has(r)) && techPeople * 2 >= counted.reduce((n, r) => n + r.people, 0);
+  if (whole && techFigure) return c.for_this_role === false && c.role === null && c.company_median_base_eur === whole.median &&
     c.company_median_total_eur === whole.total &&
     c.people === whole.n && c.roles_counted.length > 0 && !c.roles_counted.some((r) => r.role === j.role) &&
     /not what this job pays/.test(c.scope);
   return c === null;
-}) && everything.some((j) => j.salary_context?.for_this_role) &&
-  everything.some((j) => j.salary_context?.for_this_role === false));
+}) && everything.some((j) => j.salary_context?.for_this_role));
+// Prosegur's salaries are engineers, IT and a project manager: its figure stands beside
+// its DevOps posting, never beside a back office or a sales one.
+const prosegurJob = (id, title, roles) => ({ id: `jsonld:careers-es.prosegur.com/sitemap.xml:${id}`, company: "Prosegur",
+  slug: "prosegur", title, ats: "jsonld", url: `https://careers-es.prosegur.com/${id}/`, location: "Madrid, Spain",
+  location_classes: ["spain"], workplace: null, roles, seniority: null, years: null, keywords: [] });
+const prosegur = (await run("find_jobs", { company: "prosegur" }, { jobs: { ...index, jobs: [
+  prosegurJob("p1", "Devops Cloud Engineer", ["software-engineer"]),
+  prosegurJob("p2", "Administrativo/a Back Office Bancario", []),
+  prosegurJob("p3", "Comercial de alarmas", ["sales"])] } })).structuredContent.jobs;
+const ctxOf = (title) => prosegur.find((j) => j.title === title)?.salary_context;
+report("the company's figure over its roles goes to a technical posting only, never to back office or sales",
+  prosegur.length === 3 && ctxOf("Devops Cloud Engineer")?.for_this_role === false &&
+  ctxOf("Devops Cloud Engineer").roles_counted.length > 0 &&
+  ctxOf("Administrativo/a Back Office Bancario") === null && ctxOf("Comercial de alarmas") === null, prosegur);
 const general = (await run("find_jobs", { min_salary_eur: 1 })).structuredContent;
 report("min_salary_eur and the order never use the company's figure over other roles",
   general.jobs.every((j) => j.min_salary_checked_against === "posting" || j.salary_context?.for_this_role) &&
