@@ -1162,6 +1162,31 @@ def test_remote_boards_need_levels_or_pay() -> None:
     check("and the run says it was refused", (report["blocked"], report["unread"]), (True, 3))
 
 
+def test_unlisted_employers_are_asked_about() -> None:
+    """The employers known only by their board get a slug and their board's
+    address, so their size, what they do and their news can be asked for."""
+    print("unlisted employers")
+    import tempfile
+    root = lib.ROOT
+    with tempfile.TemporaryDirectory() as tmp:
+        lib.ROOT = pathlib.Path(tmp)
+        try:
+            (lib.ROOT / "data").mkdir()
+            check("no file, nobody", lib.unlisted_employers({"companies": []}), [])
+            (lib.ROOT / "data" / "remote-boards.json").write_text(json.dumps({
+                "ashby:far": {"name": "Far Labs", "ats": "ashby", "board": "far", "via": "pay"},
+                "greenhouse:knownco": {"name": "Known", "ats": "greenhouse", "board": "knownco", "levels": "known-co", "via": "levels"},
+                "lever:acme": {"name": "Acme", "ats": "lever", "board": "acme", "via": "pay"},
+                "odd:thing": {"name": "Thing", "ats": "odd", "board": "thing", "via": "hand"}}))
+            found = lib.unlisted_employers({"companies": [{"levels": "acme"}]})
+        finally:
+            lib.ROOT = root
+    check("Levels.fyi's slug or the name's, never a listed company's, only where the board has an address",
+          [(c["levels"], c["web"], c["board"]) for c in found],
+          [("far-labs", "https://jobs.ashbyhq.com/far", "ashby:far"),
+           ("known-co", "https://boards.greenhouse.io/knownco", "greenhouse:knownco")])
+
+
 def test_site_dates_and_minimum_base() -> None:
     """The page's date is when the salaries were read, and a base under the minimum wage
     is no salary: once it held a company's median down and moved small groups."""
@@ -1262,6 +1287,7 @@ def main() -> int:
                  test_job_boards_follow_the_ranking,
                  test_refresh_writes_what_a_deploy_reads,
                  test_remote_boards_need_levels_or_pay,
+                 test_unlisted_employers_are_asked_about,
                  test_site_dates_and_minimum_base,
                  test_floor_aliases_and_exclusions,
                  test_normalization,
