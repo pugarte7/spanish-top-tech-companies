@@ -27,7 +27,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.28.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.28.1" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -134,7 +134,8 @@ const TOOLS = {
                    "site's companies table shows it, with how many people it comes from " +
                    `(few: true under ${data.min_group}); where nobody reports that role there, the ` +
                    "company's median over its other roles, marked for_this_role: false: what the " +
-                   "company pays, not what the job pays. Pass the ids already applied to or turned " +
+                   "company pays, not what the job pays, given only for a technical posting at a " +
+                   "company whose salaries are mostly technical roles. Pass the ids already applied to or turned " +
                    "down in exclude. When nothing matches, no_match says how many results each " +
                    "filter costs and suggests the closest postings, marked with the filter they miss. " +
                    "The starting point when asked to find jobs or apply for " +
@@ -896,7 +897,23 @@ function lookups(data, table) {
 // checked against min_salary_eur or ranks a posting. On 2026-11-21 the role's
 // figure covered 31% of the postings, the company's 94%: 42% name no role
 // the data knows, and most companies have salaries for engineers only.
-function salaryContext(data, table, job, role) {
+// Roles whose pay says something about another technical role's: Levels.fyi's
+// Technology, Design, IT and Engineering families, and two it files elsewhere.
+const TECH_FAMILIES = new Set(["Technology", "Design", "Information Technology (IT)", "Engineering"]);
+const TECH_ALSO = new Set(["data-analyst", "sales-engineer"]);
+const TECH_ROLES = new WeakMap();
+function technicalRoles(data) {
+  if (!TECH_ROLES.has(data))
+    TECH_ROLES.set(data, new Set((data.roles ?? []).filter((r) => TECH_FAMILIES.has(r.category) || TECH_ALSO.has(r.slug))
+      .map((r) => r.slug)));
+  return TECH_ROLES.get(data);
+}
+
+// The company's figure for the posting's role, else its figure over every role,
+// marked for_this_role: false. That one only for a posting in a technical role
+// at a company whose salaries are mostly technical roles: a security guard's or
+// a back office posting at Prosegur read 72k from its engineers (2026-11-23).
+function salaryContext(data, table, job, role, roles = role ? [role] : []) {
   if (!table) return null;
   const { bySlug, cells, rolesAt } = lookups(data, table);
   const at = bySlug.get(job.slug);
@@ -909,6 +926,9 @@ function salaryContext(data, table, job, role) {
   const all = cells.get("")?.get(at);
   if (!all) return null;
   const from = rolesAt.get(at) ?? [];
+  const tech = technicalRoles(data);
+  const technical = from.reduce((n, r) => n + (tech.has(r.role) ? r.people : 0), 0);
+  if (!roles.some((r) => tech.has(r)) || technical * 2 < from.reduce((n, r) => n + r.people, 0)) return null;
   return { role: null, for_this_role: false, company_median_base_eur: all.median,
            company_median_total_eur: all.total, people: all.n,
            few: all.n < data.min_group, roles_counted: from,
@@ -1216,7 +1236,7 @@ export async function findJobs(data, args = {}, env = {}) {
       if (g.sizes && !g.sizes.has(size)) { if (!size) unknownSize++; continue; }
       const jobRole = g.special ? g.special.slug
         : g.classified && p.roles.includes(g.roleSlug) ? g.roleSlug : p.roles[0] ?? null;
-      const context = salaryContext(data, table, job, jobRole);
+      const context = salaryContext(data, table, job, jobRole, jobRole ? [jobRole, ...p.roles] : p.roles);
       const own = p.eur;
       let basis;
       if (g.minSalary !== null) {
@@ -1325,6 +1345,7 @@ export async function findJobs(data, args = {}, env = {}) {
       "that person's salary, rounded. for_this_role: true when it is the median for the posting's " +
       "role. for_this_role: false when nobody at the company reports that role, or the posting names " +
       "none the data knows: then it is the company's median over the roles in roles_counted, which " +
+      "is given only when the posting is in a technical role and most of those salaries are too, and " +
       "says what the company pays, not what this job pays; say so whenever you quote it, and never " +
       "present it as the job's pay. null when the site has no salaries for the company" +
       (table ? "" : ", and this time for every posting: the companies table could not be read") +
