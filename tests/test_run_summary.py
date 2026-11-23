@@ -16,10 +16,25 @@ about\tAsk\t2026-11-22T22:02:01Z RUN_SUMMARY {not json}
 
 line = run_summary.line(RUN, LOG)
 assert line == {"at": "2026-11-22T22:28:30Z", "workflow": "about", "run": 7, "event": "schedule",
-                "conclusion": "success", "minutes": 28, "sha": "0123456",
+                "conclusion": "success", "failed": [], "minutes": 28, "sha": "0123456",
                 "summary": {"Stored": "20 sentences stored, 0 sent back",
                             "Asked": "727 companies without a sentence"}}, line
 # A run with no log, or cut before it started, still leaves its line.
 bare = run_summary.line({"workflowName": "refresh", "conclusion": "failure"}, "")
 assert bare["summary"] == {} and bare["minutes"] is None and bare["sha"] == "", bare
+# The steps that failed are named, so the line says where a run broke.
+broke = run_summary.line({**RUN, "conclusion": "failure", "jobs": [{"steps": [
+    {"name": "Set up job", "conclusion": "success"}, {"name": "Read the headlines", "conclusion": "failure"},
+    {"name": "Commit data/news.json", "conclusion": "skipped"}]}]}, "")
+assert broke["failed"] == ["Read the headlines"], broke
+
+# The crawl's refusals are counted by what was said, whatever the host.
+CRAWL = """jobs:   a.wd1.myworkdayjobs.com refused Acme ([browser_error] Browserbase answered HTTP 402 creating a session); retrying in 15s
+jobs:   b.wd5.myworkdayjobs.com refused Bolt (Inc) ([browser_error] Browserbase answered HTTP 402 creating a session); retrying in 30s
+jobs:   c.example refused Cabify ([blocked] HTTP 403); retrying in 15s
+jobs: 769 boards queried
+"""
+assert run_summary.refused(CRAWL) == ("[browser_error] Browserbase answered HTTP 402 creating a session x2, "
+                                      "[blocked] HTTP 403 x1"), run_summary.refused(CRAWL)
+assert run_summary.refused("") == ""
 print("all passed")

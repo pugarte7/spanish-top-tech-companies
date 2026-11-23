@@ -10,7 +10,9 @@
 #   scripts/private_data.sh contacts OUT   # only contacts.json, to OUT (deploy.yml)
 #   scripts/private_data.sh log-push FILE   # keep FILE as that log (refresh.yml)
 #   scripts/private_data.sh history         # one line per workflow run, oldest first
-#   scripts/private_data.sh history-push FILE   # add FILE's lines to it (history.yml)
+#   scripts/private_data.sh history-push FILE [LOG RUN]   # add FILE's lines to it, and keep
+#                                           # LOG as failed run RUN's log (history.yml)
+#   scripts/private_data.sh failed [RUN]    # the failed runs with a log kept, or one's log
 #
 # Encrypted with AES-256 (openssl, PBKDF2) under DATA_KEY: the env variable
 # on Actions, the login Keychain on the Mac (service spanish-top-tech-companies,
@@ -31,6 +33,8 @@ LOG=logs/latest.log.enc
 # One JSON line per workflow run (scripts/run_summary.py): counts only, so it
 # is kept as it is.
 HISTORY=logs/history.jsonl
+# The end of what a failed run's failed steps printed, one file per run.
+FAILED=logs/failed
 
 csv="${STC_DATA:-$HOME/.local/share/spanish-top-tech-companies-data/website/companies.csv}"
 dir="$(dirname "$csv")"
@@ -143,6 +147,11 @@ history_push() {
     mkdir -p "$clone/logs"
     cat "$1" >> "$clone/$HISTORY"
     git -C "$clone" add "$HISTORY"
+    if [ -n "${2:-}" ]; then
+      mkdir -p "$clone/$FAILED"
+      cp "$2" "$clone/$FAILED/${3:?the run of the log}.log"
+      git -C "$clone" add "$FAILED"
+    fi
     git -C "$clone" -c user.name="${GIT_AUTHOR_NAME:-$(git config user.name || echo history)}" \
       -c user.email="${GIT_AUTHOR_EMAIL:-$(git config user.email || echo history@localhost)}" \
       commit -q -m "History $(date -u +%F)"
@@ -156,6 +165,15 @@ history_push() {
 history() {
   sync_clone
   git -C "$clone" show "origin/main:$HISTORY"
+}
+
+failed() {
+  sync_clone
+  if [ -n "${1:-}" ]; then
+    git -C "$clone" show "origin/main:$FAILED/$1.log"
+  else
+    git -C "$clone" ls-tree --name-only "origin/main:$FAILED" 2> /dev/null | sed 's/\.log$//'
+  fi
 }
 
 log() {
@@ -183,7 +201,8 @@ case "${1:-}" in
   log) log ;;
   log-push) log_push "${2:?usage: $0 log-push FILE}" ;;
   history) history ;;
-  history-push) history_push "${2:?usage: $0 history-push FILE}" ;;
+  history-push) history_push "${2:?usage: $0 history-push FILE [LOG RUN]}" "${3:-}" "${4:-}" ;;
+  failed) failed "${2:-}" ;;
   contacts) contacts "${2:?usage: $0 contacts OUT}" ;;
-  *) echo "usage: $0 pull|push|log|log-push FILE|history|history-push FILE|contacts OUT" >&2; exit 2 ;;
+  *) echo "usage: $0 pull|push|log|log-push FILE|history|history-push FILE [LOG RUN]|failed [RUN]|contacts OUT" >&2; exit 2 ;;
 esac
