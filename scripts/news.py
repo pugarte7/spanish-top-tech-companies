@@ -24,6 +24,7 @@ spanish-top-tech-companies, account openrouter).
 from __future__ import annotations
 
 import argparse
+import collections
 import concurrent.futures
 import datetime
 import email.utils
@@ -145,14 +146,24 @@ def key() -> str:
     return found
 
 
+# Why a feed was not read or the model did not answer, counted for the run's last line.
+REASONS: collections.Counter = collections.Counter()
+
+
+def reason(what: str, error: Exception) -> str:
+    return f"{what} HTTP {error.code}" if isinstance(error, urllib.error.HTTPError) \
+        else f"{what} {type(error).__name__}"
+
+
 def get(url: str, limit: int = 400_000) -> str:
     for wait in (0, 4):
         time.sleep(wait)
         try:
             with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=20) as answer:
                 return answer.read(limit).decode("utf-8", "replace")
-        except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError):
-            pass
+        except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError) as error:
+            why = reason("feed", error)
+    REASONS[why] += 1
     return ""
 
 
@@ -180,6 +191,8 @@ def headlines(name: str, today: datetime.date) -> list[dict] | None:
     try:
         items = ET.fromstring(feed).iter("item")
     except ET.ParseError:       # an empty answer too: Google throttles a long run
+        if feed:
+            REASONS["feed not XML"] += 1
         return None
     out = []
     for item in items:
@@ -223,9 +236,11 @@ def ask(api_key: str, model: str, text: str) -> dict | None:
         except urllib.error.HTTPError as error:
             if error.code in (401, 402, 403):
                 raise SystemExit(f"OpenRouter refused the key or the credit ({error.code}).")
+            why = reason("model", error)
         except (urllib.error.URLError, http.client.HTTPException, OSError, KeyError, IndexError,
-                TypeError, ValueError):
-            pass
+                TypeError, ValueError) as error:
+            why = reason("model", error)
+    REASONS[why] += 1
     return None
 
 
@@ -287,6 +302,7 @@ def main() -> int:
                 text, found, read = job.result()
             except Exception as error:      # one company never ends the run
                 text, found, read = "", {}, []
+                REASONS[f"script {type(error).__name__}"] += 1
                 print(f"{slug}: {type(error).__name__}", file=sys.stderr)
             if args.dry:
                 print(text, end="\n\n")
@@ -319,7 +335,8 @@ def main() -> int:
     OUT.write_text(json.dumps(book, ensure_ascii=False, indent=0) + "\n")
     print(f"{len(known)} companies in {OUT.name}: of {len(companies)} asked, {fresh} with news, "
           f"{unpicked} with no headline that counts, {silent} with no headlines, "
-          f"{failed} not read or not answered", file=sys.stderr)
+          f"{failed} not read or not answered"
+          + "".join(f"; {why} x{count}" for why, count in REASONS.most_common(6)), file=sys.stderr)
     return 1 if failed > len(companies) / 2 else 0
 
 

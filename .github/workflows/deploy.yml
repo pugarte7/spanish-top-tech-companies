@@ -118,11 +118,12 @@ jobs:
         run: |
           npm install --global vercel@latest
           vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-          vercel build --prod --token="$VERCEL_TOKEN"
+          set -o pipefail
+          vercel build --prod --token="$VERCEL_TOKEN" 2>&1 | tee "$RUNNER_TEMP/build.log"
 
       - name: Summary
         if: ${{ hashFiles('_site/api/v1/jobs.json') != '' }}
-        run: python3 scripts/run_summary.py postings _site/api/v1/jobs.json
+        run: python3 scripts/run_summary.py postings _site/api/v1/jobs.json "$RUNNER_TEMP/build.log"
 
       - name: /mcp answers
         run: node tests/mcp.test.mjs

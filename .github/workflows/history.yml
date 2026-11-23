@@ -2,8 +2,10 @@ name: history
 
 # One line per run of the workflows below, kept in the private repo
 # (private_data.sh history): when, how long, how it ended and the counts the
-# run printed with scripts/run_summary.py. Actions drops its own logs after 90
-# days; this is what is left to see how the runs go over time.
+# run printed with scripts/run_summary.py, and which steps failed. A run that
+# did not end well also leaves the end of its failed steps' log there
+# (private_data.sh failed). Actions drops its own logs after 90 days; this is
+# what is left to see how the runs go over time.
 #
 # Secret: DATA_DEPLOY_KEY, the private repo's deploy key (refresh.yml).
 
@@ -30,13 +32,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ github.event.workflow_run.id }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           DATA_DEPLOY_KEY: ${{ secrets.DATA_DEPLOY_KEY }}
           GIT_AUTHOR_NAME: github-actions[bot]
           GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: |
           [ -n "$DATA_DEPLOY_KEY" ] || { echo "DATA_DEPLOY_KEY is not set."; exit 1; }
           gh run view "$RUN_ID" -R "$GITHUB_REPOSITORY" \
-            --json databaseId,workflowName,event,conclusion,startedAt,updatedAt,headSha > "$RUNNER_TEMP/run.json"
+            --json databaseId,workflowName,event,conclusion,startedAt,updatedAt,headSha,jobs > "$RUNNER_TEMP/run.json"
           # The log is not always there the second the run ends.
           for try in 1 2 3; do
             gh run view "$RUN_ID" -R "$GITHUB_REPOSITORY" --log > "$RUNNER_TEMP/run.log" 2> /dev/null && break
@@ -49,6 +52,12 @@ jobs:
           ssh-keyscan -q github.com >> ~/.ssh/known_hosts
           export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/data_key -o IdentitiesOnly=yes"
           export STC_DATA="$RUNNER_TEMP/data/website/companies.csv"
-          bash scripts/private_data.sh history-push "$RUNNER_TEMP/line.jsonl" > /dev/null 2>&1 \
+          # What the failed steps printed is public already; kept because it expires.
+          failed=()
+          if [ "$CONCLUSION" != success ]; then
+            gh run view "$RUN_ID" -R "$GITHUB_REPOSITORY" --log-failed 2> /dev/null | cut -f2- | tail -n 400 > "$RUNNER_TEMP/failed.log" || true
+            [ -s "$RUNNER_TEMP/failed.log" ] && failed=("$RUNNER_TEMP/failed.log" "$RUN_ID")
+          fi
+          bash scripts/private_data.sh history-push "$RUNNER_TEMP/line.jsonl" "${failed[@]}" > /dev/null 2>&1 \
             || { echo "Could not keep the history."; exit 1; }
           echo "Kept."
