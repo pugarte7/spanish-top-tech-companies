@@ -34,6 +34,14 @@
 // previous jobs.json unchanged (its generated_at says how old), and with no
 // board read and nothing to carry over there is no file.
 //
+// Careers sites that turn the MCP's address away (data/browser-hosts.json)
+// get their application forms stored here, so job_questions can serve them:
+// `forms` holds each distinct list of fields once, and a posting on such a
+// site carries `form` (its place in that list) and `form_read` (the day it was
+// read). Each form is read once, the first day its posting is in the index,
+// through the cloud browser; after that production's previous jobs.json keeps
+// it. Only Viterbit's application page has a reader (api/_viterbit.js).
+//
 // A posting whose board gives no date carries `seen`, the day it first appeared
 // in the index, taken from production's previous jobs.json, so the MCP can tell
 // one listed for over a year. Production's file is the only record: when it
@@ -43,6 +51,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { classify, frontline, payAsked } from "../api/_classify.js";
+import { isViterbit, viterbitApplyUrl, viterbitFields } from "../api/_viterbit.js";
 
 export const VERSION = 1;
 /** lib/ats location classes for an office in Spain, or remote from it.
@@ -91,6 +100,9 @@ const MAX_TRIES = 4;
 const HOST_STRIKES = 5;
 /** Days a failing board's postings are carried over from the previous index. */
 const STALE_DAYS = 7;
+/** Most application forms read in one run: each is a page in the cloud browser,
+ * whose minutes are billed. A posting left over is read the next day. */
+const MAX_FORM_READS = 250;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const norm = (s) => String(s ?? "").normalize("NFKD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
@@ -398,6 +410,59 @@ export function stampSeen(index, previous) {
   };
 }
 
+const hostOf = (url) => { try { return new URL(url).hostname; } catch { return ""; } };
+
+/**
+ * Stores the application forms of the postings on `hosts` (sites that turn
+ * the MCP away): the form production's previous index already holds for a
+ * posting, else one read now with `read(url)` (the page's HTML), up to `max`
+ * reads. A page that is not Viterbit's, a posting that closed and a read that
+ * fails store nothing. Returns the index with `forms` (only when there is
+ * one) and the number of pages read and failed.
+ */
+export async function storeForms(index, previous, hosts, read, max = MAX_FORM_READS) {
+  const known = new Map();
+  if (isIndex(previous) && Array.isArray(previous.forms)) {
+    for (const job of previous.jobs) {
+      const fields = Number.isInteger(job.form) ? previous.forms[job.form] : null;
+      if (Array.isArray(fields)) known.set(job.id, { fields, read: job.form_read ?? null });
+    }
+  }
+  const wanted = new Set(hosts);
+  const today = index.generated_at.slice(0, 10);
+  const forms = [], place = new Map();
+  let reads = 0, failed = 0;
+  const jobs = [];
+  for (const { form: _form, form_read: _read, ...job } of index.jobs) {
+    let stored = null;
+    if (job.ats === "jsonld" && wanted.has(hostOf(job.url))) {
+      stored = known.get(job.id) ?? null;
+      if (!stored && reads < max) {
+        reads += 1;
+        try {
+          const page = await read(viterbitApplyUrl(job.url));
+          const fields = isViterbit(page) ? viterbitFields(page) : null;
+          if (fields?.length) stored = { fields, read: today };
+        } catch {
+          failed += 1;
+        }
+      }
+    }
+    if (!stored) {
+      jobs.push(job);
+      continue;
+    }
+    const key = JSON.stringify(stored.fields);
+    if (!place.has(key)) {
+      place.set(key, forms.length);
+      forms.push(stored.fields);
+    }
+    jobs.push({ ...job, form: place.get(key), form_read: stored.read });
+  }
+  const { forms: _forms, ...rest } = index;
+  return { index: forms.length ? { ...rest, jobs, forms } : { ...rest, jobs }, reads, failed };
+}
+
 /** The ATS modules in lib/ats. */
 export async function loadAts() {
   const [registry, location, campaign] = await Promise.all([
@@ -549,6 +614,14 @@ async function main() {
       }
     }
     index = stampSeen(index, prior);
+    // Without the browser these sites refuse every read: only the forms already stored are kept.
+    const { fetchText } = await import("../lib/ats/sources/http.js");
+    const stored = await storeForms(index, prior, direct,
+      (url) => fetchText(url, { allowedHosts: [hostOf(url)], retries: 1 }),
+      bb.browserbaseEnabled() ? MAX_FORM_READS : 0);
+    index = stored.index;
+    log(`application forms: ${index.jobs.filter((job) => Number.isInteger(job.form)).length} postings ` +
+        `(${(index.forms ?? []).length} distinct), ${stored.reads} pages read, ${stored.failed} failed`);
     // An index with no board read and nothing carried over would read as "no
     // openings anywhere"; no file says the truth.
     if (boards.queried > 0 && boards.failed === boards.queried && !index.boards.stale) {

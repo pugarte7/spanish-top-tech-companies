@@ -17,6 +17,7 @@
 
 import { readFileSync } from "node:fs";
 import { after, capture, cut, event, origin, redact, uuidv7 } from "./_track.js";
+import { viterbitApplyUrl } from "./_viterbit.js";
 import { CLASSIFIED, KEYWORD_FORMS, KEYWORD_WORDS, PLACES, QUERY_KEYWORD, REMOTE, SENIORITIES, keywordsOf, norm,
   placeNames, plainWords, regionsOf, seniorityOf, titleRoles, words, workplaceOf } from "./_classify.js";
 
@@ -26,7 +27,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.27.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.28.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -184,7 +185,9 @@ const TOOLS = {
                    "Phenom career site leads to it; for SmartRecruiters and SuccessFactors (Capgemini too), whose forms are " +
                    "not public, the posting, the board's standard steps and board_notes, what agents found when sending " +
                    "there; for Amazon, the posting and account_required, since its form is shown after sign-in; for careers " +
-                   "sites with schema.org JobPosting, the posting; other boards are read in the browser): " +
+                   "sites with schema.org JobPosting, the posting; for Viterbit careers sites that turn this server away " +
+                   "(Capitole, Prosegur), the form the site's daily crawl read, with form_read_at; other boards are " +
+                   "read in the browser): " +
                    "each question with its type, options, whether it is required, the most characters " +
                    "the board takes (max_length) when it says, and who answers " +
                    "it (person or agent), the posting text marked as untrusted, and the URL to " +
@@ -2332,6 +2335,9 @@ export function jsonldPosting(html) {
            closes: typeof post.validThrough === "string" ? Date.parse(post.validThrough) : NaN };
 }
 
+/** What a careers site answers when it turns this server away, not the person. */
+const SITE_REFUSED = new Set([401, 403, 429, 503]);
+
 async function jsonldForm(env, board, external, job) {
   const host = String(board).split("/")[0];
   if (!SITE_HOST.test(host) || hostOf(job.url) !== host) throw new BoardError("the posting's board is not its careers site");
@@ -2340,6 +2346,14 @@ async function jsonldForm(env, board, external, job) {
   try {
     page = await fetchBoard(env, url, { text: true, site: host });
   } catch (e) {
+    // A site that turns this server away (Cloudflare's challenge) still opens in
+    // the person's browser: the answer goes on without the posting.
+    if (e instanceof BoardError && SITE_REFUSED.has(e.status))
+      return { apply_url: job.url, captcha: null, description: null, location: [], refused: e.status,
+               questions: [unread("application_form", `The posting and its application form on ${host}, which ` +
+                 "turned this server away: open url in the browser, read both there and classify each question " +
+                 "with the same rule")],
+               source: `${host} turned this server away (${e.status}), so the posting was not read: open url in the browser` };
     // Porsche Digital moves its pages under /en/: one redirect on the same host is followed.
     const away = e instanceof BoardError ? await redirectTo(env, url) : null;
     if (!away) throw e;
@@ -2474,6 +2488,26 @@ function locationCheck(job, live) {
                     "board, and tell the person before they decide." };
 }
 
+// A form the daily crawl read and stored in the index (scripts/jobs.mjs,
+// storeForms): careers sites that turn this server away, read through the
+// cloud browser. Null for a posting without one.
+export function storedForm(index, job) {
+  const fields = Number.isInteger(job.form) && Array.isArray(index.forms) ? index.forms[job.form] : null;
+  if (!Array.isArray(fields) || !fields.length) return null;
+  const day = typeof job.form_read === "string" ? job.form_read : "a recent day";
+  return {
+    apply_url: viterbitApplyUrl(job.url), captcha: null, description: null, read_at: job.form_read ?? null,
+    questions: fields.filter(isObject).map((f) => question(String(f.key), f.label, f.required === true,
+      String(f.type ?? "text"), Array.isArray(f.options) ? f.options.map(String) : [], "application", {
+        ...(f.consent ? { who: "person", category: "consent" } : {}),
+        ...(typeof f.preselected === "string" ? { preselected: f.preselected } : {}) })),
+    source: `The careers site's application page, read by the site's daily crawl on ${day}: the site turns ` +
+      "this server away, so neither it nor the posting was read now. Open apply_url in the browser, check the " +
+      "form still asks these questions, and read the posting at url there. A question with preselected comes " +
+      "with that option already chosen: set it to the person's answer.",
+  };
+}
+
 // How job_questions got on with a posting's form, for PostHog. form_read alone
 // counted a form the board keeps behind a sign-in or off its API (SmartRecruiters,
 // SuccessFactors, Amazon: by design) like a failure, and 35% of reads looked
@@ -2483,6 +2517,7 @@ function locationCheck(job, live) {
 export function formAccess(out) {
   const unread = (key) => out.questions?.some((q) => q.key === key);
   const access = out.form_source === null ? "no_reader"
+    : out.form_read_at !== undefined ? "stored"
     : out.board_refused ? "refused"
     : unread("find_posting") ? "posting_moved"
     : unread("application_form") ? (out.account_required ? "sign_in" : "not_public")
@@ -2501,7 +2536,9 @@ export async function jobQuestions(data, args = {}, env = {}) {
   const posting = { id: job.id, title: job.title, company: job.company, location: job.location ?? null,
                     workplace: job.workplace ?? null, url: job.url, ats: job.ats };
   const parts = splitId(job.id);
-  const read = parts && job.ats === parts[0] && Object.hasOwn(FORMS, job.ats) ? FORMS[job.ats] : null;
+  const stored = storedForm(index, job);
+  const read = stored ? async () => stored
+    : parts && job.ats === parts[0] && Object.hasOwn(FORMS, job.ats) ? FORMS[job.ats] : null;
   const unreadAnswer = () => ({ job: posting, apply_url: job.url, form_source: null, questions: null, description: null,
     captcha: null,
     note: `job_questions reads Greenhouse, Lever, Ashby, Workable, Recruitee, Teamtailor, BambooHR, Pinpoint, Rippling, ` +
@@ -2510,7 +2547,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
           "Open url in your browser and read the form there; classify its questions with the " +
           "same rule (see application_guide)." });
   if (!read) return unreadAnswer();
-  if (env.live) {
+  if (env.live && !stored) {
     if (env.live.left <= 0) throw new QueryError(`at most ${LIVE_PER_REQUEST} job_questions calls per request`, "rate_limited");
     env.live.left--;
   }
@@ -2532,6 +2569,7 @@ export async function jobQuestions(data, args = {}, env = {}) {
     captcha: form.captcha,
     ...(form.account_required ? { account_required: true, employer_questions: form.employer_questions } : {}),
     ...(form.refused ? { board_refused: form.refused } : {}),
+    ...(stored ? { form_read_at: form.read_at } : {}),
     ...(form.standard_steps ? { standard_steps: true, standard_steps_note: STANDARD_STEPS_NOTE } : {}),
     ...(form.board_notes ? { board_notes: { from: "what agents reported after sending applications on this board",
                                            notes: form.board_notes } } : {}),
