@@ -6,7 +6,7 @@ name: remote boards
 # scripts/remote_boards.mjs takes every board Common Crawl's index names on
 # Greenhouse, Ashby, Lever, Teamtailor, SmartRecruiters, Recruitee, BambooHR,
 # Personio, Pinpoint, Rippling, Gem and Factorial and reads each one, for at
-# most 200 minutes: an ATS not finished by then goes on from another place
+# most 330 minutes: an ATS not finished by then goes on from another place
 # next time. scripts/remote_levels.py keeps those whose posting
 # states pay or that Levels.fyi knows with a salary in Spain, in
 # data/remote-boards.json. site.py adds
@@ -41,7 +41,7 @@ jobs:
   remote:
     if: vars.REFRESH_PAUSED != 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 355
     steps:
       - name: Skip while paused
         id: paused
@@ -72,7 +72,7 @@ jobs:
         if: steps.paused.outputs.skip != 'true'
         run: |
           npm ci --omit=dev -q
-          node scripts/remote_boards.mjs --minutes 200
+          node scripts/remote_boards.mjs --minutes 330
 
       - name: Keep the ones that state pay or Levels.fyi knows in Spain
         id: judge
