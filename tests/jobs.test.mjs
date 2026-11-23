@@ -655,11 +655,13 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
     "https://api.rippling.com/platform/api/ats/v2/board/chess/jobs/a1": { description: { role: "<p>Run it</p>" } },
     "https://api.rippling.com/platform/api/ats/v2/board/chess/jobs/b2": { description: { role: "<p>Translate</p>" } },
   };
+  const asked = [];
   const saved = globalThis.fetch;
   globalThis.fetch = async (url, init = {}) => {
     const key = String(url).split("?")[0];
     const body = init.body ? JSON.parse(init.body) : null;
     if (body) posted.push(body);
+    asked.push(key);
     const answer = typeof API[key] === "function" ? API[key](body) : API[key];
     return answer ? new Response(JSON.stringify(answer), { status: 200 }) : new Response("not found", { status: 404 });
   };
@@ -684,6 +686,12 @@ BOARDS["https://api.gem.com/job_board/v0/acme-gmbh/job_posts/"] = [
   const chess = await read("Chess.com", "rippling", "chess");
   assert.deepEqual(inSpain(chess).map((j) => [j.title, j.workplaceType]), [["Site Reliability Engineer", "remote"]]);
   assert.match(chess[0].descriptionText, /Run it/);
+  asked.length = 0;
+  const lean = await adapterFor("rippling").listJobs(CompanySchema.parse({ name: "Chess.com", ats: "rippling", board: "chess" }),
+    "2026-11-09T00:00:00Z", { wanted: (job) => inSpain([job]).length > 0 });
+  assert.deepEqual(asked.filter((key) => /\/jobs\/./.test(key)), ["https://api.rippling.com/platform/api/ats/v2/board/chess/jobs/a1"],
+                   "board discovery spends a request only on a posting open to Spain");
+  assert.deepEqual(lean.map((j) => j.descriptionText.length > 0), [true, false], "the other comes back as the list has it");
   const rippling = adapterFor("rippling");
   assert.deepEqual(rippling.boardFromUrl("https://ats.rippling.com/chess/jobs"), { ats: "rippling", board: "chess", region: "global" });
   assert.equal(rippling.boardFromPage("https://www.chess.com/jobs", '<a href="https://ats.rippling.com/chess/jobs/a1">')?.board, "chess");

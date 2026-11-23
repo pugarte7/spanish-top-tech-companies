@@ -154,21 +154,36 @@ export function judge(jobs, toEntry) {
            hosts: rows.length ? hostsIn(jobs) : [] };
 }
 
-async function probe(kind, boards, ats, toEntry, log, deadline) {
+/** Milliseconds between two boards of an ATS that gives each board its own
+ * host, where the polite client's interval per host slows nothing down:
+ * Personio refuses a few hundred boards read as fast as they answer. */
+const BOARD_INTERVAL_MS = { personio: 1000, bamboohr: 400 };
+/** How long one board may take. */
+const BOARD_MS = 120_000;
+
+async function probe(kind, boards, ats, toEntry, wanted, log, deadline) {
   const adapter = ats.adapterFor(kind);
   const found = [];
   let strikes = 0;
   let read = 0;
+  let next = 0;
   for (const board of boards) {
     if (Date.now() > deadline) {
       log(`${kind} out of time after ${read}; the rest wait for the next run`);
       return { found, read, complete: false };
     }
+    await new Promise((resolve) => setTimeout(resolve, Math.max(0, next - Date.now())));
+    next = Date.now() + (BOARD_INTERVAL_MS[kind] ?? 0);
+    // A board given up on asks for nothing more.
+    let live = true;
     try {
       const company = ats.CompanySchema.parse({ name: board, ats: kind, board, active: true });
       const jobs = await Promise.race([
-        adapter.listJobs(company, new Date().toISOString()),
-        new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error("timeout"), { code: "timeout" })), 120_000)),
+        adapter.listJobs(company, new Date().toISOString(), { wanted: (job) => live && wanted(job) }),
+        new Promise((_, reject) => setTimeout(() => {
+          live = false;
+          reject(Object.assign(new Error("timeout"), { code: "timeout" }));
+        }, BOARD_MS)),
       ]);
       strikes = 0;
       read += 1;
@@ -227,15 +242,19 @@ async function main() {
     if (day !== "no") boards[id.slice(0, at)]?.add(id.slice(at + 1));
   }
 
-  const { loadAts, entry } = await import(pathToFileURL(join(ROOT, "scripts/jobs.mjs")).href);
+  const { loadAts, entry, openToSpain, SPAIN_CLASSES } = await import(pathToFileURL(join(ROOT, "scripts/jobs.mjs")).href);
   const ats = await loadAts();
   const known = new Set(JSON.parse(readFileSync(values.data, "utf8")).roles.map((role) => role.slug));
   const toEntry = (job, board) => entry(job, board, null, ats.location, known);
+  // SmartRecruiters, Rippling and BambooHR take a request per posting for
+  // its text, most of a run: only a posting whose place the list gives as
+  // open to Spain is worth one.
+  const wanted = (job) => Boolean(openToSpain(job, ats.location.analyzeLocation)?.some((c) => SPAIN_CLASSES.has(c)));
   const deadline = Date.now() + Number(values.minutes) * 60_000;
   const results = await Promise.all(kinds.map(async (kind) => {
     let list = rotated([...boards[kind]].filter((board) => !listed.has(key({ ats: kind, board }))).sort());
     if (values.limit) list = list.slice(0, Number(values.limit));
-    const result = await probe(kind, list, ats, toEntry, log, deadline);
+    const result = await probe(kind, list, ats, toEntry, wanted, log, deadline);
     log(`${kind}: ${result.read} of ${list.length} boards read, ${result.found.length} candidates`);
     return { kind, ...result, asked: list.length };
   }));
