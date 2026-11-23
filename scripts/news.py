@@ -241,7 +241,7 @@ def latest(company: dict, about: dict, today: datetime.date, api_key: str | None
         return text, {}, news
     es, en, number = clean(answer.get("es")), clean(answer.get("en")), answer.get("i")
     if (answer.get("found") is not True or not es or not en or max(len(es), len(en)) > LATEST_MAX
-            or not isinstance(number, int) or not 1 <= number <= news):
+            or not isinstance(number, int) or not 1 <= number <= len(news)):
         return text, None, news
     chosen = news[number - 1]
     return text, {"es": es, "en": en, "date": chosen["date"], "source": chosen["source"],

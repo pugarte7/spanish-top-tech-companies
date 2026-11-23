@@ -28,6 +28,9 @@ jobs:
       - name: Company descriptions are checked
         run: python3 tests/test_about.py
 
+      - name: News answers are checked
+        run: python3 tests/test_news.py
+
       - name: Run history lines
         run: python3 tests/test_run_summary.py
 
