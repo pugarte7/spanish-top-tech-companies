@@ -57,7 +57,7 @@ export const VERSION = 1;
 /** lib/ats location classes for an office in Spain, or remote from it.
  * Its "europe" is an office in another European country, or remote from one
  * of them, unless the place is Europe as a whole ("Home based - EMEA"). */
-const SPAIN_CLASSES = new Set(["spain", "remote-spain", "remote-europe"]);
+export const SPAIN_CLASSES = new Set(["spain", "remote-spain", "remote-europe"]);
 /** An office that names no place, only remoteness: "Remote", "Distributed",
  * "Home based - Worldwide". lib/ats calls any remote office it cannot place
  * remote-global, "Remote India" and "Sydney" on a remote posting included. */
