@@ -135,6 +135,8 @@ def open_issues(limit: int, dry: bool) -> int:
         for issue in enrich.issues(LABEL):
             asked |= set(asked_in(issue))
     todo = [c for c in todo if c["slug"] not in asked]
+    if not dry:
+        limit = min(limit, enrich.room())
     opened = 0
     for start in range(0, len(todo), PER_ISSUE):
         if opened >= limit:

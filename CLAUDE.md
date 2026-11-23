@@ -74,6 +74,8 @@ After any data change: `python3 scripts/validate.py && python3 scripts/site.py
   outside agent): `enrich.yml` opens issues of 50 companies in the private
   repo and `scripts/enrich.py collect` checks and stores the answers. Change
   `brief.md` and `schema.json` together.
+- The agent sees only the private repo's newest 100 issues, so no more than
+  `enrich.OPEN_MAX` are ever open there, whatever their label.
 - The agent corrects itself with a new comment: a later answer in the same
   issue replaces what the earlier one left (`enrich.corrects()`), for sizes,
   contacts and descriptions, also in issues closed in the last

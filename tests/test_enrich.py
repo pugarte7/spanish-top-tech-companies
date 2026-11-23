@@ -133,6 +133,13 @@ check("a JSON block that does not parse is an answer to send back",
 
 check("a block left open at the end is read", enrich.json_block("```json\n{\"a\": 1}\n") == {"a": 1})
 
+saved_gh = enrich.gh
+enrich.gh = lambda *args, **kw: json.dumps([{"number": n} for n in range(enrich.OPEN_MAX - 3)])
+check("there is room for issues only up to OPEN_MAX open ones", enrich.room() == 3)
+enrich.gh = lambda *args, **kw: json.dumps([{"number": n} for n in range(enrich.OPEN_MAX + 40)])
+check("with more open than that there is room for none", enrich.room() == 0)
+enrich.gh = saved_gh
+
 # --- collect, with the private repo and the files replaced -------------------------
 import tempfile  # noqa: E402
 
