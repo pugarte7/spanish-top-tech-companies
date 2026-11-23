@@ -46,7 +46,7 @@ RECHECK_DAYS = 90
 DROP_DAYS = 45
 # Asked about when engineers alone do not reach MIN_GLOBAL: the site sums
 # every role, and the API answers one job family at a time.
-OTHER_ROLES = ("product-manager", "data-scientist", "product-designer", "software-engineering-manager")
+OTHER_ROLES = fs.COMMON_ROLES[1:]
 AFFIXES = re.compile(r"^(try|get|join|go|use|hello)-?|-?(hq|inc|careers|jobs|ai|io|app|labs|tech|group|gmbh)$")
 GENERIC = {"www", "careers", "jobs", "global", "corporate", "group", "en", "es"}
 

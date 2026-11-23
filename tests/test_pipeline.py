@@ -302,7 +302,11 @@ def test_the_world_vouches_for_a_company() -> None:
              "repsol|software-engineer": {"total": 3, **seen},
              "repsol|product-manager": {"total": 3, **seen},
              "hand|software-engineer": {"total": 1, **seen},
-             "stale|software-engineer": {"total": 1, "checked": "2025-01-01"}}
+             "stale|software-engineer": {"total": 1, "checked": "2025-01-01"},
+             "studio|software-engineering-manager": {"total": 1, **seen},
+             "studio|software-engineer": {"total": 4, **seen},
+             "half|software-engineer": {"total": 1, **seen},
+             "half|product-manager": {"total": 3, **seen}}
     with temp_data(
             company("deka", entry(PER_LOCATION, base=300000)),
             company("repsol", *[entry(PER_LOCATION, base=60000 + i) for i in range(3)],
@@ -310,17 +314,35 @@ def test_the_world_vouches_for_a_company() -> None:
             company("hand", entry(None, source="company-published", base=90000), entry(PER_LOCATION)),
             company("stale", entry(PER_LOCATION)),
             company("dark", entry(PER_LOCATION)),
+            company("studio", entry(PER_LOCATION, role="software-engineering-manager")),
+            company("half", entry(PER_LOCATION)),
             company("many", *[entry(PER_LOCATION, base=70000 + i) for i in range(5)])):
         stats = fetch_spain.prune_unproven(cache, TODAY)
         left = {c["levels_slug"]: len(c["entries"]) for c in lib.load_companies()}
         check("one submission in the world, over every role, drops the company",
-              (stats, "deka" in left), ({"unproven": 2, "companies": 1}, False))
+              (stats, "deka" in left), ({"unproven": 3, "companies": 2}, False))
         check("three engineers and three product managers are six people",
               left["repsol"], 6)
         check("the other source's row stays when the Levels.fyi one goes", left["hand"], 1)
         check("a stale or missing answer judges nothing",
               (left["stale"], left["dark"]), (1, 1))
         check("five Spanish rows are five submissions", left["many"], 5)
+        check("one manager in Spain and four engineers abroad are five", left["studio"], 1)
+        check("a common role not asked yet counts as none", "half" in left, False)
+
+    asked = []
+    original = (fetch_spain.worldwide, fetch_spain.GLOBAL_CACHE)
+    fetch_spain.worldwide = lambda bearer, slug, role, delay: asked.append(role) or {"total": 2}
+    try:
+        with tempfile.TemporaryDirectory() as directory:
+            fetch_spain.GLOBAL_CACHE = pathlib.Path(directory) / "global.json"
+            budget = [3]
+            fetch_spain.world_small("token", {}, "studio", "recruiter", 0, TODAY, budget)
+            fetch_spain.world_small("token", {}, "other", "recruiter", 0, TODAY, budget)
+    finally:
+        fetch_spain.worldwide, fetch_spain.GLOBAL_CACHE = original
+    check("a small company is asked about until five are found, within the run's budget",
+          asked, ["recruiter", "software-engineer", "product-manager", "recruiter", "software-engineer"])
 
     by_slug, _ = fed([row("acme", companyInfo={"icon": "https://img.logo.dev/acme.example?token=x"})])
     with temp_data(acme(entry(PER_LOCATION, base=80000))):
