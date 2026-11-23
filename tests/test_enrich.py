@@ -144,6 +144,8 @@ split = lambda slugs: "```json\n" + json.dumps({"companies": [{"slug": slug} for
 check("an answer split over comments is read whole, the newest item winning",
       enrich.reply([said(me, split(["a", "b"])), said(me, split(["b", "c"]))])
       == ("answer", {"companies": [{"slug": "a"}, {"slug": "b"}, {"slug": "c"}]}))
+check("a comment that is JSON without a fence is an answer",
+      enrich.reply([said(me, json.dumps(example))]) == ("answer", example))
 check("answers before this script's note are not read again",
       enrich.reply([said(me, split(["a"])), said(me, enrich.MARK), said(me, split(["b"]))])
       == ("answer", {"companies": [{"slug": "b"}]}))

@@ -165,7 +165,15 @@ def json_block(text: str):
             return json.loads(block)
         except json.JSONDecodeError:
             continue
-    return None
+    try:
+        # The agent sometimes leaves the fence out: a comment that is JSON itself.
+        return json.loads(text) if (text or "").lstrip().startswith("{") else None
+    except json.JSONDecodeError:
+        return None
+
+
+def answers(body: str) -> bool:
+    return "```json" in body or body.lstrip().startswith("{")
 
 
 def merged(answers: list):
@@ -192,30 +200,30 @@ def reply(comments: list[dict]) -> tuple[str, object]:
     or ("pending", None) with no answer yet. The answer is every JSON block
     since this script last spoke, merged. Other accounts' comments, and
     ANSWERER's without a JSON block, are passed over."""
-    answers: list = []
+    found: list = []
     for c in reversed(comments):
         if (c.get("author") or {}).get("login") != ANSWERER:
             continue
         body = c.get("body") or ""
         if MARK in body:
-            if answers:
+            if found:
                 break
             return "handled", None
-        if NEEDS_HUMAN.search(body) and not answers:
+        if NEEDS_HUMAN.search(body) and not found:
             return "needs-human", None
-        if "```json" in body:
-            answers.insert(0, json_block(body))
-    if not answers:
+        if answers(body):
+            found.insert(0, json_block(body))
+    if not found:
         return "pending", None
-    return "answer", None if answers[-1] is None else merged([a for a in answers if a is not None])
+    return "answer", None if found[-1] is None else merged([a for a in found if a is not None])
 
 
 def corrects(comments: list[dict]) -> bool:
     """Whether the newest answer comes after an earlier one in the same issue:
     the agent corrects itself with a new comment, and the new one wins."""
-    answers = [c for c in comments if (c.get("author") or {}).get("login") == ANSWERER
-               and MARK not in (c.get("body") or "") and "```json" in (c.get("body") or "")]
-    return len(answers) > 1
+    given = [c for c in comments if (c.get("author") or {}).get("login") == ANSWERER
+               and MARK not in (c.get("body") or "") and answers(c.get("body") or "")]
+    return len(given) > 1
 
 
 # --- What is stored ----------------------------------------------------------------
