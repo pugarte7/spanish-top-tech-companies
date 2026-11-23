@@ -14,6 +14,12 @@ READ = [{"title": "Acme abre oficina en Málaga", "date": "2026-11-20", "source"
          "url": "https://news.example/2"}]
 ACME = {"name": "Acme", "levels": "acme", "web": "https://acme.example"}
 
+# An empty or broken answer from Google News is "not read"; an empty feed is "no headlines".
+news.get = lambda url, limit=0: ""
+assert news.headlines("Acme", TODAY) is None
+news.get = lambda url, limit=0: "<rss><channel></channel></rss>"
+assert news.headlines("Acme", TODAY) == []
+
 
 def latest(answer, read=READ, key="k"):
     news.headlines = lambda name, today: read
@@ -33,6 +39,8 @@ for bad in ({"found": False, "i": 0, "es": "", "en": ""}, {**good, "i": 3}, {**g
     assert latest(bad)[1] is None, bad
 # No answer from the model is a failure, told apart from "no news".
 assert latest(None)[1] == {}
+# Google News not answering is a failure too, never "no headlines".
+assert latest(good, read=None)[1:] == ({}, [])
 # No headlines: the model is not asked.
 assert latest(good, read=[])[1:] == (None, [])
 print("all passed")
