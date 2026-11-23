@@ -25,7 +25,8 @@ change labels. Never guess: a field you cannot source is null, and an empty
 }
 ```
 
-`website` and `linkedin` fix the identity. If they disagree, or the name
+A company with hundreds of postings lists only the first that fit in the
+issue. `website` and `linkedin` fix the identity. If they disagree, or the name
 belongs to several companies and you cannot tell which, stop and comment
 `NEEDS_HUMAN`.
 

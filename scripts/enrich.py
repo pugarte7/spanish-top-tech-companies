@@ -277,10 +277,22 @@ def wanted(data: dict, jobs: list[dict], sizes: dict, contacts: dict, today: dt.
     return out
 
 
+# GitHub refuses an issue body over 65,536 characters, and a consultancy has
+# hundreds of postings.
+BODY_MAX = 60_000
+
+
 def issue_body(asked: dict) -> str:
-    return (f"Instructions: {BRIEF}\n\nAnswer with one comment by {ANSWERER} holding one JSON block that "
-            f"follows instinct/schema.json, or a line starting NEEDS_HUMAN and why.\n\n"
-            f"```json\n{json.dumps(asked, ensure_ascii=False, indent=2)}\n```\n")
+    """The issue's text; with too many postings to fit, the first that do."""
+    def body(jobs: list) -> str:
+        block = json.dumps({**asked, "jobs": jobs}, ensure_ascii=False, indent=2)
+        return (f"Instructions: {BRIEF}\n\nAnswer with one comment by {ANSWERER} holding one JSON block that "
+                f"follows instinct/schema.json, or a line starting NEEDS_HUMAN and why.\n\n"
+                f"```json\n{block}\n```\n")
+    jobs = list(asked.get("jobs", []))
+    while len(body(jobs)) > BODY_MAX:
+        jobs = jobs[:len(jobs) * 3 // 4]
+    return body(jobs)
 
 
 def open_issues(limit: int, dry: bool) -> int:
