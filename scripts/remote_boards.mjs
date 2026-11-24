@@ -151,7 +151,19 @@ export function judge(jobs, toEntry) {
   const paid = rows.filter((row) => row.salary);
   return { postings: jobs.length, open: rows.length, paid: paid.length,
            sample: (paid.length ? paid : rows).slice(0, 2).map((row) => `${row.title} | ${row.location}`.slice(0, 160)),
-           hosts: rows.length ? hostsIn(jobs) : [] };
+           hosts: rows.length ? hostsIn(jobs) : [],
+           pages: [...new Set(rows.map((row) => urlHost(row.url)).filter(Boolean))] };
+}
+
+const urlHost = (url) => { try { return new URL(url).hostname.toLowerCase(); } catch { return ""; } };
+
+/** The candidates whose postings are not on a board the site already
+ * crawls for a company it lists: SD Worx's Teamtailor board answers as
+ * sdworxnv.teamtailor.com and links every posting to careers.sdworx.com,
+ * the board boards.json gives SD Worx. */
+export function notHeld(candidates, boards) {
+  const held = new Set(Object.values(boards).map((b) => String(b.board).toLowerCase()));
+  return candidates.filter((c) => !(c.pages ?? []).some((host) => held.has(host)));
 }
 
 /** Milliseconds between two boards of an ATS that gives each board its own
@@ -255,7 +267,8 @@ async function main() {
   // The site's own boards are crawled already; the ones on file, kept or
   // turned down, are read again whether or not this index saw them, so a
   // board turned down comes in the day it states pay.
-  const listed = new Set(Object.values(JSON.parse(readFileSync(values.boards, "utf8"))).map(key));
+  const own = JSON.parse(readFileSync(values.boards, "utf8"));
+  const listed = new Set(Object.values(own).map(key));
   const onFile = existsSync(values.remote) ? Object.values(JSON.parse(readFileSync(values.remote, "utf8"))) : [];
   for (const entry of onFile) boards[entry.ats]?.add(entry.board);
   const turnedDown = existsSync(values.none) ? Object.entries(JSON.parse(readFileSync(values.none, "utf8"))) : [];
@@ -288,7 +301,7 @@ async function main() {
     // not reach: remote_levels.py ages nobody out on it.
     incomplete: results.filter((r) => !r.complete || values.limit).map((r) => r.kind),
     read: Object.fromEntries(results.map((r) => [r.kind, r.read])),
-    boards: results.flatMap((r) => r.found),
+    boards: notHeld(results.flatMap((r) => r.found), own),
   };
   writeFileSync(values.out, `${JSON.stringify(out)}\n`);
   log(`${out.boards.length} candidates -> ${values.out}`);
