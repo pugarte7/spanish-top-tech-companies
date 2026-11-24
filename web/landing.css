@@ -23,29 +23,27 @@ button { font: inherit; color: inherit; }
 .page > * { width: 100%; }
 .page > main { padding-bottom: 96px; }
 .wrap { max-width: 1040px; margin: 0 auto; }
-.nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 15px; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; }
-.brand b { font-weight: inherit; }
-/* The logo is the mascot's body, cut out of its canvas by landing.js. */
-.brand .mark { width: 44px; height: 38px; overflow: hidden; flex-shrink: 0; }
-.nav-r { display: flex; align-items: center; gap: 6px; color: var(--grey); }
-.langs { padding: 8px 10px; line-height: 1; }
+/* The top bar: the languages on the left, the name in the middle, the theme on
+   the right. The side columns are equal, so the name sits on the page's centre. */
+.nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; font-size: 17px;
+       color: var(--grey); }
+.brand { font-size: 16px; font-weight: 600; color: var(--ink); }
+.langs { justify-self: start; padding: 8px 10px 8px 0; line-height: 1; }
 .langs b { color: var(--ink); font-weight: 600; }
 .langs a { transition: color 150ms ease-out; }
-#theme { display: inline-flex; align-items: center; gap: 5px; border: 0; background: none; padding: 8px 10px;
-         border-radius: 8px; cursor: pointer; line-height: 1; }
-#theme svg { display: block; width: 16px; height: 16px; }
+#theme { justify-self: end; display: inline-flex; align-items: center; gap: 7px; border: 0; background: none;
+         padding: 8px 0 8px 10px; border-radius: 8px; cursor: pointer; line-height: 1; color: inherit; }
+#theme svg { display: block; width: 20px; height: 20px; }
 /* Both modes on show, like the two languages: the one in use is inked. */
 :root:not([data-theme="dark"]) #theme .sun, :root[data-theme="dark"] #theme .moon { color: var(--ink); }
 :root:not([data-theme="dark"]) #theme .sun svg, :root[data-theme="dark"] #theme .moon svg { stroke-width: 2.6; }
 @media (hover: hover) { .langs a:hover, #theme:hover { color: var(--ink); } }
-/* On a phone no logo and no name, which would repeat the mascot and the footer:
-   the languages on the left, the theme on the right. */
+/* On a phone no name, which the footer has, and the two switches smaller. */
 @media (max-width: 560px) {
+  .nav { display: flex; justify-content: space-between; font-size: 15px; }
   .brand { display: none; }
-  .nav-r { flex: 1; justify-content: space-between; }
-  .langs { padding-left: 0; }
-  #theme { padding-right: 0; }
+  #theme { gap: 5px; }
+  #theme svg { width: 16px; height: 16px; }
 }
 
 .center { max-width: 780px; margin: 8px auto 0; text-align: center; }

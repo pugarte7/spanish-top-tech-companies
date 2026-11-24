@@ -185,9 +185,9 @@ def page(lang: str, *, head: str, stars: int | None, version: str) -> str:
 <body data-lang="{lang}" data-say-copy="{e(t['copy'])}" data-say-copied="{e(t['copied'])}" data-mascot="{e(t['mascot'])}">
 <div class="page">
 <nav class="nav wrap">
-  <a class="brand" href="/{lang}/"><span class="mark" data-mark></span><b>{e(t['name'])}</b></a>
-  <span class="nav-r"><span class="langs">{langs}</span>
-    <button type="button" id="theme" title="{e(t['theme'])}" aria-label="{e(t['theme'])}"><span class="sun">{SUN_ICON}</span>/<span class="moon">{MOON_ICON}</span></button></span>
+  <span class="langs">{langs}</span>
+  <a class="brand" href="/{lang}/">{e(t['name'])}</a>
+  <button type="button" id="theme" title="{e(t['theme'])}" aria-label="{e(t['theme'])}"><span class="sun">{SUN_ICON}</span>/<span class="moon">{MOON_ICON}</span></button>
 </nav>
 <header class="center">
   <div class="scene" data-scene></div>

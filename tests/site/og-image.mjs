@@ -1,8 +1,8 @@
 // The site's images, all of the mascot: the tab icon (web/favicon.svg, its
 // .ico for browsers that take no SVG and the 180px PNG for a phone's home
 // screen) and the link preview (og:image) Slack, WhatsApp, LinkedIn and the
-// rest show, 1200x630, one per language. The icon is the logo in the page's
-// top left corner, the body with its two eyes, as clean lines: the hand-drawn
+// rest show, 1200x630, one per language. The icon is
+// the mascot's body with its two eyes, as clean lines: the hand-drawn
 // wobble and the hatching turn to noise at 16 pixels. The preview is the top
 // of the home page: the mascot at work over the headline, which is read from
 // scripts/landing.py. Run it again after a change to either.
