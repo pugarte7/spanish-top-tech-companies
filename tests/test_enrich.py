@@ -36,7 +36,7 @@ asked = {c["slug"]: c for c in asked_block["companies"]}
 example = example_block["companies"][0]
 
 check("the brief's example answer follows schema.json", enrich.schema_errors(example_block, schema) == []
-      and enrich.sort_answer(example_block, asked) == ([example], []), enrich.sort_answer(example_block, asked))
+      and enrich.sort_answer(example_block, asked) == ([example], [], []), enrich.sort_answer(example_block, asked))
 check("the issue's body is read back as what it asked",
       enrich.asked_in({"body": enrich.issue_body(asked_block["companies"])}) == asked)
 many = [{"slug": f"c{n}", "name": f"C{n}", "website": None, "linkedin": None, "careers": None,
@@ -112,6 +112,8 @@ check("a company with a size and a recent check is not asked; one with postings 
 stale = enrich.wanted(data, [], {"companies": {"acme": ["51-200", 90]}},
                       {"companies": {}, "checked": {"acme": "2026-01-01"}}, today)
 check("a check older than RECHECK_DAYS is asked again", "acme" in [t["slug"] for t in stale])
+empty = enrich.wanted(data, [], {"companies": {}}, {"companies": {}, "checked": {"acme": "2026-10-01"}}, today)
+check("a recent check that found no size is not asked again", "acme" not in [t["slug"] for t in empty])
 
 check("the last JSON block of a comment is read", enrich.json_block("x\n```json\n{\"a\": 1}\n```\n```json\n{\"a\": 2}\n```") == {"a": 2})
 
@@ -212,8 +214,21 @@ check("half an answer is stored, and the issue stays open naming who is missing"
 bad = copy.deepcopy(example)
 bad["contacts"][1]["jobs"] = ["other-1"]
 sizes, contacts, closing, notes = run_collect([said(me, fenced(bad, beta))])
+check("a contact that fails is left out, and its company is stored with the rest",
+      set(sizes) == {"acme", "beta"} and len(contacts["companies"]["acme"]) == 1 and not notes
+      and "acme: $.contacts[1].jobs" in closing[0]["text"], (sizes, closing, notes))
+
+bad = copy.deepcopy(example)
+bad["size"]["employees"] = 0
+sizes, contacts, closing, notes = run_collect([said(me, fenced(bad, beta))])
 check("one company's bad item is sent back and the others are stored",
-      set(sizes) == {"beta"} and not closing and "acme: $.contacts[1].jobs" in notes[0][0], (sizes, notes))
+      set(sizes) == {"beta"} and not closing and "acme: $.size.employees" in notes[0][0], (sizes, notes))
+
+nothing = {"slug": "beta", "size": dict.fromkeys(example["size"]), "contacts": [], "searched": [],
+           "notes": "Identity not resolved."}
+sizes, contacts, closing, notes = run_collect([said(me, fenced(example, nothing))])
+check("an item with nothing found is a check, and the issue closes",
+      set(sizes) == {"acme"} and "beta" in contacts["checked"] and len(closing) == 1 and not notes, (sizes, notes))
 
 on_file = {"companies": {"acme": ["51-200", 90]}}
 sizes, contacts, closing, notes = run_collect([said(me, fenced(example, beta))], on_file)

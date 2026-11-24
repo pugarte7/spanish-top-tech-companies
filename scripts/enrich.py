@@ -8,14 +8,15 @@
 
 The contract with the agent is instinct/: brief.md (what it is told) and
 schema.json (what it answers). `open` files issues of PER_ISSUE companies
-that have no size in data/sizes.json or no contact check in contacts.json,
+that have no check in contacts.json in the last RECHECK_DAYS,
 labelled `enrich`, in the private repo: the answers name people, and a public
 issue would publish them. The agent can comment but not label, so `collect`
 reads every open `enrich` issue for the last answer by ANSWERER: a JSON
 block, or a NEEDS_HUMAN line. No answer yet leaves the issue as it is. Each
 company's item that passes writes the size to data/sizes.json and the
-contacts to contacts.json beside lib.DATA (private_data.sh push keeps it);
-the rest go back in a comment with `needs-human`, and the issue stays open
+contacts to contacts.json beside lib.DATA (private_data.sh push keeps it),
+less any contact that fails; an item with nothing found is a check like any
+other. The rest go back in a comment with `needs-human`, and the issue stays open
 until every company it asked about is on file. Its issues are closed by
 `close` once the files are saved (enrich.yml runs it after the push), so a
 failed push leaves them open to be stored again.
@@ -142,19 +143,30 @@ def item_errors(item, asked: dict[str, dict]) -> list[str]:
     return errors
 
 
-def sort_answer(answer, asked: dict[str, dict]) -> tuple[list[dict], list[str]]:
-    """(the items to store, what is wrong with the rest) of one answer."""
+CONTACT_AT = re.compile(r"\$\.contacts\[(\d+)\]")
+
+
+def sort_answer(answer, asked: dict[str, dict]) -> tuple[list[dict], list[str], list[str]]:
+    """(the items to store, what is wrong with the rest, the contacts left
+    out of the stored ones) of one answer. A contact that fails costs the
+    item that contact and no more: the size and the other people are kept."""
     if not isinstance(answer, dict) or not isinstance(answer.get("companies"), list):
-        return [], ["$: not an object with a `companies` list"]
-    good, bad = [], []
+        return [], ["$: not an object with a `companies` list"], []
+    good, bad, dropped = [], [], []
     for n, item in enumerate(answer["companies"]):
         wrong = item_errors(item, asked)
         name = item.get("slug") if isinstance(item, dict) and isinstance(item.get("slug"), str) else f"item {n}"
+        places = [CONTACT_AT.match(w) for w in wrong]
+        if wrong and all(places):
+            out = {int(m.group(1)) for m in places}
+            item = {**item, "contacts": [c for i, c in enumerate(item["contacts"]) if i not in out]}
+            dropped += [f"{name}: {w}" for w in wrong[:6]]
+            wrong = item_errors(item, asked)
         if wrong:
             bad += [f"{name}: {w}" for w in wrong[:6]]
         else:
             good.append(item)
-    return good, bad
+    return good, bad, dropped
 
 
 def json_block(text: str):
@@ -346,7 +358,7 @@ def ensure_labels() -> None:
 
 
 def wanted(data: dict, jobs: list[dict], sizes: dict, contacts: dict, today: dt.date) -> list[dict]:
-    """The issue inputs of companies missing a size or a recent contact check,
+    """The issue inputs of companies with no recent check,
     those with open postings first."""
     by_slug: dict[str, list] = {}
     for j in jobs:
@@ -360,7 +372,9 @@ def wanted(data: dict, jobs: list[dict], sizes: dict, contacts: dict, today: dt.
             continue
         when = checked.get(slug)
         stale = when is None or (today - dt.date.fromisoformat(when)).days >= RECHECK_DAYS
-        if slug in sizes["companies"] and not stale:
+        # A check that found no size is a check: the company is not asked
+        # again until it is stale.
+        if not stale:
             continue
         mine = by_slug.get(slug, [])
         out.append({"slug": slug, "name": c["name"], "website": c.get("url") or None,
@@ -498,17 +512,20 @@ def collect(dry: bool, closing: str | None) -> int:
             if not dry:
                 note(issue["number"], "Left for a human.", "needs-human")
             continue
-        good, bad = ([], ["the JSON block does not parse"]) if answer is None else sort_answer(answer, asked)
+        good, bad, out = ([], ["the JSON block does not parse"], []) if answer is None \
+            else sort_answer(answer, asked)
         for item in good:
             store(item, corrects(comments))
+        left_out = "\n\nContacts left out:\n\n" + "\n".join(f"- {e}" for e in out[:40]) if out else ""
         missing = [slug for slug in asked if not on_file(slug)]
         if bad or missing:
             rejected += 1
             lines = [f"- {e}" for e in bad[:40]] + [f"- {slug}: no answer" for slug in missing[:60]]
             if not dry:
-                note(issue["number"], f"{len(good)} stored. Not stored:\n\n" + "\n".join(lines), "needs-human")
+                note(issue["number"], f"{len(good)} stored. Not stored:\n\n" + "\n".join(lines) + left_out,
+                     "needs-human")
         else:
-            to_close.append({"number": issue["number"], "text": f"Stored: {len(good)} companies."})
+            to_close.append({"number": issue["number"], "text": f"Stored: {len(good)} companies." + left_out})
 
     # A new answer in an issue already stored and closed is a correction.
     for issue in closed_lately("enrich"):
@@ -516,13 +533,14 @@ def collect(dry: bool, closing: str | None) -> int:
         state, answer = reply(comments)
         if state != "answer":
             continue
-        good, bad = ([], ["the JSON block does not parse"]) if answer is None \
+        good, bad, out = ([], ["the JSON block does not parse"], []) if answer is None \
             else sort_answer(answer, asked_in(issue))
         for item in good:
             store(item, True)
         if not dry:
             note(issue["number"], f"Correction stored for {len(good)} companies."
-                 + ("\n\nNot stored:\n\n" + "\n".join(f"- {e}" for e in bad[:40]) if bad else ""))
+                 + ("\n\nNot stored:\n\n" + "\n".join(f"- {e}" for e in bad[:40]) if bad else "")
+                 + ("\n\nContacts left out:\n\n" + "\n".join(f"- {e}" for e in out[:40]) if out else ""))
 
     if stored and not dry:
         sizes["companies"] = dict(sorted(sizes["companies"].items()))

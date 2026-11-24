@@ -2,8 +2,8 @@ name: enrich
 
 # Company size and contacts from an outside agent (instinct/). It stores the
 # answers the agent left in the private repo's issues, closes those issues once
-# the files are saved, then opens issues for the next companies missing a size
-# or a contact check (scripts/enrich.py). Daily and after the weekly boards run
+# the files are saved, then opens issues for the next companies with no recent
+# check (scripts/enrich.py). Daily and after the weekly boards run
 # only while the repo variable ENRICH_DAILY is `on`; by hand otherwise.
 #
 # Contacts are people: the issues live in the private repo, contacts.json is

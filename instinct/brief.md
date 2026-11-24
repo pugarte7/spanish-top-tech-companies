@@ -5,9 +5,10 @@ or remote open to Spain. For each, find two things: how many people it
 employs, and who at it a candidate for one of its openings can reach. Answer
 with one comment holding one JSON block that follows `schema.json`, with one
 item per company, from the account `pugarte7`; comments by other accounts are
-ignored. A company you cannot tell apart from another of the same name is left
-out of `companies` and named, with why, in the same comment outside the JSON:
-the issue then waits for a human. If none can be answered, comment a line
+ignored. Every company gets its item, also one with nothing published or one
+you cannot tell apart from another of the same name: every `size` field null,
+`contacts` empty and why in `notes`. It is then not asked again for months, so
+do not leave a company out. If the issue itself cannot be read, comment a line
 starting `NEEDS_HUMAN` and why, with no JSON. Do not change labels. Never
 guess: a field you cannot source is null, and an empty `contacts` is a valid
 answer.
@@ -39,8 +40,8 @@ companies, size and contacts, also after the issue is closed (for 14 days).
 Each company lists its open postings; one with hundreds lists the first that
 fit in the issue.
 `website` and `linkedin` fix the identity. If they disagree, or the name
-belongs to several companies and you cannot tell which, leave that company
-out and say so.
+belongs to several companies and you cannot tell which, answer that company
+with nothing and say in `notes` what disagrees.
 
 ## Output (comment)
 
@@ -96,7 +97,11 @@ out and say so.
 
 - `employees`: one figure for the whole employer, or null.
 - `range`: only when no figure exists, a band as LinkedIn gives it
-  ("51-200").
+  ("51-200"), or a floor ("550+").
+- What the company says of itself is a size, with `company_site`: "1,079
+  full-time employees" is `employees`, "100+ people" or "550-plus consultants"
+  is the `range` "100+" or "550+". A figure that counts contractors too is
+  still the figure. Clients, users or a talent pool are not staff.
 - `scope`: `group`, `company`, or `branch` when only the Spanish office or
   subsidiary is known.
 - `as_of`: the month the figure refers to, `YYYY-MM`.
@@ -112,7 +117,8 @@ out and say so.
   of the team a posting is for.
 - `lead`: a tech or team lead of the team a posting is for.
 
-A `hiring_manager` or `lead` lists the job ids they relate to in `jobs`, and
+A `hiring_manager` or `lead` with no job id in `jobs` is dropped. Each lists
+the job ids they relate to in `jobs`, and
 `link_evidence` says how: the posting names them, or their current title at
 this company matches the posting's team and place.
 
