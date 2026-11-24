@@ -26,7 +26,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.30.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.31.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -127,7 +127,8 @@ const TOOLS = {
                    "from their public job boards " +
                    "(Greenhouse, Lever, Ashby, Workday and others), refreshed daily. Filter by text, " +
                    "role, region or remote, workplace, level, the person's years of experience, company, " +
-                   "company size and minimum salary. Each result carries the roles, level and years of experience " +
+                   "company size and minimum salary. companies says what each employer in the results " +
+                   "does and its latest news, to show before its postings. Each result carries the roles, level and years of experience " +
                    "read from the posting, its keywords (skills, tools, industries and spoken languages " +
                    "read from the description), and " +
                    "the company's median base for the posting's role in Spain, as the " +
@@ -1271,6 +1272,15 @@ export async function findJobs(data, args = {}, env = {}) {
   };
   const { found, named, results, excluded, unknownPay, yearsUnstated, unknownSize } = pass(filtersSet);
   const jobs = results.slice(0, limit).map(({ f, also }) => posting(f, also, terms.length > 0));
+  // What each employer in the results does and its latest news, once per
+  // employer and before the postings: the person reads who is hiring first.
+  const employers = new Map();
+  for (const { f } of results.slice(0, limit)) {
+    const c = employerOf(data, f.p.job);
+    if (!c || employers.has(c) || !(c.about || c.latest)) continue;
+    const { latest_news_note, ...context } = contextOf(c);
+    employers.set(c, { company: f.p.job.company, company_size: sizeOf(c), ...context });
+  }
   // A query word no result matches: "software architect" under role software-engineer gave 344
   // Software Engineers through "software" alone, architects being solution architects (2026-11-13).
   const unmatched = results.length ? terms.filter((t) => !found.some((f) => f.matched.includes(t.term))).map((t) => t.term) : [];
@@ -1353,6 +1363,10 @@ export async function findJobs(data, args = {}, env = {}) {
       "present it as the job's pay. null when the site has no salaries for the company" +
       (table ? "" : ", and this time for every posting: the companies table could not be read") +
       ". It describes the company, not this posting.",
+    ...(employers.size ? { companies: [...employers.values()], companies_note: "companies says, for each " +
+      "employer in jobs that has it on file, what it does in one sentence (about) and one recent headline " +
+      "about its business (latest_news), in Spanish and English. Show the shortlist by company: what the " +
+      "company does, then its postings. " + NEWS_NOTE } : {}),
     jobs,
   };
 }
@@ -2771,7 +2785,8 @@ export function applicationGuide(args = {}, env = {}) {
         "what they say. Ask in one message for what is missing: CV, roles, regions or remote, " +
         "workplace, the salary they ask for, work authorization.",
       "Call find_jobs with their preferences, and pass every job id in the Applications table in exclude.",
-      "Show the shortlist with each posting's salary and salary_context, and let the person choose. " +
+      "Show the shortlist by company: what the company does and its latest news (find_jobs' companies), " +
+      "then each posting with its salary and salary_context, and let the person choose. " +
         "Record the ones they turn down too, so they are excluded next time.",
       "Call job_questions for each chosen posting. Draft the who=agent answers, and a cover letter " +
         "where the form takes one, from the CV and the state document.",
