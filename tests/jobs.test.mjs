@@ -1249,7 +1249,19 @@ console.log(`jobs: crawl ${index.jobs.length} kept of 10, fixture ${fixture.jobs
     ["Salario: 21.000€ brutos anuales (1.500€ al mes en 14 pagas)", eur(21000, 21000)],
     ["Ticket restaurante de 11 € al día. Salario 28.000€ brutos", eur(28000, 28000)],
     ["The anticipated base salary range is $123,500 - $145,000 per year.", null],
-    ["Spain 40.000€-50.000€ gross; Portugal 30.000€ - 35.000€ gross", null],
+    ["Spain 40.000€-50.000€ gross; Portugal 30.000€ - 35.000€ gross", eur(40000, 50000)],
+    ["Junior 30.000€-35.000€ gross; Senior 45.000€ - 55.000€ gross", null],
+    ["Base Salary: 50K - 75K EUR Total Compensation: 67K - 90K EUR", eur(50000, 75000)],
+    ["Base Salary: 65.000 - 80.000EUR Total Comp: 80.000 - 100.000EUR", eur(65000, 80000)],
+    ["Compensation & Rewards: In Germany, the base compensation range for this role is EUR 78,336 - EUR 94,003", null],
+    ["In Ireland, the base compensation range for this role is € 121,128 - €145,354. " +
+     "In Spain, the base compensation range for this role is € 96,846 - €116,215", eur(96846, 116215)],
+    ["Compensation & Rewards In Spain, the OTE compensation range for this role is EUR 170,000 - EUR 211,250",
+     eur(170000, 211250, { variable_included: true })],
+    ["Medical insurance Total compensation: 100,000 - 170,000 EUR The total compensation range listed here",
+     eur(100000, 170000, { variable_included: true })],
+    ["Starting Annual Salary : 28,000 - 48,000 EUR", eur(28000, 48000)],
+    ["€27k fixed salary + uncapped commission (OTE €40k)", eur(27000, 27000)],
     ["Vigilante en comercio con plus 650 euros al mes", null],
   ];
   assert.deepEqual(pay.map(([text]) => payAsked(text)), pay.map(([, want]) => want));
