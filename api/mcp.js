@@ -26,7 +26,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.31.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.32.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -127,8 +127,9 @@ const TOOLS = {
                    "from their public job boards " +
                    "(Greenhouse, Lever, Ashby, Workday and others), refreshed daily. Filter by text, " +
                    "role, region or remote, workplace, level, the person's years of experience, company, " +
-                   "company size and minimum salary. companies says what each employer in the results " +
-                   "does and its latest news, to show before its postings. Each result carries the roles, level and years of experience " +
+                   "company size and minimum salary. Each result carries what its company does " +
+                   "(company_about) and one recent headline about it (company_news) where on file, to show " +
+                   "with that company and never apart from it. Each result also carries the roles, level and years of experience " +
                    "read from the posting, its keywords (skills, tools, industries and spoken languages " +
                    "read from the description), and " +
                    "the company's median base for the posting's role in Spain, as the " +
@@ -512,6 +513,15 @@ const NEWS_NOTE = "latest_news is one recent news headline about the company's b
   "language model, with the headline's date, outlet and link. It is a pointer, not a verified fact and " +
   "not the whole picture: give it with its date and link, add nothing to it, and leave any judgement " +
   "of the company to the person.";
+// How find_jobs' results are shown. An agent given the news apart from the
+// postings put it in a notes section at the end of its answer (2026-11-24).
+const SHOW_AS = "Show the results grouped by company, and keep everything about a company with that company. " +
+  "For each company: one heading with its name, its size and what it does (company_about, in the person's " +
+  "language); right under it its news, if it has any (company_news: the sentence, the date, the outlet and the " +
+  "link); then its postings, each with place, level and salary. Never move what a company does or its news to " +
+  "a notes section, a footer or a summary apart from the company, and do not leave them out to save space. " +
+  "company_news is one recent headline about the company's business restated in one sentence by a language " +
+  "model: a pointer, not a verified fact. Add nothing to it and leave any judgement of the company to the person.";
 const BY_SLUG = new WeakMap();
 const companyBySlug = (data, slug) => {
   if (!BY_SLUG.has(data)) BY_SLUG.set(data, new Map(data.companies.filter((c) => c.levels).map((c) => [c.levels, c])));
@@ -1074,7 +1084,7 @@ function prepared(data, index) {
 }
 
 // One result as find_jobs returns it.
-function posting({ p, role, context, basis, matched, viaKeywords, size }, also, withTerms) {
+function posting({ p, role, context, basis, matched, viaKeywords, size, employer }, also, withTerms) {
   const job = p.job;
   return {
     id: job.id, title: job.title, company: job.company, slug: job.slug, tier: job.tier ?? null,
@@ -1083,6 +1093,9 @@ function posting({ p, role, context, basis, matched, viaKeywords, size }, also, 
     posted_at: job.posted_at ?? null, ...(!job.posted_at && job.seen ? { first_seen: job.seen } : {}), url: job.url, ats: job.ats, salary: job.salary ?? null,
     role, roles: p.roles, seniority: p.seniority, years_asked: p.years, keywords: [...p.keywords],
     salary_context: context, company_size: size ?? null,
+    ...(employer?.about ? { company_about: { es: employer.about.es, en: employer.about.en } } : {}),
+    ...(employer?.latest ? { company_news: { es: employer.latest.es, en: employer.latest.en, date: employer.latest.date,
+                                             source: employer.latest.source ?? null, url: employer.latest.url } } : {}),
     ...(p.longOpen ? { long_open: true } : {}),
     ...(basis ? { min_salary_checked_against: basis } : {}),
     ...(withTerms ? { matched_terms: matched } : {}),
@@ -1238,7 +1251,7 @@ export async function findJobs(data, args = {}, env = {}) {
       if (g.seniority && p.seniority !== g.seniority && !(g.seniority === "mid" && p.seniority === null)) continue;
       if (g.levels && !g.levels.has(p.seniority ?? "mid")) continue;
       if (g.years && p.years && p.years[0] > g.years.years) continue;
-      const size = employerOf(data, job)?.size ?? null;
+      const employer = employerOf(data, job), size = employer?.size ?? null;
       if (g.sizes && !g.sizes.has(size)) { if (!size) unknownSize++; continue; }
       const jobRole = g.special ? g.special.slug
         : g.classified && p.roles.includes(g.roleSlug) ? g.roleSlug : p.roles[0] ?? null;
@@ -1253,7 +1266,7 @@ export async function findJobs(data, args = {}, env = {}) {
       if (g.years && !p.years) yearsUnstated++;
       const figure = own ? (own[0] + own[1]) / 2 : context?.for_this_role ? context.company_median_base_eur : null;
       found.push({ figure, posted: job.posted_at ?? "", p, role: jobRole, context, basis, matched, viaKeywords, score, distinct,
-                   size });
+                   size, employer });
     }
     // A city keeps the postings that name it; when none does, the whole region stays.
     const named = g.inCity ? found.filter((f) => g.inCity.test(f.p)) : [];
@@ -1272,15 +1285,6 @@ export async function findJobs(data, args = {}, env = {}) {
   };
   const { found, named, results, excluded, unknownPay, yearsUnstated, unknownSize } = pass(filtersSet);
   const jobs = results.slice(0, limit).map(({ f, also }) => posting(f, also, terms.length > 0));
-  // What each employer in the results does and its latest news, once per
-  // employer and before the postings: the person reads who is hiring first.
-  const employers = new Map();
-  for (const { f } of results.slice(0, limit)) {
-    const c = employerOf(data, f.p.job);
-    if (!c || employers.has(c) || !(c.about || c.latest)) continue;
-    const { latest_news_note, ...context } = contextOf(c);
-    employers.set(c, { company: f.p.job.company, company_size: sizeOf(c), ...context });
-  }
   // A query word no result matches: "software architect" under role software-engineer gave 344
   // Software Engineers through "software" alone, architects being solution architects (2026-11-13).
   const unmatched = results.length ? terms.filter((t) => !found.some((f) => f.matched.includes(t.term))).map((t) => t.term) : [];
@@ -1363,10 +1367,7 @@ export async function findJobs(data, args = {}, env = {}) {
       "present it as the job's pay. null when the site has no salaries for the company" +
       (table ? "" : ", and this time for every posting: the companies table could not be read") +
       ". It describes the company, not this posting.",
-    ...(employers.size ? { companies: [...employers.values()], companies_note: "companies says, for each " +
-      "employer in jobs that has it on file, what it does in one sentence (about) and one recent headline " +
-      "about its business (latest_news), in Spanish and English. Show the shortlist by company: what the " +
-      "company does, then its postings. " + NEWS_NOTE } : {}),
+    ...(jobs.some((j) => j.company_about || j.company_news) ? { show_as: SHOW_AS } : {}),
     jobs,
   };
 }
@@ -2785,8 +2786,10 @@ export function applicationGuide(args = {}, env = {}) {
         "what they say. Ask in one message for what is missing: CV, roles, regions or remote, " +
         "workplace, the salary they ask for, work authorization.",
       "Call find_jobs with their preferences, and pass every job id in the Applications table in exclude.",
-      "Show the shortlist by company: what the company does and its latest news (find_jobs' companies), " +
-      "then each posting with its salary and salary_context, and let the person choose. " +
+      "Show the shortlist grouped by company: a heading with the company, its size and what it does " +
+      "(company_about), its news right under it (company_news, with date and link), then its postings with " +
+      "their salary and salary_context. Nothing about a company goes in a notes section apart from it. " +
+      "Let the person choose. " +
         "Record the ones they turn down too, so they are excluded next time.",
       "Call job_questions for each chosen posting. Draft the who=agent answers, and a cover letter " +
         "where the form takes one, from the CV and the state document.",
