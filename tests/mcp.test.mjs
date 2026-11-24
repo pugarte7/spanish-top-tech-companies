@@ -1771,12 +1771,12 @@ const soloFound = (await answer(withSolo, { jsonrpc: "2.0", id: 1, ...tool("find
   .result.structuredContent;
 report("find_jobs gives an employer known only by its board its size, and the size filter keeps it",
   soloFound.jobs.some((j) => j.id === "ashby:solo:1" && j.company_size === "51-200"), soloFound.matches);
-const soloCard = soloFound.companies.find((c) => c.company === "Solo");
-report("find_jobs says once what each employer in the results does, with its news, before the postings",
-  soloCard.about.en === "It makes things." && soloCard.latest_news.date === "2026-11-03" && soloCard.company_size.employees === 120 &&
-  !("latest_news_note" in soloCard) && /not a verified fact/.test(soloFound.companies_note) &&
-  new Set(soloFound.companies.map((c) => c.company)).size === soloFound.companies.length &&
-  Object.keys(soloFound).indexOf("companies") < Object.keys(soloFound).indexOf("jobs"), soloFound.companies);
+const soloCard = soloFound.jobs.find((j) => j.id === "ashby:solo:1");
+report("find_jobs gives each posting what its company does and its news, and says to show them with the company",
+  soloCard.company_about.en === "It makes things." && soloCard.company_news.date === "2026-11-03" &&
+  soloCard.company_news.url === "https://news.example/2" && !("companies" in soloFound) &&
+  /grouped by company/.test(soloFound.show_as) && /Never move/.test(soloFound.show_as) &&
+  Object.keys(soloFound).indexOf("show_as") < Object.keys(soloFound).indexOf("jobs"), soloCard);
 const solo = await company(withSolo, "solo", {}, soloEnv);
 report("company_salaries answers for an employer known only by its board: size, sentence and news, no salaries",
   solo.company === "Solo" && solo.salaries_in_spain === 0 && solo.company_size.employees === 120 &&
