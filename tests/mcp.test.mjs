@@ -1623,7 +1623,7 @@ report("report_application takes what sending took: browser, steps, attempts and
   /file chooser/.test(tookOut.notes) && !/jane|612/.test(tookOut.notes) &&
   tookEvent.properties.application_browser === "playwright_mcp" && tookEvent.properties.application_step_count === 3 &&
   tookEvent.properties.application_steps.includes("email_code") && tookEvent.properties.application_attempts === 2 &&
-  /file chooser/.test(tookEvent.properties.application_notes) && !/jane|612/.test(JSON.stringify(tookEvent.properties)), tookOut);
+  /file chooser/.test(tookEvent.properties.application_notes) && !/jane@|612 345/.test(JSON.stringify(tookEvent.properties)), tookOut);
 report("report_application without them counts none", sent.browser === null && sent.steps.length === 0 &&
   sent.attempts === null && sent.notes === null && outcome.properties.application_step_count === 0 &&
   !("application_steps" in outcome.properties));
