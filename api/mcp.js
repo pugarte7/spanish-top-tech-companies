@@ -1331,7 +1331,8 @@ export async function findJobs(data, args = {}, env = {}) {
       "source: description, a euro figure or range its text states as the role's pay, gross, with the period " +
       "it gives (year, month or hour; a month is not made a year, since Spain pays 12 or 14 times; quote it as " +
       "published, and min_salary_eur checks only a year) (min or max null for " +
-      "\"up to\" or \"from\"; variable_included: true for on-target earnings, base plus variable, which " +
+      "\"up to\" or \"from\"; variable_included: true for on-target earnings or a total with bonus " +
+      "and stock, base plus variable, which " +
       "min_salary_eur does not check against). null does not mean the posting names no pay: its text may give " +
       "a range, which job_questions quotes in conditions.pay. A salary in another currency, or on a posting open to several " +
       "countries, is often another country's range (US dollars for San Francisco, zloty for Poland): " +

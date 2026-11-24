@@ -294,9 +294,12 @@ export function workplaceAsked(text) {
 // gives none; a monthly figure is not made yearly, since Spain pays 12 or 14
 // times a year. Only euros, only next to a pay word, only within a plausible
 // band for the period, gross, and only one distinct figure: a text giving two
-// (one per country or level) gives none. Revenue ("500 M€ de ingresos"),
-// project sizes ("500K€ y 5M€"), net pay, perks and bonuses ("plus 650 euros
-// al mes") and dollars are left out.
+// (one per level) gives none. A figure the text gives for another country
+// ("In Germany, the base compensation range ... is EUR 78,336 - EUR 94,003")
+// is left out, and where one names Spain only those count. Beside a total
+// ("Base Salary: 50K - 75K EUR Total Compensation: 67K - 90K EUR") the base
+// is the one. Revenue ("500 M€ de ingresos"), project sizes ("500K€ y 5M€"),
+// net pay, perks and bonuses ("plus 650 euros al mes") and dollars are left out.
 const EUR_AMOUNT = String.raw`(\d{1,3}(?:[.,\s]\d{3})+|\d{2,3}(?:[.,]\d)?\s?k|\d{5,6}|\d{1,4}(?:[.,]\d{1,2})?)`;
 const EUR_SIGN = String.raw`(?:€|eur\b|euros?\b)`;
 const PAY_WORD = /\b(?:salario|salarial|salary|salaries|sueldo|retribucion|retribuzione|remuneracion|remuneration|compensation|pay|brutos?|bruts?|gross|lorda|ral|ote|banda|range|rango)\b/;
@@ -310,6 +313,10 @@ const PERIOD_OF = [
   ["skip", new RegExp(`${SPAN}(?:dia|day|semana|week|daily|weekly)\\b|^\\s*(?:netos?|net|neto)\\b`)],
 ];
 const BAND = { year: [12_000, 400_000], month: [600, 30_000], hour: [6, 300] };
+// The last country named just before a figure is the one it is for.
+const COUNTRY = /\b(?:spain|espana|germany|alemania|deutschland|ireland|irlanda|france|francia|italy|italia|portugal|netherlands|paises bajos|holanda|united kingdom|reino unido|uk|england|poland|polonia|sweden|suecia|belgium|belgica|switzerland|suiza|austria|denmark|norway|finland|greece|grecia|romania|czech republic|united states|usa|canada|mexico|brazil|brasil|argentina|colombia|chile|india)\b/g;
+// Base plus variable: on-target earnings, or a total with bonus and stock.
+const VARIABLE = /\b(?:ote|on target|total comp\w*|total remuneration|total package|retribucion total|paquete total)\b/;
 const PAY_RANGE = new RegExp(String.raw`(?:${EUR_SIGN}\s?)?${EUR_AMOUNT}\s?(${EUR_SIGN})?\s*(?:-|–|—|to|a|y|hasta|and)\s*(?:${EUR_SIGN}\s?)?${EUR_AMOUNT}\s?(${EUR_SIGN})?`, "gi");
 const PAY_ONE = new RegExp(String.raw`(${EUR_SIGN}\s?)${EUR_AMOUNT}|${EUR_AMOUNT}\s?(${EUR_SIGN})`, "gi");
 function euros(raw) {
@@ -334,12 +341,16 @@ export function payAsked(text) {
     if (period === "skip") return;
     const [floor, ceiling] = BAND[period];
     if (!(min >= floor && max <= ceiling && min <= max)) return;
-    const variable = /\b(?:ote|on target)\b/.test(norm(after.slice(0, 30)) + " " + before.slice(-30));
+    const country = [...before.slice(-90).matchAll(COUNTRY)].pop()?.[0];
+    if (country && country !== "spain" && country !== "espana") return;
+    // After the figure only "OTE" itself: a total named there is the next figure's.
+    const variable = /\b(?:ote|on target)\b/.test(norm(after.slice(0, 30))) || VARIABLE.test(before.slice(-60));
     // "up to 75K€" is a ceiling, "desde 30.000€" a floor.
     const bound = min === max ? (/\b(?:up to|hasta|maximo|max|max of)$/.test(before) ? "max"
       : /\b(?:from|desde|a partir de|starting at|min|minimo)$/.test(before) ? "min" : null) : null;
     const low = bound === "max" ? null : min, high = bound === "min" ? null : max;
-    found.set(`${low}-${high}-${period}`, { min: low, max: high, period, variable });
+    const key = `${low}-${high}-${period}`;
+    found.set(key, { min: low, max: high, period, variable, spain: Boolean(country) || Boolean(found.get(key)?.spain) });
   };
   const ranges = [];
   for (const m of t.matchAll(PAY_RANGE)) {
@@ -352,9 +363,12 @@ export function payAsked(text) {
     const value = euros(m[2] ?? m[3]);
     take(m, value, value, true);
   }
+  let all = [...found.values()];
+  if (all.some((f) => f.spain)) all = all.filter((f) => f.spain);
   // A yearly figure beside its monthly split ("21.000€ anuales, 1.500€ al mes en 14 pagas") is the yearly one.
-  const yearly = [...found.values()].filter((f) => f.period === "year");
-  const picked = found.size === 1 ? [...found.values()] : yearly.length === 1 ? yearly : [];
+  const yearly = all.filter((f) => f.period === "year");
+  const base = yearly.filter((f) => !f.variable);
+  const picked = all.length === 1 ? all : yearly.length === 1 ? yearly : base.length === 1 ? base : [];
   if (picked.length !== 1) return null;
   const [{ min, max, period, variable }] = picked;
   return { min, max, currency: "EUR", period, source: "description", ...(variable ? { variable_included: true } : {}) };
