@@ -59,17 +59,13 @@ After any data change: `python3 scripts/validate.py && python3 scripts/site.py
 - `data/sizes.json` (public) maps a slug to `[bucket, employees]`, or
   `[null, employees, 1]` for a figure that is only one office or the Spanish
   subsidiary; `site.py` adds it to the built data.json for `company_size`.
-- `contacts.json` (private, beside the CSV, in the private repo) holds the
-  people `hiring_contact` gives: a recruiter, or the hiring manager or lead a
-  posting is for (`jobs`). An email only where it was published for
-  candidates, a LinkedIn profile otherwise; never guessed, never from a data
-  broker, never behind a login. `deploy.yml` writes it to `api/_contacts.json`
-  (git-ignored), bundled with the MCP function only.
-- Never commit contacts, put them in a public issue or log, or publish them
-  as a file. Remove anyone who asks.
-- The limit is 3 messages a day per person, emails and LinkedIn together, a
-  term of use: `MESSAGES_A_DAY` in `api/mcp.js` and `site.py`, the legal page,
-  SKILL.md. The person sends every message; the server sends nothing.
+- `contacts.json` (private, beside the CSV, in the private repo) holds a
+  recruiter, or the hiring manager or lead a posting is for (`jobs`). An
+  email only where it was published for candidates, a LinkedIn profile
+  otherwise; never guessed, never from a data broker, never behind a login.
+- Contacts are stored and nothing more: no MCP tool, page or file gives
+  them, and the deploy does not read them. Never commit them or put them in
+  a public issue or log. Remove anyone who asks.
 - New companies are asked about through `instinct/` (brief and schema for the
   outside agent): `enrich.yml` opens issues of up to 50 companies in the private
   repo and `scripts/enrich.py collect` checks and stores the answers. Change

@@ -8,7 +8,6 @@ This package connects Hermes to the hosted MCP server at `https://spanishtoptech
 
 - `find_jobs`: searches the day's postings from 400+ company job boards, by words, role, region, remote, seniority, years, company size or minimum salary, each with the company's median base for the role.
 - `job_questions`: reads one posting's text and application form live from its job board, with each question marked for the person or for the agent.
-- `hiring_contact`, when the server offers it: for one posting, a recruiter, or the hiring manager or lead it is for, with an email only where one was published for candidates and a LinkedIn profile otherwise; the person approves each message and sends it from their own mailbox or LinkedIn account, at most 3 a day.
 - `application_guide` and `report_application`: the procedure for applying on someone's behalf, and the outcome of each application (sent, failed and why, or handed over), with nothing about the person.
 - `salary_stats`, `top_companies`, `company_salaries`, `list_filters`: medians of real salaries in Spain by role, region, years of experience and company, from Levels.fyi submissions. Every figure comes from 5 or more people and is rounded to 1,000 EUR.
 

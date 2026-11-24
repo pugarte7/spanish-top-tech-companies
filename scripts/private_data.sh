@@ -7,7 +7,6 @@
 #   scripts/private_data.sh pull   # private repo -> files beside lib.DATA
 #   scripts/private_data.sh push   # files -> private repo, as one new commit
 #   scripts/private_data.sh log    # print the last refresh's log
-#   scripts/private_data.sh contacts OUT   # only contacts.json, to OUT (deploy.yml)
 #   scripts/private_data.sh log-push FILE   # keep FILE as that log (refresh.yml)
 #   scripts/private_data.sh history         # one line per workflow run, oldest first
 #   scripts/private_data.sh history-push FILE [LOG RUN]   # add FILE's lines to it, and keep
@@ -184,17 +183,6 @@ log() {
   rm -f "$clone/.git/log.enc"
 }
 
-# The people hiring_contact gives, and nothing else of the data: the deploy
-# needs them and has no reason to hold the CSV.
-contacts() {
-  key
-  sync_clone
-  local tmp
-  tmp="$(mktemp)"
-  git -C "$clone" show "origin/main:$BLOB" | crypt -d | tar -xzOf - contacts.json > "$tmp"
-  mv "$tmp" "$1"
-}
-
 case "${1:-}" in
   pull) pull ;;
   push) push ;;
@@ -203,6 +191,5 @@ case "${1:-}" in
   history) history ;;
   history-push) history_push "${2:?usage: $0 history-push FILE [LOG RUN]}" "${3:-}" "${4:-}" ;;
   failed) failed "${2:-}" ;;
-  contacts) contacts "${2:?usage: $0 contacts OUT}" ;;
-  *) echo "usage: $0 pull|push|log|log-push FILE|history|history-push FILE [LOG RUN]|failed [RUN]|contacts OUT" >&2; exit 2 ;;
+  *) echo "usage: $0 pull|push|log|log-push FILE|history|history-push FILE [LOG RUN]|failed [RUN]" >&2; exit 2 ;;
 esac

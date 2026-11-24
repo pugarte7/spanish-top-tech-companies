@@ -15,7 +15,6 @@
 // board's public API (job_questions). Nothing about the person who applies
 // reaches this server: the agent keeps that in a document of its own.
 
-import { readFileSync } from "node:fs";
 import { after, capture, cut, event, origin, redact, uuidv7 } from "./_track.js";
 import { viterbitApplyUrl } from "./_viterbit.js";
 import { CLASSIFIED, KEYWORD_FORMS, KEYWORD_WORDS, PLACES, QUERY_KEYWORD, REMOTE, SENIORITIES, keywordsOf, norm,
@@ -27,7 +26,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.28.1" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.29.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -243,24 +242,6 @@ const TOOLS = {
                          application_notes: out.notes ?? undefined,
                          ats: out.ats, company: out.company ?? undefined, known_posting: out.known_posting }),
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-  },
-  hiring_contact: {
-    // Listed only on a deployment that holds the contacts (api/_contacts.json).
-    available: (env) => Boolean(env?.contacts),
-    define: () => ({ title: "Who to write to about a posting",
-      description: "For one open posting from find_jobs (hiring_contact: true marks them), the people at " +
-                   "that company a candidate for it can write to: a recruiter, or the hiring manager or " +
-                   "team lead the posting is for. Each comes with an email only where one was published " +
-                   "for candidates, otherwise with a LinkedIn profile, and with how they are tied to the " +
-                   "posting. Offer it to the person as an option beside applying on the board. You write " +
-                   "the message and the person approves it; an email goes from their own mailbox, a LinkedIn " +
-                   `message is sent by them. At most ${MESSAGES_A_DAY} messages a day in all: the answer ` +
-                   "carries the rules, which are terms of use of this server. Most companies have no such " +
-                   "contact, and none is ever guessed.",
-      inputSchema: { type: "object", required: ["id"], properties: {
-        id: { type: "string", description: "The job id from find_jobs the message is about." } } } }),
-    run: (data, args, env) => hiringContact(data, args, env),
-    measure: (out) => ({ result_count: out.contacts.length, company: out.company }),
   },
   application_guide: {
     define: () => ({ title: "How to apply with these tools",
@@ -1067,7 +1048,7 @@ function prepared(data, index) {
 }
 
 // One result as find_jobs returns it.
-function posting({ p, role, context, basis, matched, viaKeywords, size, contact }, also, withTerms) {
+function posting({ p, role, context, basis, matched, viaKeywords, size }, also, withTerms) {
   const job = p.job;
   return {
     id: job.id, title: job.title, company: job.company, slug: job.slug, tier: job.tier ?? null,
@@ -1076,7 +1057,6 @@ function posting({ p, role, context, basis, matched, viaKeywords, size, contact 
     posted_at: job.posted_at ?? null, ...(!job.posted_at && job.seen ? { first_seen: job.seen } : {}), url: job.url, ats: job.ats, salary: job.salary ?? null,
     role, roles: p.roles, seniority: p.seniority, years_asked: p.years, keywords: [...p.keywords],
     salary_context: context, company_size: size ?? null,
-    ...(contact ? { hiring_contact: true } : {}),
     ...(p.longOpen ? { long_open: true } : {}),
     ...(basis ? { min_salary_checked_against: basis } : {}),
     ...(withTerms ? { matched_terms: matched } : {}),
@@ -1247,7 +1227,7 @@ export async function findJobs(data, args = {}, env = {}) {
       if (g.years && !p.years) yearsUnstated++;
       const figure = own ? (own[0] + own[1]) / 2 : context?.for_this_role ? context.company_median_base_eur : null;
       found.push({ figure, posted: job.posted_at ?? "", p, role: jobRole, context, basis, matched, viaKeywords, score, distinct,
-                   size, contact: contactsFor(env, job).length > 0 });
+                   size });
     }
     // A city keeps the postings that name it; when none does, the whole region stays.
     const named = g.inCity ? found.filter((f) => g.inCity.test(f.p)) : [];
@@ -1308,9 +1288,6 @@ export async function findJobs(data, args = {}, env = {}) {
     ...(jobs.some((j) => j.long_open) ? { long_open_note: `long_open: true marks a posting first published over ${LONG_OPEN_DAYS} ` +
       "days ago (or, when its board gives no date, first_seen in this index that long ago) and still listed, ranked after the others that match as well: often an opening the company keeps " +
       "open all year, sometimes one it never took down. Say so when you show it." } : {}),
-    ...(jobs.some((j) => j.hiring_contact) ? { hiring_contact_note: "hiring_contact: true marks a posting whose " +
-      "company has a recruiter, or a manager or lead tied to that posting, on file. Tell the person, as an option beside " +
-      "applying; hiring_contact with the job id gives the contact and the rules for writing to them." } : {}),
     ...(results.length ? {} : noMatch({ data, index, args, filtersSet, pass, withTerms: terms.length > 0,
       dropped: { min_salary_eur: minSalary !== null, years: Boolean(years), seniority: Boolean(seniority),
                  workplace: Boolean(workplace), region: Boolean(regionAsked), company_size: Boolean(sizes),
@@ -2676,11 +2653,6 @@ In the person's own words, with the date they gave each one.
 ## Applications
 | Date | Job id | Company | Title | Status | Notes |
 |------|--------|---------|-------|--------|-------|
-
-## Messages
-At most 3 a day in all, emails and LinkedIn together, follow-ups included.
-| Date | Job id | Company | Contact's role | Email / LinkedIn | Sent / follow-up / asked not to be written to |
-|------|--------|---------|----------------|------------------|-----------------------------------------------|
 `;
 
 // uncertain since 2026-11-10: an agent that submitted twice to a board answering
@@ -2752,84 +2724,6 @@ export async function reportApplication(data, args = {}, env = {}) {
            company: job?.company ?? null, known_posting: job !== null,
            stored: "nothing: the site keeps no record of the person or the application",
            next: AFTER[status] };
-}
-
-// --- Writing to someone at the company ------------------------------------------
-
-// A posting can also be followed by a message to someone at the company: a
-// recruiter, or the hiring manager or team lead the posting is for. The
-// contacts are people, so they are in no public file: env.contacts comes from
-// api/_contacts.json, written by deploy.yml from the private repo
-// ({ as_of, companies: { slug: [contact] } }, filled by scripts/enrich.py),
-// and without it the tool is not listed. A contact has an email only where
-// one was published for candidates, otherwise a LinkedIn profile; a manager
-// or lead lists the postings they are tied to in `jobs`, a recruiter covers
-// every posting. One contact list per open posting asked for, never a list
-// of companies. The server sends nothing and cannot count what an agent
-// sends: the limit is a term of use, kept in the person's state document.
-const MESSAGES_A_DAY = 3;
-const TERMS = "https://spanishtoptechcompanies.com/en/legal/";
-const MESSAGE_RULES = [
-  `At most ${MESSAGES_A_DAY} messages a day for one person, emails and LinkedIn messages together, over every ` +
-    "company and counting follow-ups, by the Messages table of their state document. No setting raises it, " +
-    "and with no state document to count in, nothing is sent. A fourth waits for another day.",
-  "Only about the open posting asked for here, to a contact this tool returned for it. Never guess an " +
-    "address, build one from a pattern, look one up elsewhere for a contact given without one, or write " +
-    "to anyone else at the company.",
-  "An email only to the address given here. A contact with no email is written to on LinkedIn, by the " +
-    "person, from their own account: you draft the message, they send it. Do not drive LinkedIn yourself.",
-  "One message to a contact about a posting. One follow-up at most, 7 or more days later, and none after a no.",
-  "Written for that posting from the person's CV, in their name: who they are, the posting, why they fit; " +
-    "an email has the CV attached, a LinkedIn message is short and points to the application. Nothing " +
-    "invented, no bulk text, no marketing, nothing sent to several contacts at once.",
-  "The person sees each message whole (recipient, subject, text, attachment) and says yes to that message. " +
-    "Messages are not approved in batches.",
-  "An email goes from the person's own mailbox, through the mail MCP server they connected to you. This " +
-    "server sends nothing. Without mail access, give them the draft and the address to send it themselves; " +
-    "it counts toward the day's limit all the same.",
-  "The message goes with the application on the company's board, which stays the application itself; say " +
-    "in it that they applied, or that they are about to.",
-  "The contact is for this message only: keep it out of the state document beyond the Messages table, and " +
-    "pass it to no one. If the contact asks not to be written to, record it and never write again.",
-  "These rules are terms of use of this server (terms). Whoever does not keep them may not use this " +
-    "tool, and answers for what they send: unsolicited bulk messages also break data-protection and " +
-    "anti-spam law.",
-];
-
-// The contacts for one posting: recruiters (no `jobs`) and whoever lists it.
-function contactsFor(env, job) {
-  const all = env?.contacts?.companies?.[job?.slug];
-  if (!Array.isArray(all)) return [];
-  return all.filter((c) => isObject(c) && (c.email || c.linkedin) &&
-    (!Array.isArray(c.jobs) || !c.jobs.length || c.jobs.includes(job.id)));
-}
-
-export async function hiringContact(data, args = {}, env = {}) {
-  const id = blank(args.id) ? "" : String(args.id).trim();
-  if (!JOB_ID.test(id)) throw new QueryError("id is required: a job id from find_jobs");
-  const job = (await jobIndex(env)).jobs.find((j) => isObject(j) && j.id === id);
-  if (!job) throw new QueryError(`No posting '${id}' in today's index: a contact is given only for an ` +
-    "open posting. Find it again with find_jobs.", "not_found");
-  const found = contactsFor(env, job);
-  const base = { company: job.company, posting: { id: job.id, title: job.title, url: job.url } };
-  if (!found.length) return { ...base, contacts: [], reason: "Nobody at this company is on file for this " +
-    "posting, which is the case for most companies. Apply on its board; do not guess an address or build " +
-    "one from a pattern." };
-  return {
-    ...base,
-    contacts: found.map((c) => ({ kind: c.kind ?? "recruiter", name: c.name ?? null, role: c.role ?? null,
-      write_by: c.email ? "email" : "linkedin", email: c.email ?? null, linkedin: c.linkedin ?? null,
-      covers: c.scope ?? null, why: c.published ?? null, source: c.source ?? null })),
-    checked: env.contacts.as_of ?? null,
-    about_the_contacts: "kind is recruiter, hiring_manager or lead. A recruiter covers the company's " +
-      "postings; a hiring manager or lead is tied to this one, and why says how (the posting names them, " +
-      "or their current title matches its team and place). An email is given only where it was published " +
-      "for candidates, at source; otherwise write_by is linkedin. Nobody has written to them to check, the " +
-      "person may have moved on, and holding the role does not mean they decide this hire. name is null " +
-      "for a team address. Open source before writing, and tell the person what it is.",
-    messages_a_day: MESSAGES_A_DAY, rules: MESSAGE_RULES, terms: TERMS,
-    removal: "A contact who wants out of this list writes to the address on the terms page and is removed.",
-  };
 }
 
 export function applicationGuide(args = {}, env = {}) {
@@ -2968,12 +2862,6 @@ export function applicationGuide(args = {}, env = {}) {
         "answers in the order of the form, ready to paste. Record the status as handed over, and as sent " +
         "once they confirm, and call report_application with handed_over.",
     },
-    ...(env?.contacts ? { writing_to_the_company: {
-      when: "A find_jobs result with hiring_contact: true has someone on file to write to about it: a " +
-        "recruiter, or the hiring manager or lead the posting is for. Say so when you show the shortlist, " +
-        "as an option beside applying; call hiring_contact with the job id only if the person wants it.",
-      messages_a_day: MESSAGES_A_DAY, rules: MESSAGE_RULES, terms: TERMS,
-    } } : {}),
   };
 }
 
@@ -3270,21 +3158,6 @@ export function analytics(data, headers, msg, out, started, sessionId = null) {
   return events;
 }
 
-// The contacts, from api/_contacts.json: deploy.yml writes it from the private
-// repo before the build and vercel.json bundles it with this function, never
-// with the site. null without it, and hiring_contact is then not offered.
-let CONTACTS;
-function loadContacts() {
-  if (CONTACTS === undefined) {
-    CONTACTS = null;
-    try {
-      const parsed = JSON.parse(readFileSync(new URL("./_contacts.json", import.meta.url), "utf8"));
-      if (isObject(parsed) && isObject(parsed.companies)) CONTACTS = parsed;
-    } catch (e) { if (e?.code !== "ENOENT") console.error("_contacts.json unreadable:", e?.message ?? e); }
-  }
-  return CONTACTS;
-}
-
 let DATA; // one parse per instance; a deploy with new data starts new instances
 
 // The deployment's own static copy, so the answers always match the site's.
@@ -3344,7 +3217,7 @@ export default {
     try {
       const data = await load(url), headers = Object.fromEntries(request.headers);
       const [status, body] = await reply(data, headers, msg,
-        { jobs: () => loadJobs(url), companies: () => loadCompanies(url), contacts: loadContacts() });
+        { jobs: () => loadJobs(url), companies: () => loadCompanies(url) });
       const session = sessionOf(headers, msg);
       let events = [];
       try { events = analytics(data, headers, msg, body, started, session.id); } catch (e) { console.error(e); }
