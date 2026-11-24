@@ -14,9 +14,8 @@ and after the weekly boards run once the repo variable `ENRICH_DAILY` is `on`.
 It needs the secret `DATA_ISSUES_TOKEN`: a fine-grained token with Issues read
 and write on the private repo only.
 
-1. It lists companies of `data.json` missing from `data/sizes.json` or whose
-   contacts were not checked in the last 120 days, those with open postings
-   first.
+1. It lists companies of `data.json` not checked in the last 120 days, those
+   with open postings first.
 2. It opens issues of up to 50 companies, fewer when their postings fill the
    issue first, labelled `enrich`, in the private repo
    `pugarte7/spanish-top-tech-companies-data`, leaving out those already asked.
@@ -32,9 +31,10 @@ and write on the private repo only.
 5. A valid answer writes the size to `data/sizes.json` on main and the
    contacts to `contacts.json` in the private repo
    (`scripts/private_data.sh push`) with the date of the check, so a company
-   with nobody found is not asked again for 120 days. The issue is closed only
-   after both are saved. A bad answer or `NEEDS_HUMAN` gets a comment and
-   `needs-human` and stays open; a new answer below it is read again.
+   with nothing found is not asked again for 120 days. A contact that fails
+   is left out and the rest of its company is stored. The issue is closed
+   only after both are saved. A bad answer or `NEEDS_HUMAN` gets a comment
+   and `needs-human` and stays open; a new answer below it is read again.
 
 ## Why the private repo
 
