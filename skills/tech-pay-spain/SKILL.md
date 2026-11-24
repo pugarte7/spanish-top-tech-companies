@@ -1,7 +1,7 @@
 ---
 name: tech-pay-spain
 description: Answer what jobs pay in Spain (salario, sueldo, cuánto se cobra) by role, region, years of experience or company, from medians of real Spanish salaries. Use for salary questions, offer checks, negotiation prep, finding open positions and applying to jobs in Spain.
-version: 1.5.10
+version: 1.6.0
 author: pugarte7
 license: CC-BY-SA-4.0
 metadata:
@@ -59,12 +59,14 @@ or remote open to Spain or Europe), and helps apply to them. See "Applying" belo
   `company_size` keeps employers of a given headcount (`1-50`, `51-200`,
   `201-1000`, `1001-5000`, `5001+`, several with commas; the whole company or
   group worldwide, and a company with no headcount on file matches none).
-  Each posting carries what its company does (`company_about`) and one
-  recent headline about it (`company_news`, with date and link) where on
-  file. Show the results grouped by company: a heading with the company, its
-  size and what it does, its news right under it, then its postings. Never
-  put what a company does or its news in a notes section or a footer apart
-  from the company, and add nothing to the headline.
+  The answer is `companies`: each employer once, with its `postings` under
+  it. Show one block per company, in this order: the name in bold, its size
+  and its median base on one line; what it does (`company_about`); `News:`
+  and its headline with outlet, date and link (`company_news`), when it has
+  one; then a table of its postings (position, place, level and experience,
+  posted, and salary when stated). Never put what a company does or its news
+  in a notes section or a footer apart from the company, and add nothing to
+  the headline.
   Open postings, each with the company's median base for the role and its
   `keywords` (skills, tools, industries and spoken languages read from the
   description). `query` matches any of its words in the title or among those

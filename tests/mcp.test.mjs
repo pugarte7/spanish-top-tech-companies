@@ -5,7 +5,7 @@
 // stub: no test reaches the network.
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import mcp, { analytics, company, formAccess, openingTitle, queryTerms, respond as answer, sessionOf } from "../api/mcp.js";
+import mcp, { analytics, company, flatJobs, formAccess, openingTitle, queryTerms, respond as answer, sessionOf } from "../api/mcp.js";
 import { redact } from "../api/_track.js";
 import { viterbitApplyUrl, viterbitFields } from "../api/_viterbit.js";
 import { keywordsOf, seniorityOf, titleRoles, yearsAsked } from "../api/_classify.js";
@@ -16,7 +16,9 @@ const COMPANIES = "_site/api/v1/company-cells.json";
 const data = JSON.parse(readFileSync(DATA, "utf8"));
 const index = JSON.parse(readFileSync(JOBS, "utf8"));
 const table = JSON.parse(readFileSync(COMPANIES, "utf8"));
-const respond = (d, msg, env = {}) => answer(d, msg, { jobs: index, companies: table, ...env });
+// find_jobs answers by company; the checks below read its postings as one list, `jobs`.
+const flat = (out) => { const c = out?.result?.structuredContent; if (c?.companies) c.jobs = flatJobs(c); return out; };
+const respond = async (d, msg, env = {}) => flat(await answer(d, msg, { jobs: index, companies: table, ...env }));
 const META = { "io.modelcontextprotocol/protocolVersion": "2026-07-28",
                "io.modelcontextprotocol/clientInfo": { name: "test", version: "1" } };
 const tool = (name, args) => ({ method: "tools/call", params: { name, arguments: args } });
@@ -98,7 +100,7 @@ const replies = execFileSync("node", ["scripts/mcp-stdio.mjs", DATA, JOBS], { in
 report(`stdio answers all ${lines.length} lines`, replies.length === lines.length, `(got ${replies.length})`);
 
 // What each call must come back with. `out` is the tool's structured result.
-const out = (r) => r.result?.structuredContent;
+const out = (r) => flat(r).result?.structuredContent;
 const toolError = (r) => r.result?.isError === true;
 const code = (r) => r.error?.code;
 const ids = (r) => out(r).jobs.map((j) => j.id);
@@ -513,7 +515,7 @@ report("a missing index is a tool error that says so", missing.isError === true 
   /job index \(\/api\/v1\/jobs\.json\) could not be read/.test(missing.content[0].text));
 const malformed = await quietly(() => run("job_questions", { id: "x:y:z" }, { jobs: { jobs: "nope" } }));
 report("an index without a jobs list is the same tool error", malformed.isError === true && /could not be read/.test(malformed.content[0].text));
-const viaHttp = async (name, args) => (await (await mcp.fetch(new Request("https://x/mcp", {
+const viaHttp = async (name, args) => flat(await (await mcp.fetch(new Request("https://x/mcp", {
   method: "POST", body: body(tool(name, args)) }))).json()).result;
 const httpMissing = await quietly(() => viaHttp("find_jobs", {}));
 serveJobs = true;
@@ -1767,16 +1769,19 @@ const withSolo = { ...data, employers: [{ name: "Solo", levels: "solo", board: "
   size: "51-200", employees: 120, about: { es: "Hace cosas.", en: "It makes things." },
   latest: { es: "Abrió oficina.", en: "It opened an office.", date: "2026-11-03", source: "Expansión", url: "https://news.example/2" } }] };
 const soloEnv = { jobs: { ...index, jobs: [...index.jobs, soloJob] }, companies: table };
-const soloFound = (await answer(withSolo, { jsonrpc: "2.0", id: 1, ...tool("find_jobs", { company_size: "51-200", limit: 100 }) }, soloEnv))
+const soloFound = flat(await answer(withSolo, { jsonrpc: "2.0", id: 1, ...tool("find_jobs", { company_size: "51-200", limit: 100 }) }, soloEnv))
   .result.structuredContent;
 report("find_jobs gives an employer known only by its board its size, and the size filter keeps it",
   soloFound.jobs.some((j) => j.id === "ashby:solo:1" && j.company_size === "51-200"), soloFound.matches);
-const soloCard = soloFound.jobs.find((j) => j.id === "ashby:solo:1");
-report("find_jobs gives each posting what its company does and its news, and says to show them with the company",
+const soloCard = soloFound.companies.find((c) => c.company === "Solo");
+report("find_jobs answers by company: each once, with what it does, its news and its postings under it",
   soloCard.company_about.en === "It makes things." && soloCard.company_news.date === "2026-11-03" &&
-  soloCard.company_news.url === "https://news.example/2" && !("companies" in soloFound) &&
-  /grouped by company/.test(soloFound.show_as) && /Never move/.test(soloFound.show_as) &&
-  Object.keys(soloFound).indexOf("show_as") < Object.keys(soloFound).indexOf("jobs"), soloCard);
+  soloCard.company_size === "51-200" && soloCard.postings.length === 1 && soloCard.postings[0].id === "ashby:solo:1" &&
+  !("company" in soloCard.postings[0]) && !("company_about" in soloCard.postings[0]) && !("jobs" in JSON.parse(JSON.stringify({ ...soloFound, jobs: undefined }))) &&
+  new Set(soloFound.companies.map((c) => c.slug ?? c.company)).size === soloFound.companies.length &&
+  soloFound.companies.reduce((n, c) => n + c.postings.length, 0) === soloFound.returned &&
+  soloFound.companies.every((c) => ("salary_context" in c) !== c.postings.some((j) => "salary_context" in j)) &&
+  /Line 1/.test(soloFound.show_as) && /No notes section/.test(soloFound.show_as), soloCard);
 const solo = await company(withSolo, "solo", {}, soloEnv);
 report("company_salaries answers for an employer known only by its board: size, sentence and news, no salaries",
   solo.company === "Solo" && solo.salaries_in_spain === 0 && solo.company_size.employees === 120 &&
