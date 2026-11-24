@@ -95,10 +95,11 @@ function show(key, n) {
 
 const read = async (url) => (await fetch(url)).json();
 
-// /api/calls is PostHog's count of tool calls. Asked every second while the tab
-// is on show: the CDN answers, so it costs nothing, and the figure moves within
-// seconds of PostHog having a new call. With no count (no key on the
-// deployment, PostHog down) the figure stays as it is, or its column is taken away.
+// /api/calls is PostHog's count of tool calls. Asked once a minute with the
+// other figures: every answer is an Edge Request on Vercel's bill, cached or
+// not, and asking every second spent the Hobby plan's million in a month. With
+// no count (no key on the deployment, PostHog down) the figure stays as it is,
+// or its column is taken away.
 let asking = false;
 async function calls() {
   if (asking) return;   // a slow answer is not asked for twice
@@ -129,11 +130,11 @@ async function slow() {
 }
 
 function figures() {
-  calls(); slow();
-  setInterval(() => { if (!document.hidden) calls(); }, 1000);
-  setInterval(() => { if (!document.hidden) slow(); }, 60000);
+  const all = () => { calls(); slow(); };
+  all();
+  setInterval(() => { if (!document.hidden) all(); }, 60000);
   // Back on the tab after a while away: up to date at once.
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) slow(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) all(); });
 }
 
 // --- copy, theme, clicks ----------------------------------------------------------
