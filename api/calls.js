@@ -4,8 +4,8 @@
 // (`internal`). Reading PostHog means no counter of our own to run; an event
 // takes up to a minute to reach it, so this is the real total a moment ago.
 //
-// The page asks every second. The CDN keeps an answer 5 s and serves it while
-// it fetches the next, so PostHog is asked at most once every 5 s per region
+// The page asks once a minute. The CDN keeps an answer 30 s and serves it while
+// it fetches the next, so PostHog is asked at most twice a minute per region
 // however many readers there are. `refresh: force_blocking` matters: without it
 // PostHog answers from its own cache and the count stands still for hours.
 //
@@ -35,7 +35,7 @@ export default {
       const calls = (await r.json()).results?.[0]?.[0];
       if (!Number.isInteger(calls)) throw new Error("no count");
       return Response.json({ calls }, {
-        headers: { "Cache-Control": "public, max-age=1, s-maxage=5, stale-while-revalidate=600" },
+        headers: { "Cache-Control": "public, max-age=30, s-maxage=30, stale-while-revalidate=600" },
       });
     } catch (e) {
       console.error("calls:", e?.message ?? e);
