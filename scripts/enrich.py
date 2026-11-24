@@ -255,7 +255,7 @@ def size_entry(size: dict) -> list | None:
 
 
 def stored_contact(c: dict) -> dict:
-    """The fields api/mcp.js reads; evidence_quote and published_on stay out."""
+    """The fields kept on file; evidence_quote and published_on stay out."""
     return {"kind": c["kind"], "name": c["name"], "role": c["role"], "email": c["email"],
             "linkedin": c["linkedin"], "jobs": c["jobs"], "scope": c["scope"],
             "published": c["link_evidence"], "source": c["evidence_url"]}

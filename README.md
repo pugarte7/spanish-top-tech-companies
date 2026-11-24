@@ -105,7 +105,6 @@ El servidor se llama `tech-pay-spain`. Tu agente elige la herramienta, no tienes
 
 - `find_jobs` busca entre las ofertas abiertas del día por texto, rol, región, modalidad, nivel, años de experiencia, empresa, tamaño de la empresa y sueldo mínimo. Si nada encaja, dice qué filtro sobra y propone las más cercanas.
 - `job_questions` lee en directo el formulario de una oferta: cada pregunta, si es obligatoria y si la respondes tú o el agente.
-- `hiring_contact` da, para una oferta, alguien de la empresa a quien escribir: quien hace la selección o el responsable del equipo. El mensaje lo escribe tu agente y lo apruebas tú. Como máximo 3 al día.
 - `application_guide` da el procedimiento para aplicar por alguien y la plantilla de notas que guarda el agente.
 - `report_application` anota cómo fue cada solicitud y qué hizo falta para enviarla. No lleva nada sobre ti.
 - `salary_stats` da el sueldo base mediano, la horquilla y el total para un rol, región y experiencia.

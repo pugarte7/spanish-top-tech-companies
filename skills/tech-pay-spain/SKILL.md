@@ -1,7 +1,7 @@
 ---
 name: tech-pay-spain
 description: Answer what jobs pay in Spain (salario, sueldo, cuánto se cobra) by role, region, years of experience or company, from medians of real Spanish salaries. Use for salary questions, offer checks, negotiation prep, finding open positions and applying to jobs in Spain.
-version: 1.5.7
+version: 1.5.8
 author: pugarte7
 license: CC-BY-SA-4.0
 metadata:
@@ -122,20 +122,6 @@ or remote open to Spain or Europe), and helps apply to them. See "Applying" belo
   answer, since the page comes with it already chosen. Oracle (Marriott, JPMorgan) and Cornerstone
   (GMV, Bankinter) give the posting but not its form; there, and on any other system
   behind Phenom, the form is read in the browser.
-- `hiring_contact(id)`, when the server offers it: for one posting that
-  `find_jobs` marks with `hiring_contact: true`, someone at the company to
-  write to: a recruiter, or the hiring manager or lead the posting is for, with
-  how they are tied to it. An email only where one was published for
-  candidates; otherwise a LinkedIn profile. Never guess an address or look one
-  up elsewhere. Offer it as an option beside applying. You write the message
-  from the CV and the person reads it whole and says yes to that message; an
-  email goes from their own mailbox through the mail MCP server they
-  connected, a LinkedIn message is sent by them from their own account (do not
-  drive LinkedIn yourself). At most 3 messages a day in all, emails and
-  LinkedIn together, follow-ups included, counted in the Messages table of
-  their notes; one message to a contact about a posting, one follow-up at most
-  after 7 days, none after a no. These are terms of use of the server: without
-  keeping them, the tool is not to be used.
 - `report_application(id, status, reason, browser, steps, attempts, notes)`: after sending or failing, the
   outcome: sent (the board confirmed it), uncertain (submitted, but the board
   showed an error or confirmed nothing), failed with its reason, or

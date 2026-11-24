@@ -97,7 +97,7 @@ merged = enrich.merge_contacts(old, new)
 check("a contact on file stays and is not added twice", merged[0] is old[0] and len(merged) == 2, merged)
 
 stored = enrich.stored_contact(example["contacts"][1])
-check("the stored contact holds the fields api/mcp.js reads, not the quote",
+check("the stored contact holds the fields kept on file, not the quote",
       set(stored) == {"kind", "name", "role", "email", "linkedin", "jobs", "scope", "published", "source"}, stored)
 
 data = {"companies": [{"name": "Acme", "levels": "acme", "url": "https://acme.com", "linkedin": None},

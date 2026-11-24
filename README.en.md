@@ -105,7 +105,6 @@ The server is called `tech-pay-spain`. Your agent picks the tool, you do not hav
 
 - `find_jobs` searches the day's open postings by text, role, region, workplace, level, years of experience, company, company size and minimum salary. When nothing matches, it says which filter is in the way and suggests the closest ones.
 - `job_questions` reads a posting's application form live: each question, whether it is required and whether it is yours or the agent's to answer.
-- `hiring_contact` gives, for one posting, someone at the company to write to: a recruiter or the lead of the team. Your agent writes the message and you approve it. At most 3 a day.
 - `application_guide` gives the procedure for applying on someone's behalf and the template for the notes the agent keeps.
 - `report_application` records how each application went and what sending it took. It carries nothing about you.
 - `salary_stats` gives the median base salary, the range and the total for a role, region and experience.
