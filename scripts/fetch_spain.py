@@ -1126,7 +1126,10 @@ def main(argv: list[str]) -> int:
             by_slug, skipped = entries_by_company(rows, role, None, today, known_rates(state))
             # Asked now, judged by prune_unproven() once every role is in.
             # Audited too: --audit reads everything and writes nothing.
+            # --company asks only about the companies it writes.
             for slug, group in by_slug.items():
+                if only and slug not in only:
+                    continue
                 if len(group["entries"]) < MIN_GLOBAL and spain_rows[slug] < MIN_GLOBAL:
                     world_small(bearer, cache, group["slug"], role, args.delay, today, budget)
             total = sum(len(group["entries"]) for group in by_slug.values())
