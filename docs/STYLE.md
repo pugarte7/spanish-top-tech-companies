@@ -84,9 +84,9 @@ tinted backgrounds.
   (white on black in dark mode). No mouth, no other face.
 - Drawn by `web/mascot.js` in the "Trazos" hand: every line twice, freehand,
   hatched shadow. Do not redraw it by hand or restyle it.
-- At work, it sits centred above the headline. As the logo it is the body and
-  the eyes alone. On a phone the top bar has neither logo nor name, only the
-  languages on the left and the theme on the right.
+- At work, it sits centred above the headline. The top bar has no logo, which
+  would repeat it: the languages on the left, the name in the middle and the
+  theme on the right. On a phone the name goes too.
 - Under about 48px (the tab icon) use the clean-line version in
   `web/favicon.svg`: the freehand line and the hatching turn to noise.
 - Images for sharing and icons come from `npm run og`. Do not make them by

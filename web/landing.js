@@ -1,5 +1,5 @@
 // The home page's behaviour (scripts/landing.py writes the page, whole without
-// this): the mascot at work and as the logo, the agent's logo swapping in the
+// this): the mascot at work, the agent's logo swapping in the
 // sentence, the three live figures, the copy button and the theme switch.
 // web/mascot.js is loaded before it and draws the mascot.
 
@@ -13,17 +13,6 @@ const dark = () => document.documentElement.dataset.theme === "dark";
 // --- mascot ---------------------------------------------------------------------
 // Black on white by day, white on black by night: the page's two inks.
 const style = () => ({ ...TRAZOS, ...(dark() ? { ink: "#f4f4f4", solid: "#f4f4f4", paper: "#0a0a0a" } : {}) });
-// The coast sits 140 units left of the scene's centre and 126 above it, 300 by
-// 241; the logo is that box cut out of the canvas, with a margin for the wobble.
-const CROP = { x: CENTER.x - 152 * SCALE, y: CENTER.y - 138 * SCALE, w: 324 * SCALE };
-
-function logo(host) {
-  const paint = mountMascot(host, { ...style(), jitter: 1.2 }, "");
-  host.firstElementChild.style.cssText =
-    `display:block;width:${800 / CROP.w * 100}%;margin:${-CROP.y / CROP.w * 100}% 0 0 ${-CROP.x / CROP.w * 100}%`;
-  paint(stateAt(0), { x: 0, y: 0 }, { line: 1, eyes: 1, arms: 0, props: 0 }, 0);
-}
-
 const loaded = performance.now();
 let stopScene = () => {};
 // `enter` plays the entrance (the coast drawing itself) once, on load.
@@ -63,7 +52,6 @@ function scene(host, enter) {
 
 function mascot(enter) {
   stopScene();
-  document.querySelectorAll("[data-mark]").forEach(logo);
   const host = document.querySelector("[data-scene]");
   if (host) stopScene = scene(host, enter);
 }
@@ -138,7 +126,7 @@ function figures() {
 }
 
 // --- copy, theme, clicks ----------------------------------------------------------
-// Only the buttons: on 2026-11-20 <body> matched too, and any click wrote "Copiado" over the logo.
+// Only the buttons: on 2026-11-20 <body> matched too, and any click wrote "Copiado" over the page's name.
 for (const button of document.querySelectorAll("button[data-copy]")) {
   button.onclick = async () => {
     try { await navigator.clipboard.writeText(button.dataset.copy); } catch { return; }
