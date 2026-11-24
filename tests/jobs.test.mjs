@@ -986,7 +986,12 @@ assert.deepEqual(pageLinks('<a href="/jobs/page/2/">2</a><a href="/jobs/?page=3"
   assert.deepEqual(rendered, [], "no browser when the HTML links a board");
 }
 // --- Remote boards: employers with no salary in Spain on file ---------------
-const { boardOf, hostsIn, judge, rotated } = await import("../scripts/remote_boards.mjs");
+const { boardOf, cause, causes, hostsIn, judge, rotated } = await import("../scripts/remote_boards.mjs");
+assert.deepEqual([{ code: "not_found" }, { code: "timeout" }, { code: "retryable_http", details: { status: 429 } },
+                  { code: "http_error", details: { status: 403 } }, new TypeError("no jobs")].map(cause),
+                 ["gone", "timeout", "refused 429", "refused 403", "unread TypeError"],
+                 "a board not read says whether it is gone, refused us or could not be read");
+assert.equal(causes(new Map([["refused 429", 3], ["gone", 1020]])), "gone 1020, refused 429 3");
 const remoteBoard = { name: "Far", ats: "ashby", board: "far", remote: true, tags: ["remote"] };
 const { normalizeJob } = await import("../lib/ats/sources/normalize.js");
 const posting = (id, locations, more = {}) => normalizeJob({
