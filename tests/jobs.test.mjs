@@ -986,7 +986,7 @@ assert.deepEqual(pageLinks('<a href="/jobs/page/2/">2</a><a href="/jobs/?page=3"
   assert.deepEqual(rendered, [], "no browser when the HTML links a board");
 }
 // --- Remote boards: employers with no salary in Spain on file ---------------
-const { boardOf, cause, causes, hostsIn, judge, rotated } = await import("../scripts/remote_boards.mjs");
+const { boardOf, cause, causes, hostsIn, judge, notHeld, rotated } = await import("../scripts/remote_boards.mjs");
 assert.deepEqual([{ code: "not_found" }, { code: "timeout" }, { code: "retryable_http", details: { status: 429 } },
                   { code: "http_error", details: { status: 403 } }, new TypeError("no jobs")].map(cause),
                  ["gone", "timeout", "refused 429", "refused 403", "unread TypeError"],
@@ -1010,6 +1010,10 @@ const verdict = judge(farJobs, asRemote);
 assert.deepEqual([verdict.postings, verdict.open, verdict.paid], [4, 3, 1], "a posting open to Spain makes a board a candidate, and its pay is counted");
 assert.ok(verdict.hosts.includes("far.dev") && verdict.hosts.includes("jobs.ashbyhq.com"));
 assert.deepEqual(hostsIn([{ descriptionText: "v1.2 and e.g. nothing", url: "https://www.acme.com/x" }]), ["acme.com"]);
+assert.deepEqual(verdict.pages, ["jobs.ashbyhq.com"], "the hosts its open postings are on");
+assert.deepEqual(notHeld([{ board: "sdworxnv.teamtailor.com", pages: ["careers.sdworx.com"] }, verdict],
+                         { "sd-worx": { ats: "teamtailor", board: "careers.sdworx.com" } }).map((c) => c.board ?? "far"),
+                 ["far"], "a board whose postings are on a listed company's board is that company's, not a new one");
 const pay = { structuredCompensation: { min: 40000, max: 50000, currency: "EUR", period: "year", source: "ats-structured" } };
 const inOffice = judge([posting("5", ["Madrid, Spain"], pay), posting("6", ["Barcelona, Spain"]), posting("7", ["Berlin, Germany"], pay)], asRemote);
 assert.deepEqual([inOffice.open, inOffice.paid], [2, 1], "an office in Spain counts like remote work, pay elsewhere does not");

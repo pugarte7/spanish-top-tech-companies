@@ -1826,7 +1826,10 @@ function jobPostingText(page) {
 }
 
 async function teamtailorForm(env, board, external, job) {
-  const site = String(board).toLowerCase();
+  // A board read at its teamtailor.com name links its postings to the
+  // employer's own domain (empleo.wsp.com), which serves the form there.
+  const own = String(board).toLowerCase();
+  const site = own.endsWith(".teamtailor.com") ? hostOf(job.url) : own;
   if (!SITE_HOST.test(site) || !/^\d+$/.test(external) || hostOf(job.url) !== site)
     throw new BoardError("the posting's URL is not on its Teamtailor career site");
   const apply = `https://${site}/jobs/${external}/applications/new`;

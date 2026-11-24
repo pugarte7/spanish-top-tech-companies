@@ -912,7 +912,9 @@ const more = { ...index, jobs: [...index.jobs,
   { id: "teamtailor:careers.vueling.com:8681660", company: "Vueling", slug: "vueling", title: "Training Specialist",
     url: "https://careers.vueling.com/jobs/8681660-training-specialist", ats: "teamtailor", location: "Viladecans, Spain" },
   { id: "teamtailor:careers.vueling.com:8681661", company: "Vueling", slug: "vueling", title: "Elsewhere",
-    url: "https://evil.example.com/jobs/8681661-elsewhere", ats: "teamtailor", location: "Barcelona, Spain" }] };
+    url: "https://evil.example.com/jobs/8681661-elsewhere", ats: "teamtailor", location: "Barcelona, Spain" },
+  { id: "teamtailor:vueling.teamtailor.com:8681660", company: "Vueling", slug: null, title: "Training Specialist",
+    url: "https://careers.vueling.com/jobs/8681660-training-specialist", ats: "teamtailor", location: "Viladecans, Spain" }] };
 const formIn = async (id) => (await run("job_questions", { id }, { jobs: more })).structuredContent;
 BOARDS["https://apply.workable.com/api/v1/jobs/3C35D18DA3/form"] = json([
   { name: "Personal information", fields: [{ id: "firstname", label: "First name", required: true, type: "text" },
@@ -1065,6 +1067,10 @@ report("teamtailor: own questions with their options, the locations picker, stan
 const ttElsewhere = await run("job_questions", { id: "teamtailor:careers.vueling.com:8681661" }, { jobs: more });
 report("teamtailor: a posting whose URL is not on its board's host is not read", ttElsewhere.isError === true &&
   !requests.some((r) => r.url.includes("evil.example.com")));
+const ttOwnDomain = await formIn("teamtailor:vueling.teamtailor.com:8681660");
+report("teamtailor: a board read at its teamtailor.com name gives the form on the employer's domain",
+  ttOwnDomain.apply_url === "https://careers.vueling.com/jobs/8681660/applications/new" && byLabel(ttOwnDomain, /Work Permit/).required === true,
+  ttOwnDomain);
 const workday = await formIn("workday:bbva/wd3/BBVA:R-12345");
 report("workday: the posting, an account the person opens, the standard steps and the employer's questions",
   workday.account_required === true && workday.employer_questions === "after sign-in" && /sign-in/.test(workday.form_source) &&
