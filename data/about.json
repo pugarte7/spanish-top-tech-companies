@@ -1,5 +1,5 @@
 {
-"as_of": "2026-11-23",
+"as_of": "2026-11-24",
 "note": "What each company does, in one sentence, written by an outside agent from the company's own site and other public pages (instinct/about).",
 "companies": {
 "0x-labs": {
@@ -25,6 +25,10 @@
 "abbott": {
 "es": "Fabricante de productos sanitarios, diagnóstico, nutrición y medicamentos.",
 "en": "Maker of medical devices, diagnostics, nutrition and medicines."
+},
+"abbvie": {
+"es": "Compañía biofarmacéutica que desarrolla y fabrica medicamentos.",
+"en": "Biopharmaceutical company that develops and makes medicines."
 },
 "abc-fitness": {
 "es": "Software de gestión y pagos para gimnasios y clubes de fitness.",
@@ -178,6 +182,10 @@
 "es": "Software de seguridad y control de tráfico de red para operadores de telecomunicaciones.",
 "en": "Network security and traffic management software for telecom operators."
 },
+"alpadialanguageschoolssa": {
+"es": "Escuelas de idiomas con cursos en el extranjero y campamentos de idiomas.",
+"en": "Language schools offering courses abroad and language camps."
+},
 "alten": {
 "es": "Servicios de ingeniería y consultoría tecnológica para la industria.",
 "en": "Engineering and technology consulting services for industry."
@@ -250,6 +258,10 @@
 "es": "Servicios de inspección, ensayos y certificación técnica para industria y automoción.",
 "en": "Inspection, testing and technical certification services for industry and automotive."
 },
+"applusidiada1": {
+"es": "Ingeniería, diseño, ensayos y homologación para el sector del automóvil.",
+"en": "Engineering, design, testing and homologation services for the automotive sector."
+},
 "appsflyer": {
 "es": "Plataforma de medición de campañas y analítica de marketing para aplicaciones móviles.",
 "en": "Campaign measurement and marketing analytics platform for mobile apps."
@@ -298,6 +310,10 @@
 "es": "Servicio de identidad y autenticación de usuarios para aplicaciones.",
 "en": "Identity and user authentication service for applications."
 },
+"auto1": {
+"es": "Plataforma digital de compraventa y financiación de coches usados para particulares y concesionarios.",
+"en": "Digital platform to buy, sell and finance used cars, for consumers and dealers."
+},
 "autodesk": {
 "es": "Software de diseño y construcción para arquitectura, ingeniería y medios.",
 "en": "Design and construction software for architecture, engineering and media."
@@ -321,6 +337,10 @@
 "avature": {
 "es": "Software de reclutamiento y gestión del talento para departamentos de recursos humanos.",
 "en": "Recruiting and talent management software for human resources departments."
+},
+"averydennison": {
+"es": "Materiales y soluciones de etiquetado e identificación digital para distintas industrias.",
+"en": "Materials science and digital identification and labelling solutions for many industries."
 },
 "aviasales": {
 "es": "Buscador y comparador de billetes de avión y viajes.",
@@ -654,6 +674,10 @@
 "es": "Sociedad de capital riesgo que invierte en empresas europeas.",
 "en": "Private equity firm that invests in European companies."
 },
+"circle": {
+"es": "Plataforma de comunidades en línea con eventos y cursos, bajo marca propia.",
+"en": "Online community platform with events and courses, under the client's own brand."
+},
 "circontrol": {
 "es": "Fabricante de cargadores y sistemas de gestión para vehículos eléctricos.",
 "en": "Maker of electric vehicle chargers and charging management systems."
@@ -761,6 +785,14 @@
 "confluent": {
 "es": "Plataforma de transmisión de datos en tiempo real basada en Apache Kafka.",
 "en": "Real-time data streaming platform built on Apache Kafka."
+},
+"consensys": {
+"es": "Software e infraestructura basados en Ethereum.",
+"en": "Software and infrastructure built on Ethereum."
+},
+"construccionsrubau": {
+"es": "Constructora de infraestructuras y obra civil.",
+"en": "Construction company for infrastructure and civil works."
 },
 "contentsquare": {
 "es": "Software de analítica de experiencia digital que mide cómo usan los clientes una web.",
@@ -882,6 +914,10 @@
 "es": "Firma de auditoría, consultoría, asesoría fiscal y gestión de riesgos para empresas.",
 "en": "Audit, consulting, tax advisory and risk management firm for organizations."
 },
+"dentego": {
+"es": "Red de centros dentales con dentistas, ortodoncistas y personal auxiliar.",
+"en": "Network of dental centres with dentists, orthodontists and support staff."
+},
 "dentsu-group": {
 "es": "Grupo de publicidad, marketing y servicios de medios y comunicación.",
 "en": "Advertising, marketing, media and communications group."
@@ -933,6 +969,10 @@
 "docker": {
 "es": "Plataforma de contenedores para crear, distribuir y ejecutar aplicaciones de forma aislada.",
 "en": "Container platform to build, ship and run applications in isolated environments."
+},
+"doco1": {
+"es": "Catering para aerolíneas y eventos, y gestión de restaurantes, salas VIP y hoteles.",
+"en": "Airline and event catering, plus restaurants, lounges and hotels."
 },
 "docplanner": {
 "es": "Plataforma para reservar citas médicas en línea y software de gestión para clínicas.",
@@ -1082,6 +1122,10 @@
 "es": "Firma de servicios profesionales de auditoría, consultoría, fiscalidad y asesoramiento financiero.",
 "en": "Professional services firm offering audit, consulting, tax and financial advisory."
 },
+"esg": {
+"es": "Externalización de la actividad comercial B2B en Europa para empresas clientes.",
+"en": "Outsourced B2B sales for client companies in Europe."
+},
 "esperanto-technologies": {
 "es": "Diseño de chips de inteligencia artificial basados en la arquitectura RISC-V.",
 "en": "Design of artificial intelligence chips based on the RISC-V architecture."
@@ -1093,6 +1137,10 @@
 "esw": {
 "es": "Plataforma de comercio electrónico transfronterizo para marcas que venden en otros países.",
 "en": "Cross-border e-commerce platform for brands selling in other countries."
+},
+"eurofins": {
+"es": "Laboratorios de análisis y ensayos bioanalíticos para varias industrias.",
+"en": "Laboratory testing and bioanalytical services for several industries."
 },
 "europcar": {
 "es": "Alquiler de coches y furgonetas para particulares y empresas.",
@@ -1109,6 +1157,10 @@
 "eviden": {
 "es": "Servicios de nube, ciberseguridad e informática de alto rendimiento del grupo Atos.",
 "en": "Cloud, cybersecurity and high-performance computing services from the Atos group."
+},
+"evolution": {
+"es": "Soluciones de casino en vivo con retransmisión en directo para operadores de juego.",
+"en": "Live-streamed casino solutions for gaming operators."
 },
 "exoticca": {
 "es": "Agencia de viajes en línea de viajes organizados a destinos lejanos.",
@@ -1198,6 +1250,10 @@
 "es": "Plataforma de pagos internacionales para educación, salud y viajes.",
 "en": "International payments platform for education, healthcare and travel."
 },
+"flywire1": {
+"es": "Plataforma de pagos globales y software para educación, salud, viajes y empresas.",
+"en": "Global payments platform and software for education, healthcare, travel and businesses."
+},
 "fonio": {
 "es": "Agentes telefónicos con IA que atienden las llamadas de las empresas a cualquier hora.",
 "en": "AI phone agents that answer business calls around the clock."
@@ -1245,6 +1301,10 @@
 "fxstreet": {
 "es": "Medio de información y análisis sobre divisas y mercados financieros.",
 "en": "Media outlet with news and analysis on currencies and financial markets."
+},
+"gameloft": {
+"es": "Desarrollo y publicación de videojuegos para móviles.",
+"en": "Developer and publisher of mobile video games."
 },
 "gaming-innovation-group": {
 "es": "Plataforma tecnológica y marcas de apuestas y casino en línea.",
@@ -1350,6 +1410,10 @@
 "es": "Software para aseguradoras de daños que gestiona pólizas, siniestros y facturación.",
 "en": "Software for property and casualty insurers covering policies, claims and billing."
 },
+"hanagroup": {
+"es": "Distribución de platos panasiáticos frescos en puntos de venta.",
+"en": "Distribution of freshly prepared pan-Asian dishes through points of sale."
+},
 "happening": {
 "es": "Ingeniería de software para plataformas de apuestas y juego en línea.",
 "en": "Software engineering for online betting and gaming platforms."
@@ -1441,6 +1505,10 @@
 "huspy": {
 "es": "Plataforma de búsqueda de vivienda y financiación hipotecaria.",
 "en": "Platform for finding a home and arranging mortgage financing."
+},
+"iad": {
+"es": "Red de agentes inmobiliarios con modelo digital.",
+"en": "Network of real estate agents on a digital model."
 },
 "iag-gbs": {
 "es": "Centro de servicios compartidos de IAG con finanzas, recursos humanos y tecnología.",
@@ -1642,6 +1710,10 @@
 "es": "Plataforma de intercambio para comprar, vender y custodiar criptomonedas.",
 "en": "Exchange platform for buying, selling and holding cryptocurrencies."
 },
+"kronospan": {
+"es": "Fabricante de tableros de madera.",
+"en": "Manufacturer of wood-based panels."
+},
 "kyndryl": {
 "es": "Servicios de infraestructura informática, nube y sistemas para grandes empresas.",
 "en": "IT infrastructure, cloud and systems services for large enterprises."
@@ -1650,6 +1722,10 @@
 "es": "Grupo de correos y paquetería con servicios bancarios y de seguros.",
 "en": "Postal and parcel group that also offers banking and insurance services."
 },
+"lakme": {
+"es": "Fabricante de productos de cosmética capilar.",
+"en": "Maker of hair cosmetics products."
+},
 "landbot": {
 "es": "Plataforma sin código para crear agentes conversacionales y chatbots.",
 "en": "No-code platform for building conversational agents and chatbots."
@@ -1657,6 +1733,10 @@
 "langchain": {
 "es": "Framework open source y plataforma para crear, probar y gobernar agentes de IA.",
 "en": "Open-source framework and platform to build, test and govern AI agents."
+},
+"languagecampus": {
+"es": "Academia de idiomas con clases individuales y en grupo en Las Palmas.",
+"en": "Language school with individual and group classes in Las Palmas."
 },
 "lastminutecom": {
 "es": "Agencia de viajes en línea de vuelos, hoteles y paquetes vacacionales.",
@@ -1870,6 +1950,10 @@
 "es": "Equipo de tecnología que desarrolla las aplicaciones y sistemas de Mercadona.",
 "en": "Technology team that builds Mercadona's apps and systems."
 },
+"mercanis": {
+"es": "Plataforma de compras con inteligencia artificial para equipos de procurement.",
+"en": "AI-based procurement platform for purchasing teams."
+},
 "mercedes-benz": {
 "es": "Fabricante de automóviles y furgonetas de gama alta.",
 "en": "Maker of premium cars and vans."
@@ -1970,9 +2054,17 @@
 "es": "Plataforma para comprar, vender y pagar con criptomonedas con tarjeta y transferencia.",
 "en": "Platform for buying, selling and paying with cryptocurrencies by card and bank transfer."
 },
+"mountfitchetgroup": {
+"es": "Grupo de servicios de aviación, viajes y logística.",
+"en": "Group providing aviation, travel and logistics services."
+},
 "mozilla": {
 "es": "Organización que desarrolla el navegador Firefox y otras herramientas de internet.",
 "en": "Organisation that develops the Firefox browser and other internet tools."
+},
+"msxinternational": {
+"es": "Servicios y soluciones de negocio para el sector del automóvil y la movilidad.",
+"en": "Business services and solutions for the automotive and mobility sector."
 },
 "multiverse": {
 "es": "Plataforma de formación y aprendizaje en inteligencia artificial y competencias digitales para empresas.",
@@ -2134,6 +2226,10 @@
 "es": "Procesadores gráficos y plataformas de computación para inteligencia artificial.",
 "en": "Graphics processors and computing platforms for artificial intelligence."
 },
+"o-i": {
+"es": "Fabricante de envases y botellas de vidrio.",
+"en": "Maker of glass bottles and packaging."
+},
 "o9-solutions": {
 "es": "Software de planificación de la cadena de suministro y de la demanda en la nube.",
 "en": "Cloud software for supply chain and demand planning."
@@ -2181,6 +2277,10 @@
 "onespan": {
 "es": "Software de autenticación, firma electrónica y seguridad digital para bancos.",
 "en": "Authentication, e-signature and digital security software for banks."
+},
+"onestream": {
+"es": "Software de gestión del rendimiento financiero para equipos de finanzas.",
+"en": "Financial performance management software for finance teams."
 },
 "onna": {
 "es": "Software de búsqueda y recopilación de datos para procesos legales.",
@@ -2238,6 +2338,10 @@
 "es": "Consultora de ingeniería de software y transformación digital.",
 "en": "Software engineering and digital transformation consultancy."
 },
+"palrobotics": {
+"es": "Diseño de robots de servicio y plataformas robóticas a medida.",
+"en": "Design of service robots and tailor-made robotic platforms."
+},
 "pandadoc": {
 "es": "Software para crear, enviar y firmar propuestas y contratos.",
 "en": "Software for creating, sending and e-signing proposals and contracts."
@@ -2245,6 +2349,10 @@
 "paradigma-digital": {
 "es": "Consultora de ingeniería de software, datos y nube para empresas.",
 "en": "Consultancy for software engineering, data and cloud."
+},
+"parsecautomationcorp": {
+"es": "Software de ejecución de manufactura (MES) para fábricas.",
+"en": "Manufacturing execution software (MES) for factories."
 },
 "parser-digital": {
 "es": "Consultora tecnológica de desarrollo de producto, modernización e inteligencia artificial.",
@@ -2297,6 +2405,10 @@
 "picsart": {
 "es": "Aplicación de edición de fotos y vídeo con herramientas creativas y de inteligencia artificial.",
 "en": "Photo and video editing app with creative and artificial intelligence tools."
+},
+"pitchblackcreative": {
+"es": "Grupo de estudios de efectos visuales y producción digital para cine y televisión.",
+"en": "Group of visual effects and digital production studios for film and television."
 },
 "plain-concepts": {
 "es": "Consultora de desarrollo de software e inteligencia artificial basada en tecnología de Microsoft.",
@@ -2406,6 +2518,10 @@
 "es": "Grupo de publicidad, marketing, comunicación y consultoría digital.",
 "en": "Advertising, marketing, communications and digital consulting group."
 },
+"pubmatic": {
+"es": "Plataforma publicitaria que conecta anunciantes, editores y socios de datos.",
+"en": "Advertising platform connecting buyers, publishers and data partners."
+},
 "pure-storage": {
 "es": "Sistemas y plataforma de almacenamiento de datos para empresas.",
 "en": "Enterprise data storage systems and platform."
@@ -2414,9 +2530,17 @@
 "es": "Servicios de auditoría, consultoría y asesoría fiscal y legal para empresas.",
 "en": "Audit, consulting, tax and legal advisory services for businesses."
 },
+"qadinc": {
+"es": "Plataforma de software para fabricantes y cadenas de suministro.",
+"en": "Software platform for manufacturers and supply chains."
+},
 "qdrant": {
 "es": "Base de datos vectorial de código abierto para búsqueda semántica e inteligencia artificial.",
 "en": "Open source vector database for semantic search and artificial intelligence."
+},
+"qima": {
+"es": "Servicios de ensayo, inspección y certificación de productos para empresas.",
+"en": "Testing, inspection and certification services for products, for businesses."
 },
 "qlik": {
 "es": "Software de análisis de datos e integración para visualizar información empresarial.",
@@ -2429,6 +2553,14 @@
 "qorvo": {
 "es": "Fabricante de semiconductores para comunicaciones móviles e inalámbricas.",
 "en": "Maker of semiconductors for mobile and wireless communications."
+},
+"qtech": {
+"es": "Selección de personal tecnológico y headhunting para empresas.",
+"en": "Recruitment and headhunting of tech professionals for companies."
+},
+"quadient1": {
+"es": "Automatización de comunicaciones, finanzas, correo y entrega de paquetes.",
+"en": "Automation of communications, finance, mail and parcel delivery."
 },
 "qualifyze": {
 "es": "Plataforma de gestión de riesgo de proveedores y auditorías para farmacéuticas.",
@@ -2458,6 +2590,10 @@
 "es": "Grupo de internet con comercio electrónico, servicios financieros y comunicaciones.",
 "en": "Internet group with e-commerce, financial services and communications."
 },
+"ramboll3": {
+"es": "Consultora de arquitectura, ingeniería y consultoría técnica.",
+"en": "Architecture, engineering and technical consultancy."
+},
 "randstad": {
 "es": "Empresa de trabajo temporal y selección de personal.",
 "en": "Staffing and recruitment company."
@@ -2486,6 +2622,10 @@
 "es": "Marketplace que conecta a autores con editores, diseñadores y otros profesionales editoriales.",
 "en": "Marketplace connecting authors with editors, designers and other publishing professionals."
 },
+"refinery89": {
+"es": "Monetización publicitaria para editores web.",
+"en": "Ad monetisation services for web publishers."
+},
 "relationalai": {
 "es": "Plataforma de inteligencia de decisión basada en grafos de conocimiento para empresas.",
 "en": "Decision intelligence platform based on knowledge graphs for enterprises."
@@ -2493,6 +2633,10 @@
 "remote": {
 "es": "Plataforma de contratación, nóminas y cumplimiento laboral para equipos internacionales.",
 "en": "Hiring, payroll and employment compliance platform for international teams."
+},
+"rentokilinitial1": {
+"es": "Servicios de control de plagas e higiene para empresas.",
+"en": "Pest control and hygiene services for businesses."
 },
 "repsol": {
 "es": "Compañía de energía con petróleo, gas, gasolineras y renovables.",
@@ -2513,6 +2657,10 @@
 "rewe-group": {
 "es": "Grupo de distribución con supermercados, agencias de viaje y tiendas de bricolaje.",
 "en": "Retail group with supermarkets, travel agencies and DIY stores."
+},
+"rhg": {
+"es": "Grupo hotelero con varias marcas de hoteles.",
+"en": "Hotel group operating several hotel brands."
 },
 "ria-money-transfer": {
 "es": "Servicio de envío de dinero internacional y pagos.",
@@ -2638,6 +2786,10 @@
 "es": "Consultora de ingeniería, tecnología y transformación digital para la industria.",
 "en": "Engineering, technology and digital transformation consultancy for industry."
 },
+"scharlabsl": {
+"es": "Fabricación y distribución de productos químicos y material para laboratorios.",
+"en": "Maker and distributor of laboratory chemicals and supplies."
+},
 "schneider-electric": {
 "es": "Equipos y software de gestión de energía y automatización para edificios e industria.",
 "en": "Energy management and automation equipment and software for buildings and industry."
@@ -2750,6 +2902,10 @@
 "es": "Servicios de consultoría tecnológica y desarrollo de software para empresas.",
 "en": "Technology consulting and software development services for companies."
 },
+"sikaag": {
+"es": "Químicos de especialidad para sellado, adhesión y refuerzo en construcción e industria.",
+"en": "Specialty chemicals for bonding, sealing and reinforcing in construction and industry."
+},
 "sinch": {
 "es": "Plataforma de comunicaciones en la nube con mensajería, voz y correo electrónico para empresas.",
 "en": "Cloud communications platform with messaging, voice and email for businesses."
@@ -2765,6 +2921,10 @@
 "sitecore": {
 "es": "Plataforma de gestión de contenidos y experiencia digital para sitios web empresariales.",
 "en": "Content management and digital experience platform for enterprise websites."
+},
+"sixt": {
+"es": "Servicios de movilidad con flota propia y aplicación móvil.",
+"en": "Mobility services with its own fleet and a mobile app."
 },
 "skyscanner": {
 "es": "Buscador y comparador de vuelos, hoteles y alquiler de coches.",
@@ -2833,6 +2993,10 @@
 "spotify": {
 "es": "Servicio de streaming de música, pódcasts y audiolibros.",
 "en": "Streaming service for music, podcasts and audiobooks."
+},
+"spring": {
+"es": "Detergente y productos de limpieza del hogar.",
+"en": "Laundry detergent and household cleaning products."
 },
 "sqli": {
 "es": "Agencia digital de comercio electrónico y experiencia de cliente.",
@@ -3050,6 +3214,10 @@
 "es": "Plataforma para descubrir y reservar mesa en restaurantes.",
 "en": "Platform for discovering and booking tables at restaurants."
 },
+"thenielsencompany": {
+"es": "Medición de audiencias, datos y analítica para medios y publicidad.",
+"en": "Audience measurement, data and analytics for media and advertising."
+},
 "thermo-fisher-scientific": {
 "es": "Equipos, reactivos y servicios para laboratorios de ciencia y salud.",
 "en": "Instruments, reagents and services for science and healthcare laboratories."
@@ -3077,6 +3245,10 @@
 "tng-technology-consulting": {
 "es": "Consultora tecnológica centrada en software e informática de alta gama.",
 "en": "Technology consulting firm focused on high-end software and IT."
+},
+"tomra": {
+"es": "Soluciones de reciclaje y recuperación de envases, y clasificación para la industria alimentaria.",
+"en": "Recycling and container-collection solutions, and sorting for the food industry."
 },
 "tomtom": {
 "es": "Mapas digitales, navegación y datos de tráfico para vehículos y aplicaciones.",
@@ -3246,6 +3418,10 @@
 "es": "Software en la nube para la industria farmacéutica y de ciencias de la vida.",
 "en": "Cloud software for the pharmaceutical and life sciences industry."
 },
+"venuu": {
+"es": "Mercado en línea para reservar espacios y servicios para eventos privados.",
+"en": "Online marketplace to book venues and services for private events."
+},
 "veriff": {
 "es": "Servicio de verificación de identidad en línea con documentos y reconocimiento facial.",
 "en": "Online identity verification service using documents and facial recognition."
@@ -3337,6 +3513,10 @@
 "vueling": {
 "es": "Aerolínea de bajo coste con vuelos dentro de Europa y a otros destinos.",
 "en": "Low-cost airline operating flights within Europe and to other destinations."
+},
+"wabtec": {
+"es": "Equipos y tecnología para el transporte ferroviario de mercancías y pasajeros.",
+"en": "Equipment and technology for freight and passenger rail."
 },
 "wallapop": {
 "es": "Plataforma de compraventa de artículos de segunda mano entre particulares.",
@@ -3486,10 +3666,15 @@
 "none": {
 "hopin": "2026-11-23",
 "innocv-solutions": "2026-11-23",
+"lifebit": "2026-11-24",
+"mattelinc": "2026-11-24",
 "olx-group": "2026-11-23",
+"originhq": "2026-11-24",
 "prima": "2026-11-23",
+"sapitbusinesssysteme": "2026-11-24",
 "slate": "2026-11-23",
 "superbet": "2026-11-23",
-"tabby": "2026-11-23"
+"tabby": "2026-11-23",
+"vistairhr": "2026-11-24"
 }
 }
