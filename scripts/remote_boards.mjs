@@ -161,16 +161,32 @@ const BOARD_INTERVAL_MS = { personio: 1000, bamboohr: 400 };
 /** How long one board may take. */
 const BOARD_MS = 120_000;
 
+/** Why a board was not read: `gone` is a board the ATS no longer has (most of
+ * what Common Crawl remembers), `refused` and `timeout` are ours to lose, and
+ * anything else is an answer the adapter could not read. */
+export function cause(error) {
+  const code = error?.code;
+  if (code === "not_found") return "gone";
+  if (code === "timeout") return "timeout";
+  if (code === "retryable_http" || code === "http_error") return `refused ${error?.details?.status ?? error?.status ?? "?"}`;
+  return `unread ${code ?? error?.name ?? "error"}`;
+}
+
+/** "gone 1020, refused 429 3", the commonest first. */
+export const causes = (missed) => [...missed].sort((a, b) => b[1] - a[1]).map(([why, n]) => `${why} ${n}`).join(", ");
+
 async function probe(kind, boards, ats, toEntry, wanted, log, deadline) {
   const adapter = ats.adapterFor(kind);
   const found = [];
+  const missed = new Map();
+  const shown = new Set();
   let strikes = 0;
   let read = 0;
   let next = 0;
   for (const board of boards) {
     if (Date.now() > deadline) {
       log(`${kind} out of time after ${read}; the rest wait for the next run`);
-      return { found, read, complete: false };
+      return { found, read, missed, complete: false };
     }
     await new Promise((resolve) => setTimeout(resolve, Math.max(0, next - Date.now())));
     next = Date.now() + (BOARD_INTERVAL_MS[kind] ?? 0);
@@ -190,14 +206,20 @@ async function probe(kind, boards, ats, toEntry, wanted, log, deadline) {
       const verdict = judge(jobs, (job) => toEntry(job, { name: board, ats: kind, board, remote: true }));
       if (verdict.open) found.push({ ats: kind, board, ...verdict });
     } catch (error) {
+      const why = cause(error);
+      missed.set(why, (missed.get(why) ?? 0) + 1);
+      if (why !== "gone" && !shown.has(why)) {
+        shown.add(why);
+        log(`${kind} ${board}: ${why}: ${String(error?.message ?? error).slice(0, 200)}`);
+      }
       strikes = THROTTLED.has(error?.code) ? strikes + 1 : 0;
       if (strikes >= HOST_STRIKES) {
         log(`${kind} refused ${HOST_STRIKES} boards in a row after ${read}; left for the next run`);
-        return { found, read, complete: false };
+        return { found, read, missed, complete: false };
       }
     }
   }
-  return { found, read, complete: true };
+  return { found, read, missed, complete: true };
 }
 
 const key = (entry) => `${entry.ats}:${String(entry.board).toLowerCase()}`;
@@ -255,7 +277,8 @@ async function main() {
     let list = rotated([...boards[kind]].filter((board) => !listed.has(key({ ats: kind, board }))).sort());
     if (values.limit) list = list.slice(0, Number(values.limit));
     const result = await probe(kind, list, ats, toEntry, wanted, log, deadline);
-    log(`${kind}: ${result.read} of ${list.length} boards read, ${result.found.length} candidates`);
+    log(`${kind}: ${result.read} of ${list.length} boards read, ${result.found.length} candidates`
+        + (result.missed.size ? `; not read: ${causes(result.missed)}` : ""));
     return { kind, ...result, asked: list.length };
   }));
   const out = {
