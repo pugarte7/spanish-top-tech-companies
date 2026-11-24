@@ -1762,6 +1762,20 @@ const withoutContext = await company(bare, branchCompany.name, {}, { jobs: index
 report("company_salaries: a company with neither carries no empty field",
   !("about" in withoutContext) && !("latest_news" in withoutContext) && !("latest_news_note" in withoutContext));
 
+const soloJob = { ...index.jobs[0], id: "ashby:solo:1", slug: null, company: "Solo", title: "Backend Engineer" };
+const withSolo = { ...data, employers: [{ name: "Solo", levels: "solo", board: "ashby:solo", url: "https://jobs.ashbyhq.com/solo",
+  size: "51-200", employees: 120, about: { es: "Hace cosas.", en: "It makes things." },
+  latest: { es: "Abrió oficina.", en: "It opened an office.", date: "2026-11-03", source: "Expansión", url: "https://news.example/2" } }] };
+const soloEnv = { jobs: { ...index, jobs: [...index.jobs, soloJob] }, companies: table };
+const soloFound = (await answer(withSolo, { jsonrpc: "2.0", id: 1, ...tool("find_jobs", { company_size: "51-200", limit: 100 }) }, soloEnv))
+  .result.structuredContent;
+report("find_jobs gives an employer known only by its board its size, and the size filter keeps it",
+  soloFound.jobs.some((j) => j.id === "ashby:solo:1" && j.company_size === "51-200"), soloFound.matches);
+const solo = await company(withSolo, "solo", {}, soloEnv);
+report("company_salaries answers for an employer known only by its board: size, sentence and news, no salaries",
+  solo.company === "Solo" && solo.salaries_in_spain === 0 && solo.company_size.employees === 120 &&
+  solo.about.en === "It makes things." && solo.latest_news.date === "2026-11-03" && solo.groups.length === 0 &&
+  /find_jobs with company 'Solo'/.test(solo.reason), solo);
 report("list_filters gives the size buckets", (await run("list_filters", {})).structuredContent.company_sizes.join() ===
   "1-50,51-200,201-1000,1001-5000,5001+");
 

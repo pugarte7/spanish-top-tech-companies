@@ -617,7 +617,7 @@ def company_sizes(data: dict) -> None:
     bucket. Added to the built data.json only, like the job boards: --refresh
     writes data/data.json from the CSV, which knows no headcount."""
     known = json.loads((AGGREGATES / "sizes.json").read_text(encoding="utf-8"))
-    for company in data["companies"]:
+    for company in [*data["companies"], *data.get("employers", [])]:
         size, employees, *branch = known["companies"].get(company.get("levels")) or [None, None]
         if size or employees is not None:
             company.update({"size": size, "employees": employees, **({"branch": True} if branch else {})})
@@ -636,7 +636,7 @@ def company_context(data: dict) -> None:
         path = AGGREGATES / name
         return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
     about, news = read("about.json"), read("news.json")
-    for company in data["companies"]:
+    for company in [*data["companies"], *data.get("employers", [])]:
         slug = company.get("levels")
         if slug in about.get("companies", {}):
             company["about"] = about["companies"][slug]
@@ -1010,6 +1010,10 @@ def main(argv: list[str]) -> int:
     if OUT.exists():
         shutil.rmtree(OUT)
     (OUT / "api" / "v1").mkdir(parents=True)
+    # The employers known only by their board get the same size, sentence
+    # and news as the listed companies, found by the board their postings carry.
+    data["employers"] = [{"name": e["name"], "levels": e["levels"], "board": e["board"], "url": e["url"]}
+                         for e in lib.unlisted_employers(data)]
     company_sizes(data)
     company_context(data)
     data["instructions"] = mcp_instructions(data)

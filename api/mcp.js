@@ -26,7 +26,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const META = "io.modelcontextprotocol/";
 // How long a client may cache the tool list: tools change with a deploy, data weekly.
 const TTL_MS = 3_600_000;
-const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.29.0" };
+const SERVER = { name: "tech-pay-spain", title: "Spanish Top Tech Companies", version: "1.30.0" };
 // What every agent is told is data.instructions, written by scripts/site.py
 // (mcp_instructions) beside llms.txt: the server holds no text of its own.
 
@@ -98,6 +98,7 @@ const TOOLS = {
                    "a role, region or years to see the groups within it, combinations included. " +
                    "Where on file, about says in one sentence what the company does and latest_news " +
                    "gives one recent headline about its business, both in Spanish and English. " +
+                   "A company the site knows only by its job board answers with those and no salaries. " +
                    "A name the site does not list gets close names to try. Companies listed apart under a " +
                    "name that starts like it (BBVA and BBVA Technology) come back in related_companies.",
       inputSchema: { type: "object", required: ["name"], properties: {
@@ -515,6 +516,17 @@ const companyBySlug = (data, slug) => {
   if (!BY_SLUG.has(data)) BY_SLUG.set(data, new Map(data.companies.filter((c) => c.levels).map((c) => [c.levels, c])));
   return BY_SLUG.get(data).get(slug) ?? null;
 };
+// An employer the site knows only by its job board (data.employers, from
+// data/remote-boards.json) has no salaries here and so no slug on its
+// postings: it is found by the board in the posting's id, and carries the
+// same size, sentence and news as a listed company.
+const BY_BOARD = new WeakMap();
+const employerOf = (data, job) => {
+  const listed = companyBySlug(data, job?.slug);
+  if (listed) return listed;
+  if (!BY_BOARD.has(data)) BY_BOARD.set(data, new Map((data.employers ?? []).map((e) => [e.board, e])));
+  return BY_BOARD.get(data).get(String(job?.id ?? "").split(":").slice(0, 2).join(":").toLowerCase()) ?? null;
+};
 
 // A company's figures as the table shows them, flagged when fewer than
 // min_group people are behind them.
@@ -625,6 +637,19 @@ export async function company(data, name, args = {}, env = {}) {
   let matches = companies.filter(([c]) => norm(c.name).includes(want));
   const exact = companies.filter(([c]) => norm(c.name) === want || (c.levels && norm(c.levels) === want));
   if (exact.length) matches = exact;
+  if (want && !matches.length) {
+    // Known only by its board: no salaries, and the rest as for any company.
+    const known = (data.employers ?? []).filter((e) => norm(e.name) === want || norm(e.levels ?? "") === want);
+    if (known.length === 1) {
+      const [e] = known, open = await openPostings(env, e.name);
+      return { company: e.name, url: e.url, cities: [], salaries_in_spain: 0,
+               company_size: sizeOf(e), ...contextOf(e), selection, groups: [],
+               reason: "no salaries in Spain on file for this company: the site lists it for its job " +
+                 "board, which posts work open to Spain" + (open ? `, ${open} posting${open === 1 ? "" : "s"} ` +
+                 `today (find_jobs with company '${e.name}')` : "") + ". salary_stats gives the market " +
+                 "figure for the role in Spain, which is the fair comparison." };
+    }
+  }
   if (!want || !matches.length) {
     const close = closeNames(companies.map(([c]) => c), name);
     const open = want ? await openPostings(env, name) : 0;
@@ -1212,7 +1237,7 @@ export async function findJobs(data, args = {}, env = {}) {
       if (g.seniority && p.seniority !== g.seniority && !(g.seniority === "mid" && p.seniority === null)) continue;
       if (g.levels && !g.levels.has(p.seniority ?? "mid")) continue;
       if (g.years && p.years && p.years[0] > g.years.years) continue;
-      const size = companyBySlug(data, job.slug)?.size ?? null;
+      const size = employerOf(data, job)?.size ?? null;
       if (g.sizes && !g.sizes.has(size)) { if (!size) unknownSize++; continue; }
       const jobRole = g.special ? g.special.slug
         : g.classified && p.roles.includes(g.roleSlug) ? g.roleSlug : p.roles[0] ?? null;

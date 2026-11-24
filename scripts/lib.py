@@ -565,8 +565,9 @@ def unlisted_employers(data: dict) -> list[dict]:
     does, its news. The slug is Levels.fyi's when the entry has one, else the
     name's, and an employer whose slug a listed company holds is left out.
     The only address on file is the job board, as `web`, `url` and `careers`;
-    `board` is the key its postings carry in jobs.json. Nothing gathered for
-    them is shown: site.py reads those files for data.json's companies only."""
+    `board` is the key its postings carry in jobs.json. site.py puts them in
+    data.json's `employers` with what was gathered, which the MCP gives as
+    it does a listed company's."""
     path = ROOT / "data" / "remote-boards.json"
     if not path.exists():
         return []
