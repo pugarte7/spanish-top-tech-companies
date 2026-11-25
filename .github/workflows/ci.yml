@@ -28,6 +28,9 @@ jobs:
       - name: Company descriptions are checked
         run: python3 tests/test_about.py
 
+      - name: Verified companies are checked
+        run: python3 tests/test_verify.py
+
       - name: News answers are checked
         run: python3 tests/test_news.py
 
