@@ -211,6 +211,20 @@ const shared = await crawl({ companies: [
 assert.deepEqual(shared.index.jobs.map((j) => [j.id, j.slug]).sort(),
                  [["teamtailor:careers.vueling.com:8681660#vueling-data", "vueling-data"], ["teamtailor:careers.vueling.com:8681660", "vueling"],
                   ["teamtailor:careers.vueling.com:8681661", "vueling"]]);
+// SmartRecruiters takes a request per posting for its text: one its list
+// already places outside Spain is not asked for.
+const SR = "https://api.smartrecruiters.com/v1/companies/Globex/postings";
+const srItem = (id, name, city, country) => ({ id, name, location: { city, country, fullLocation: `${city}, ${country}` } });
+BOARDS[SR] = { totalFound: 3, offset: 0, limit: 100, content: [srItem("1", "Backend Engineer", "Madrid", "es"),
+  srItem("2", "Backend Engineer", "Berlin", "de"), srItem("3", "Backend Engineer", "Chicago", "us")] };
+BOARDS[`${SR}/1`] = { ...srItem("1", "Backend Engineer", "Madrid", "es"), releasedDate: "2026-11-20T10:00:00Z",
+  jobAd: { sections: { jobDescription: { title: "Job", text: "<p>We build things in Go.</p>" } } } };
+requested = [];
+const sr = await crawl({ companies: [{ name: "Globex", ats: "smartrecruiters", board: "Globex", tier: "B", tags: ["spain"] }] },
+                       data, await loadAts(), { minutes: 1 });
+assert.deepEqual(sr.index.jobs.map((j) => j.id), ["smartrecruiters:Globex:1"]);
+assert.deepEqual(requested.filter((u) => u.startsWith(`${SR}/`)), [`${SR}/1`],
+                 "only the posting in Spain is read in full");
 const { teamtailorAdapter } = await import("../lib/ats/sources/teamtailor.js");
 assert.deepEqual(teamtailorAdapter.boardFromUrl("https://ironhackers.teamtailor.com/jobs/123-x"),
                  { ats: "teamtailor", board: "ironhackers.teamtailor.com", region: "global" });

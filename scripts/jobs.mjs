@@ -282,7 +282,13 @@ export async function crawl(boardsList, data, ats, opts = {}) {
     while (queue.length) {
       const item = queue.shift();
       if (Date.now() > deadline) { failAll(item, "timeout", "crawl time limit reached"); continue; }
-      const result = await discoverJobs([item.company]);
+      // A posting the list already places where nobody in Spain could take
+      // it is not worth the request for its text: SmartRecruiters' boards of
+      // global employers list thousands, read one request at a time.
+      const result = await discoverJobs([item.company], undefined, { wanted: (job) => {
+        const classes = openToSpain(job, location.analyzeLocation);
+        return Boolean(classes) && (!item.board.remote || classes.some((c) => SPAIN_CLASSES.has(c)));
+      } });
       const issue = result.issues[0];
       if (issue && throttled(issue) && strikes + 1 >= HOST_STRIKES) {
         // Refused that many times running: the host is not letting this run
