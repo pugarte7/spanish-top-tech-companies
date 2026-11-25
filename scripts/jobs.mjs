@@ -103,6 +103,10 @@ const STALE_DAYS = 7;
 /** Most application forms read in one run: each is a page in the cloud browser,
  * whose minutes are billed. A posting left over is read the next day. */
 const MAX_FORM_READS = 250;
+/** Reading those forms stops after this; the forms already stored are kept.
+ * A browser read that never answered once left nothing to wait on, and
+ * Node ended the build with no jobs.json written (2026-11-25). */
+const FORMS_MS = 10 * 60_000;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const norm = (s) => String(s ?? "").normalize("NFKD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
@@ -620,20 +624,27 @@ async function main() {
       }
     }
     index = stampSeen(index, prior);
-    // Without the browser these sites refuse every read: only the forms already stored are kept.
-    const { fetchText } = await import("../lib/ats/sources/http.js");
-    const stored = await storeForms(index, prior, direct,
-      (url) => fetchText(url, { allowedHosts: [hostOf(url)], retries: 1 }),
-      bb.browserbaseEnabled() ? MAX_FORM_READS : 0);
-    index = stored.index;
-    log(`application forms: ${index.jobs.filter((job) => Number.isInteger(job.form)).length} postings ` +
-        `(${(index.forms ?? []).length} distinct), ${stored.reads} pages read, ${stored.failed} failed`);
     // An index with no board read and nothing carried over would read as "no
     // openings anywhere"; no file says the truth.
     if (boards.queried > 0 && boards.failed === boards.queried && !index.boards.stale) {
       log("no board could be read and none carried over; no index published");
       return;
     }
+    // Written now, so whatever happens while the forms are read, the crawl is not lost.
+    write(opts.out, index);
+    // Without the browser these sites refuse every read: only the forms already stored are kept.
+    const { fetchText } = await import("../lib/ats/sources/http.js");
+    const readPage = (url) => fetchText(url, { allowedHosts: [hostOf(url)], retries: 1 });
+    let timer;
+    const stored = await Promise.race([
+      storeForms(index, prior, direct, readPage, bb.browserbaseEnabled() ? MAX_FORM_READS : 0),
+      new Promise((resolve) => { timer = setTimeout(resolve, FORMS_MS, null); }),
+    ]).finally(() => clearTimeout(timer))
+      ?? (log(`application forms: reading stopped after ${FORMS_MS / 1000}s; stored forms kept`),
+          await storeForms(index, prior, direct, readPage, 0));
+    index = stored.index;
+    log(`application forms: ${index.jobs.filter((job) => Number.isInteger(job.form)).length} postings ` +
+        `(${(index.forms ?? []).length} distinct), ${stored.reads} pages read, ${stored.failed} failed`);
   } catch (error) {
     reason = String(error?.stack ?? error);
   }
@@ -657,6 +668,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   // A Browserbase session (sites that challenge the build's address) is
   // released before leaving: its minutes are billed.
   const release = () => import("../lib/ats/sources/browserbase.js").then((m) => m.closeBrowser()).catch(() => {});
+  // Node leaves when nothing is left to wait on, even with main() unfinished.
+  process.on("beforeExit", () => log("left before finishing: a request never settled"));
   main().then(() => release().then(() => process.exit(0)), (error) => {
     log(`error: ${error?.stack ?? error}`);
     release().then(() => process.exit(0));

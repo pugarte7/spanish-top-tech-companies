@@ -101,6 +101,11 @@ jobs:
       - name: /mcp answers
         run: node tests/mcp.test.mjs
 
+      # Without the index the job tools fail: production keeps what it has.
+      - name: Job index built
+        if: env.VERCEL_TOKEN != ''
+        run: test -s _site/api/v1/jobs.json || { echo "::error::no jobs.json was built; not deploying"; exit 1; }
+
       # A deploy takes 10-20 seconds. On 2026-11-10 Vercel's side hung for an
       # hour on "Downloading deployment files" and then failed; a rerun went
       # through at once. So each try gets five minutes, and there are three.
