@@ -5,8 +5,9 @@
     python3 scripts/review.py --limit 200  # the issue body, linking to the file
 
 Since 2026-11-01 such a company is taken for unverified: its salaries stay
-in the CSV, the website publishes nothing of it, and this list is what the
-maintainer goes through by hand. The weekly refresh writes it to
+in the CSV, the website publishes nothing of it, and this list is what is
+left to find: scripts/verify.py asks an outside agent about each, and the
+maintainer goes through the rest by hand. The weekly refresh writes it to
 data/review.md and keeps the "Companies to verify" issue at it. Both are
 public, so a row is a name, a Levels.fyi link, a count and the roles - never
 a salary.
@@ -33,7 +34,8 @@ def render(companies: list[dict], limit: int | None = None) -> str:
     found = unverified(companies)
     out = [f"{len(found)} companies with salaries on file have neither a LinkedIn page "
            "nor a website, so the site shows nothing of them until someone finds the "
-           "company. For each one, either type its `linkedin_url` or `website` into "
+           "company. An outside agent is asked about each (scripts/verify.py). For the ones it does "
+           "not find, either type its `linkedin_url` or `website` into "
            "`companies.csv` (a value typed by hand is never overwritten) or strike the "
            "slug off in `lib.EXCLUDED_SLUGS` with the reason.", ""]
     shown = found[:limit] if limit else found

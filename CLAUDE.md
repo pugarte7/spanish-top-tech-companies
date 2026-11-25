@@ -46,7 +46,11 @@ After any data change: `python3 scripts/validate.py && python3 scripts/site.py
 - Unverified means no LinkedIn page and no website (`lib.verified()`; a `-`
   cell counts as none): rows stay in the CSV, nothing of it is published, and
   `scripts/review.py` lists it in `data/review.md` and the "Companies to
-  verify" issue.
+  verify" issue. `verify.yml` asks the outside agent for the website and
+  LinkedIn page of each through `instinct/verify/` (`verify` issues in the
+  private repo) and `scripts/verify.py collect` types them into the CSV's
+  empty fields only; a miss is dated in `data/verify.json` and not asked
+  again for 180 days.
 - A company with fewer than `MIN_GLOBAL` (5) submissions worldwide, summed
   over its roles, loses its Levels.fyi rows (`fetch_spain.prune_unproven()`).
   Rows from other sources are never screened. A missing or stale count judges nothing.

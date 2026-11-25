@@ -1,0 +1,113 @@
+name: verify
+
+# The website and LinkedIn page of companies with neither, from an outside
+# agent (instinct/verify). It types what the agent found into the private CSV,
+# closes those issues once the CSV is saved, then opens issues in the private
+# repo for the companies still unverified (scripts/verify.py). A company found
+# shows on the site from the next refresh.
+#
+# The log is public and shows counts only.
+#
+# Secrets: DATA_KEY and DATA_DEPLOY_KEY (as refresh.yml) and DATA_ISSUES_TOKEN,
+# a fine-grained token with Issues read and write on the private repo only.
+
+on:
+  schedule:
+    - cron: "20 10 * * *"
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Issues to open in this run (up to 50 companies each)"
+        type: string
+        default: "2"
+
+concurrency:
+  group: verify
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ secrets.DATA_ISSUES_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Pull the private data
+        env:
+          DATA_KEY: ${{ secrets.DATA_KEY }}
+          DATA_DEPLOY_KEY: ${{ secrets.DATA_DEPLOY_KEY }}
+        run: |
+          [ -n "$GH_TOKEN" ] || { echo "DATA_ISSUES_TOKEN is not set."; exit 1; }
+          export STC_DATA="$RUNNER_TEMP/data/website/companies.csv"
+          echo "STC_DATA=$STC_DATA" >> "$GITHUB_ENV"
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DATA_DEPLOY_KEY" > ~/.ssh/data_key
+          chmod 600 ~/.ssh/data_key
+          ssh-keyscan -q github.com >> ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/data_key -o IdentitiesOnly=yes"
+          echo "GIT_SSH_COMMAND=$GIT_SSH_COMMAND" >> "$GITHUB_ENV"
+          bash scripts/private_data.sh pull > /dev/null 2>&1 \
+            || { echo "Could not pull the private data."; exit 1; }
+          sha256sum "$STC_DATA" > "$RUNNER_TEMP/csv.sum"
+          echo "Private data pulled."
+
+      - name: Store what the agent found
+        run: |
+          set -o pipefail
+          python3 scripts/verify.py collect --closing "$RUNNER_TEMP/closing.json" | tee "$RUNNER_TEMP/out.txt"
+          python3 scripts/run_summary.py Stored "$(tail -1 "$RUNNER_TEMP/out.txt")"
+
+      - name: Check and push the CSV
+        env:
+          DATA_KEY: ${{ secrets.DATA_KEY }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          if sha256sum -c --quiet "$RUNNER_TEMP/csv.sum" > /dev/null 2>&1; then
+            echo "No company found."
+            exit 0
+          fi
+          python3 scripts/validate.py > /dev/null 2>&1 \
+            || { echo "The CSV does not validate with what the agent found: nothing pushed."; exit 1; }
+          bash scripts/private_data.sh push > /dev/null 2>&1 \
+            || { echo "Could not push the private data."; exit 1; }
+          echo "CSV pushed."
+
+      - name: Commit data/verify.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git add -N data/verify.json 2> /dev/null || true
+          if git diff --quiet -- data/verify.json; then
+            echo "Nothing new not found."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/verify.json
+          git commit -q -m "Companies not found $(date -u +%F)"
+          git pull --rebase -q origin main
+          git push -q origin HEAD:main
+          echo "data/verify.json pushed."
+
+      - name: Close the stored issues
+        run: python3 scripts/verify.py close "$RUNNER_TEMP/closing.json"
+
+      - name: Ask about the next companies
+        env:
+          LIMIT: ${{ inputs.limit || '2' }}
+        run: |
+          set -o pipefail
+          python3 scripts/verify.py open --limit "$LIMIT" | tee "$RUNNER_TEMP/out.txt"
+          python3 scripts/run_summary.py Asked "$(tail -1 "$RUNNER_TEMP/out.txt")"

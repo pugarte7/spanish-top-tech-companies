@@ -11,7 +11,7 @@ name: history
 
 on:
   workflow_run:
-    workflows: [refresh, boards, "remote boards", deploy, enrich, about, news]
+    workflows: [refresh, boards, "remote boards", deploy, enrich, about, news, verify]
     types: [completed]
 
 permissions:
